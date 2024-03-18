@@ -1,0 +1,297 @@
+--Title:    LD2100.MIB
+--Version:  v4.0
+--Date:     01/24/11
+--Copyright @ 2011 RLE Technologies.  All rights reserved worldwide.
+--This MIB defines objects for the RLE LD2100 SNMP Agent.
+
+RLE-LD2100-MIB DEFINITIONS ::= BEGIN
+    IMPORTS
+    Integer32, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DisplayString
+        FROM RFC1213-MIB
+    OBJECT-TYPE
+        FROM RFC-1212
+    enterprises
+        FROM RFC1155-SMI
+    TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF;
+
+    rleLD2100MibV2ModIdentDefault MODULE-IDENTITY
+        LAST-UPDATED	    "200604281609Z"
+        ORGANIZATION	    "RLE Technologies"
+        CONTACT-INFO        "Rick Stelzer       
+                            104 Racquette Dr
+                            Fort Collins, CO 80524
+                            rstelzer@rletech.com"
+        DESCRIPTION         "This is an automatically created MODULE-IDENTITY."
+
+        REVISION	    "200603281609Z"
+        DESCRIPTION         "LD2100 Mib V1."
+        ::= { rle 2270 }
+
+    PositiveInteger ::= TEXTUAL-CONVENTION
+        STATUS		    current
+        DESCRIPTION         ""
+        SYNTAX		    Integer32 (1..'ffffffff'h)
+
+
+
+    rle OBJECT IDENTIFIER ::= { enterprises 3184 }
+
+    products OBJECT IDENTIFIER ::= { rle 1 }
+
+    ld2100 OBJECT IDENTIFIER ::= { products 12 }
+
+    ld2100MIB OBJECT IDENTIFIER ::= { ld2100 1 }
+
+    ld2100Ident OBJECT IDENTIFIER ::= { ld2100MIB 1 }
+
+    ld2100IdentManufacturer OBJECT-TYPE
+        SYNTAX              DisplayString
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The Monitor Control Unit manufacturer."
+        ::= { ld2100Ident 1 }
+
+    ld2100IdentModel OBJECT-TYPE
+        SYNTAX              DisplayString
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The Monitor Control Unit Model designation."
+        ::= { ld2100Ident 2 }
+
+    ld2100IdentSoftwareVersion OBJECT-TYPE
+        SYNTAX              DisplayString
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The SNMP Agent software version."
+        ::= { ld2100Ident 3 }
+
+    ld2100IdentSpecific OBJECT-TYPE
+        SYNTAX              OBJECT IDENTIFIER
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "A reference to MIB definitions specific to the
+                            particular Monitor Unit being managed. This object
+                            is used to locate the product-specific MIB for
+                            this device.
+                            
+                            If this information is not present, its value
+                            should be the OBJECT IDENTIFIER { 0 0 }, which
+                            is a syntactically valid object identifier, and
+                            any conformant implementation of ASN.1 and BER
+                            must be able to generate and recognize this value."
+        ::= { ld2100Ident 4 }
+
+    ld2100Units OBJECT IDENTIFIER ::= { ld2100MIB 2 }
+
+    ld2100Unit OBJECT IDENTIFIER ::= { ld2100Units 1 }
+
+    ld2100UnitStatus OBJECT IDENTIFIER ::= { ld2100Unit 1 }
+
+    ld2100LeakStatus OBJECT-TYPE
+        SYNTAX              INTEGER {
+                                notInstalled( 0 ),
+                                normal( 1 ),
+                                alarmLeakPresent( 2 ),
+                                alarmCableFault( 3 ),
+                                alarmContamination( 4 ),
+                                alarmCommunicationLoss( 5 )
+                            }
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The status of this leak detection unit"
+        ::= { ld2100UnitStatus 1 }
+
+    ld2100LeakReading OBJECT-TYPE
+        SYNTAX              Integer32 (-2147483648..2147483647)
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The leak detected reading for this unit. For the
+                            unit of measure is feet or meters. If the value
+                            is less than zero, no leak is present."
+        ::= { ld2100UnitStatus 2 }
+
+    ld2100CableLeakage OBJECT-TYPE
+        SYNTAX              Integer32 (0..1000)
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The amount of leakage current on the cable. The
+                            unit of measure is micro-amps."
+        ::= { ld2100UnitStatus 3 }
+
+    ld2100CableLength OBJECT-TYPE
+        SYNTAX              Integer32 (0..65535)
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The installed length of cable for this unit. The
+                            unit of measure is feet or meters."
+        ::= { ld2100UnitStatus 4 }
+
+    ld2100CableUom OBJECT-TYPE
+        SYNTAX              INTEGER {
+                                feet( 0 ),
+                                meters( 1 )
+                            }
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The unit of measure for length readings of this
+                            unit."
+        ::= { ld2100UnitStatus 5 }
+
+    ld2100AlarmZone OBJECT-TYPE
+        SYNTAX              Integer32 (0..32)
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The zone number of the current alarm condition."
+        ::= { ld2100UnitStatus 6 }
+
+    ld2100AlarmZoneLabel OBJECT-TYPE
+        SYNTAX              DisplayString
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The zone label of the current alarm condition."
+        ::= { ld2100UnitStatus 7 }
+
+    ld2100UnitZones OBJECT IDENTIFIER ::= { ld2100Unit 2 }
+
+    ld2100UnitZoneTable OBJECT-TYPE
+        SYNTAX              SEQUENCE OF Ld2100UnitZoneTableEntry
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "A table of the ld2100 zone status."
+        ::= { ld2100UnitZones 3 }
+
+    ld2100UnitZoneTableEntry OBJECT-TYPE
+        SYNTAX              Ld2100UnitZoneTableEntry
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "An entry containing objects for the ld2100 zone
+                            table."
+        INDEX               {
+                                ld2100UnitZoneIndex
+                            }
+        ::= { ld2100UnitZoneTable 1 }
+
+    Ld2100UnitZoneTableEntry ::= SEQUENCE {
+        ld2100UnitZoneIndex
+            Integer32,
+        ld2100UnitZoneLabel
+            DisplayString,
+        ld2100UnitZoneStatus
+            INTEGER,
+        ld2100UnitZoneLeakDistance
+            Integer32,
+        ld2100UnitZoneInstalledLength
+            Integer32
+    }
+
+    ld2100UnitZoneIndex OBJECT-TYPE
+        SYNTAX              Integer32
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The index for this ld2100 zone."
+        ::= { ld2100UnitZoneTableEntry 1 }
+
+    ld2100UnitZoneLabel OBJECT-TYPE
+        SYNTAX              DisplayString
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The label for this ld2100 zone."
+        ::= { ld2100UnitZoneTableEntry 2 }
+
+    ld2100UnitZoneStatus OBJECT-TYPE
+        SYNTAX              INTEGER {
+                                notInstalled( 0 ),
+                                virtual( 1 ),
+                                modbus( 2 ),
+                                alarmLeakPresent( 3 ),
+                                alarmCableFault( 4 ),
+                                alarmContamination( 5 ),
+                                alarmCommunicationLoss( 6 )
+                            }
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The status for this ld2100 zone."
+        ::= { ld2100UnitZoneTableEntry 3 }
+
+    ld2100UnitZoneLeakDistance OBJECT-TYPE
+        SYNTAX              Integer32
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The distance to the leak for this ld2100 zone."
+        ::= { ld2100UnitZoneTableEntry 4 }
+
+    ld2100UnitZoneInstalledLength OBJECT-TYPE
+        SYNTAX              Integer32
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The installed length of cable for this ld2100 zone."
+        ::= { ld2100UnitZoneTableEntry 5 }
+
+    ld2100Traps OBJECT IDENTIFIER ::= { ld2100MIB 3 }
+
+    ld2100UnitTrap NOTIFICATION-TYPE
+        OBJECTS	{
+        		ld2100LeakStatus,
+        		ld2100LeakReading,
+        		ld2100CableUom,
+        		ld2100AlarmZone,
+        		ld2100AlarmZoneLabel
+        	}
+        STATUS		    current
+        DESCRIPTION         "The LD2100 Unit has reached an alarm state."
+        ::= { ld2100Traps 1 }
+
+    --
+    --The ld2100 Extension
+    --
+    ld2100ID OBJECT IDENTIFIER ::= { ld2100 2 }
+
+    rleLD2100MibV2ModIdentDefaultConformance
+        OBJECT IDENTIFIER ::= { rleLD2100MibV2ModIdentDefault 1 }
+
+    rleLD2100MibV2ModIdentDefaultGroups
+        OBJECT IDENTIFIER
+        ::= { rleLD2100MibV2ModIdentDefaultConformance 1 }
+
+    rleLd2100MibAllObjects OBJECT-GROUP
+        OBJECTS	{
+        		ld2100IdentManufacturer,
+        		ld2100IdentModel,
+        		ld2100IdentSoftwareVersion,
+        		ld2100IdentSpecific,
+        		ld2100LeakStatus,
+        		ld2100LeakReading,
+        		ld2100CableLeakage,
+        		ld2100CableLength,
+        		ld2100CableUom,
+        		ld2100AlarmZone,
+        		ld2100AlarmZoneLabel,
+        		ld2100UnitZoneIndex,
+        		ld2100UnitZoneLabel,
+        		ld2100UnitZoneStatus,
+        		ld2100UnitZoneLeakDistance
+        	}
+        STATUS		    current
+        DESCRIPTION         "This automatically created object group contains
+                            all those objects that do not belong to any other
+                            OBJECT-GROUP"
+        ::= { rleLD2100MibV2ModIdentDefaultGroups 1 }
+
+    rleLd2100MibAllNotifications NOTIFICATION-GROUP
+        NOTIFICATIONS       {
+                                ld2100UnitTrap
+                            }
+        STATUS		    current
+        DESCRIPTION         "This automatically created notification group
+                            contains all notifications that do not belong
+                            to any other NOTIFICATION-GROUP"
+        ::= { rleLD2100MibV2ModIdentDefaultGroups 2 }
+
+
+END
+

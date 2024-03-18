@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<APC_DDF 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd" 
+	ddfid="BGator_Gateway_SensorSNMP_M2C_DOOR" 
+	ddfname="BGator Gateway M2C DOOR"
+	ddfversion="14" 
+	canremove="yes">
+  <schemaVersion>1.6</schemaVersion>
+  <device deviceid="bgator_id">
+    <oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST" />
+    <setProductData ruleid="vendordata" field="vendor">Bjumper</setProductData>
+    <setProductData ruleid="modeldata" field="model">SensorSNMP_M2C_DOOR</setProductData>
+    <setProductData ruleid="typedata" field="type">Rack Access Pod</setProductData>
+    <setDefaultLabel ruleid="labeldata">
+      <sysHostname /> - Slave <commSetting field="slaveaddress" />
+    </setDefaultLabel>
+	<stateSensor ruleid="rl_door_status">
+		<type>state</type>
+		<sensorId>door</sensorId>
+		<value>
+			<mapValue mapid="doorstatus_vm">
+				<getOid>door_status</getOid>
+			</mapValue>
+		</value>
+		<label>Door Sensor</label>
+		<enum>doorstatus_em</enum>
+		<sensorSet>Door state</sensorSet>
+	</stateSensor>
+		<numSensor ruleid="rl_battery">
+      <type>num</type>
+	  <units>percent</units>
+      <sensorId>battery_1</sensorId>
+      <value>
+		<mult>
+			<op><getOid>rl_battery</getOid></op>
+			<op>0.01</op>
+		</mult>
+      </value>
+      <label>Battery Sensor</label>
+      <sensorSet>Battery</sensorSet>
+    </numSensor>
+	<valueMap ruleid="doorstatus_vm">
+		<valueIn>0</valueIn>
+		<valueOut>0</valueOut>
+		<valueIn>1</valueIn>
+		<valueOut>1</valueOut>
+		<valueIn>0,0</valueIn>
+		<valueOut>0</valueOut>
+		<valueIn>1,0</valueIn>
+		<valueOut>1</valueOut>
+		<valueIn>0.0</valueIn>
+		<valueOut>0</valueOut>
+		<valueIn>1.0</valueIn>
+		<valueOut>1</valueOut>
+		<valueIn>*</valueIn>
+		<valueOut>2</valueOut>
+	</valueMap>
+	<enumMap ruleid="doorstatus_em">
+		<label>Abierto</label>
+		<label>Cerrado</label>
+		<label>Error</label>
+	</enumMap>
+  </device>
+	<protocol>
+		<modbus>
+		<type_definition type_name="swapped_int">
+			<type>int_32</type>
+			<!-- must be one of our 'normal' modbus types -->
+			<byte_order>1,0,3,2</byte_order>
+			<!-- mapping of device's byte string into the order which we want -->
+		</type_definition>
+		  <value_ref_id valid="door_status">
+			<function>3</function>
+			<start_addr>1</start_addr>
+			<quantity>2</quantity>
+			<type>swapped_int</type>
+		  </value_ref_id>
+		   <value_ref_id valid="rl_battery">
+			<function>3</function>
+			<start_addr>3</start_addr>
+			<quantity>2</quantity>
+			<type>swapped_int</type>
+		  </value_ref_id>
+		</modbus>
+  </protocol>
+</APC_DDF>

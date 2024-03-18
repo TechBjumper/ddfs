@@ -1,0 +1,233 @@
+<?xml version="1.0"?>
+<!-- Test Modbus related information -->
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+         ddfid="tracetek_sensor_interface_module" ddfname="TraceTek Sensor Interface Module" ddfversion="3" canremove="yes">
+  <schemaVersion>1.6</schemaVersion>
+
+  <device deviceid="red_lion_plc">
+    <oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+    <setProductData ruleid="vendordata" field="vendor">TraceTek</setProductData>
+    <setProductData ruleid="modeldata" field="model">Sensor Interface Module</setProductData>
+
+    <setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+    <stateSensor ruleid="leakageSensor">
+      <type>state</type>
+      <sensorId>LEAKAGE_STATUS</sensorId>
+      <value>
+        <mapValue mapid="status-vm">
+          <bitwise_and>
+            <op>
+              <getOid>register30001</getOid>
+            </op>
+            <op>1</op>
+          </bitwise_and>
+        </mapValue>
+      </value>
+      <label>Leakage Status</label>
+      <enum>alarm-em</enum>
+      <sensorSet>Sensors</sensorSet>
+    </stateSensor>
+
+    <numSensor ruleid="leaklocationSensor">
+      <type>num</type>
+      <sensorId>LEAK_LOCATION</sensorId>
+      <value>
+        <div>
+          <op><getOid>leak_location</getOid></op>
+          <op>12.796</op>
+        </div>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Leak Location</label>
+      <sensorSet></sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="firmwareVersionSensor">
+      <type>num</type>
+      <sensorId>FIRMWARE_VERSION</sensorId>
+      <value>
+        <getOid>firmware_rev</getOid>
+      </value>
+      <valueInc>1.0</valueInc>
+      <label>Firmware Version</label>
+      <sensorSet>Sensors</sensorSet>
+    </numSensor>
+
+    <!-- Status value map -->
+    <valueMap ruleid="status-vm">
+        <valueIn>0</valueIn><valueOut>0</valueOut>
+        <valueIn>1</valueIn><valueOut>1</valueOut>
+        <valueIn>*</valueIn><valueOut>*</valueOut>
+    </valueMap>
+
+    <enumMap ruleid="alarm-em">
+        <label>Normal</label>
+        <label>Alarm</label>
+        <label>Unknown</label>
+    </enumMap>
+    
+    
+    <alarmFlags2 ruleid="leakLocationAlarm">
+      <value>
+        <!-- 
+          0 = Cable Break
+          1-61439 = Leak
+          61439 = Normal
+          
+          If leak-location < 61439
+            then
+              if leak-location == 0 
+                then 
+                  return 0
+                else
+                  return 1
+              endif
+            else return 2
+          endif
+         -->
+          <if>
+            <op>
+              <lt>
+                <op>
+                  <baseNToInt base="16">
+                    <getOid>leak_location</getOid>
+                  </baseNToInt>
+                </op>
+                <op>61439</op>
+              </lt>
+            </op>
+            
+            <!-- Then -->
+            <op>
+              <if>
+                <op>
+                  <eq>
+                    <op>
+                      <baseNToInt base="16">
+                        <getOid>leak_location</getOid>
+                      </baseNToInt>
+                    </op>
+                    <op>0</op>
+                  </eq>
+                </op>
+                <op>0</op>
+                <op>1</op>
+              </if>
+            </op>
+            <op>2</op>
+          </if>
+      </value>
+    
+      <alarmFlagsTest match="0">
+        <name>
+          <activeText>Leak Location - Cable Break</activeText>
+          <inactiveText>Leak Location - Cable Normal</inactiveText>    
+        </name>
+        <severity>error</severity>
+        <category></category>
+        <description>
+          <activeText>Leak Location - A Cable Break condition has been detected.</activeText>
+          <inactiveText>Leak Location - Cable Break condition no longer exists.</inactiveText>    
+        </description>
+      </alarmFlagsTest>
+      <alarmFlagsTest match="1">
+        <name>
+          <activeText>Leak Location - Leak Detected</activeText>
+          <inactiveText>Leak Location - Leak no longer detected</inactiveText>    
+        </name>
+        <severity>error</severity>
+        <category></category>
+        <description>
+          <activeText>Leak Location - A leak condition has been detected.</activeText>
+          <inactiveText>Leak Location - Leak condition no longer exists.</inactiveText>    
+        </description>
+      
+      </alarmFlagsTest>
+    </alarmFlags2>
+
+    <alarmFlags2 ruleid="rgLoopAlarm">
+      <value>
+        <baseNToInt base="16">
+          <getOid>rg_loop_resistance</getOid>
+        </baseNToInt>
+      </value>
+    
+      <alarmFlagsTest match="61439">
+        <name>
+          <activeText>RG Loop - Cable Break</activeText>
+          <inactiveText>RG Loop - Cable Normal</inactiveText>    
+        </name>
+        <severity>error</severity>
+        <category></category>
+        <description>
+          <activeText>RG Loop - A Cable Break condition has been detected.</activeText>
+          <inactiveText>RG Loop - Cable Break condition no longer exists.</inactiveText>    
+        </description>
+      </alarmFlagsTest>
+    </alarmFlags2>
+
+    <alarmFlags2 ruleid="ybLoopAlarm">
+      <value>
+        <baseNToInt base="16">
+          <getOid>yb_loop_resistance</getOid>
+        </baseNToInt>
+      </value>
+    
+      <alarmFlagsTest match="61439">
+        <name>
+          <activeText>YB Loop - Cable Break</activeText>
+          <inactiveText>YB Loop - Cable Normal</inactiveText>    
+        </name>
+        <severity>error</severity>
+        <category></category>
+        <description>
+          <activeText>YB Loop - A Cable Break condition has been detected.</activeText>
+          <inactiveText>YB Loop - Cable Break condition no longer exists.</inactiveText>    
+        </description>
+      </alarmFlagsTest>
+    </alarmFlags2>
+    
+  </device>
+
+  <protocol>
+    <modbus>
+      <value_ref_id valid="register30001">
+        <function>4</function>
+        <start_addr>0</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="leak_location">
+        <function>4</function>
+        <start_addr>1</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="rg_loop_resistance">
+        <function>4</function>
+        <start_addr>4</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="yb_loop_resistance">
+        <function>4</function>
+        <start_addr>5</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="firmware_rev">
+        <function>4</function>
+        <start_addr>9</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+     </modbus>
+  </protocol>
+
+</APC_DDF>

@@ -1,0 +1,277 @@
+-- Tripplite MIB
+
+-- { iso org(3) dod(6) internet(1) private(4) enterprises(1) tripplite(850) trippUPS(1) }
+
+TRIPPUPS-MIB DEFINITIONS ::= BEGIN
+
+-- Title        :  UPS Trap-Only MIB for Tripp Lite Uninterruptible Power Supplies
+-- Date         :  January 4, 1999
+-- By           :  Dave Cole
+-- Modified     :  May 17, 1999 by Dave Cole
+--              :  Traps 105 (upsAgentStarted) and 106 (upsAgentStopped) added
+--				:  June 2, 1999 by Dave Cole
+--		    :** Modified October 2,2002 by Wanye Lacy/Peter Smit to recognize
+--		    :** traps poperly on the SNMP software.  OID's were not matching until change was made
+--		    :**  added  '.1' in line  'tripplite	OBJECT IDENTIFIER ::= { enterprises 850.1 }'
+--              :  Changed upsTrapCode STATUS from "current" to "mandatory"
+
+IMPORTS
+	OBJECT-TYPE
+		FROM RFC-1212
+	enterprises, NetworkAddress, IpAddress, Counter, Gauge, TimeTicks
+		FROM RFC1155-SMI
+	DisplayString
+		FROM RFC1213-MIB
+	TRAP-TYPE
+		FROM RFC-1215
+	NonNegativeInteger, PositiveInteger
+		FROM UPS-MIB;
+
+tripplite			OBJECT IDENTIFIER ::= { enterprises 850 }
+--trippDevice			OBJECT IDENTIFIER ::= { tripplite 1 }
+--trippUPS			OBJECT IDENTIFIER ::= { trippDevice 0 }
+trippUPS			OBJECT IDENTIFIER ::= { tripplite 1 }
+trippUpsReceptacles		OBJECT IDENTIFIER ::= { trippUPS 1 }
+
+	upsReceptaclesNumReceptacles OBJECT-TYPE
+		SYNTAX  NonNegativeInteger
+		ACCESS  read-only
+		STATUS  mandatory
+		DESCRIPTION
+			"The number of available receptacles in this device.
+			This variable indicates the number of rows in the
+			receptacle table."
+		::= { trippUpsReceptacles 1 }
+
+	upsReceptacleTable OBJECT-TYPE
+    	SYNTAX  SEQUENCE OF UpsReceptacleEntry
+    	ACCESS  not-accessible
+	    STATUS  mandatory
+    	DESCRIPTION
+           "A list of receptacle table entries.  The number of entries
+            is given by the value of upsReceptaclesNumReceptacles."
+    	::= { trippUpsReceptacles 2 }
+
+	upsReceptacleEntry OBJECT-TYPE
+    	SYNTAX  UpsReceptacleEntry
+	    ACCESS  not-accessible
+    	STATUS  mandatory
+	    DESCRIPTION
+           "An entry containing information applicable to a
+            particular receptacle."
+    	INDEX { upsReceptacleIndex }
+	    ::= { upsReceptacleTable 1 }
+
+	UpsReceptacleEntry ::=
+    	SEQUENCE 
+		{
+			upsReceptacleIndex PositiveInteger,
+			upsReceptacleType INTEGER,
+			upsReceptacleStatus INTEGER,
+	  		upsReceptacleControl INTEGER
+		}
+
+	upsReceptacleIndex OBJECT-TYPE
+	    SYNTAX  PositiveInteger
+    	ACCESS  read-only
+	    STATUS  mandatory
+    	DESCRIPTION
+           "The receptacle identifier."
+	    ::= { upsReceptacleEntry 1 }
+
+	upsReceptacleType OBJECT-TYPE
+    	SYNTAX	INTEGER {
+			surgeOnly(1),
+    		batteryProtected(2),
+			controllableBatteryProtected(3)
+		}
+    	ACCESS  read-only
+    	STATUS  mandatory
+    	DESCRIPTION
+    		"The type of receptacle."
+	    ::= { upsReceptacleEntry 2 }
+
+	upsReceptacleStatus OBJECT-TYPE
+    	SYNTAX  INTEGER {
+		    on(1),
+			off(2),
+			unknown(3)
+		}
+		ACCESS  read-only
+		STATUS  mandatory
+		DESCRIPTION
+           "The status of receptacle."
+		::= { upsReceptacleEntry 3 }
+
+	upsReceptacleControl OBJECT-TYPE
+    	SYNTAX  INTEGER 
+		{
+			on(1),
+    		off(2),
+    		cycle(3)
+		}
+		ACCESS  read-write
+		STATUS  mandatory
+		DESCRIPTION
+           "Setting this object to 'on' will turn on the receptacle.
+            Setting this object to 'off' will turn off the receptacle.
+            Setting this object to 'cycle' will turn off and then turn
+            on the receptacle.  This action will only take place if the
+            receptacle is controllable
+            (upsReceptacleType = controllableBatteryProtected(3))."
+    ::= { upsReceptacleEntry 4 }
+
+trippUpsTrapInfo OBJECT IDENTIFIER ::= { trippUPS 2 }
+
+-- The Trap Information group.
+
+	upsTrapCode OBJECT-TYPE
+		SYNTAX INTEGER (0..2147483647)
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"A numeric code identifiying the condition that caused the trap to be sent.
+			If the trap number is 104 (upsAgentStarted) or 105 (upsAgentStopped), this
+			code will indicate whether the SNMP agent is software (1) or hardware (2)."
+		::= { trippUpsTrapInfo 1 }
+
+	upsTrapDescription OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (0..63))
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+	      "The description of the trap."
+      ::= { trippUpsTrapInfo 2 }
+            
+trippUpsEnvironment OBJECT IDENTIFIER ::= { trippUPS 3 }
+
+  upsEnvTemperature OBJECT-TYPE
+	  SYNTAX INTEGER
+	  ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+	      "The ambient temperature of the EnviroSense unit (1/10 Deg C)."
+      ::= { trippUpsEnvironment 1 }
+
+  upsEnvHumidity OBJECT-TYPE
+	  SYNTAX INTEGER (0..100)
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+	      "The ambient humidity of the EnviroSense unit (% Humidity)."
+      ::= { trippUpsEnvironment 2 }
+
+trippUpsContacts OBJECT IDENTIFIER ::= { trippUPS 4 }
+
+	upsContactTable OBJECT-TYPE
+    	SYNTAX  SEQUENCE OF UpsContactEntry
+    	ACCESS  not-accessible
+	    STATUS  mandatory
+    	DESCRIPTION
+           "A table of contacts attached to the EnviroSense unit."
+    	::= { trippUpsContacts 1 }
+
+	upsContactEntry OBJECT-TYPE
+    	SYNTAX  UpsContactEntry
+	    ACCESS  not-accessible
+    	STATUS  mandatory
+	    DESCRIPTION
+           "An entry containing information applicable to a
+            particular contact."
+    	INDEX   { upsContactIndex }
+	    ::= { upsContactTable 1 }
+
+	UpsContactEntry ::=
+    	SEQUENCE {
+        upsContactIndex 	PositiveInteger,
+        upsContactName  	DisplayString (SIZE (0..15)),
+        upsContactStatus 	INTEGER,
+		upsContactConfig 	INTEGER
+    }
+
+	upsContactIndex OBJECT-TYPE
+	    SYNTAX  PositiveInteger
+    	ACCESS  read-only
+	    STATUS  mandatory
+    	DESCRIPTION
+           "The contact identifier."
+	    ::= { upsContactEntry  1 }
+
+	upsContactName OBJECT-TYPE
+	    SYNTAX  DisplayString (SIZE (0..15))
+    	ACCESS  read-write
+	    STATUS  mandatory
+    	DESCRIPTION
+           "The contact name."
+	    ::= { upsContactEntry  2 }
+
+	upsContactStatus OBJECT-TYPE
+    	SYNTAX  INTEGER {
+      		unknown(0),
+	    	normal(1),
+    		alarm(2)
+		}
+    	ACCESS  read-only
+	    STATUS  mandatory
+    	DESCRIPTION
+           "The current status of the contact."
+	    ::= { upsContactEntry  3 }
+
+	upsContactConfig OBJECT-TYPE
+    	SYNTAX  INTEGER {
+      		unknown(0),
+	    	normallyClosed(0),
+    		normallyOpen(1)
+		}
+    	ACCESS  read-write
+	    STATUS  mandatory
+    	DESCRIPTION
+           "The default configuration of the contact."
+	    ::= { upsContactEntry  4 }
+
+-- Traps
+
+upsCritical TRAP-TYPE
+      ENTERPRISE tripplite
+      VARIABLES  { upsTrapCode, upsTrapDescription }
+      DESCRIPTION
+	      "UPS Critical Alarm."
+      ::= 100
+
+upsWarning TRAP-TYPE
+      ENTERPRISE tripplite
+      VARIABLES  { upsTrapCode, upsTrapDescription }
+      DESCRIPTION
+	      "UPS Warning."
+      ::= 101
+
+upsInformation TRAP-TYPE
+      ENTERPRISE tripplite
+      VARIABLES  { upsTrapCode, upsTrapDescription }
+      DESCRIPTION
+	      "UPS Information."
+      ::= 102
+
+upsAlarmCleared TRAP-TYPE
+      ENTERPRISE tripplite
+      VARIABLES  { upsTrapCode, upsTrapDescription }
+      DESCRIPTION
+	      "UPS Alarm Cleared."
+      ::= 103
+
+upsAgentStarted TRAP-TYPE
+      ENTERPRISE tripplite
+      VARIABLES  { upsTrapCode, upsTrapDescription }
+      DESCRIPTION
+	      "Agent started."
+      ::= 104
+
+upsAgentStopped TRAP-TYPE
+      ENTERPRISE tripplite
+      VARIABLES  { upsTrapCode, upsTrapDescription }
+      DESCRIPTION
+	      "Agent stopped."
+      ::= 105
+
+END
+

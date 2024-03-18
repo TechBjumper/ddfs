@@ -1,0 +1,162 @@
+<?xml version="1.0"?>
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+  ddfid="simex_srp_n118" ddfname="Simex SRP-N118" ddfversion="2" canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+	
+	<device deviceid="simex_srp_n118">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+	
+		<setProductData ruleid="vendordata" field="vendor">Simex</setProductData>
+		<setProductData ruleid="typedata" field="type">Modbus Device</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+		<numSensor ruleid="measurement_value">
+			<type>num</type>
+			<sensorId>MEASUREMENT_VALUE</sensorId>
+			<value>
+				<getOid>register1</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Measurement Value</label>
+			<sensorSet>Values</sensorSet>
+		</numSensor>
+
+		<valueMap ruleid="current_measurement_status-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>96</valueIn><valueOut>1</valueOut> <!-- 0x0060 -->
+			<valueIn>160</valueIn><valueOut>2</valueOut> <!-- 0x00A0 -->
+			<valueIn>*</valueIn><valueOut>3</valueOut>
+		</valueMap>
+
+		<enumMap ruleid="current_measurement_status-em">
+			<label>Data Valid</label>
+			<label>Top Border Exceeded</label>
+			<label>Bottom Border Exceeded</label>
+			<label>Unknown</label>
+		</enumMap>
+
+		<stateSensor ruleid="current_measurement_status">
+			<type>state</type>
+			<sensorId>CURRENT_MEASUREMENT_STATUS</sensorId>
+			<value>
+				<mapValue mapid="current_measurement_status-vm">
+                   <formatNumber>
+                        <getOid>register2</getOid>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<enum>current_measurement_status-em</enum>
+			<label>Current Measurement Status</label>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+
+		<valueMap ruleid="off_on-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>*</valueIn><valueOut>1</valueOut>
+		</valueMap>
+
+		<enumMap ruleid="off_on-em">
+			<label>Off</label>
+			<label>On</label>
+		</enumMap>
+
+		<stateSensor ruleid="relay_r1">
+			<type>state</type>
+			<sensorId>RELAY_R1</sensorId>
+			<value>
+				<mapValue mapid="off_on-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+                                <right_shift>
+                                    <op><getOid>register4</getOid></op>
+                                    <op>0</op>
+                                </right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<enum>off_on-em</enum>
+			<label>Relay R1</label>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+
+		<stateSensor ruleid="relay_r2">
+			<type>state</type>
+			<sensorId>RELAY_R2</sensorId>
+			<value>
+				<mapValue mapid="off_on-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+                                <right_shift>
+                                    <op><getOid>register4</getOid></op>
+                                    <op>1</op>
+                                </right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<enum>off_on-em</enum>
+			<label>Relay R2</label>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+
+		<stateSensor ruleid="alarm_led">
+			<type>state</type>
+			<sensorId>ALARM_LED</sensorId>
+			<value>
+				<mapValue mapid="off_on-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+                                <right_shift>
+                                    <op><getOid>register4</getOid></op>
+                                    <op>4</op>
+                                </right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<enum>off_on-em</enum>
+			<label>Alarm LED</label>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+
+	</device>
+	
+	<protocol>
+		<modbus>	
+			<value_ref_id valid="register1">
+				<function>3</function>
+				<start_addr>1</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register2">
+				<function>3</function>
+				<start_addr>2</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register4">
+				<function>3</function>
+				<start_addr>4</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<packet>
+				<function>3</function>
+				<start_addr>1</start_addr>
+				<quantity>4</quantity>
+			</packet>
+		</modbus>
+	</protocol>
+</APC_DDF>		

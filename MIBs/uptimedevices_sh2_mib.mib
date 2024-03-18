@@ -1,0 +1,841 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0052)http://www.uptimedevices.com/new/support/mib/sh2.mib -->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=windows-1252">
+<META content="MSHTML 6.00.2900.2722" name=GENERATOR></HEAD>
+<BODY><PRE>--
+--  Uptime Devices, Inc.
+--  sh2 MIB
+--  $Id: sh2.mib,v 1.12 2004/03/03 12:00:39 devel Exp $
+--
+
+UPTIME-ROOT-MIB DEFINITIONS ::= BEGIN
+        IMPORTS
+                DisplayString
+                        FROM RFC1213-MIB
+                enterprises
+                        FROM RFC1155-SMI
+                OBJECT-TYPE
+                        FROM RFC-1212
+                TRAP-TYPE
+                        FROM RFC-1215;
+
+        uptime          OBJECT IDENTIFIER ::= { enterprises 13045 }
+        shseries        OBJECT IDENTIFIER ::= { uptime 1 }
+        sdcseries       OBJECT IDENTIFIER ::= { uptime 2 }
+        sh2             OBJECT IDENTIFIER ::= { shseries 1 }
+        shPro           OBJECT IDENTIFIER ::= { shseries 2 }
+        sh2system       OBJECT IDENTIFIER ::= { sh2 1 }
+        sh2sensor       OBJECT IDENTIFIER ::= { sh2 2 }
+
+
+        -- the sh2 sensor information (by port number)
+
+        sh2SensorNumber OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The number of online, connected sensors."
+                ::= { sh2sensor 1 }
+
+        sh2SensorTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF SH2SensorEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table of sensors."
+                ::= { sh2sensor 2 }
+
+        sh2SensorEntry OBJECT-TYPE
+                SYNTAX SH2SensorEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "A sensor table entry."
+                INDEX { sh2SensorIndex }
+                ::= { sh2SensorTable 1 }
+
+        SH2SensorEntry ::=
+                SEQUENCE {
+                        sh2SensorIndex                  INTEGER,
+                        sh2SensorName                   DisplayString,
+                        sh2SensorType                   DisplayString,
+                        sh2SensorCurrentValue           INTEGER,
+                        sh2SensorOnlineStatus           INTEGER,
+                        sh2SensorState                  INTEGER,
+                        sh2SensorHighCritical           INTEGER,
+                        sh2SensorHighWarning            INTEGER,
+                        sh2SensorLowWarning             INTEGER,
+                        sh2SensorLowCritical            INTEGER,
+                        sh2SensorGoOnline               INTEGER,
+                        sh2SensorRearm                  INTEGER,
+                        sh2SensorTempScaleType          INTEGER,
+                        sh2SensorDCDirection            INTEGER,
+                        sh2SensorDCNormalState          INTEGER,
+                        sh2SensorDCOutputLevel          INTEGER,
+                        sh2SensorCalibration            INTEGER
+                }
+
+        sh2SensorIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor port number."
+                ::= { sh2SensorEntry 1 }
+
+        sh2SensorName OBJECT-TYPE
+                SYNTAX DisplayString (SIZE (0..12))
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor name."
+                ::= { sh2SensorEntry 2 }
+
+        sh2SensorType OBJECT-TYPE
+                SYNTAX DisplayString (SIZE (0..255))
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor type."
+                ::= { sh2SensorEntry 3 }
+
+        sh2SensorCurrentValue OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor's current value."
+                ::= { sh2SensorEntry 4 }
+
+        sh2SensorOnlineStatus OBJECT-TYPE
+                SYNTAX INTEGER {
+                        online(1),
+                        offline(2)
+                }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "Status (online/offline) of the sensor."
+                ::= { sh2SensorEntry 5 }
+
+        sh2SensorState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        highCritical(1),
+                        highWarning(2),
+                        lowWarning(3),
+                        lowCritical(4),
+                        normal(5),
+                        notPresent(6)
+                        }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor state relative to the thresholds." 
+                ::= { sh2SensorEntry 6 }
+
+        sh2SensorHighCritical OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The high critical threshold."
+                ::= { sh2SensorEntry 7 }
+
+        sh2SensorHighWarning OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The high warning threshold."
+                ::= { sh2SensorEntry 8 }
+
+        sh2SensorLowWarning OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The low warning threshold."
+                ::= { sh2SensorEntry 9 }
+
+        sh2SensorLowCritical OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The low critical threshold."
+                ::= { sh2SensorEntry 10 }
+
+        sh2SensorGoOnline OBJECT-TYPE
+                SYNTAX INTEGER {
+                        online(1),
+                        offline(2)
+                }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "Set the sensor online or offline."
+                ::= { sh2SensorEntry 11 }
+
+        sh2SensorRearm OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The rearm value."
+                ::= { sh2SensorEntry 12 }
+
+        sh2SensorTempScaleType OBJECT-TYPE
+                SYNTAX INTEGER {
+                        none(1),
+                        fahrenheit(2),
+                        celsius(3)
+                        }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The temperature scale type." 
+                ::= { sh2SensorEntry 13 }
+
+        sh2SensorDCDirection OBJECT-TYPE
+                SYNTAX INTEGER {
+                        none(1),
+                        input(2),
+                        output(3)
+                        }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The dry contact type." 
+                ::= { sh2SensorEntry 14 }
+
+        sh2SensorDCNormalState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        closed(0),
+                        open(1),
+                        none(2)
+                        }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The dry contact normal state." 
+                ::= { sh2SensorEntry 15 }
+
+        sh2SensorDCOutputLevel OBJECT-TYPE
+                SYNTAX INTEGER {
+                        none(1),
+                        low(2),
+                        high(3)
+                        }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The dry contact output level." 
+                ::= { sh2SensorEntry 16 }
+
+        sh2SensorCalibration OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The offset value to add to the temperature or humidity reading."
+                ::= { sh2SensorEntry 17 }
+
+
+        --
+        -- the sh2 temperature sensor information
+        --
+
+        sh2TempSensorTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF SH2TempSensorEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table of up to two temperature sensors."
+                ::= { sh2sensor 3 }
+
+        sh2TempSensorEntry OBJECT-TYPE
+                SYNTAX SH2TempSensorEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "A temperature sensor table entry."
+                INDEX { sh2TempSensorIndex }
+                ::= { sh2TempSensorTable 1 }
+
+        SH2TempSensorEntry ::=
+                SEQUENCE {
+                        sh2TempSensorIndex              INTEGER,
+                        sh2TempSensorName               DisplayString,
+                        sh2TempSensorType               DisplayString,
+                        sh2TempSensorCurrentValue       INTEGER,
+                        sh2TempSensorOnlineStatus       INTEGER,
+                        sh2TempSensorState              INTEGER,
+                        sh2TempSensorHighCritical       INTEGER,
+                        sh2TempSensorHighWarning        INTEGER,
+                        sh2TempSensorLowWarning         INTEGER,
+                        sh2TempSensorLowCritical        INTEGER,
+                        sh2TempSensorGoOnline           INTEGER,
+                        sh2TempSensorRearm              INTEGER,
+                        sh2TempSensorScaleType          INTEGER,
+                        sh2TempSensorCalibration        INTEGER
+                }
+
+        sh2TempSensorIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor port number."
+                ::= { sh2TempSensorEntry 1 }
+
+        sh2TempSensorName OBJECT-TYPE
+                SYNTAX DisplayString (SIZE (0..12))
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor name."
+                ::= { sh2TempSensorEntry 2 }
+
+        sh2TempSensorType OBJECT-TYPE
+                SYNTAX DisplayString (SIZE (0..255))
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor type."
+                ::= { sh2TempSensorEntry 3 }
+
+        sh2TempSensorCurrentValue OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor's current value."
+                ::= { sh2TempSensorEntry 4 }
+
+        sh2TempSensorOnlineStatus OBJECT-TYPE
+                SYNTAX INTEGER {
+                        online(1),
+                        offline(2)
+                }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "Status (online/offline) of the sensor."
+                ::= { sh2TempSensorEntry 5 }
+
+        sh2TempSensorState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        highCritical(1),
+                        highWarning(2),
+                        lowWarning(3),
+                        lowCritical(4),
+                        normal(5),
+                        notPresent(6)
+                        }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor state relative to the thresholds." 
+                ::= { sh2TempSensorEntry 6 }
+
+        sh2TempSensorHighCritical OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The high critical threshold."
+                ::= { sh2TempSensorEntry 7 }
+
+        sh2TempSensorHighWarning OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The high warning threshold."
+                ::= { sh2TempSensorEntry 8 }
+
+        sh2TempSensorLowWarning OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The low warning threshold."
+                ::= { sh2TempSensorEntry 9 }
+
+        sh2TempSensorLowCritical OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The low critical threshold."
+                ::= { sh2TempSensorEntry 10 }
+
+        sh2TempSensorGoOnline OBJECT-TYPE
+                SYNTAX INTEGER {
+                        online(1),
+                        offline(2)
+                }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "Set the sensor online or offline."
+                ::= { sh2TempSensorEntry 11 }
+
+        sh2TempSensorRearm OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The rearm value."
+                ::= { sh2TempSensorEntry 12 }
+
+        sh2TempSensorScaleType OBJECT-TYPE
+                SYNTAX INTEGER {
+                        fahrenheit(2),
+                        celsius(3)
+                        }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The temperature scale type." 
+                ::= { sh2TempSensorEntry 13 }
+
+        sh2TempSensorCalibration OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The offset value to add to the temperature reading."
+                ::= { sh2TempSensorEntry 14 }
+
+        --
+        -- the sh2 humidity sensor information
+        --
+
+        sh2HumdSensorTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF SH2HumdSensorEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table of up to two humidity sensors."
+                ::= { sh2sensor 4 }
+
+        sh2HumdSensorEntry OBJECT-TYPE
+                SYNTAX SH2HumdSensorEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "A sensor table entry."
+                INDEX { sh2HumdSensorIndex }
+                ::= { sh2HumdSensorTable 1 }
+
+        SH2HumdSensorEntry ::=
+                SEQUENCE {
+                        sh2HumdSensorIndex              INTEGER,
+                        sh2HumdSensorName               DisplayString,
+                        sh2HumdSensorType               DisplayString,
+                        sh2HumdSensorCurrentValue       INTEGER,
+                        sh2HumdSensorOnlineStatus       INTEGER,
+                        sh2HumdSensorState              INTEGER,
+                        sh2HumdSensorHighCritical       INTEGER,
+                        sh2HumdSensorHighWarning        INTEGER,
+                        sh2HumdSensorLowWarning         INTEGER,
+                        sh2HumdSensorLowCritical        INTEGER,
+                        sh2HumdSensorGoOnline           INTEGER,
+                        sh2HumdSensorRearm              INTEGER,
+                        sh2HumdSensorCalibration        INTEGER
+                }
+
+        sh2HumdSensorIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor port number."
+                ::= { sh2HumdSensorEntry 1 }
+
+        sh2HumdSensorName OBJECT-TYPE
+                SYNTAX DisplayString (SIZE (0..12))
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor name."
+                ::= { sh2HumdSensorEntry 2 }
+
+        sh2HumdSensorType OBJECT-TYPE
+                SYNTAX DisplayString (SIZE (0..255))
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor type."
+                ::= { sh2HumdSensorEntry 3 }
+
+        sh2HumdSensorCurrentValue OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor's current value."
+                ::= { sh2HumdSensorEntry 4 }
+
+        sh2HumdSensorOnlineStatus OBJECT-TYPE
+                SYNTAX INTEGER {
+                        online(1),
+                        offline(2)
+                }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "Status (online/offline) of the sensor."
+                ::= { sh2HumdSensorEntry 5 }
+
+        sh2HumdSensorState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        highCritical(1),
+                        highWarning(2),
+                        lowWarning(3),
+                        lowCritical(4),
+                        normal(5),
+                        notPresent(6)
+                        }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor state relative to the thresholds." 
+                ::= { sh2HumdSensorEntry 6 }
+
+        sh2HumdSensorHighCritical OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The high critical threshold."
+                ::= { sh2HumdSensorEntry 7 }
+
+        sh2HumdSensorHighWarning OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The high warning threshold."
+                ::= { sh2HumdSensorEntry 8 }
+
+        sh2HumdSensorLowWarning OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The low warning threshold."
+                ::= { sh2HumdSensorEntry 9 }
+
+        sh2HumdSensorLowCritical OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The low critical threshold."
+                ::= { sh2HumdSensorEntry 10 }
+
+        sh2HumdSensorGoOnline OBJECT-TYPE
+                SYNTAX INTEGER {
+                        online(1),
+                        offline(2)
+                }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "Set the sensor online or offline."
+                ::= { sh2HumdSensorEntry 11 }
+
+        sh2HumdSensorRearm OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The rearm value."
+                ::= { sh2HumdSensorEntry 12 }
+
+        sh2HumdSensorCalibration OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The offset value to add to the humidity reading."
+                ::= { sh2HumdSensorEntry 13 }
+
+        --
+        -- the sh2 bi-state sensor information
+        --
+
+        sh2StateSensorTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF SH2StateSensorEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table of up to two bi-state sensors."
+                ::= { sh2sensor 5 }
+
+        sh2StateSensorEntry OBJECT-TYPE
+                SYNTAX SH2StateSensorEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "A sensor table entry."
+                INDEX { sh2StateSensorIndex }
+                ::= { sh2StateSensorTable 1 }
+
+        SH2StateSensorEntry ::=
+                SEQUENCE {
+                        sh2StateSensorIndex             INTEGER,
+                        sh2StateSensorName              DisplayString,
+                        sh2StateSensorType              DisplayString,
+                        sh2StateSensorCurrentValue      INTEGER,
+                        sh2StateSensorOnlineStatus      INTEGER,
+                        sh2StateSensorState             INTEGER,
+                        sh2StateSensorGoOnline          INTEGER,
+                        sh2StateSensorDCDirection       INTEGER,
+                        sh2StateSensorDCNormalState     INTEGER,
+                        sh2StateSensorDCOutputLevel     INTEGER
+                }
+
+        sh2StateSensorIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor port number."
+                ::= { sh2StateSensorEntry 1 }
+
+        sh2StateSensorName OBJECT-TYPE
+                SYNTAX DisplayString (SIZE (0..12))
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor name."
+                ::= { sh2StateSensorEntry 2 }
+
+        sh2StateSensorType OBJECT-TYPE
+                SYNTAX DisplayString (SIZE (0..255))
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor type."
+                ::= { sh2StateSensorEntry 3 }
+
+        sh2StateSensorCurrentValue OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor's current value."
+                ::= { sh2StateSensorEntry 4 }
+
+        sh2StateSensorOnlineStatus OBJECT-TYPE
+                SYNTAX INTEGER {
+                        online(1),
+                        offline(2)
+                }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "Status (online/offline) of the sensor."
+                ::= { sh2StateSensorEntry 5 }
+
+        sh2StateSensorState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        highCritical(1),
+                        highWarning(2),
+                        lowWarning(3),
+                        lowCritical(4),
+                        normal(5),
+                        notPresent(6)
+                        }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor state relative to the thresholds." 
+                ::= { sh2StateSensorEntry 6 }
+
+        sh2StateSensorGoOnline OBJECT-TYPE
+                SYNTAX INTEGER {
+                        online(1),
+                        offline(2)
+                }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "Set the sensor online or offline."
+                ::= { sh2StateSensorEntry 7 }
+
+        sh2StateSensorDCDirection OBJECT-TYPE
+                SYNTAX INTEGER {
+                        none(1),
+                        input(2),
+                        output(3)
+                        }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The dry contact type." 
+                ::= { sh2StateSensorEntry 8 }
+
+        sh2StateSensorDCNormalState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        closed(0),
+                        open(1),
+                        none(2)
+                        }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The dry contact normal state." 
+                ::= { sh2StateSensorEntry 9 }
+
+        sh2StateSensorDCOutputLevel OBJECT-TYPE
+                SYNTAX INTEGER {
+                        none(1),
+                        low(2),
+                        high(3)
+                        }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The dry contact output level." 
+                ::= { sh2StateSensorEntry 10 }
+
+        -- traps
+
+        sh2Sensor1HighCritical TRAP-TYPE
+                ENTERPRISE sh2
+                VARIABLES {
+                        sysDescr,
+                        sh2SensorName,
+                        sh2SensorType,
+                        sh2SensorCurrentValue,
+                        sh2SensorState
+                        }
+                DESCRIPTION
+                        "Sensor 1 is in the high critical state." 
+                ::= 101
+
+        sh2Sensor1HighWarning TRAP-TYPE
+                ENTERPRISE sh2
+                VARIABLES {
+                        sysDescr,
+                        sh2SensorName,
+                        sh2SensorType,
+                        sh2SensorCurrentValue,
+                        sh2SensorState
+                        }
+                DESCRIPTION
+                        "Sensor 1 is in the high warning state." 
+                ::= 102
+
+        sh2Sensor1LowWarning TRAP-TYPE
+                ENTERPRISE sh2
+                VARIABLES {
+                        sysDescr,
+                        sh2SensorName,
+                        sh2SensorType,
+                        sh2SensorCurrentValue,
+                        sh2SensorState
+                        }
+                DESCRIPTION
+                        "Sensor 1 is in the low warning state." 
+                ::= 103
+
+        sh2Sensor1LowCritical TRAP-TYPE
+                ENTERPRISE sh2
+                VARIABLES {
+                        sysDescr,
+                        sh2SensorName,
+                        sh2SensorType,
+                        sh2SensorCurrentValue,
+                        sh2SensorState
+                        }
+                DESCRIPTION
+                        "Sensor 1 is in the low critical state." 
+                ::= 104
+
+        sh2Sensor1Normal TRAP-TYPE
+                ENTERPRISE sh2
+                VARIABLES {
+                        sysDescr,
+                        sh2SensorName,
+                        sh2SensorType,
+                        sh2SensorCurrentValue,
+                        sh2SensorState
+                        }
+                DESCRIPTION
+                        "Sensor 1 is in the normal state." 
+                ::= 105
+
+        sh2Sensor2HighCritical TRAP-TYPE
+                ENTERPRISE sh2
+                VARIABLES {
+                        sysDescr,
+                        sh2SensorName,
+                        sh2SensorType,
+                        sh2SensorCurrentValue,
+                        sh2SensorState
+                        }
+                DESCRIPTION
+                        "Sensor 2 is in the high critical state." 
+                ::= 106
+
+        sh2Sensor2HighWarning TRAP-TYPE
+                ENTERPRISE sh2
+                VARIABLES {
+                        sysDescr,
+                        sh2SensorName,
+                        sh2SensorType,
+                        sh2SensorCurrentValue,
+                        sh2SensorState
+                        }
+                DESCRIPTION
+                        "Sensor 2 is in the high warning state." 
+                ::= 107
+
+        sh2Sensor2LowWarning TRAP-TYPE
+                ENTERPRISE sh2
+                VARIABLES {
+                        sysDescr,
+                        sh2SensorName,
+                        sh2SensorType,
+                        sh2SensorCurrentValue,
+                        sh2SensorState
+                        }
+                DESCRIPTION
+                        "Sensor 2 is in the low warning state." 
+                ::= 108
+
+        sh2Sensor2LowCritical TRAP-TYPE
+                ENTERPRISE sh2
+                VARIABLES {
+                        sysDescr,
+                        sh2SensorName,
+                        sh2SensorType,
+                        sh2SensorCurrentValue,
+                        sh2SensorState
+                        }
+                DESCRIPTION
+                        "Sensor 2 is in the low critical state." 
+                ::= 109
+
+        sh2Sensor2Normal TRAP-TYPE
+                ENTERPRISE sh2
+                VARIABLES {
+                        sysDescr,
+                        sh2SensorName,
+                        sh2SensorType,
+                        sh2SensorCurrentValue,
+                        sh2SensorState
+                        }
+                DESCRIPTION
+                        "Sensor 2 is in the normal state." 
+                ::= 110
+
+END
+</PRE></BODY></HTML>

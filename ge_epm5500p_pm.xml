@@ -1,0 +1,968 @@
+<?xml version="1.0"?>
+<!-- Test Modbus related information -->
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+        ddfid="ge_epm5500p_pm" ddfname="GE EPM5500P Power Meter" ddfversion="1" canremove="yes">
+    <schemaVersion>1.6</schemaVersion>
+
+
+
+    <device deviceid="ge_epm5500p_pm_header">
+        <oidMustExist oid="MODBUS_OID_MUST_EXIST" ruleid="OIDMustExist_modbusdevicetest" />
+
+        <setProductData ruleid="vendordata" field="vendor">General Electric</setProductData>
+        <!-- GE EPM5500P Power Meter -->
+        <setProductData ruleid="modeldata" field="model">EPM5500P</setProductData>
+        <!-- Power Meter -->
+        <setProductData ruleid="typedata" field="type">Power Meter</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+    </device>
+
+    <device deviceid="ge_epm5500p_pm_sensors">
+        <oidMustExist oid="MODBUS_OID_MUST_EXIST" ruleid="OIDMustExist_modbusdevicetest" />
+
+		<valueMap ruleid="linetoline_phase-vm">
+			<valueIn>0</valueIn><valueOut>AB</valueOut>
+			<valueIn>1</valueIn><valueOut>BC</valueOut>
+			<valueIn>2</valueIn><valueOut>CA</valueOut>
+			<valueIn>*</valueIn><valueOut>?</valueOut>
+		</valueMap>
+
+		<valueMap ruleid="phase-vm">
+			<valueIn>0</valueIn><valueOut>A</valueOut>
+			<valueIn>1</valueIn><valueOut>B</valueOut>
+			<valueIn>2</valueIn><valueOut>C</valueOut>
+			<valueIn>*</valueIn><valueOut>?</valueOut>
+		</valueMap>
+
+        <numSensor ruleid="frequency">
+            <type>frequency</type>
+            <sensorId>FREQUENCY</sensorId>
+			<value>
+				<mult>
+					<op><getOid>register0130</getOid></op>
+					<op>0.01</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+           <label>Frequency</label>
+            <sensorSet>Frequency</sensorSet>
+        </numSensor>
+
+		<numSensor ruleid="voltage_ph" index="register0131-0133">
+			<type>voltage</type>
+			<sensorId>VOLTAGE_PH_<mapValue mapid="phase-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><div>
+							<op><div>
+									<op><getOid>register0105</getOid></op>
+									<op><getOid>register0107</getOid></op>
+								</div></op>
+							<op>10</op>
+						</div></op>
+					<op><getRowOid>register0131-0133</getRowOid></op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Voltage Phase <mapValue mapid="phase-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+
+        <numSensor ruleid="avg_phase_voltage">
+            <type>voltage</type>
+            <sensorId>AVG_PHASE_VOLTAGE</sensorId>
+			<value>
+				<mult>
+					<op><div>
+							<op><div>
+									<op><getOid>register0105</getOid></op>
+									<op><getOid>register0107</getOid></op>
+								</div></op>
+							<op>10</op>
+						</div></op>
+					<op><getOid>register0134</getOid></op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+            <label>Average Phase Voltage</label>
+            <sensorSet>Voltage</sensorSet>
+        </numSensor>
+
+		<numSensor ruleid="line_voltage_ll" index="register0135-0137">
+			<type>voltage</type>
+			<sensorId>LINE_VOLTAGE_LL<mapValue mapid="linetoline_phase-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><div>
+							<op><div>
+									<op><getOid>register0105</getOid></op>
+									<op><getOid>register0107</getOid></op>
+								</div></op>
+							<op>10</op>
+						</div></op>
+					<op><getRowOid>register0135-0137</getRowOid></op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Line Voltage <mapValue mapid="linetoline_phase-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+
+        <numSensor ruleid="avg_line_voltage">
+            <type>voltage</type>
+            <sensorId>AVG_LINE_VOLTAGE</sensorId>
+			<value>
+				<mult>
+					<op><div>
+							<op><div>
+									<op><getOid>register0105</getOid></op>
+									<op><getOid>register0107</getOid></op>
+								</div></op>
+							<op>10</op>
+						</div></op>
+					<op><getOid>register0138</getOid></op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+            <label>Average Line Voltage</label>
+            <sensorSet>Voltage</sensorSet>
+        </numSensor>
+
+		<numSensor ruleid="current_ph" index="register0139-013B">
+			<type>amperage</type>
+			<sensorId>CURRENT_PH_<mapValue mapid="phase-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><div>
+							<op><div>
+									<op><getOid>register0108</getOid></op>
+									<op>5</op>
+								</div></op>
+							<op>1000</op>
+						</div></op>
+					<op><getRowOid>register0139-013B</getRowOid></op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Current Phase <mapValue mapid="phase-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+
+        <numSensor ruleid="avg_current">
+            <type>amperage</type>
+            <sensorId>AVG_CURRENT</sensorId>
+			<value>
+				<mult>
+					<op><div>
+							<op><div>
+									<op><getOid>register0108</getOid></op>
+									<op>5</op>
+								</div></op>
+							<op>1000</op>
+						</div></op>
+					<op><getOid>register013C</getOid></op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+            <label>Average Current</label>
+            <sensorSet>Current</sensorSet>
+        </numSensor>
+
+        <numSensor ruleid="neutral_line_current">
+            <type>amperage</type>
+            <sensorId>NEUTRAL_LINE_CURRENT</sensorId>
+			<value>
+				<mult>
+					<op><div>
+							<op><div>
+									<op><getOid>register0108</getOid></op>
+									<op>5</op>
+								</div></op>
+							<op>1000</op>
+						</div></op>
+					<op><getOid>register013D</getOid></op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+            <label>Neutral Line Current</label>
+            <sensorSet>Current</sensorSet>
+        </numSensor>
+
+		<numSensor ruleid="real_power_ph" index="register013E-0140">
+			<type>num/kdisprealpower</type>
+			<sensorId>REAL_POWER_PH_<mapValue mapid="phase-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><mult>
+							<op><div>
+									<op><getOid>register0105</getOid></op>
+									<op><getOid>register0107</getOid></op>
+								</div></op>
+							<op><div>
+									<op><getOid>register0108</getOid></op>
+									<op>5</op>
+								</div></op>
+						</mult></op>
+					<op><getRowOid>register013E-0140</getRowOid></op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Real Power Phase <mapValue mapid="phase-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+        <numSensor ruleid="system_real_power_total">
+            <type>num/kdisprealpower</type>
+            <sensorId>SYSTEM_REAL_POWER_TOTAL</sensorId>
+			<value>
+				<mult>
+					<op><mult>
+							<op><div>
+									<op><getOid>register0105</getOid></op>
+									<op><getOid>register0107</getOid></op>
+								</div></op>
+							<op><div>
+									<op><getOid>register0108</getOid></op>
+									<op>5</op>
+								</div></op>
+						</mult></op>
+					<op><getOid>register0141</getOid></op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+            <label>System Real Power (Total)</label>
+            <sensorSet>Power</sensorSet>
+        </numSensor>
+
+		<numSensor ruleid="reactive_power_ph" index="register0142-0144">
+			<type>num/kdispreactpower</type>
+			<sensorId>REACTIVE_POWER_PH_<mapValue mapid="phase-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><mult>
+							<op><div>
+									<op><getOid>register0105</getOid></op>
+									<op><getOid>register0107</getOid></op>
+								</div></op>
+							<op><div>
+									<op><getOid>register0108</getOid></op>
+									<op>5</op>
+								</div></op>
+						</mult></op>
+					<op><getRowOid>register0142-0144</getRowOid></op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Reactive Power Phase <mapValue mapid="phase-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+        <numSensor ruleid="system_reactive_power_total">
+            <type>num/kdispreactpower</type>
+            <sensorId>SYSTEM_REACTIVE_POWER_TOTAL</sensorId>
+			<value>
+				<mult>
+					<op><mult>
+							<op><div>
+									<op><getOid>register0105</getOid></op>
+									<op><getOid>register0107</getOid></op>
+								</div></op>
+							<op><div>
+									<op><getOid>register0108</getOid></op>
+									<op>5</op>
+								</div></op>
+						</mult></op>
+					<op><getOid>register0145</getOid></op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+            <label>System Reactive Power (Total)</label>
+            <sensorSet>Power</sensorSet>
+        </numSensor>
+
+		<numSensor ruleid="apparent_power_ph" index="register0146-0148">
+			<type>num/kdispapppower</type>
+			<sensorId>APPARENT_POWER_PH_<mapValue mapid="phase-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><mult>
+							<op><div>
+									<op><getOid>register0105</getOid></op>
+									<op><getOid>register0107</getOid></op>
+								</div></op>
+							<op><div>
+									<op><getOid>register0108</getOid></op>
+									<op>5</op>
+								</div></op>
+						</mult></op>
+					<op><getRowOid>register0146-0148</getRowOid></op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Apparent Power Phase <mapValue mapid="phase-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+        <numSensor ruleid="system_apparent_power_total">
+            <type>num/kdispapppower</type>
+            <sensorId>SYSTEM_APPARENT_POWER_TOTAL</sensorId>
+			<value>
+				<mult>
+					<op><mult>
+							<op><div>
+									<op><getOid>register0105</getOid></op>
+									<op><getOid>register0107</getOid></op>
+								</div></op>
+							<op><div>
+									<op><getOid>register0108</getOid></op>
+									<op>5</op>
+								</div></op>
+						</mult></op>
+					<op><getOid>register0149</getOid></op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+            <label>System Apparent Power (Total)</label>
+            <sensorSet>Power</sensorSet>
+        </numSensor>
+
+		<numSensor ruleid="power_factor_ph" index="register014A-014C">
+			<type>num/powerfactor</type>
+			<sensorId>POWER_FACTOR_PH_<mapValue mapid="phase-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>register014A-014C</getRowOid></op>
+					<op>0.001</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Power Factor Phase <mapValue mapid="phase-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+        <numSensor ruleid="system_power_factor">
+            <type>num/powerfactor</type>
+            <sensorId>SYSTEM_POWER_FACTOR</sensorId>
+			<value>
+				<mult>
+					<op><getOid>register014D</getOid></op>
+					<op>0.001</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+           <label>System Power Factor</label>
+            <sensorSet>Power</sensorSet>
+        </numSensor>
+
+        <numSensor ruleid="voltage_unbalance_factor">
+            <type>num</type>
+            <units>percent</units>
+            <sensorId>VOLTAGE_UNBALANCE_FACTOR</sensorId>
+			<value>
+				<mult>
+					<op><getOid>register014E</getOid></op>
+					<op>0.001</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+           <label>Voltage Unbalance Factor</label>
+            <sensorSet>Voltage</sensorSet>
+        </numSensor>
+
+        <numSensor ruleid="current_unbalance_factor">
+            <type>num</type>
+            <units>percent</units>
+            <sensorId>CURRENT_UNBALANCE_FACTOR</sensorId>
+			<value>
+				<mult>
+					<op><getOid>register014F</getOid></op>
+					<op>0.001</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+           <label>Current Unbalance Factor</label>
+            <sensorSet>Current</sensorSet>
+        </numSensor>
+
+        <stateSensor ruleid="load_type_rt">
+            <type>state</type>
+            <sensorId>LOAD_TYPE_RT</sensorId>
+            <value>
+                <mapValue mapid="loadtype-vm">
+                    <getOid>register0150</getOid>
+                </mapValue>
+            </value>
+            <label>Load Type RT</label>
+            <enum>loadtype-em</enum>
+            <sensorSet>Status Sensors</sensorSet>
+        </stateSensor>
+
+        <valueMap ruleid="loadtype-vm">
+            <valueIn>67</valueIn>   <valueOut>1</valueOut>
+            <valueIn>76</valueIn>   <valueOut>2</valueOut>
+            <valueIn>82</valueIn>   <valueOut>3</valueOut>
+            <valueIn>*</valueIn>   <valueOut>0</valueOut>
+        </valueMap>
+
+        <enumMap ruleid="loadtype-em">
+            <label>Unknown</label>
+            <label>Capacitive</label>
+            <label>Inductive</label>
+            <label>Resistive</label>
+        </enumMap>
+        
+        <numSensor ruleid="real_power_demand">
+            <type>num/kdisprealpower</type>
+            <sensorId>REAL_POWER_DEMAND</sensorId>
+			<value>
+				<mult>
+					<op><mult>
+							<op><div>
+									<op><getOid>register0105</getOid></op>
+									<op><getOid>register0107</getOid></op>
+								</div></op>
+							<op><div>
+									<op><getOid>register0108</getOid></op>
+									<op>5</op>
+								</div></op>
+						</mult></op>
+					<op><getOid>register0151</getOid></op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+            <label>Real Power Demand</label>
+            <sensorSet>Power</sensorSet>
+        </numSensor>
+
+        <numSensor ruleid="reactive_power_demand">
+            <type>num/kdispreactpower</type>
+            <sensorId>REACTIVE_POWER_DEMAND</sensorId>
+			<value>
+				<mult>
+					<op><mult>
+							<op><div>
+									<op><getOid>register0105</getOid></op>
+									<op><getOid>register0107</getOid></op>
+								</div></op>
+							<op><div>
+									<op><getOid>register0108</getOid></op>
+									<op>5</op>
+								</div></op>
+						</mult></op>
+					<op><getOid>register0152</getOid></op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+            <label>Reactive Power Demand</label>
+            <sensorSet>Power</sensorSet>
+        </numSensor>
+
+        <numSensor ruleid="apparent_power_demand">
+            <type>num/kdispapppower</type>
+            <sensorId>APPARENT_POWER_DEMAND</sensorId>
+			<value>
+				<mult>
+					<op><mult>
+							<op><div>
+									<op><getOid>register0105</getOid></op>
+									<op><getOid>register0107</getOid></op>
+								</div></op>
+							<op><div>
+									<op><getOid>register0108</getOid></op>
+									<op>5</op>
+								</div></op>
+						</mult></op>
+					<op><getOid>register0153</getOid></op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+            <label>Apparent Power Demand</label>
+            <sensorSet>Power</sensorSet>
+        </numSensor>
+
+        <numSensor ruleid="import_energy">
+            <type>num/kwatthr</type>
+            <sensorId>IMPORT_ENERGY</sensorId>
+			<value>
+				<mult>
+					<op><getOid>register0156</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+            <label>Import Energy</label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+
+        <numSensor ruleid="export_energy">
+            <type>num/kwatthr</type>
+            <sensorId>EXPORT_ENERGY</sensorId>
+			<value>
+				<mult>
+					<op><getOid>register0158</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+            <label>Export Energy</label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+
+        <numSensor ruleid="import_reactive_energy">
+            <type>num/kVARhr</type>
+            <sensorId>IMPORT_REACTIVE_ENERGY</sensorId>
+			<value>
+				<mult>
+					<op><getOid>register015A</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+            <label>Import Reactive Energy</label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+
+        <numSensor ruleid="export_reactive_energy">
+            <type>num/kVARhr</type>
+            <sensorId>EXPORT_REACTIVE_ENERGY</sensorId>
+			<value>
+				<mult>
+					<op><getOid>register015C</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+            <label>Export Reactive Energy</label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+
+        <numSensor ruleid="absolute_sum_of_real_energy">
+            <type>num/kwatthr</type>
+            <sensorId>ABSOLUTE_SUM_OF_REAL_ENERGY</sensorId>
+			<value>
+				<mult>
+					<op><getOid>register015E</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+            <label>Absolute Sum of Real Energy</label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+
+        <numSensor ruleid="algebraic_sum_of_real_energy">
+            <type>num/kwatthr</type>
+            <sensorId>ALGEBRAIC_SUM_OF_REAL_ENERGY</sensorId>
+			<value>
+				<mult>
+					<op><getOid>register0160</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+            <label>Algebraic Sum of Real Energy</label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+
+        <numSensor ruleid="absolute_sum_of_reactive_energy">
+            <type>num/kVARhr</type>
+            <sensorId>ABSOLUTE_SUM_OF_REACTIVE_ENERGY</sensorId>
+			<value>
+				<mult>
+					<op><getOid>register0162</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+            <label>Absolute Sum of Reactive Energy</label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+
+        <numSensor ruleid="algebraic_sum_of_reactive_energy">
+            <type>num/kVARhr</type>
+            <sensorId>ALGEBRAIC_SUM_OF_REACTIVE_ENERGY</sensorId>
+			<value>
+				<mult>
+					<op><getOid>register0164</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+            <label>Algebraic Sum of Reactive Energy</label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+
+    </device>
+
+
+    <protocol>
+        <modbus>
+
+            <value_ref_id valid="register0105">
+                <function>3</function>
+                <start_addr>260</start_addr>
+                <quantity>2</quantity>
+                <type>uint_32</type>
+            </value_ref_id>
+            <value_ref_id valid="register0107">
+                <function>3</function>
+                <start_addr>262</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="register0108">
+                <function>3</function>
+                <start_addr>263</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+
+            <value_ref_id valid="register0130">
+                <function>3</function>
+                <start_addr>303</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+         
+            <table_ref_id indexid="register0131-0133">
+                    <entry num="0">register0131</entry>
+                    <entry num="1">register0132</entry>
+                    <entry num="2">register0133</entry>
+            </table_ref_id>
+            <value_ref_id valid="register0131">
+                <function>3</function>
+                <start_addr>304</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="register0132">
+                <function>3</function>
+                <start_addr>305</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="register0133">
+                <function>3</function>
+                <start_addr>306</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+
+            <value_ref_id valid="register0134">
+                <function>3</function>
+                <start_addr>307</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+         
+             <table_ref_id indexid="register0135-0137">
+                    <entry num="0">register0135</entry>
+                    <entry num="1">register0136</entry>
+                    <entry num="2">register0137</entry>
+            </table_ref_id>
+            <value_ref_id valid="register0135">
+                <function>3</function>
+                <start_addr>308</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="register0136">
+                <function>3</function>
+                <start_addr>309</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="register0137">
+                <function>3</function>
+                <start_addr>310</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+     
+            <value_ref_id valid="register0138">
+                <function>3</function>
+                <start_addr>311</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+          
+             <table_ref_id indexid="register0139-013B">
+                    <entry num="0">register0139</entry>
+                    <entry num="1">register013A</entry>
+                    <entry num="2">register013B</entry>
+            </table_ref_id>
+            <value_ref_id valid="register0139">
+                <function>3</function>
+                <start_addr>312</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="register013A">
+                <function>3</function>
+                <start_addr>313</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="register013B">
+                <function>3</function>
+                <start_addr>314</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+      
+            <value_ref_id valid="register013C">
+                <function>3</function>
+                <start_addr>315</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+       
+            <value_ref_id valid="register013D">
+                <function>3</function>
+                <start_addr>316</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+           
+             <table_ref_id indexid="register013E-0140">
+                    <entry num="0">register013E</entry>
+                    <entry num="1">register013F</entry>
+                    <entry num="2">register0140</entry>
+            </table_ref_id>
+            <value_ref_id valid="register013E">
+                <function>3</function>
+                <start_addr>317</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="register013F">
+                <function>3</function>
+                <start_addr>318</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="register0140">
+                <function>3</function>
+                <start_addr>319</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+       
+            <value_ref_id valid="register0141">
+                <function>3</function>
+                <start_addr>320</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+           
+             <table_ref_id indexid="register0142-0144">
+                    <entry num="0">register0142</entry>
+                    <entry num="1">register0143</entry>
+                    <entry num="2">register0144</entry>
+            </table_ref_id>
+            <value_ref_id valid="register0142">
+                <function>3</function>
+                <start_addr>321</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="register0143">
+                <function>3</function>
+                <start_addr>322</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="register0144">
+                <function>3</function>
+                <start_addr>323</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+       
+            <value_ref_id valid="register0145">
+                <function>3</function>
+                <start_addr>324</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+          
+             <table_ref_id indexid="register0146-0148">
+                    <entry num="0">register0146</entry>
+                    <entry num="1">register0147</entry>
+                    <entry num="2">register0148</entry>
+            </table_ref_id>
+            <value_ref_id valid="register0146">
+                <function>3</function>
+                <start_addr>325</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="register0147">
+                <function>3</function>
+                <start_addr>326</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="register0148">
+                <function>3</function>
+                <start_addr>327</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+      
+            <value_ref_id valid="register0149">
+                <function>3</function>
+                <start_addr>328</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+           
+             <table_ref_id indexid="register014A-014C">
+                    <entry num="0">register014A</entry>
+                    <entry num="1">register014B</entry>
+                    <entry num="2">register014C</entry>
+            </table_ref_id>
+            <value_ref_id valid="register014A">
+                <function>3</function>
+                <start_addr>329</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="register014B">
+                <function>3</function>
+                <start_addr>330</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="register014C">
+                <function>3</function>
+                <start_addr>331</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+       
+            <value_ref_id valid="register014D">
+                <function>3</function>
+                <start_addr>332</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+      
+            <value_ref_id valid="register014E">
+                <function>3</function>
+                <start_addr>333</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+      
+            <value_ref_id valid="register014F">
+                <function>3</function>
+                <start_addr>334</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+      
+            <value_ref_id valid="register0150">
+                <function>3</function>
+                <start_addr>335</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+       
+            <value_ref_id valid="register0151">
+                <function>3</function>
+                <start_addr>336</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+       
+            <value_ref_id valid="register0152">
+                <function>3</function>
+                <start_addr>337</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+      
+            <value_ref_id valid="register0153">
+                <function>3</function>
+                <start_addr>338</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+      
+            <value_ref_id valid="register0156">
+                <function>3</function>
+                <start_addr>341</start_addr>
+                <quantity>2</quantity>
+                <type>uint_32</type>
+            </value_ref_id>
+      
+            <value_ref_id valid="register0158">
+                <function>3</function>
+                <start_addr>343</start_addr>
+                <quantity>2</quantity>
+                <type>uint_32</type>
+            </value_ref_id>
+      
+            <value_ref_id valid="register015A">
+                <function>3</function>
+                <start_addr>345</start_addr>
+                <quantity>2</quantity>
+                <type>uint_32</type>
+            </value_ref_id>
+      
+            <value_ref_id valid="register015C">
+                <function>3</function>
+                <start_addr>347</start_addr>
+                <quantity>2</quantity>
+                <type>uint_32</type>
+            </value_ref_id>
+      
+            <value_ref_id valid="register015E">
+                <function>3</function>
+                <start_addr>349</start_addr>
+                <quantity>2</quantity>
+                <type>uint_32</type>
+            </value_ref_id>
+      
+            <value_ref_id valid="register0160">
+                <function>3</function>
+                <start_addr>351</start_addr>
+                <quantity>2</quantity>
+                <type>uint_32</type>
+            </value_ref_id>
+      
+            <value_ref_id valid="register0162">
+                <function>3</function>
+                <start_addr>353</start_addr>
+                <quantity>2</quantity>
+                <type>uint_32</type>
+            </value_ref_id>
+      
+            <value_ref_id valid="register0164">
+                <function>3</function>
+                <start_addr>355</start_addr>
+                <quantity>2</quantity>
+                <type>uint_32</type>
+            </value_ref_id>
+
+            <packet>
+                <function>3</function>
+                <start_addr>260</start_addr>
+                <quantity>4</quantity>
+            </packet>
+            <packet>
+                <function>3</function>
+                <start_addr>303</start_addr>
+                <quantity>36</quantity>
+            </packet>
+            <packet>
+                <function>3</function>
+                <start_addr>341</start_addr>
+                <quantity>16</quantity>
+            </packet>
+
+        </modbus>
+    </protocol>
+</APC_DDF>

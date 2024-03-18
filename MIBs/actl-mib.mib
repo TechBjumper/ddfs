@@ -1,0 +1,530 @@
+ACTL-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+       MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+       OBJECT-IDENTITY, Counter32, Gauge32, Integer32
+           FROM SNMPv2-SMI
+       DisplayString, DateAndTime, TimeStamp, TimeInterval, TestAndIncr,
+         AutonomousType, TEXTUAL-CONVENTION
+           FROM SNMPv2-TC
+       MODULE-COMPLIANCE, OBJECT-GROUP
+           FROM SNMPv2-CONF
+       mib-2
+           FROM RFC1213-MIB
+       enterprises
+           FROM RFC1155-SMI;
+
+   PositiveInteger ::= TEXTUAL-CONVENTION
+       DISPLAY-HINT "d"
+       STATUS       current
+       DESCRIPTION
+               "This data type is a non-zero and non-negative value."
+       SYNTAX       INTEGER (1..2147483647)
+
+   NonNegativeInteger ::= TEXTUAL-CONVENTION
+       DISPLAY-HINT "d"
+       STATUS       current
+       DESCRIPTION
+               "This data type is a non-negative value."
+       SYNTAX       INTEGER (0..2147483647)
+
+
+   actl MODULE-IDENTITY
+       LAST-UPDATED "0621020000Z"
+       ORGANIZATION "ACTL s.a."
+       CONTACT-INFO
+              "        Pierre CROKAERT
+
+                Postal: ACTL sa
+                        10a av de l'artisanat
+                        1420 Braine l'Alleud
+                        Belgium
+
+                   Tel: +32 2 387 27 82
+                   Fax: +32 2 384 47 16
+
+                E-mail: snmp@actl.be"
+       DESCRIPTION
+               "ACTL Enterprise MIB."
+       ::= { enterprises 8284 }
+
+   --
+   -- The Device Identification group.
+   --    All items here are common to all ACTL devices
+   --
+
+   devIdent              OBJECT IDENTIFIER ::= { actl 1 }
+
+   devType    OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..63))
+       MAX-ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "A text definition of the device type."
+       ::= { devIdent 1 }
+
+   devSerialNum    OBJECT-TYPE
+
+       SYNTAX     DisplayString (SIZE (0..31))
+       MAX-ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "Device Serial Number"
+       ::= { devIdent 2 }
+   devProductCode  OBJECT-TYPE
+       SYNTAX     INTEGER (1..99)
+       MAX-ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "Product code of the device.
+                A number between 1 and 99, part of the serial number.
+                Defines the capabilities of the device and its compatibility
+                with the firmwares available from ACTL sa."
+       ::= { devIdent 3 }
+
+
+   --
+   -- The MIB for all actl products
+   --    There is one object by product familly
+   --    Depending on the product type, some entries may not be present.
+
+   actlProducts     OBJECT IDENTIFIER ::= { actl 2 }
+
+   --
+   -- The MIB for the eWON products familly
+   -- Object describing the device. Some of these info are static, some comes from the configuration
+   prodEwon         OBJECT IDENTIFIER ::= { actlProducts 1 }
+
+   --
+   -- Identity: identification and soft/hard revisions
+   ewonIdent        OBJECT IDENTIFIER ::= { prodEwon 1 }
+
+   ewonName        OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..63))
+       MAX-ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The name of the eWON as entered in the System
+                configuration.
+                Also displayed under the eWON logo when browsing the eWON web
+                site."
+       ::= { ewonIdent 1 }
+   ewonDescription    OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..255))
+       MAX-ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "A description for this eWON. The value is entered in the system
+                configuration."
+       ::= { ewonIdent 2 }
+   ewonSoftDesc   OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..127))
+       MAX-ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "Codename and Revision number of the firmware installed in this eWON."
+       ::= { ewonIdent 3 }
+   ewonIoDesc    OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..127))
+       MAX-ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "Type and revision number of the IO CPU installed in this eWON."
+       ::= { ewonIdent 4 }
+
+   --
+   -- System status: memory, last error, files, reboot history, etc...
+   --
+   ewonSystem        OBJECT IDENTIFIER ::= { prodEwon 2 }
+
+   memFreeCfg    OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "bytes"
+       MAX-ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "Free config memory"
+       ::= { ewonSystem 1 }
+   memFreeProg   OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "bytes"
+       MAX-ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "Free program memory"
+       ::= { ewonSystem 2 }
+   bootEwonUp   OBJECT-TYPE
+       SYNTAX     TimeStamp
+       MAX-ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "Time when the eWON booted."
+       ::= { ewonSystem 3 }
+   bootEwonUpStr   OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..127))
+       MAX-ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "Time when the eWON booted as text."
+       ::= { ewonSystem 4 }
+   bootWhyReboot  OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..127))
+       MAX-ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "Reason for last eWON reboot."
+       ::= { ewonSystem 5 }
+
+   --
+   -- Remote IO: Tags and User IO
+   --
+   ewonInputOutput   OBJECT IDENTIFIER ::= { prodEwon 3 }
+   --
+   -- Tags list
+   --
+   ewonTags   OBJECT IDENTIFIER ::= { ewonInputOutput 1 }
+
+   tagAlmAckUsr    OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..63))
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "Login of the user selected for alarm acknowledgement.
+                If this field is empty, administrator account is used for
+                alarm acknowledgment."
+       ::= { ewonTags 1 }
+
+   tagNumber    OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Number of tags in the table"
+       ::= { ewonTags 10 }
+
+   tagTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF TagEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A list of tags table entries.  The number of entries
+               is given by the value of tagNumber.
+               Each item in this table is a tag that has received
+               SNMP visibility in its configuration.
+               Index OID of each tag is user defined and saved
+               in the eWON configuration."
+       ::= { ewonTags 11 }
+
+   tagEntry OBJECT-TYPE
+       SYNTAX     TagEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "An entry containing information applicable to a
+               particular tag line."
+       INDEX { tagCfgOidIndex }
+       ::= { tagTable 1 }
+
+   TagEntry ::= SEQUENCE {
+       tagCfgOidIndex      PositiveInteger,
+       tagCfgID            NonNegativeInteger,
+       tagCfgName          DisplayString,
+       tagValue            Integer32,
+       tagLastChange       TimeStamp,
+       tagIsOutput         INTEGER,
+       tagLogLastValue     Integer32,
+       tagLogLastTime      TimeStamp,
+       tagAlStatus         INTEGER,
+       tagAlStartTime      TimeStamp,
+       tagAlType           INTEGER,
+       tagAlUser           DisplayString,
+       tagAlAckTime        TimeStamp,
+       tagAlRtnTime        TimeStamp,
+       tagAlMessage        DisplayString
+   }
+
+   tagCfgOidIndex OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This is the tag OID index.
+               It is user defined in the configuration."
+       ::= { tagEntry 1 }
+
+   tagCfgID       OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The tag ID. This value is allocated
+                by the eWON when the tag is created. It cannot
+                be modified."
+       ::= { tagEntry 2 }
+
+   tagCfgName     OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..63))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The tag Name as defined in the configuration."
+       ::= { tagEntry 3 }
+
+   tagValue       OBJECT-TYPE
+       SYNTAX     Integer32
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "Current value of the tag"
+       ::= { tagEntry 4 }
+
+   tagLastChange  OBJECT-TYPE
+       SYNTAX     TimeStamp
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Last time the tag value changed."
+       ::= { tagEntry 5 }
+
+   tagIsOutput  OBJECT-TYPE
+       SYNTAX     INTEGER {
+           input  (0),
+           output (1)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Indicates if the tag is connected to an input or an output."
+       ::= { tagEntry 6 }
+
+   tagLogLastValue  OBJECT-TYPE
+       SYNTAX     Integer32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Last value logged for historical logging.
+               (historical logging must be enabled)"
+       ::= { tagEntry 7 }
+
+   tagLogLastTime  OBJECT-TYPE
+       SYNTAX     TimeStamp
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Last time the tag was logged for historical logging.
+               (historical logging must be enabled)"
+       ::= { tagEntry 8 }
+
+   tagAlStatus  OBJECT-TYPE
+       SYNTAX     INTEGER {
+          none    (0),
+          pretrig (1),
+          alarm   (2),
+          ack     (3),
+          rtn     (4)
+       }
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "Status of this alarm. 0 and 1 means alarm
+                is NOT active.
+                The only value that can be written is ack (3)."
+       ::= { tagEntry 9 }
+
+   tagAlStartTime  OBJECT-TYPE
+       SYNTAX     TimeStamp
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Time when the alarm occured.
+               "
+       ::= { tagEntry 10 }
+
+   tagAlType  OBJECT-TYPE
+       SYNTAX     INTEGER {
+          none    (0),
+          high    (1),
+          low     (2),
+          boolean (3)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Type of alarm currently present.
+                High and low are for analog values.
+                Boolean is for alarm on boolean tag. "
+       ::= { tagEntry 11 }
+
+   tagAlUser  OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..63))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "User who acknowledged the alarm (if any)."
+       ::= { tagEntry 12 }
+
+   tagAlAckTime  OBJECT-TYPE
+       SYNTAX     TimeStamp
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Time when the alarm was acknowledged."
+       ::= { tagEntry 13 }
+
+   tagAlRtnTime  OBJECT-TYPE
+       SYNTAX     TimeStamp
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Time when the alarm returned to normal."
+       ::= { tagEntry 14 }
+
+   tagAlMessage   OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..255))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Message of the alarm (if alarm present)."
+       ::= { tagEntry 15 }
+
+
+   --
+   -- ewonUserIO
+   --
+   ewonUserIO   OBJECT IDENTIFIER ::= { ewonInputOutput 2 }
+
+   uioTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF UioEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A list of item in the user defined table.
+               This table consists in blocks defined by the user.
+               Each block can be of type Floay, String or integer.
+               A block spans a number if Ndx."
+       ::= { ewonUserIO 1 }
+
+   uioEntry OBJECT-TYPE
+       SYNTAX     UioEntry
+       MAX-ACCESS not-accessible
+       STATUS     mandatory
+       DESCRIPTION
+               "An entry containing information applicable to a
+               particular uio line."
+       INDEX { uioNdx }
+       ::= { uioTable 1 }
+
+   UioEntry ::= SEQUENCE {
+       uioNdx              PositiveInteger,
+       uioType             INTEGER,
+       uioIData            Integer32,
+       uioSData            DisplayString (SIZE (0..255))
+   }
+
+   uioNdx OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       MAX-ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "This is the item index in the table.
+               It is user defined in the configuration."
+       ::= { uioEntry 1 }
+
+   uioType  OBJECT-TYPE
+       SYNTAX     INTEGER {
+          integer  (1),
+          string   (2)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Type of the data.
+               According to the value of this field, only one of
+               the FData, SData and IData is valid."
+       ::= { uioEntry 2 }
+
+   uioIData       OBJECT-TYPE
+       SYNTAX     Integer32
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "Current value of the user IO if Integer"
+       ::= { uioEntry 3 }
+
+   uioSData       OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..255))
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "Current value of the user IO if String"
+       ::= { uioEntry 4 }
+
+   --
+   -- Script information
+   --
+   ewonScript   OBJECT IDENTIFIER ::= { prodEwon 4 }
+
+   scpUserNotif    OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..255))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This is the text of the last trap sent by the Script"
+       ::= { ewonScript 1 }
+
+   scpUserNotifI   OBJECT-TYPE
+       SYNTAX     Integer32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This is a free parameters for script generated traps"
+       ::= { ewonScript 2 }
+
+
+   --
+   -- notifications, i.e., traps
+   --
+   ewonTraps              OBJECT IDENTIFIER ::= { prodEwon 251 }
+
+   -- This section defines the well-known notifications sent by
+   -- eWON agents.
+
+   ewonTrapTag NOTIFICATION-TYPE
+       OBJECTS { tagCfgName,
+                 tagAlMessage,
+                 tagValue,
+                 tagAlStatus,
+                 tagAlType
+                  }
+       STATUS  current
+       DESCRIPTION
+               "This trap is sent upon alarm on a eWON tag
+               "
+     ::= { ewonTraps  1 }
+
+   ewonTrapUserScript NOTIFICATION-TYPE
+       OBJECTS { scpUserNotif,
+                 scpUserNotifI
+                  }
+       STATUS  current
+       DESCRIPTION
+               "This trap is sent on demand in a script.
+               "
+     ::= { ewonTraps  2 }
+
+   ewonTrapShutdown NOTIFICATION-TYPE
+       STATUS  current
+       DESCRIPTION
+               "Device is shuting down."
+     ::= { ewonTraps  3 }
+
+
+   --
+   -- notifications, i.e., traps
+   --
+   actlTraps              OBJECT IDENTIFIER ::= { actl 251 }
+
+   -- This section defines the well-known notifications sent by
+   -- ACTL agents.
+
+   END

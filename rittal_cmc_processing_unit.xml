@@ -1,0 +1,347 @@
+<APC_DDF
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+	ddfid="rittal_cmc_processing_unit"
+	ddfname="Rittal CMC (DDF-904)"
+	ddfversion="1"
+	canremove="yes">
+		 
+	<schemaVersion>1.6</schemaVersion>
+
+	<device deviceid="rittal_cmc_processing_unit">
+		<oidMustExist ruleid="rittal" oid=".1.3.6.1.4.1.2606.7.4.2.2" istree="yes"/> 
+
+		<setProductData ruleid="vendordata" field="vendor">Rittal</setProductData>
+		<setProductData ruleid="modeldata" field="model">CMC Processing Unit</setProductData>
+		<setProductData ruleid="typedata" field="type">Transfer Switch</setProductData>
+
+		<numSensor ruleid="cmciii-vartotal">
+            <type>num</type>
+			<sensorId>CMCIII_VARTOTAL</sensorId>
+			<value>
+				<getRowOid>.1.3.6.1.4.1.2606.7.4.2.1.1</getRowOid>
+			</value>
+			<label>Number of Sensors</label>
+			<sensorSet>Device Information</sensorSet>
+        </numSensor>
+
+		<numSensor ruleid="cmciii-intvars" index=".1.3.6.1.4.1.2606.7.4.2.2.1.3">
+			<rowTest>
+				<mapValue mapid="onlyInts-vm">
+				<getRowOid>.1.3.6.1.4.1.2606.7.4.2.2.1.6</getRowOid>
+				</mapValue>
+			</rowTest>
+            <type>num</type>
+			<units>
+				<mapValue mapid="unitType-vm">
+				<getRowOid>.1.3.6.1.4.1.2606.7.4.2.2.1.5</getRowOid>
+				</mapValue>
+			</units>
+			<sensorId>CMCIII_VAR_<rowNumber/></sensorId>
+			<value>
+				<!--
+					scale = .2.1.7
+					value = .2.1.11
+					if scale = 0, leave alone
+					if scale > 0, multiply value by scale
+					if scale < 0, divide value by (scale * -1)
+				-->
+				<if>
+					<op>
+						<eq>
+							<op><getRowOid>.1.3.6.1.4.1.2606.7.4.2.2.1.7</getRowOid></op>
+							<op>0</op>
+						</eq>
+					</op>
+					<op><getRowOid>.1.3.6.1.4.1.2606.7.4.2.2.1.11</getRowOid></op>
+					<op>
+						<if>
+							<op>
+								<gt>
+								<op><getRowOid>.1.3.6.1.4.1.2606.7.4.2.2.1.7</getRowOid></op>
+								<op>0</op>
+								</gt>
+							</op>
+							<op>
+								<mult>
+								<op><getRowOid>.1.3.6.1.4.1.2606.7.4.2.2.1.11</getRowOid></op>
+								<op><getRowOid>.1.3.6.1.4.1.2606.7.4.2.2.1.7</getRowOid></op>
+								</mult>
+							</op>
+							<op>
+								<div>
+								<op><getRowOid>.1.3.6.1.4.1.2606.7.4.2.2.1.11</getRowOid></op>
+								<op>
+									<mult>
+									<op>-1</op>
+									<op><getRowOid>.1.3.6.1.4.1.2606.7.4.2.2.1.7</getRowOid></op>
+									</mult>
+								</op>
+								</div>
+							</op>
+						</if>
+					</op>
+				</if>
+			</value>
+			<label>
+				<getOid>
+				<mapValue mapid="deviceNameFromDeviceNum-vm">
+					<mapValue mapid="deviceNumFromRowIndex-vm">
+						<rowIndex/>
+					</mapValue>
+				</mapValue> 
+				</getOid><space/>#
+				<mapValue mapid="deviceNumFromRowIndex-vm"><rowIndex/></mapValue><space/>
+				<getRowOid>.1.3.6.1.4.1.2606.7.4.2.2.1.3</getRowOid>
+			</label>
+			<sensorSet>
+				<getOid>
+				<mapValue mapid="deviceNameFromDeviceNum-vm">
+					<mapValue mapid="deviceNumFromRowIndex-vm">
+						<rowIndex/>
+					</mapValue>
+				</mapValue>
+				</getOid><space/>
+				#<mapValue mapid="deviceNumFromRowIndex-vm"><rowIndex/></mapValue> Sensors
+			</sensorSet>
+        </numSensor>
+
+		<stateSensor ruleid="cmciii-enumvars" index=".1.3.6.1.4.1.2606.7.4.2.2.1.3">
+			<rowTest>
+				<mapValue mapid="onlyEnums-vm">
+				<getRowOid>.1.3.6.1.4.1.2606.7.4.2.2.1.6</getRowOid>
+				</mapValue>
+			</rowTest>
+            <type>state</type>
+			<sensorId>CMCIII_VAR_<rowNumber/></sensorId>
+			<value>
+				<getRowOid>.1.3.6.1.4.1.2606.7.4.2.2.1.11</getRowOid>
+			</value>
+			<label>
+				<getOid>
+				<mapValue mapid="deviceNameFromDeviceNum-vm">
+					<mapValue mapid="deviceNumFromRowIndex-vm">
+						<rowIndex/>
+					</mapValue>
+				</mapValue> 
+				</getOid><space/>#
+				<mapValue mapid="deviceNumFromRowIndex-vm"><rowIndex/></mapValue><space/>
+				<getRowOid>.1.3.6.1.4.1.2606.7.4.2.2.1.3</getRowOid>
+			</label>
+			<enum>statusCode-em</enum>
+			<sensorSet>
+				<getOid>
+				<mapValue mapid="deviceNameFromDeviceNum-vm">
+					<mapValue mapid="deviceNumFromRowIndex-vm">
+						<rowIndex/>
+					</mapValue>
+				</mapValue>
+				</getOid><space/>
+				#<mapValue mapid="deviceNumFromRowIndex-vm"><rowIndex/></mapValue> Sensors
+			</sensorSet>
+        </stateSensor>
+
+		<valueMap ruleid="unitType-vm">
+			<valueIn>s</valueIn><valueOut>sec</valueOut>
+			<valueIn>%</valueIn><valueOut>percent</valueOut>
+			<valueIn>V</valueIn><valueOut>volts</valueOut>
+			<valueIn>mA</valueIn><valueOut>milliamps</valueOut>
+			<valueIn>0xb043</valueIn><valueOut>degreeC</valueOut>
+			<valueIn>*</valueIn><valueOut>num</valueOut>
+		</valueMap>
+
+		<valueMap ruleid="deviceNumFromRowIndex-vm">
+			<valueIn>1.1</valueIn><valueOut>1</valueOut>
+			<valueIn>1.2</valueIn><valueOut>1</valueOut>
+			<valueIn>1.3</valueIn><valueOut>1</valueOut>
+			<valueIn>1.4</valueIn><valueOut>1</valueOut>
+			<valueIn>1.5</valueIn><valueOut>1</valueOut>
+			<valueIn>1.6</valueIn><valueOut>1</valueOut>
+			<valueIn>1.7</valueIn><valueOut>1</valueOut>
+			<valueIn>1.8</valueIn><valueOut>1</valueOut>
+			<valueIn>1.9</valueIn><valueOut>1</valueOut>
+			<valueIn>1.10</valueIn><valueOut>1</valueOut>
+			<valueIn>1.11</valueIn><valueOut>1</valueOut>
+			<valueIn>1.12</valueIn><valueOut>1</valueOut>
+			<valueIn>1.13</valueIn><valueOut>1</valueOut>
+			<valueIn>1.14</valueIn><valueOut>1</valueOut>
+			<valueIn>1.15</valueIn><valueOut>1</valueOut>
+			<valueIn>1.16</valueIn><valueOut>1</valueOut>
+			<valueIn>1.17</valueIn><valueOut>1</valueOut>
+			<valueIn>1.18</valueIn><valueOut>1</valueOut>
+			<valueIn>1.19</valueIn><valueOut>1</valueOut>
+			<valueIn>1.20</valueIn><valueOut>1</valueOut>
+			<valueIn>1.21</valueIn><valueOut>1</valueOut>
+			<valueIn>1.22</valueIn><valueOut>1</valueOut>
+			<valueIn>1.23</valueIn><valueOut>1</valueOut>
+			<valueIn>1.24</valueIn><valueOut>1</valueOut>
+			<valueIn>1.25</valueIn><valueOut>1</valueOut>
+			<valueIn>1.26</valueIn><valueOut>1</valueOut>
+			<valueIn>1.27</valueIn><valueOut>1</valueOut>
+			<valueIn>1.28</valueIn><valueOut>1</valueOut>
+			<valueIn>1.29</valueIn><valueOut>1</valueOut>
+			<valueIn>1.30</valueIn><valueOut>1</valueOut>
+			<valueIn>1.31</valueIn><valueOut>1</valueOut>
+			<valueIn>1.32</valueIn><valueOut>1</valueOut>
+			<valueIn>1.33</valueIn><valueOut>1</valueOut>
+			<valueIn>1.34</valueIn><valueOut>1</valueOut>
+			<valueIn>1.35</valueIn><valueOut>1</valueOut>
+			<valueIn>1.36</valueIn><valueOut>1</valueOut>
+			<valueIn>1.37</valueIn><valueOut>1</valueOut>
+			<valueIn>1.38</valueIn><valueOut>1</valueOut>
+			<valueIn>1.39</valueIn><valueOut>1</valueOut>
+			<valueIn>1.40</valueIn><valueOut>1</valueOut>
+			<valueIn>1.41</valueIn><valueOut>1</valueOut>
+			<valueIn>1.42</valueIn><valueOut>1</valueOut>
+			<valueIn>1.43</valueIn><valueOut>1</valueOut>
+			<valueIn>1.44</valueIn><valueOut>1</valueOut>
+			<valueIn>1.45</valueIn><valueOut>1</valueOut>
+			<valueIn>1.46</valueIn><valueOut>1</valueOut>
+			<valueIn>1.47</valueIn><valueOut>1</valueOut>
+			<valueIn>1.48</valueIn><valueOut>1</valueOut>
+			<valueIn>1.49</valueIn><valueOut>1</valueOut>
+			<valueIn>1.50</valueIn><valueOut>1</valueOut>
+			<valueIn>1.51</valueIn><valueOut>1</valueOut>
+			<valueIn>1.52</valueIn><valueOut>1</valueOut>
+			<valueIn>1.53</valueIn><valueOut>1</valueOut>
+			<valueIn>1.54</valueIn><valueOut>1</valueOut>
+			<valueIn>1.55</valueIn><valueOut>1</valueOut>
+			<valueIn>1.56</valueIn><valueOut>1</valueOut>
+			<valueIn>1.57</valueIn><valueOut>1</valueOut>
+			<valueIn>1.58</valueIn><valueOut>1</valueOut>
+			<valueIn>1.59</valueIn><valueOut>1</valueOut>
+			<valueIn>1.60</valueIn><valueOut>1</valueOut>
+			<valueIn>1.61</valueIn><valueOut>1</valueOut>
+			<valueIn>1.62</valueIn><valueOut>1</valueOut>
+			<valueIn>1.63</valueIn><valueOut>1</valueOut>
+			<valueIn>1.64</valueIn><valueOut>1</valueOut>
+			<valueIn>1.65</valueIn><valueOut>1</valueOut>
+			<valueIn>1.66</valueIn><valueOut>1</valueOut>
+			<valueIn>1.67</valueIn><valueOut>1</valueOut>
+			<valueIn>1.68</valueIn><valueOut>1</valueOut>
+			<valueIn>1.69</valueIn><valueOut>1</valueOut>
+			<valueIn>1.70</valueIn><valueOut>1</valueOut>
+			<valueIn>1.71</valueIn><valueOut>1</valueOut>
+			<valueIn>1.72</valueIn><valueOut>1</valueOut>
+			<valueIn>1.73</valueIn><valueOut>1</valueOut>
+			<valueIn>1.74</valueIn><valueOut>1</valueOut>
+			<valueIn>1.75</valueIn><valueOut>1</valueOut>
+			<valueIn>1.76</valueIn><valueOut>1</valueOut>
+			<valueIn>1.77</valueIn><valueOut>1</valueOut>
+			<valueIn>1.78</valueIn><valueOut>1</valueOut>
+			<valueIn>1.79</valueIn><valueOut>1</valueOut>
+			<valueIn>1.80</valueIn><valueOut>1</valueOut>
+			<valueIn>1.81</valueIn><valueOut>1</valueOut>
+			<valueIn>1.82</valueIn><valueOut>1</valueOut>
+			<valueIn>1.83</valueIn><valueOut>1</valueOut>
+			<valueIn>1.84</valueIn><valueOut>1</valueOut>
+			<valueIn>1.85</valueIn><valueOut>1</valueOut>
+			<valueIn>1.86</valueIn><valueOut>1</valueOut>
+			<valueIn>1.87</valueIn><valueOut>1</valueOut>
+			<valueIn>1.88</valueIn><valueOut>1</valueOut>
+			<valueIn>1.89</valueIn><valueOut>1</valueOut>
+
+			<valueIn>2.1</valueIn><valueOut>2</valueOut>
+			<valueIn>2.2</valueIn><valueOut>2</valueOut>
+			<valueIn>2.3</valueIn><valueOut>2</valueOut>
+			<valueIn>2.4</valueIn><valueOut>2</valueOut>
+			<valueIn>2.5</valueIn><valueOut>2</valueOut>
+			<valueIn>2.6</valueIn><valueOut>2</valueOut>
+			<valueIn>2.7</valueIn><valueOut>2</valueOut>
+			<valueIn>2.8</valueIn><valueOut>2</valueOut>
+			<valueIn>2.9</valueIn><valueOut>2</valueOut>
+			<valueIn>2.10</valueIn><valueOut>2</valueOut>
+			<valueIn>2.11</valueIn><valueOut>2</valueOut>
+			<valueIn>2.12</valueIn><valueOut>2</valueOut>
+			<valueIn>2.13</valueIn><valueOut>2</valueOut>
+			<valueIn>2.14</valueIn><valueOut>2</valueOut>
+			<valueIn>2.15</valueIn><valueOut>2</valueOut>
+			<valueIn>2.16</valueIn><valueOut>2</valueOut>
+			<valueIn>2.17</valueIn><valueOut>2</valueOut>
+			<valueIn>2.18</valueIn><valueOut>2</valueOut>
+			<valueIn>2.19</valueIn><valueOut>2</valueOut>
+			<valueIn>2.20</valueIn><valueOut>2</valueOut>
+
+			<valueIn>3.1</valueIn><valueOut>3</valueOut>
+			<valueIn>3.2</valueIn><valueOut>3</valueOut>
+			<valueIn>3.3</valueIn><valueOut>3</valueOut>
+			<valueIn>3.4</valueIn><valueOut>3</valueOut>
+			<valueIn>3.5</valueIn><valueOut>3</valueOut>
+			<valueIn>3.6</valueIn><valueOut>3</valueOut>
+			<valueIn>3.7</valueIn><valueOut>3</valueOut>
+			<valueIn>3.8</valueIn><valueOut>3</valueOut>
+			<valueIn>3.9</valueIn><valueOut>3</valueOut>
+			<valueIn>3.10</valueIn><valueOut>3</valueOut>
+			<valueIn>3.11</valueIn><valueOut>3</valueOut>
+			<valueIn>3.12</valueIn><valueOut>3</valueOut>
+			<valueIn>3.13</valueIn><valueOut>3</valueOut>
+			<valueIn>3.14</valueIn><valueOut>3</valueOut>
+			<valueIn>3.15</valueIn><valueOut>3</valueOut>
+			<valueIn>3.16</valueIn><valueOut>3</valueOut>
+			<valueIn>3.17</valueIn><valueOut>3</valueOut>
+			<valueIn>3.18</valueIn><valueOut>3</valueOut>
+
+			<valueIn>*</valueIn><valueOut>0</valueOut>
+		</valueMap>
+
+		<valueMap ruleid="deviceNameFromDeviceNum-vm">
+			<valueIn>1</valueIn><valueOut>.1.3.6.1.4.1.2606.7.4.1.2.1.2.1</valueOut>
+			<valueIn>2</valueIn><valueOut>.1.3.6.1.4.1.2606.7.4.1.2.1.2.2</valueOut>
+			<valueIn>3</valueIn><valueOut>.1.3.6.1.4.1.2606.7.4.1.2.1.2.3</valueOut>
+
+			<valueIn>0</valueIn><valueOut>Unknown Device</valueOut>
+		</valueMap>
+
+		<enumMap ruleid="statusCode-em">
+			<label>OK</label>
+			<label>Not Available</label>
+			<label>Configuration Changed</label>
+			<label>Error</label>
+			<label>OK</label>
+			<label>Alarm</label>
+			<label>Value High Warning</label>
+			<label>Value Low Alarm</label>
+			<label>Value High Alarm</label>
+			<label>Value Low Warning</label>
+			<label>Output Set to Off</label>
+			<label>Output Set to On</label>
+			<label>Door Open</label>
+			<label>Door Closed</label>
+			<label>Door Locked</label>
+			<label>Door Unlocked by Remote Input</label>
+			<label>Door Unlocked by Reader or Keypad Connected</label>
+			<label>Door Unlocked by SNMP Set Command</label>
+			<label>Door Unlocked by WEB</label>
+			<label>Door Unlocked by Timer</label>
+			<label>No Access, Wrong Key Code or Card Number</label>
+			<label>Orientation of PSM is Circuit 1</label>
+			<label>Orientation of PSM is Circuit 2</label>
+			<label>Battery Low</label>
+			<label>Sensor Cable Broken</label>
+			<label>Sensor Cable Short</label>
+			<label>Sensor Calibrating</label>
+			<label>Sensor Inactive</label>
+			<label>Sensor Active</label>
+			<label>No Power (PSM)</label>
+		</enumMap>
+
+		<valueMap ruleid="onlyInts-vm">
+			<valueIn>2</valueIn><valueOut>[true]</valueOut>
+			<valueIn>*</valueIn><valueOut>[false]</valueOut>
+		</valueMap>
+		<valueMap ruleid="onlyEnums-vm">
+			<valueIn>4</valueIn><valueOut>[true]</valueOut>
+			<valueIn>*</valueIn><valueOut>[false]</valueOut>
+		</valueMap>
+
+		<!--
+		<enumMap ruleid="digitalInput-em">
+			<label>Input Passive</label>
+			<label>Input Active</label>
+			<label>Sabotaged Open</label>
+			<label>Sabotaged Shortcut</label>
+		</enumMap>
+		-->
+
+	</device>
+</APC_DDF>

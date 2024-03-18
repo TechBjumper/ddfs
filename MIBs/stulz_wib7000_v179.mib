@@ -1,0 +1,7317 @@
+Stulz-WIB7000-MIB DEFINITIONS ::= BEGIN
+
+-- Version 1.79
+-- Date    02.07.2007 by L. Bullwinkel
+
+
+
+-- Internal nodes must be of type OBJECT IDENTIFIER! 
+-- In version 1.60 the unit-types were not; which caused errors while loading MIB to several NMS!
+
+-- 1.66 / 2.3.2006
+--   * Several datapoints adjusted, 
+--   * MIB-Cmpiler Warning: "'Entry-Node-items' must start with uppercase character" corrected
+--   * MIB-Cmpiler Warning: "No size/range or named values are allowed on SEQUENCE entries" corrected
+
+
+
+-- This document describes the extensions to the WuT COM-Server-MIB
+-- that are necessary for Stulz-units.
+
+
+    IMPORTS
+
+    OBJECT-TYPE                                        FROM RFC-1212
+    TRAP-TYPE                                          FROM RFC-1215
+    DisplayString, PhysAddress                         FROM RFC1213-MIB
+    enterprises, TimeTicks, IpAddress, NetworkAddress  FROM RFC1155-SMI
+    wtComServer                                        FROM Com-Server-Intern-MIB;
+ 
+--    IpAddress ::=
+--        [APPLICATION 0]
+--            IMPLICIT OCTET STRING (SIZE (4))
+--    Counter ::=
+--        [APPLICATION 1]
+--            IMPLICIT INTEGER (0..4294967295)
+--    Gauge ::=
+--        [APPLICATION 2]
+--            IMPLICIT INTEGER (0..4294967295)
+--    TimeTicks ::=
+--        [APPLICATION 3]
+--            IMPLICIT INTEGER (0..4294967295)
+
+
+--    DisplayString ::= OCTET STRING
+--    PhysAddress   ::= OCTET STRING
+
+--    internet         OBJECT IDENTIFIER ::= { iso org(3) dod(6) 1 }
+--    privat           OBJECT IDENTIFIER ::= { internet 4 }
+--    enterprises      OBJECT IDENTIFIER ::= { privat 1 }
+
+
+   
+
+
+-- Stulz-specific part
+
+	stulzWib	OBJECT IDENTIFIER ::= { wtComServer 10 }
+	wibIntern	OBJECT IDENTIFIER ::= { stulzWib 1 }
+	wibUnits    OBJECT IDENTIFIER ::= { stulzWib 2 }
+
+
+	
+--	watch and configure the sequencing stuff
+
+
+	
+--OIDs :
+
+
+wibHardware OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Shows hardware revision of Stulz MultiInterfaceBoard"
+    ::= { wibIntern 1 }
+
+wibFirmware OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Shows firmware version of Stulz MultiInterfaceBoard"
+    ::= { wibIntern 2 }
+
+wibTime OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Shows present time of MultiInterfaceBoard-RTC"
+    ::= { wibIntern 3 }
+
+wibDate OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Shows present date of Stulz MultiInterfaceBoard-RTC"
+    ::= { wibIntern 4 }
+
+wibAlarmText OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Text of trap-body"
+    ::= { wibIntern 10 }
+
+
+
+
+
+--	Unit-types
+
+unitTypeAC OBJECT IDENTIFIER ::= { wibUnits 1 }
+
+
+unitTypeChiller OBJECT IDENTIFIER ::= { wibUnits 2 }
+
+
+
+
+
+-- iocAddress Table
+
+iocAddressTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF IocAddressEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Addresses of C7000IO-Controllers"
+    ::= { unitTypeAC 1 }
+
+iocAddressEntry OBJECT-TYPE
+    SYNTAX IocAddressEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Each row is a C7000 - Controller"
+    INDEX  { iocUnitsId }
+    ::= { iocAddressTable 1 }
+
+IocAddressEntry ::= SEQUENCE {
+    iocUnitsId INTEGER
+}
+
+iocUnitsId OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Each row is a C7000 - Controller"
+    ::= { iocAddressEntry 1 }
+
+
+
+-- iocCommon1 Table
+
+iocCommon1Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocCommon1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Common 1"
+   ::= { unitTypeAC 2 }
+
+iocCommon1Entry OBJECT-TYPE
+   SYNTAX IocCommon1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 1 data"
+   INDEX  { iocUnitsId }
+   ::= { iocCommon1Table 1 }
+
+IocCommon1Entry ::= SEQUENCE {
+   iocunittype DisplayString,
+   iocSWversion DisplayString,
+   iocnumberofmodules DisplayString,
+   ioccontrollertype DisplayString
+}
+
+iocunittype OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "unit-type"
+   ::= { iocCommon1Entry 1 }
+
+iocSWversion OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "SW-version"
+   ::= { iocCommon1Entry 3 }
+
+
+iocnumberofmodules OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of modules"
+   ::= { iocCommon1Entry 4 }
+
+ioccontrollertype OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "controller type"
+   ::= { iocCommon1Entry 7 }
+
+
+-- iocCommon2 Table
+
+iocCommon2Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocCommon2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Common 2"
+   ::= { unitTypeAC 3 }
+
+iocCommon2Entry OBJECT-TYPE
+   SYNTAX IocCommon2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 2 data"
+   INDEX  { iocUnitsId }
+   ::= { iocCommon2Table 1 }
+
+IocCommon2Entry ::= SEQUENCE {
+   iocBMSremoteonoff INTEGER,
+   iocremoteonoff INTEGER,
+   ioclocalonoff INTEGER,
+   ioctimeronoff INTEGER,
+   iocseqonoff INTEGER,
+   iocremoteups INTEGER,
+   ioclocalups INTEGER,
+   iocresetmanualoperation INTEGER,
+   ioccommonalarm INTEGER,
+   iocresetallalarms INTEGER,
+   iocunitonoff INTEGER,
+   iocmaintenance INTEGER,
+   ioctemperatureunit INTEGER,
+   iocsummerwintermode INTEGER,
+   iocdaynightmode INTEGER
+}
+
+iocBMSremoteonoff OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "BMS remote on/off"
+   ::= { iocCommon2Entry 1000 }
+
+iocremoteonoff OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "remote on/off"
+   ::= { iocCommon2Entry 1001 }
+
+ioclocalonoff OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "local on/off"
+   ::= { iocCommon2Entry 1002 }
+
+ioctimeronoff OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "timer on/off"
+   ::= { iocCommon2Entry 1003 }
+
+iocseqonoff OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "seq. on/off"
+   ::= { iocCommon2Entry 1004 }
+
+iocremoteups OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "remote ups"
+   ::= { iocCommon2Entry 1006 }
+
+ioclocalups OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "local ups"
+   ::= { iocCommon2Entry 1007 }
+
+iocresetmanualoperation OBJECT-TYPE
+   SYNTAX INTEGER {
+      do-nothing (0),
+      reset (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "reset manual operation"
+   ::= { iocCommon2Entry 1009 }
+
+ioccommonalarm OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "common alarm"
+   ::= { iocCommon2Entry 1010 }
+
+iocresetallalarms OBJECT-TYPE
+   SYNTAX INTEGER {
+      do-nothing (0),
+      reset (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "reset all alarms"
+   ::= { iocCommon2Entry 1011 }
+
+iocunitonoff OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "unit on/off"
+   ::= { iocCommon2Entry 1013 }
+
+iocmaintenance OBJECT-TYPE
+   SYNTAX INTEGER {
+      necessary (0),
+      ok (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "maintenance"
+   ::= { iocCommon2Entry 1014 }
+
+ioctemperatureunit OBJECT-TYPE
+   SYNTAX INTEGER {
+      celsius (0),
+      fahrenheit (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "temperature unit"
+   ::= { iocCommon2Entry 1022 }
+
+iocsummerwintermode OBJECT-TYPE
+   SYNTAX INTEGER {
+      summer (0),
+      winter (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "summer/winter mode"
+   ::= { iocCommon2Entry 1023 }
+
+iocdaynightmode OBJECT-TYPE
+   SYNTAX INTEGER {
+      night (0),
+      day (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "day/night mode"
+   ::= { iocCommon2Entry 1024 }
+
+
+
+-- iocCommon3 Table
+
+iocCommon3Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocCommon3Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Common 3"
+   ::= { unitTypeAC 4 }
+
+iocCommon3Entry OBJECT-TYPE
+   SYNTAX IocCommon3Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 3 data"
+   INDEX  { iocUnitsId }
+   ::= { iocCommon3Table 1 }
+
+IocCommon3Entry ::= SEQUENCE {
+   ioclastmaintenanceyear DisplayString,
+   ioclastmaintenancemonth DisplayString,
+   ioclastmaintenanceday DisplayString,
+   iocmaintenanceintervall DisplayString,
+   iocruntimeunit DisplayString,
+   iocstoptimeunit DisplayString,
+   iocruntimecooling DisplayString,
+   iocruntimeheating DisplayString,
+   iocruntimehumidification DisplayString,
+   iocruntimedehumidification DisplayString,
+   iocunittemperature DisplayString,
+   iocunithumidity DisplayString,
+   iocsetpointtemperatureday DisplayString,
+   iocsetpointtemperaturenight DisplayString,
+   iocsetpointhumidity DisplayString,
+   ioccontroltype DisplayString,
+   iocwintermodestarttemp DisplayString,
+   iocwintermodehysteresis DisplayString,
+   iocwatertemperature DisplayString,
+   iocreturnairtemp DisplayString,
+   iocsupplyairtemp DisplayString,
+   iocreturnairhumi DisplayString,
+   iocsupplyairhumi DisplayString,
+   iocoutairtemp DisplayString,
+   iocoutairhumi DisplayString,
+   ioccoolingpriority DisplayString,
+   iocwatertemperature2 DisplayString,
+   iocruntimefreecolling DisplayString,
+   iocruntimefreecoolmixmode DisplayString
+}
+
+ioclastmaintenanceyear OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "last maintenance year"
+   ::= { iocCommon3Entry 1160 }
+
+ioclastmaintenancemonth OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "last maintenance month"
+   ::= { iocCommon3Entry 1161 }
+
+ioclastmaintenanceday OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "last maintenance day"
+   ::= { iocCommon3Entry 1162 }
+
+iocmaintenanceintervall OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "maintenance intervall"
+   ::= { iocCommon3Entry 1163 }
+
+iocruntimeunit OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "runtime unit"
+   ::= { iocCommon3Entry 1164 }
+
+iocstoptimeunit OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "stoptime unit"
+   ::= { iocCommon3Entry 1165 }
+
+iocruntimecooling OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "runtime cooling"
+   ::= { iocCommon3Entry 1166 }
+
+iocruntimeheating OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "runtime heating"
+   ::= { iocCommon3Entry 1167 }
+
+iocruntimehumidification OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "runtime humidification"
+   ::= { iocCommon3Entry 1168 }
+
+iocruntimedehumidification OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "runtime dehumidification"
+   ::= { iocCommon3Entry 1169 }
+
+iocunittemperature OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "unit temperature"
+   ::= { iocCommon3Entry 1170 }
+
+iocunithumidity OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "unit humidity"
+   ::= { iocCommon3Entry 1171 }
+
+iocsetpointtemperatureday OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "setpoint temperature day"
+   ::= { iocCommon3Entry 1173 }
+
+iocsetpointtemperaturenight OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "setpoint temperature night"
+   ::= { iocCommon3Entry 1174 }
+
+iocsetpointhumidity OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "setpoint humidity"
+   ::= { iocCommon3Entry 1176 }
+
+ioccontroltype OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "control type"
+   ::= { iocCommon3Entry 1183 }
+
+iocwintermodestarttemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "unit winter-mode starttemp."
+   ::= { iocCommon3Entry 1188 }
+
+iocwintermodehysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "unit winter-mode hysteresis"
+   ::= { iocCommon3Entry 1189 }
+
+iocwatertemperature OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "watertemperature"
+   ::= { iocCommon3Entry 1191 }
+
+iocreturnairtemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "return air temp."
+   ::= { iocCommon3Entry 1192 }
+
+iocsupplyairtemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "supply air temp."
+   ::= { iocCommon3Entry 1193 }
+
+iocreturnairhumi OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "return air humi."
+   ::= { iocCommon3Entry 1194 }
+
+iocsupplyairhumi OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "supply air humi."
+   ::= { iocCommon3Entry 1195 }
+
+iocoutairtemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "outside air temp."
+   ::= { iocCommon3Entry 1196 }
+
+iocoutairhumi OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "outside air humi."
+   ::= { iocCommon3Entry 1197 }
+
+ioccoolingpriority OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "cooling priority"
+   ::= { iocCommon3Entry 1198 }
+
+iocwatertemperature2 OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "watertemperature 2"
+   ::= { iocCommon3Entry 1202 }
+
+iocruntimefreecolling OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "runtime freecolling"
+   ::= { iocCommon3Entry 1203 }
+
+iocruntimefreecoolmixmode OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "runtime freecool-mixmode"
+   ::= { iocCommon3Entry 1204 }
+
+
+
+-- iocCommon4 Table
+
+iocCommon4Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocCommon4Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Common 4"
+   ::= { unitTypeAC 5 }
+
+iocCommon4Entry OBJECT-TYPE
+   SYNTAX IocCommon4Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 4 data"
+   INDEX  { iocUnitsId }
+   ::= { iocCommon4Table 1 }
+
+IocCommon4Entry ::= SEQUENCE {
+   iocnumberofEDIO DisplayString,
+   iocnumberofEAIO DisplayString,
+   ioctypeofEBUS DisplayString,
+   iocnumberofcompressors DisplayString,
+   iocnumberofsuctionvalve DisplayString,
+   iocnumberofdrycoolers DisplayString,
+   iocnumberofpumps DisplayString,
+   iocnumberofeheatings DisplayString,
+   iocnumberofhumidifiers DisplayString,
+   iocnumberoffans DisplayString,
+   iocnumberoflouvers DisplayString,
+   iocnumberofsensors DisplayString,
+   iocnumberofextalarms DisplayString,
+   iocnumberofgecwvalves DisplayString,
+   iocnumberofhotgasreheat DisplayString,
+   iocnumberofpwwheatings DisplayString,
+   iocnumberofdehumidifiers DisplayString
+}
+
+iocnumberofEDIO OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of EDIO"
+   ::= { iocCommon4Entry 1758 }
+
+iocnumberofEAIO OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of EAIO"
+   ::= { iocCommon4Entry 1759 }
+
+ioctypeofEBUS OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "type of EBUS"
+   ::= { iocCommon4Entry 1760 }
+
+iocnumberofcompressors OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of compressors"
+   ::= { iocCommon4Entry 1761 }
+
+iocnumberofsuctionvalve OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of suction valve"
+   ::= { iocCommon4Entry 1762 }
+
+iocnumberofdrycoolers OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of drycoolers"
+   ::= { iocCommon4Entry 1763 }
+
+iocnumberofpumps OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of pumps"
+   ::= { iocCommon4Entry 1764 }
+
+iocnumberofeheatings OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of e-heatings"
+   ::= { iocCommon4Entry 1765 }
+
+iocnumberofhumidifiers OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of humidifiers"
+   ::= { iocCommon4Entry 1766 }
+
+iocnumberoffans OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of fans"
+   ::= { iocCommon4Entry 1767 }
+
+iocnumberoflouvers OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of louvers"
+   ::= { iocCommon4Entry 1768 }
+
+iocnumberofsensors OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of sensors"
+   ::= { iocCommon4Entry 1769 }
+
+iocnumberofextalarms OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of ext alarms"
+   ::= { iocCommon4Entry 1770 }
+
+iocnumberofgecwvalves OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of ge/cw valves"
+   ::= { iocCommon4Entry 1771 }
+
+iocnumberofhotgasreheat OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of hotgas reheat"
+   ::= { iocCommon4Entry 1772 }
+
+iocnumberofpwwheatings OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of pww heatings"
+   ::= { iocCommon4Entry 1773 }
+
+iocnumberofdehumidifiers OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "number of dehumidifiers"
+   ::= { iocCommon4Entry 1774 }
+
+
+
+-- iocCommon5 Table
+
+iocCommon5Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocCommon5Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Common 5"
+   ::= { unitTypeAC 6 }
+
+iocCommon5Entry OBJECT-TYPE
+   SYNTAX IocCommon5Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 5 data"
+   INDEX  { iocUnitsId }
+   ::= { iocCommon5Table 1 }
+
+IocCommon5Entry ::= SEQUENCE {
+   iocevaporationtemp1 DisplayString,
+   iocevaporationpress1 DisplayString,
+   ioccondensationtemp1 DisplayString,
+   ioccondensationpress1 DisplayString,
+   iocmaxlimitreturnairtemp DisplayString,
+   iocminlimitreturnairtemp DisplayString,
+   iocmaxlimitsupplyairtemp DisplayString,
+   iocminlimitsupplyairtemp DisplayString,
+   iocmaxlimitwatertemp DisplayString,
+   iocminlimitwatertemp DisplayString,
+   iocmaxlimitreturnairhum DisplayString,
+   iocminlimitreturnairhum DisplayString,
+   iocmaxlimitsupplyairhum DisplayString,
+   iocminlimitsupplyairhum DisplayString,
+   iocwinterstartdelay DisplayString,
+   ioccondensationpress2 DisplayString,
+   iocoverloadstarttemp DisplayString,
+   ioccondensationtemp2 DisplayString,
+   iocevaporationpress2 DisplayString,
+   iocevaporationtemp2 DisplayString
+}
+
+iocevaporationtemp1 OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "evaporation temp. 1"
+   ::= { iocCommon5Entry 2232 }
+
+iocevaporationpress1 OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "evaporation press. 1"
+   ::= { iocCommon5Entry 2233 }
+
+ioccondensationtemp1 OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "condensation temp. 1"
+   ::= { iocCommon5Entry 2234 }
+
+ioccondensationpress1 OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "condensation press. 1"
+   ::= { iocCommon5Entry 2235 }
+
+iocmaxlimitreturnairtemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "max.limit return air temp."
+   ::= { iocCommon5Entry 2239 }
+
+iocminlimitreturnairtemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "min.limit return air temp."
+   ::= { iocCommon5Entry 2240 }
+
+iocmaxlimitsupplyairtemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "max.limit supply air temp."
+   ::= { iocCommon5Entry 2241 }
+
+iocminlimitsupplyairtemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "min.limit supply air temp."
+   ::= { iocCommon5Entry 2242 }
+
+iocmaxlimitwatertemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "max.limit water temp."
+   ::= { iocCommon5Entry 2243 }
+
+iocminlimitwatertemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "min.limit water temp."
+   ::= { iocCommon5Entry 2244 }
+
+iocmaxlimitreturnairhum OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "max.limit return air hum."
+   ::= { iocCommon5Entry 2245 }
+
+iocminlimitreturnairhum OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "min.limit return air hum."
+   ::= { iocCommon5Entry 2246 }
+
+iocmaxlimitsupplyairhum OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "max.limit supply air hum."
+   ::= { iocCommon5Entry 2247 }
+
+iocminlimitsupplyairhum OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "min.limit supply air hum."
+   ::= { iocCommon5Entry 2248 }
+
+iocwinterstartdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "winterstart delay"
+   ::= { iocCommon5Entry 2249 }
+
+ioccondensationpress2 OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "condensation press. 2"
+   ::= { iocCommon5Entry 2250 }
+
+iocoverloadstarttemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "overload start-temp."
+   ::= { iocCommon5Entry 2251 }
+
+ioccondensationtemp2 OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "condensation temp. 2"
+   ::= { iocCommon5Entry 2272 }
+
+iocevaporationpress2 OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "evaporation press. 2"
+   ::= { iocCommon5Entry 2273 }
+
+iocevaporationtemp2 OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "evaporation temp. 2"
+   ::= { iocCommon5Entry 2274 }
+
+
+
+
+-- iocCompressor1 Table
+
+iocCompressor1Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocCompressor1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Compressor 1"
+   ::= { unitTypeAC 7 }
+
+iocCompressor1Entry OBJECT-TYPE
+   SYNTAX IocCompressor1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 6 data"
+   INDEX  { iocUnitsId }
+   ::= { iocCompressor1Table 1 }
+
+IocCompressor1Entry ::= SEQUENCE {
+   ioccompr1configactive INTEGER,
+   ioccompr1manopactive INTEGER,
+   ioccompr1manopstate INTEGER,
+   ioccompr1running INTEGER,
+   ioccompr1starttempsummer DisplayString,
+   ioccompr1hysteresissummer DisplayString,
+   ioccompr1starttempwinter DisplayString,
+   ioccompr1hysteresiswinter DisplayString,
+   ioccompr1hpalarmdelay DisplayString,
+   ioccompr1lpalarmdelay DisplayString,
+   ioccompr1runtime DisplayString
+}
+
+ioccompr1configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.1 config. active"
+   ::= { iocCompressor1Entry 4400 }
+
+ioccompr1manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.1 man.op. active"
+   ::= { iocCompressor1Entry 4401 }
+
+ioccompr1manopstate OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.1 man.op. state"
+   ::= { iocCompressor1Entry 4402 }
+
+ioccompr1running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "compr.1 running"
+   ::= { iocCompressor1Entry 4403 }
+
+ioccompr1starttempsummer OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.1 start temp.summer"
+   ::= { iocCompressor1Entry 4416 }
+
+ioccompr1hysteresissummer OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.1 hysteresis summer"
+   ::= { iocCompressor1Entry 4417 }
+
+ioccompr1starttempwinter OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.1 start temp.winter"
+   ::= { iocCompressor1Entry 4418 }
+
+ioccompr1hysteresiswinter OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.1 hysteresis winter"
+   ::= { iocCompressor1Entry 4419 }
+
+ioccompr1hpalarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.1 hp alarm delay"
+   ::= { iocCompressor1Entry 4423 }
+
+ioccompr1lpalarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.1 lp alarm delay"
+   ::= { iocCompressor1Entry 4426 }
+
+ioccompr1runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "compr.1 runtime"
+   ::= { iocCompressor1Entry 4428 }
+
+
+
+-- iocCompressor2 Table
+
+iocCompressor2Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocCompressor2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Compressor 2"
+   ::= { unitTypeAC 8 }
+
+iocCompressor2Entry OBJECT-TYPE
+   SYNTAX IocCompressor2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 7 data"
+   INDEX  { iocUnitsId }
+   ::= { iocCompressor2Table 1 }
+
+IocCompressor2Entry ::= SEQUENCE {
+   ioccompr2configactive INTEGER,
+   ioccompr2manopactive INTEGER,
+   ioccompr2manopstate INTEGER,
+   ioccompr2running INTEGER,
+   ioccompr2starttempsummer DisplayString,
+   ioccompr2hysteresissummer DisplayString,
+   ioccompr2starttempwinter DisplayString,
+   ioccompr2hysteresiswinter DisplayString,
+   ioccompr2hpalarmdelay DisplayString,
+   ioccompr2lpalarmdelay DisplayString,
+   ioccompr2runtime DisplayString
+}
+
+ioccompr2configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.2 config. active"
+   ::= { iocCompressor2Entry 4500 }
+
+ioccompr2manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.2 man.op. active"
+   ::= { iocCompressor2Entry 4501 }
+
+ioccompr2manopstate OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.2 man.op. state"
+   ::= { iocCompressor2Entry 4502 }
+
+ioccompr2running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "compr.2 running"
+   ::= { iocCompressor2Entry 4503 }
+
+ioccompr2starttempsummer OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.2 start temp.summer"
+   ::= { iocCompressor2Entry 4516 }
+
+ioccompr2hysteresissummer OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.2 hysteresis summer"
+   ::= { iocCompressor2Entry 4517 }
+
+ioccompr2starttempwinter OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.2 start temp.winter"
+   ::= { iocCompressor2Entry 4518 }
+
+ioccompr2hysteresiswinter OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.2 hysteresis winter"
+   ::= { iocCompressor2Entry 4519 }
+
+ioccompr2hpalarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.2 hp alarm delay"
+   ::= { iocCompressor2Entry 4523 }
+
+ioccompr2lpalarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "compr.2 lp alarm delay"
+   ::= { iocCompressor2Entry 4526 }
+
+ioccompr2runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "compr.2 runtime"
+   ::= { iocCompressor2Entry 4528 }
+
+
+
+-- iocSuctionvalve1 Table
+
+iocSuctionvalve1Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocSuctionvalve1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Suctionvalve 1"
+   ::= { unitTypeAC 9 }
+
+iocSuctionvalve1Entry OBJECT-TYPE
+   SYNTAX IocSuctionvalve1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 8 data"
+   INDEX  { iocUnitsId }
+   ::= { iocSuctionvalve1Table 1 }
+
+IocSuctionvalve1Entry ::= SEQUENCE {
+   iocsuctionvalve1configactive INTEGER,
+   iocsuctionvalve1manopactive INTEGER,
+   iocsuctionvalve1starttemp DisplayString,
+   iocsuctionvalve1linearrange DisplayString,
+   iocsuctionvalve1currentvalue DisplayString,
+   iocsuctionvalve1manopvalue DisplayString
+}
+
+
+iocsuctionvalve1configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "suctionvalve1 config. active"
+   ::= { iocSuctionvalve1Entry 4600 }
+
+iocsuctionvalve1manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "suctionvalve1 man.op. active"
+   ::= { iocSuctionvalve1Entry 4601 }
+
+iocsuctionvalve1starttemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "suctionvalve1 start temp."
+   ::= { iocSuctionvalve1Entry 4608 }
+
+iocsuctionvalve1linearrange OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "suctionvalve1 linear range"
+   ::= { iocSuctionvalve1Entry 4609 }
+
+iocsuctionvalve1currentvalue OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "suctionvalve1 current value"
+   ::= { iocSuctionvalve1Entry 4611 }
+
+iocsuctionvalve1manopvalue OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "suctionvalve1 man.op.value"
+   ::= { iocSuctionvalve1Entry 4612 }
+
+
+-- iocSuctionvalve2 Table
+
+iocSuctionvalve2Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocSuctionvalve2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Suctionvalve 2"
+   ::= { unitTypeAC 10 }
+
+iocSuctionvalve2Entry OBJECT-TYPE
+   SYNTAX IocSuctionvalve2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 9 data"
+   INDEX  { iocUnitsId }
+   ::= { iocSuctionvalve2Table 1 }
+
+IocSuctionvalve2Entry ::= SEQUENCE {
+   iocsuctionvalve2configactive INTEGER,
+   iocsuctionvalve2manopactive INTEGER,
+   iocsuctionvalve2starttemp DisplayString,
+   iocsuctionvalve2linearrange DisplayString,
+   iocsuctionvalve2currentvalue DisplayString,
+   iocsuctionvalve2manopvalue DisplayString
+}
+
+iocsuctionvalve2configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "suctionvalve2 config. active"
+   ::= { iocSuctionvalve2Entry 4700 }
+
+iocsuctionvalve2manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "suctionvalve2 man.op. active"
+   ::= { iocSuctionvalve2Entry 4701 }
+
+iocsuctionvalve2starttemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "suctionvalve2 start temp."
+   ::= { iocSuctionvalve2Entry 4708 }
+
+iocsuctionvalve2linearrange OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "suctionvalve2 linear range"
+   ::= { iocSuctionvalve2Entry 4709 }
+
+iocsuctionvalve2currentvalue OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "suctionvalve2 current value"
+   ::= { iocSuctionvalve2Entry 4711 }
+
+iocsuctionvalve2manopvalue OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "suctionvalve2 man.op.value"
+   ::= { iocSuctionvalve2Entry 4712 }
+
+-- iocEheating1 Table
+
+iocEheating1Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocEheating1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table E-heating 1"
+   ::= { unitTypeAC 11 }
+
+iocEheating1Entry OBJECT-TYPE
+   SYNTAX IocEheating1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 10 data"
+   INDEX  { iocUnitsId }
+   ::= { iocEheating1Table 1 }
+
+IocEheating1Entry ::= SEQUENCE {
+   ioceheating1configactive INTEGER,
+   ioceheating1manopactive INTEGER,
+   ioceheating1running INTEGER,
+   ioceheating1manoprunning INTEGER,
+   ioceheating1type DisplayString,
+   ioceheating1starttemperature DisplayString,
+   ioceheating1hysteresis DisplayString,
+   ioceheating1linearrange DisplayString,
+   ioceheating1alarmdelay DisplayString,
+   ioceheating1runtime DisplayString
+}
+
+ioceheating1configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating1 config active"
+   ::= { iocEheating1Entry 4800 }
+
+ioceheating1manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating1 man.op. active"
+   ::= { iocEheating1Entry 4801 }
+
+ioceheating1running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating1 running"
+   ::= { iocEheating1Entry 4803 }
+
+ioceheating1manoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating1 man.op. running"
+   ::= { iocEheating1Entry 4804 }
+
+ioceheating1type OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating1 type"
+   ::= { iocEheating1Entry 4808 }
+
+ioceheating1starttemperature OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating1 start temperature"
+   ::= { iocEheating1Entry 4809 }
+
+ioceheating1hysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating1 hysteresis"
+   ::= { iocEheating1Entry 4810 }
+
+ioceheating1linearrange OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating1 linear range"
+   ::= { iocEheating1Entry 4811 }
+
+ioceheating1alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating1 alarm delay"
+   ::= { iocEheating1Entry 4815 }
+
+ioceheating1runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating1 runtime"
+   ::= { iocEheating1Entry 4816 }
+
+
+
+-- iocEheating2 Table
+
+iocEheating2Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocEheating2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table E-heating 2"
+   ::= { unitTypeAC 12 }
+
+iocEheating2Entry OBJECT-TYPE
+   SYNTAX IocEheating2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 11 data"
+   INDEX  { iocUnitsId }
+   ::= { iocEheating2Table 1 }
+
+IocEheating2Entry ::= SEQUENCE {
+   ioceheating2configactive INTEGER,
+   ioceheating2manualopactive INTEGER,
+   ioceheating2running INTEGER,
+   ioceheating2manualoprunning INTEGER,
+   ioceheating2type DisplayString,
+   ioceheating2starttemperature DisplayString,
+   ioceheating2hysteresis DisplayString,
+   ioceheating2linearrange DisplayString,
+   ioceheating2alarmdelay DisplayString,
+   ioceheating2runtime DisplayString
+}
+
+ioceheating2configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating2 config active"
+   ::= { iocEheating2Entry 4900 }
+
+ioceheating2manualopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating2 manual op.active"
+   ::= { iocEheating2Entry 4901 }
+
+ioceheating2running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating2 running"
+   ::= { iocEheating2Entry 4903 }
+
+ioceheating2manualoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating2 manual op.running"
+   ::= { iocEheating2Entry 4904 }
+
+ioceheating2type OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating2 type"
+   ::= { iocEheating2Entry 4908 }
+
+ioceheating2starttemperature OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating2 start temperature"
+   ::= { iocEheating2Entry 4909 }
+
+ioceheating2hysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating2 hysteresis"
+   ::= { iocEheating2Entry 4910 }
+
+ioceheating2linearrange OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating2 linear range"
+   ::= { iocEheating2Entry 4911 }
+
+ioceheating2alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating2 alarm delay"
+   ::= { iocEheating2Entry 4915 }
+
+ioceheating2runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating2 runtime"
+   ::= { iocEheating2Entry 4916 }
+
+
+
+-- iocEheating3 Table
+
+iocEheating3Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocEheating3Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table E-heating 3"
+   ::= { unitTypeAC 13 }
+
+iocEheating3Entry OBJECT-TYPE
+   SYNTAX IocEheating3Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 12 data"
+   INDEX  { iocUnitsId }
+   ::= { iocEheating3Table 1 }
+
+IocEheating3Entry ::= SEQUENCE {
+   ioceheating3configactive INTEGER,
+   ioceheating3manualopactive INTEGER,
+   ioceheating3running INTEGER,
+   ioceheating3manualoprunning INTEGER,
+   ioceheating3type DisplayString,
+   ioceheating3starttemperature DisplayString,
+   ioceheating3hysteresis DisplayString,
+   ioceheating3linearrange DisplayString,
+   ioceheating3alarmdelay DisplayString,
+   ioceheating3runtime DisplayString
+}
+
+ioceheating3configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating3 config active"
+   ::= { iocEheating3Entry 5000 }
+
+ioceheating3manualopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating3 manual op.active"
+   ::= { iocEheating3Entry 5001 }
+
+ioceheating3running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating3 running"
+   ::= { iocEheating3Entry 5003 }
+
+ioceheating3manualoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating3 manual op.running"
+   ::= { iocEheating3Entry 5004 }
+
+ioceheating3type OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating3 type"
+   ::= { iocEheating3Entry 5008 }
+
+ioceheating3starttemperature OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating3 start temperature"
+   ::= { iocEheating3Entry 5009 }
+
+ioceheating3hysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating3 hysteresis"
+   ::= { iocEheating3Entry 5010 }
+
+ioceheating3linearrange OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating3 linear range"
+   ::= { iocEheating3Entry 5011 }
+
+ioceheating3alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating3 alarm delay"
+   ::= { iocEheating3Entry 5015 }
+
+ioceheating3runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating3 runtime"
+   ::= { iocEheating3Entry 5016 }
+
+
+
+-- iocEheating4 Table
+
+iocEheating4Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocEheating4Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table E-heating 4"
+   ::= { unitTypeAC 14 }
+
+iocEheating4Entry OBJECT-TYPE
+   SYNTAX IocEheating4Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 13 data"
+   INDEX  { iocUnitsId }
+   ::= { iocEheating4Table 1 }
+
+IocEheating4Entry ::= SEQUENCE {
+   ioceheating4configactive INTEGER,
+   ioceheating4manualopactive INTEGER,
+   ioceheating4running INTEGER,
+   ioceheating4manualoprunning INTEGER,
+   ioceheating4type DisplayString,
+   ioceheating4starttemperature DisplayString,
+   ioceheating4hysteresis DisplayString,
+   ioceheating4linearrange DisplayString,
+   ioceheating4alarmdelay DisplayString,
+   ioceheating4runtime DisplayString
+}
+
+ioceheating4configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating4 config active"
+   ::= { iocEheating4Entry 5100 }
+
+ioceheating4manualopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating4 manual op.active"
+   ::= { iocEheating4Entry 5101 }
+
+ioceheating4running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating4 running"
+   ::= { iocEheating4Entry 5103 }
+
+ioceheating4manualoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating4 manual op.running"
+   ::= { iocEheating4Entry 5104 }
+
+ioceheating4type OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating4 type"
+   ::= { iocEheating4Entry 5108 }
+
+ioceheating4starttemperature OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating4 start temperature"
+   ::= { iocEheating4Entry 5109 }
+
+ioceheating4hysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating4 hysteresis"
+   ::= { iocEheating4Entry 5110 }
+
+ioceheating4linearrange OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating4 linear range"
+   ::= { iocEheating4Entry 5111 }
+
+ioceheating4alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating4 alarm delay"
+   ::= { iocEheating4Entry 5115 }
+
+ioceheating4runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "e-heating4 runtime"
+   ::= { iocEheating4Entry 5116 }
+
+
+
+-- iocGECWvalve Table
+
+iocGECWvalveTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocGECWvalveEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table GE/CW-valve"
+   ::= { unitTypeAC 15 }
+
+iocGECWvalveEntry OBJECT-TYPE
+   SYNTAX IocGECWvalveEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 14 data"
+   INDEX  { iocUnitsId }
+   ::= { iocGECWvalveTable 1 }
+
+IocGECWvalveEntry ::= SEQUENCE {
+   iocGECWvalveconfigactive INTEGER,
+   iocGECWvalvemanopactive INTEGER,
+   iocGECWvalvestarttemperature DisplayString,
+   iocGECWvalvelinearrange DisplayString,
+   iocGECWvalveGEofftemp DisplayString,
+   iocGECWvalveopeninggrade DisplayString,
+   iocGECWvalvemanopopengr DisplayString
+}
+
+iocGECWvalveconfigactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "GE/CW-valve config active"
+   ::= { iocGECWvalveEntry 5200 }
+
+iocGECWvalvemanopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "GE/CW-valve man.op. active"
+   ::= { iocGECWvalveEntry 5201 }
+
+iocGECWvalvestarttemperature OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "GE/CW-valve start temperature"
+   ::= { iocGECWvalveEntry 5208 }
+
+iocGECWvalvelinearrange OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "GE/CW-valve linear range"
+   ::= { iocGECWvalveEntry 5209 }
+
+iocGECWvalveGEofftemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "GE/CW-valve GE-off-temp"
+   ::= { iocGECWvalveEntry 5211 }
+
+iocGECWvalveopeninggrade OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "GE/CW-valve opening grade"
+   ::= { iocGECWvalveEntry 5214 }
+
+iocGECWvalvemanopopengr OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "GE/CW-valve man.op.open.gr."
+   ::= { iocGECWvalveEntry 5215 }
+
+
+
+-- iocGvalve Table
+
+iocGvalveTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocGvalveEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table G-valve"
+   ::= { unitTypeAC 16 }
+
+iocGvalveEntry OBJECT-TYPE
+   SYNTAX IocGvalveEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 15 data"
+   INDEX  { iocUnitsId }
+   ::= { iocGvalveTable 1 }
+
+IocGvalveEntry ::= SEQUENCE {
+   iocGvalveconfigactive INTEGER,
+   iocGvalvemanualopactive INTEGER,
+   iocGvalvepressuresetpoint DisplayString,
+   iocGvalvepreopeningtime DisplayString,
+   iocGvalvepreopeninggrade DisplayString,
+   iocGvalveopeninggrade DisplayString,
+   iocGvalvemanopopengrade DisplayString,
+   iocGvalveIfactor DisplayString,
+   iocGvalveDfactor DisplayString
+}
+
+iocGvalveconfigactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "G-valve config active"
+   ::= { iocGvalveEntry 5300 }
+
+iocGvalvemanualopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "G-valve manual op. active"
+   ::= { iocGvalveEntry 5301 }
+
+iocGvalvepressuresetpoint OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "G-valve pressure setpoint"
+   ::= { iocGvalveEntry 5309 }
+
+iocGvalvepreopeningtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "G-valve pre opening time"
+   ::= { iocGvalveEntry 5310 }
+
+iocGvalvepreopeninggrade OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "G-valve pre opening grade"
+   ::= { iocGvalveEntry 5311 }
+
+iocGvalveopeninggrade OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "G-valve opening grade"
+   ::= { iocGvalveEntry 5312 }
+
+iocGvalvemanopopengrade OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "G-valve man.op. open.grade"
+   ::= { iocGvalveEntry 5313 }
+
+iocGvalveIfactor OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "G-valve I factor"
+   ::= { iocGvalveEntry 5314 }
+
+iocGvalveDfactor OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "G-valve D factor"
+   ::= { iocGvalveEntry 5315 }
+
+
+
+-- iocDrycooler1 Table
+
+iocDrycooler1Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocDrycooler1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Drycooler 1"
+   ::= { unitTypeAC 17 }
+
+iocDrycooler1Entry OBJECT-TYPE
+   SYNTAX IocDrycooler1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 16 data"
+   INDEX  { iocUnitsId }
+   ::= { iocDrycooler1Table 1 }
+
+IocDrycooler1Entry ::= SEQUENCE {
+   iocdrycooler1configactive INTEGER,
+   iocdrycooler1manopactive INTEGER,
+   iocdrycooler1running INTEGER,
+   iocdrycooler1manoprunning INTEGER,
+   iocdrycooler1starttempwinter DisplayString,
+   iocdrycooler1starttempsummer DisplayString,
+   iocdrycooler1hysteresis DisplayString,
+   iocdrycooler1alarmdelay DisplayString,
+   iocdrycooler1runtime DisplayString
+}
+
+iocdrycooler1configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler1 config active"
+   ::= { iocDrycooler1Entry 5400 }
+
+iocdrycooler1manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler1 man.op. active"
+   ::= { iocDrycooler1Entry 5401 }
+
+iocdrycooler1running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler1 running"
+   ::= { iocDrycooler1Entry 5402 }
+
+iocdrycooler1manoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler1 man.op.running"
+   ::= { iocDrycooler1Entry 5404 }
+
+iocdrycooler1starttempwinter OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler1 start temperature winter"
+   ::= { iocDrycooler1Entry 5408 }
+
+iocdrycooler1starttempsummer OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler1 start temperature summer"
+   ::= { iocDrycooler1Entry 5409 }
+
+iocdrycooler1hysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler1 hysteresis"
+   ::= { iocDrycooler1Entry 5410 }
+
+iocdrycooler1alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler1 alarm delay"
+   ::= { iocDrycooler1Entry 5414 }
+
+iocdrycooler1runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler1 runtime"
+   ::= { iocDrycooler1Entry 5415 }
+
+
+
+-- iocDrycooler2 Table
+
+iocDrycooler2Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocDrycooler2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Drycooler 2"
+   ::= { unitTypeAC 18 }
+
+iocDrycooler2Entry OBJECT-TYPE
+   SYNTAX IocDrycooler2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 17 data"
+   INDEX  { iocUnitsId }
+   ::= { iocDrycooler2Table 1 }
+
+IocDrycooler2Entry ::= SEQUENCE {
+   iocdrycooler2configactive INTEGER,
+   iocdrycooler2manopactive INTEGER,
+   iocdrycooler2running INTEGER,
+   iocdrycooler2manoprunning INTEGER,
+   iocdrycooler2starttempwinter DisplayString,
+   iocdrycooler2starttempsummer DisplayString,
+   iocdrycooler2hysteresis DisplayString,
+   iocdrycooler2alarmdelay DisplayString,
+   iocdrycooler2runtime DisplayString
+}
+
+iocdrycooler2configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler2 config active"
+   ::= { iocDrycooler2Entry 5500 }
+
+iocdrycooler2manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler2 man.op. active"
+   ::= { iocDrycooler2Entry 5501 }
+
+iocdrycooler2running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler2 running"
+   ::= { iocDrycooler2Entry 5502 }
+
+iocdrycooler2manoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler2 man.op.running"
+   ::= { iocDrycooler2Entry 5504 }
+
+iocdrycooler2starttempwinter OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler2 start temperature winter"
+   ::= { iocDrycooler2Entry 5508 }
+
+iocdrycooler2starttempsummer OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler2 start temperature summer"
+   ::= { iocDrycooler2Entry 5509 }
+
+iocdrycooler2hysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler2 hysteresis"
+   ::= { iocDrycooler2Entry 5510 }
+
+iocdrycooler2alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler2 alarm delay"
+   ::= { iocDrycooler2Entry 5514 }
+
+iocdrycooler2runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler2 runtime"
+   ::= { iocDrycooler2Entry 5515 }
+
+
+
+-- iocDrycooler3 Table
+
+iocDrycooler3Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocDrycooler3Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Drycooler 3"
+   ::= { unitTypeAC 19 }
+
+iocDrycooler3Entry OBJECT-TYPE
+   SYNTAX IocDrycooler3Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 18 data"
+   INDEX  { iocUnitsId }
+   ::= { iocDrycooler3Table 1 }
+
+IocDrycooler3Entry ::= SEQUENCE {
+   iocdrycooler3configactive INTEGER,
+   iocdrycooler3manopactive INTEGER,
+   iocdrycooler3running INTEGER,
+   iocdrycooler3manoprunning INTEGER,
+   iocdrycooler3starttempwinter DisplayString,
+   iocdrycooler3starttempsummer DisplayString,
+   iocdrycooler3hysteresis DisplayString,
+   iocdrycooler3alarmdelay DisplayString,
+   iocdrycooler3runtime DisplayString
+}
+
+iocdrycooler3configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler3 config active"
+   ::= { iocDrycooler3Entry 5600 }
+
+iocdrycooler3manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler3 man.op. active"
+   ::= { iocDrycooler3Entry 5601 }
+
+iocdrycooler3running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler3 running"
+   ::= { iocDrycooler3Entry 5602 }
+
+iocdrycooler3manoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler3 man.op.running"
+   ::= { iocDrycooler3Entry 5604 }
+
+iocdrycooler3starttempwinter OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler3 start temperature winter"
+   ::= { iocDrycooler3Entry 5608 }
+
+iocdrycooler3starttempsummer OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler3 start temperature summer"
+   ::= { iocDrycooler3Entry 5609 }
+
+iocdrycooler3hysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler3 hysteresis"
+   ::= { iocDrycooler3Entry 5610 }
+
+iocdrycooler3alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler3 alarm delay"
+   ::= { iocDrycooler3Entry 5614 }
+
+iocdrycooler3runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler3 runtime"
+   ::= { iocDrycooler3Entry 5615 }
+
+
+
+-- iocDrycooler4 Table
+
+iocDrycooler4Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocDrycooler4Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Drycooler 4"
+   ::= { unitTypeAC 20 }
+
+iocDrycooler4Entry OBJECT-TYPE
+   SYNTAX IocDrycooler4Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 19 data"
+   INDEX  { iocUnitsId }
+   ::= { iocDrycooler4Table 1 }
+
+IocDrycooler4Entry ::= SEQUENCE {
+   iocdrycooler4configactive INTEGER,
+   iocdrycooler4manopactive INTEGER,
+   iocdrycooler4running INTEGER,
+   iocdrycooler4manoprunning INTEGER,
+   iocdrycooler4starttempwinter DisplayString,
+   iocdrycooler4starttempsummer DisplayString,
+   iocdrycooler4hysteresis DisplayString,
+   iocdrycooler4alarmdelay DisplayString,
+   iocdrycooler4runtime DisplayString
+}
+
+iocdrycooler4configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler4 config active"
+   ::= { iocDrycooler4Entry 5700 }
+
+iocdrycooler4manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler4 man.op. active"
+   ::= { iocDrycooler4Entry 5701 }
+
+iocdrycooler4running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler4 running"
+   ::= { iocDrycooler4Entry 5702 }
+
+iocdrycooler4manoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler4 man.op.running"
+   ::= { iocDrycooler4Entry 5704 }
+
+iocdrycooler4starttempwinter OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler4 start temperature winter"
+   ::= { iocDrycooler4Entry 5708 }
+
+iocdrycooler4starttempsummer OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler4 start temperature summer"
+   ::= { iocDrycooler4Entry 5709 }
+
+iocdrycooler4hysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler4 hysteresis"
+   ::= { iocDrycooler4Entry 5710 }
+
+iocdrycooler4alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler4 alarm delay"
+   ::= { iocDrycooler4Entry 5714 }
+
+iocdrycooler4runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "drycooler4 runtime"
+   ::= { iocDrycooler4Entry 5715 }
+
+
+
+-- iocPump1 Table
+
+iocPump1Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocPump1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Pump 1"
+   ::= { unitTypeAC 21 }
+
+iocPump1Entry OBJECT-TYPE
+   SYNTAX IocPump1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 20 data"
+   INDEX  { iocUnitsId }
+   ::= { iocPump1Table 1 }
+
+IocPump1Entry ::= SEQUENCE {
+   iocpump1configactive INTEGER,
+   iocpump1manopactive INTEGER,
+   iocpump1running INTEGER,
+   iocpump1manoprunning INTEGER,
+   iocpump1type DisplayString,
+   iocpump1starttemperature DisplayString,
+   iocpump1hysteresis DisplayString,
+   iocpump1linearrange DisplayString,
+   iocpump1pressuresetpoint DisplayString,
+   iocpump1alarmdelay DisplayString,
+   iocpump1runtime DisplayString,
+   iocpump1speed DisplayString,
+   iocpump1manopspeed DisplayString,
+   iocpump1ctrlcyc DisplayString,
+   iocpump1maxadj DisplayString,
+   iocpump1ctrlfctr DisplayString
+}
+
+iocpump1configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump1 config active"
+   ::= { iocPump1Entry 5800 }
+
+iocpump1manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump1 man.op. active"
+   ::= { iocPump1Entry 5801 }
+
+iocpump1running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "pump1 running"
+   ::= { iocPump1Entry 5802 }
+
+iocpump1manoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump1 man. op. running"
+   ::= { iocPump1Entry 5805 }
+
+iocpump1type OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump1 type"
+   ::= { iocPump1Entry 5808 }
+
+iocpump1starttemperature OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump1 start-temperature"
+   ::= { iocPump1Entry 5809 }
+
+iocpump1hysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump1 hysteresis"
+   ::= { iocPump1Entry 5810 }
+
+iocpump1linearrange OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump1 linear range"
+   ::= { iocPump1Entry 5811 }
+
+iocpump1pressuresetpoint OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump1 pressure setpoint"
+   ::= { iocPump1Entry 5812 }
+
+iocpump1alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump1 alarm delay"
+   ::= { iocPump1Entry 5817 }
+
+iocpump1runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump1 runtime"
+   ::= { iocPump1Entry 5820 }
+
+iocpump1speed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "pump1 speed"
+   ::= { iocPump1Entry 5821 }
+
+iocpump1manopspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump1 man.op. speed"
+   ::= { iocPump1Entry 5822 }
+
+iocpump1ctrlcyc OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump1 control cycle"
+   ::= { iocPump1Entry 5827 }
+
+iocpump1maxadj OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump1 max.adjust"
+   ::= { iocPump1Entry 5828 }
+
+iocpump1ctrlfctr OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump1 control factor"
+   ::= { iocPump1Entry 5829 }
+
+
+
+-- iocPump2 Table
+
+iocPump2Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocPump2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Pump 2"
+   ::= { unitTypeAC 22 }
+
+iocPump2Entry OBJECT-TYPE
+   SYNTAX IocPump2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 21 data"
+   INDEX  { iocUnitsId }
+   ::= { iocPump2Table 1 }
+
+IocPump2Entry ::= SEQUENCE {
+   iocpump2configactive INTEGER,
+   iocpump2manopactive INTEGER,
+   iocpump2running INTEGER,
+   iocpump2manoprunning INTEGER,
+   iocpump2type DisplayString,
+   iocpump2starttemperature DisplayString,
+   iocpump2hysteresis DisplayString,
+   iocpump2linearrange DisplayString,
+   iocpump2pressuresetpoint DisplayString,
+   iocpump2alarmdelay DisplayString,
+   iocpump2runtime DisplayString,
+   iocpump2speed DisplayString,
+   iocpump2manopspeed DisplayString,
+   iocpump2ctrlcyc DisplayString,
+   iocpump2maxadj DisplayString,
+   iocpump2ctrlfctr DisplayString
+}
+
+iocpump2configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump2 config active"
+   ::= { iocPump2Entry 5900 }
+
+iocpump2manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump2 man.op. active"
+   ::= { iocPump2Entry 5901 }
+
+iocpump2running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "pump2 running"
+   ::= { iocPump2Entry 5902 }
+
+iocpump2manoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump2 man.op. running"
+   ::= { iocPump2Entry 5905 }
+
+iocpump2type OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump2 type"
+   ::= { iocPump2Entry 5908 }
+
+iocpump2starttemperature OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump2 start-temperature"
+   ::= { iocPump2Entry 5909 }
+
+iocpump2hysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump2 hysteresis"
+   ::= { iocPump2Entry 5910 }
+
+iocpump2linearrange OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump2 linear range"
+   ::= { iocPump2Entry 5911 }
+
+iocpump2pressuresetpoint OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump2 pressure setpoint"
+   ::= { iocPump2Entry 5912 }
+
+iocpump2alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump2 alarm delay"
+   ::= { iocPump2Entry 5917 }
+
+iocpump2runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump2 runtime"
+   ::= { iocPump2Entry 5920 }
+
+iocpump2speed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "pump2 speed"
+   ::= { iocPump2Entry 5921 }
+
+iocpump2manopspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump2 man.op. speed"
+   ::= { iocPump2Entry 5922 }
+
+iocpump2ctrlcyc OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump2 control cycle"
+   ::= { iocPump2Entry 5927 }
+
+iocpump2maxadj OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump2 max.adjust"
+   ::= { iocPump2Entry 5928 }
+
+iocpump2ctrlfctr OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump2 control factor"
+   ::= { iocPump2Entry 5929 }
+
+
+
+-- iocPump3 Table
+
+iocPump3Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocPump3Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Pump 3"
+   ::= { unitTypeAC 23 }
+
+iocPump3Entry OBJECT-TYPE
+   SYNTAX IocPump3Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 22 data"
+   INDEX  { iocUnitsId }
+   ::= { iocPump3Table 1 }
+
+IocPump3Entry ::= SEQUENCE {
+   iocpump3configactive INTEGER,
+   iocpump3manopactive INTEGER,
+   iocpump3running INTEGER,
+   iocpump3manoprunning INTEGER,
+   iocpump3type DisplayString,
+   iocpump3starttemperature DisplayString,
+   iocpump3hysteresis DisplayString,
+   iocpump3linearrange DisplayString,
+   iocpump3pressuresetpoint DisplayString,
+   iocpump3alarmdelay DisplayString,
+   iocpump3runtime DisplayString,
+   iocpump3speed DisplayString,
+   iocpump3manopspeed DisplayString,
+   iocpump3ctrlcyc DisplayString,
+   iocpump3maxadj DisplayString,
+   iocpump3ctrlfctr DisplayString
+}
+
+iocpump3configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump3 config active"
+   ::= { iocPump3Entry 6000 }
+
+iocpump3manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump3 man.op. active"
+   ::= { iocPump3Entry 6001 }
+
+iocpump3running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "pump3 running"
+   ::= { iocPump3Entry 6002 }
+
+iocpump3manoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump3 man.op. running"
+   ::= { iocPump3Entry 6005 }
+
+iocpump3type OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump3 type"
+   ::= { iocPump3Entry 6008 }
+
+iocpump3starttemperature OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump3 start-temperature"
+   ::= { iocPump3Entry 6009 }
+
+iocpump3hysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump3 hysteresis"
+   ::= { iocPump3Entry 6010 }
+
+iocpump3linearrange OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump3 linear range"
+   ::= { iocPump3Entry 6011 }
+
+iocpump3pressuresetpoint OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump3 pressure setpoint"
+   ::= { iocPump3Entry 6012 }
+
+iocpump3alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump3 alarm delay"
+   ::= { iocPump3Entry 6017 }
+
+iocpump3runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump3 runtime"
+   ::= { iocPump3Entry 6020 }
+
+iocpump3speed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "pump3 speed"
+   ::= { iocPump3Entry 6021 }
+
+iocpump3manopspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump3 man.op. speed"
+   ::= { iocPump3Entry 6022 }
+
+iocpump3ctrlcyc OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump3 control cycle"
+   ::= { iocPump3Entry 6027 }
+
+iocpump3maxadj OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump3 max.adjust"
+   ::= { iocPump3Entry 6028 }
+
+iocpump3ctrlfctr OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump3 control factor"
+   ::= { iocPump3Entry 6029 }
+
+
+
+-- iocPump4 Table
+
+iocPump4Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocPump4Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Pump 4"
+   ::= { unitTypeAC 24 }
+
+iocPump4Entry OBJECT-TYPE
+   SYNTAX IocPump4Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 23 data"
+   INDEX  { iocUnitsId }
+   ::= { iocPump4Table 1 }
+
+IocPump4Entry ::= SEQUENCE {
+   iocpump4configactive INTEGER,
+   iocpump4manopactive INTEGER,
+   iocpump4running INTEGER,
+   iocpump4manoprunning INTEGER,
+   iocpump4type DisplayString,
+   iocpump4starttemperature DisplayString,
+   iocpump4hysteresis DisplayString,
+   iocpump4linearrange DisplayString,
+   iocpump4pressuresetpoint DisplayString,
+   iocpump4alarmdelay DisplayString,
+   iocpump4runtime DisplayString,
+   iocpump4speed DisplayString,
+   iocpump4manopspeed DisplayString,
+   iocpump4ctrlcyc DisplayString,
+   iocpump4maxadj DisplayString,
+   iocpump4ctrlfctr DisplayString
+}
+
+iocpump4configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump4 config active"
+   ::= { iocPump4Entry 6100 }
+
+iocpump4manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump4 man.op. active"
+   ::= { iocPump4Entry 6101 }
+
+iocpump4running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "pump4 running"
+   ::= { iocPump4Entry 6102 }
+
+iocpump4manoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump4 man.op. running"
+   ::= { iocPump4Entry 6105 }
+
+iocpump4type OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump4 type"
+   ::= { iocPump4Entry 6108 }
+
+iocpump4starttemperature OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump4 start-temperature"
+   ::= { iocPump4Entry 6109 }
+
+iocpump4hysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump4 hysteresis"
+   ::= { iocPump4Entry 6110 }
+
+iocpump4linearrange OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump4 linear range"
+   ::= { iocPump4Entry 6111 }
+
+iocpump4pressuresetpoint OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump4 pressure setpoint"
+   ::= { iocPump4Entry 6112 }
+
+iocpump4alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump4 alarm delay"
+   ::= { iocPump4Entry 6117 }
+
+iocpump4runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump4 runtime"
+   ::= { iocPump4Entry 6120 }
+
+iocpump4speed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "pump4 speed"
+   ::= { iocPump4Entry 6121 }
+
+iocpump4manopspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump4 man.op. speed"
+   ::= { iocPump4Entry 6122 }
+
+iocpump4ctrlcyc OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump4 control cycle"
+   ::= { iocPump4Entry 6127 }
+
+iocpump4maxadj OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump4 max.adjust"
+   ::= { iocPump4Entry 6128 }
+
+iocpump4ctrlfctr OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "pump4 control factor"
+   ::= { iocPump4Entry 6129 }
+
+
+
+-- iocHotgasheating Table
+
+iocHotgasheatingTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocHotgasheatingEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Hot-gas-heating"
+   ::= { unitTypeAC 25 }
+
+iocHotgasheatingEntry OBJECT-TYPE
+   SYNTAX IocHotgasheatingEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 24 data"
+   INDEX  { iocUnitsId }
+   ::= { iocHotgasheatingTable 1 }
+
+IocHotgasheatingEntry ::= SEQUENCE {
+   iochotgasheatconfigactive INTEGER,
+   iochotgasheatmanopactive INTEGER,
+   iochotgasheatrunning INTEGER,
+   iochotgasheatmanoprunning INTEGER,
+   iochotgasheatstarttemp DisplayString,
+   iochotgasheathysteresis DisplayString
+}
+
+iochotgasheatconfigactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "hotgas-heat.config active"
+   ::= { iocHotgasheatingEntry 6200 }
+
+iochotgasheatmanopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "hotgas-heat.man.op. active"
+   ::= { iocHotgasheatingEntry 6201 }
+
+iochotgasheatrunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "hotgas-heat.running"
+   ::= { iocHotgasheatingEntry 6202 }
+
+iochotgasheatmanoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "hotgas-heat.man.op. running"
+   ::= { iocHotgasheatingEntry 6203 }
+
+iochotgasheatstarttemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "hotgas-heat.start temp."
+   ::= { iocHotgasheatingEntry 6208 }
+
+iochotgasheathysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "hotgas-heat.hysteresis"
+   ::= { iocHotgasheatingEntry 6209 }
+
+
+-- iocPWWheating Table
+
+iocPWWheatingTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocPWWheatingEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table PWW-heating"
+   ::= { unitTypeAC 26 }
+
+iocPWWheatingEntry OBJECT-TYPE
+   SYNTAX IocPWWheatingEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 25 data"
+   INDEX  { iocUnitsId }
+   ::= { iocPWWheatingTable 1 }
+
+IocPWWheatingEntry ::= SEQUENCE {
+   iocPWWheatconfigactive INTEGER,
+   iocPWWheatmanopactive INTEGER,
+   iocPWWheatrunning INTEGER,
+   iocPWWheatmanoprunning INTEGER,
+   iocPWWheattype DisplayString,
+   iocPWWheatstarttemperature DisplayString,
+   iocPWWheathysteresis DisplayString,
+   iocPWWheatlinearrange DisplayString,
+   iocPWWheatcurrentvalue DisplayString,
+   iocPWWheatmanopvalue DisplayString
+}
+
+iocPWWheatconfigactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "PWW-heat.config active"
+   ::= { iocPWWheatingEntry 6300 }
+
+iocPWWheatmanopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "PWW-heat.man.op.active"
+   ::= { iocPWWheatingEntry 6301 }
+
+iocPWWheatrunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "PWW-heat.running"
+   ::= { iocPWWheatingEntry 6302 }
+
+iocPWWheatmanoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "PWW-heat.man.op. running"
+   ::= { iocPWWheatingEntry 6303 }
+
+iocPWWheattype OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "PWW-heat.type"
+   ::= { iocPWWheatingEntry 6308 }
+
+iocPWWheatstarttemperature OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "PWW-heat.start-temperature"
+   ::= { iocPWWheatingEntry 6309 }
+
+iocPWWheathysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "PWW-heat.hysteresis"
+   ::= { iocPWWheatingEntry 6311 }
+
+iocPWWheatlinearrange OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "PWW-heat.linear range"
+   ::= { iocPWWheatingEntry 6312 }
+
+iocPWWheatcurrentvalue OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "PWW-heat.current value"
+   ::= { iocPWWheatingEntry 6315 }
+
+iocPWWheatmanopvalue OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "PWW-heat.man.op. value"
+   ::= { iocPWWheatingEntry 6316 }
+
+
+
+-- iochumidifier1 Table
+
+iochumidifier1Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF Iochumidifier1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table humidifier 1"
+   ::= { unitTypeAC 27 }
+
+iochumidifier1Entry OBJECT-TYPE
+   SYNTAX Iochumidifier1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 26 data"
+   INDEX  { iocUnitsId }
+   ::= { iochumidifier1Table 1 }
+
+Iochumidifier1Entry ::= SEQUENCE {
+   iochumidifier1configactive INTEGER,
+   iochumidifier1manopactive INTEGER,
+   iochumidifier1running INTEGER,
+   iochumidifier1manoprunning INTEGER,
+   iochumidifier1type DisplayString,
+   iochumidifier1starthumidity DisplayString,
+   iochumidifier1hysteresis DisplayString,
+   iochumidifier1linearrange DisplayString,
+   iochumidifier1alarmdelay DisplayString,
+   iochumidifier1runtime DisplayString,
+   iochumidifier1currentvalue DisplayString,
+   iochumidifier1manopvalue DisplayString
+}
+
+iochumidifier1configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier1 config active"
+   ::= { iochumidifier1Entry 6400 }
+
+iochumidifier1manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier1 man.op. active"
+   ::= { iochumidifier1Entry 6401 }
+
+iochumidifier1running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier1 running"
+   ::= { iochumidifier1Entry 6402 }
+
+iochumidifier1manoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier1 man.op. running"
+   ::= { iochumidifier1Entry 6404 }
+
+iochumidifier1type OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier1 type"
+   ::= { iochumidifier1Entry 6416 }
+
+iochumidifier1starthumidity OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier1 start humidity"
+   ::= { iochumidifier1Entry 6417 }
+
+iochumidifier1hysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier1 hysteresis"
+   ::= { iochumidifier1Entry 6419 }
+
+iochumidifier1linearrange OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier1 linear range"
+   ::= { iochumidifier1Entry 6420 }
+
+iochumidifier1alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier1 alarm delay"
+   ::= { iochumidifier1Entry 6425 }
+
+iochumidifier1runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier1 runtime"
+   ::= { iochumidifier1Entry 6426 }
+
+iochumidifier1currentvalue OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier1 current value"
+   ::= { iochumidifier1Entry 6427 }
+
+iochumidifier1manopvalue OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier1 man.op. value"
+   ::= { iochumidifier1Entry 6428 }
+
+
+
+-- iochumidifier2 Table
+
+iochumidifier2Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF Iochumidifier2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table humidifier 2"
+   ::= { unitTypeAC 28 }
+
+iochumidifier2Entry OBJECT-TYPE
+   SYNTAX Iochumidifier2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 27 data"
+   INDEX  { iocUnitsId }
+   ::= { iochumidifier2Table 1 }
+
+Iochumidifier2Entry ::= SEQUENCE {
+   iochumidifier2configactive INTEGER,
+   iochumidifier2manopactive INTEGER,
+   iochumidifier2running INTEGER,
+   iochumidifier2manoprunning INTEGER,
+   iochumidifier2type DisplayString,
+   iochumidifier2starthumidity DisplayString,
+   iochumidifier2hysteresis DisplayString,
+   iochumidifier2linearrange DisplayString,
+   iochumidifier2alarmdelay DisplayString,
+   iochumidifier2runtime DisplayString,
+   iochumidifier2currentvalue DisplayString,
+   iochumidifier2manopvalue DisplayString
+}
+
+iochumidifier2configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier2 config active"
+   ::= { iochumidifier2Entry 6500 }
+
+iochumidifier2manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier2 man.op. active"
+   ::= { iochumidifier2Entry 6501 }
+
+iochumidifier2running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier2 running"
+   ::= { iochumidifier2Entry 6502 }
+
+iochumidifier2manoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier2 man.op. running"
+   ::= { iochumidifier2Entry 6504 }
+
+
+iochumidifier2type OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier2 type"
+   ::= { iochumidifier2Entry 6516 }
+
+iochumidifier2starthumidity OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier2 start humidity"
+   ::= { iochumidifier2Entry 6517 }
+
+iochumidifier2hysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier2 hysteresis"
+   ::= { iochumidifier2Entry 6519 }
+
+iochumidifier2linearrange OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier2 linear range"
+   ::= { iochumidifier2Entry 6520 }
+
+iochumidifier2alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier2 alarm delay"
+   ::= { iochumidifier2Entry 6525 }
+
+iochumidifier2runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier2 runtime"
+   ::= { iochumidifier2Entry 6526 }
+
+iochumidifier2currentvalue OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier2 current value"
+   ::= { iochumidifier2Entry 6527 }
+
+iochumidifier2manopvalue OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "humidifier2 man.op. value"
+   ::= { iochumidifier2Entry 6528 }
+
+
+-- iocDehumidification Table
+
+iocDehumidificationTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocDehumidificationEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Dehumidification"
+   ::= { unitTypeAC 31 }
+
+iocDehumidificationEntry OBJECT-TYPE
+   SYNTAX IocDehumidificationEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 30 data"
+   INDEX  { iocUnitsId }
+   ::= { iocDehumidificationTable 1 }
+
+IocDehumidificationEntry ::= SEQUENCE {
+   iocdehumidificconfigactive INTEGER,
+   iocdehumidificmanopactive INTEGER,
+   iocdehumidificrunning INTEGER,
+   iocdehumidificmanoprunning INTEGER,
+   iocdehumidificstarthumid DisplayString,
+   iocdehumidifichysteresis DisplayString,
+   iocdehumidificminwatertemp DisplayString,
+   iocdehumidificmaxwatertemp DisplayString,
+   iocdehumidificalarmdelay DisplayString,
+   iocdehumidificruntime DisplayString
+}
+
+iocdehumidificconfigactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "dehumidific.config active"
+   ::= { iocDehumidificationEntry 6800 }
+
+iocdehumidificmanopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "dehumidific.man.op. active"
+   ::= { iocDehumidificationEntry 6801 }
+
+iocdehumidificrunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "dehumidific.running"
+   ::= { iocDehumidificationEntry 6802 }
+
+iocdehumidificmanoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "dehumidific.man.op. running"
+   ::= { iocDehumidificationEntry 6804 }
+
+iocdehumidificstarthumid OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "dehumidific.start-humid."
+   ::= { iocDehumidificationEntry 6809 }
+
+iocdehumidifichysteresis OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "dehumidific.hysteresis"
+   ::= { iocDehumidificationEntry 6811 }
+
+iocdehumidificminwatertemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "dehumidific.min.water temp."
+   ::= { iocDehumidificationEntry 6817 }
+
+iocdehumidificmaxwatertemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "dehumidific.max.water temp."
+   ::= { iocDehumidificationEntry 6818 }
+
+iocdehumidificalarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "dehumidific.alarm delay"
+   ::= { iocDehumidificationEntry 6819 }
+
+iocdehumidificruntime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "dehumidific.runtime"
+   ::= { iocDehumidificationEntry 6820 }
+
+
+
+-- iocFan1 Table
+
+iocFan1Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocFan1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Fan 1"
+   ::= { unitTypeAC 32 }
+
+iocFan1Entry OBJECT-TYPE
+   SYNTAX IocFan1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 31 data"
+   INDEX  { iocUnitsId }
+   ::= { iocFan1Table 1 }
+
+IocFan1Entry ::= SEQUENCE {
+   iocfan1configactive INTEGER,
+   iocfan1manopactive INTEGER,
+   iocfan1running INTEGER,
+   iocfan1manoprunning INTEGER,
+   iocfan1type DisplayString,
+   iocfan1speednmax DisplayString,
+   iocfan1CWmodespeednmax DisplayString,
+   iocfan1starttemp DisplayString,
+   iocfan1startspeed DisplayString,
+   iocfan1start100time DisplayString,
+   iocfan1reducetime DisplayString,
+   iocfan1reducespeed DisplayString,
+   iocfan1offset DisplayString,
+   iocfan1dehumspeed DisplayString,
+   iocfan1upsspeed DisplayString,
+   iocfan1alarmdelay DisplayString,
+   iocfan1filteralarmdelay DisplayString,
+   iocfan1runtime DisplayString,
+   iocfan1speed DisplayString,
+   iocfan1manopspeed DisplayString,
+   iocfan1minspeed DisplayString
+}
+
+iocfan1configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 config active"
+   ::= { iocFan1Entry 6900 }
+
+iocfan1manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 man.op. active"
+   ::= { iocFan1Entry 6901 }
+
+iocfan1running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 running"
+   ::= { iocFan1Entry 6902 }
+
+iocfan1manoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 man.op. running"
+   ::= { iocFan1Entry 6905 }
+
+iocfan1type OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 type"
+   ::= { iocFan1Entry 6908 }
+
+iocfan1speednmax OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 speed nmax"
+   ::= { iocFan1Entry 6909 }
+
+iocfan1CWmodespeednmax OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 CW-mode speed nmax"
+   ::= { iocFan1Entry 6910 }
+
+iocfan1starttemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 start temp"
+   ::= { iocFan1Entry 6913 }
+
+iocfan1startspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 start speed"
+   ::= { iocFan1Entry 6914 }
+
+iocfan1start100time OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 start 100% time"
+   ::= { iocFan1Entry 6916 }
+
+iocfan1reducetime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 reduce time"
+   ::= { iocFan1Entry 6917 }
+
+iocfan1reducespeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 reduce speed"
+   ::= { iocFan1Entry 6918 }
+
+iocfan1offset OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 offset"
+   ::= { iocFan1Entry 6919 }
+
+iocfan1dehumspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 dehum.speed"
+   ::= { iocFan1Entry 6920 }
+
+iocfan1upsspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 ups speed"
+   ::= { iocFan1Entry 6921 }
+
+iocfan1alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 alarm delay"
+   ::= { iocFan1Entry 6927 }
+
+iocfan1filteralarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 filter alarm delay"
+   ::= { iocFan1Entry 6930 }
+
+iocfan1runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 runtime"
+   ::= { iocFan1Entry 6931 }
+
+iocfan1speed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 speed"
+   ::= { iocFan1Entry 6932 }
+
+iocfan1manopspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 man.op. speed"
+   ::= { iocFan1Entry 6933 }
+
+iocfan1minspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan1 min speed"
+   ::= { iocFan1Entry 6934 }
+
+
+
+-- iocFan2 Table
+
+iocFan2Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocFan2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Fan 2"
+   ::= { unitTypeAC 33 }
+
+iocFan2Entry OBJECT-TYPE
+   SYNTAX IocFan2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 32 data"
+   INDEX  { iocUnitsId }
+   ::= { iocFan2Table 1 }
+
+IocFan2Entry ::= SEQUENCE {
+   iocfan2configactive INTEGER,
+   iocfan2manopactive INTEGER,
+   iocfan2running INTEGER,
+   iocfan2manoprunning INTEGER,
+   iocfan2type DisplayString,
+   iocfan2speednmax DisplayString,
+   iocfan2CWmodespeednmax DisplayString,
+   iocfan2starttemp DisplayString,
+   iocfan2startspeed DisplayString,
+   iocfan2start100time DisplayString,
+   iocfan2reducetime DisplayString,
+   iocfan2reducespeed DisplayString,
+   iocfan2offset DisplayString,
+   iocfan2dehumspeed DisplayString,
+   iocfan2upsspeed DisplayString,
+   iocfan2alarmdelay DisplayString,
+   iocfan2filteralarmdelay DisplayString,
+   iocfan2runtime DisplayString,
+   iocfan2speed DisplayString,
+   iocfan2manopspeed DisplayString,
+   iocfan2minspeed DisplayString
+}
+
+iocfan2configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 config active"
+   ::= { iocFan2Entry 7000 }
+
+iocfan2manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 man.op. active"
+   ::= { iocFan2Entry 7001 }
+
+iocfan2running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 running"
+   ::= { iocFan2Entry 7002 }
+
+iocfan2manoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 man.op. running"
+   ::= { iocFan2Entry 7005 }
+
+iocfan2type OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 type"
+   ::= { iocFan2Entry 7008 }
+
+iocfan2speednmax OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 speed nmax"
+   ::= { iocFan2Entry 7009 }
+
+iocfan2CWmodespeednmax OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 CW-mode speed nmax"
+   ::= { iocFan2Entry 7010 }
+
+iocfan2starttemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 start temp"
+   ::= { iocFan2Entry 7013 }
+
+iocfan2startspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 start speed"
+   ::= { iocFan2Entry 7014 }
+
+iocfan2start100time OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 start 100% time"
+   ::= { iocFan2Entry 7016 }
+
+iocfan2reducetime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 reduce time"
+   ::= { iocFan2Entry 7017 }
+
+iocfan2reducespeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 reduce speed"
+   ::= { iocFan2Entry 7018 }
+
+iocfan2offset OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 offset"
+   ::= { iocFan2Entry 7019 }
+
+iocfan2dehumspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 dehum.speed"
+   ::= { iocFan2Entry 7020 }
+
+iocfan2upsspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 ups speed"
+   ::= { iocFan2Entry 7021 }
+
+iocfan2alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 alarm delay"
+   ::= { iocFan2Entry 7027 }
+
+iocfan2filteralarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 filter alarm delay"
+   ::= { iocFan2Entry 7030 }
+
+iocfan2runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 runtime"
+   ::= { iocFan2Entry 7031 }
+
+iocfan2speed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 speed"
+   ::= { iocFan2Entry 7032 }
+
+iocfan2manopspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 man.op. speed"
+   ::= { iocFan2Entry 7033 }
+
+iocfan2minspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan2 min speed"
+   ::= { iocFan2Entry 7034 }
+
+
+
+-- iocFan3 Table
+
+iocFan3Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocFan3Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Fan 3"
+   ::= { unitTypeAC 34 }
+
+iocFan3Entry OBJECT-TYPE
+   SYNTAX IocFan3Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 33 data"
+   INDEX  { iocUnitsId }
+   ::= { iocFan3Table 1 }
+
+IocFan3Entry ::= SEQUENCE {
+   iocfan3configactive INTEGER,
+   iocfan3manopactive INTEGER,
+   iocfan3running INTEGER,
+   iocfan3manoprunning INTEGER,
+   iocfan3type DisplayString,
+   iocfan3speednmax DisplayString,
+   iocfan3CWmodespeednmax DisplayString,
+   iocfan3starttemp DisplayString,
+   iocfan3startspeed DisplayString,
+   iocfan3start100time DisplayString,
+   iocfan3reducetime DisplayString,
+   iocfan3reducespeed DisplayString,
+   iocfan3offset DisplayString,
+   iocfan3dehumspeed DisplayString,
+   iocfan3upsspeed DisplayString,
+   iocfan3alarmdelay DisplayString,
+   iocfan3filteralarmdelay DisplayString,
+   iocfan3runtime DisplayString,
+   iocfan3speed DisplayString,
+   iocfan3manopspeed DisplayString,
+   iocfan3minspeed DisplayString
+}
+
+iocfan3configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 config active"
+   ::= { iocFan3Entry 7100 }
+
+iocfan3manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 man.op. active"
+   ::= { iocFan3Entry 7101 }
+
+iocfan3running OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 running"
+   ::= { iocFan3Entry 7102 }
+
+iocfan3manoprunning OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 man.op. running"
+   ::= { iocFan3Entry 7105 }
+
+iocfan3type OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 type"
+   ::= { iocFan3Entry 7108 }
+
+iocfan3speednmax OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 speed nmax"
+   ::= { iocFan3Entry 7109 }
+
+iocfan3CWmodespeednmax OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 CW-mode speed nmax"
+   ::= { iocFan3Entry 7110 }
+
+iocfan3starttemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 start temp"
+   ::= { iocFan3Entry 7113 }
+
+iocfan3startspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 start speed"
+   ::= { iocFan3Entry 7114 }
+
+iocfan3start100time OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 start 100% time"
+   ::= { iocFan3Entry 7116 }
+
+iocfan3reducetime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 reduce time"
+   ::= { iocFan3Entry 7117 }
+
+iocfan3reducespeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 reduce speed"
+   ::= { iocFan3Entry 7118 }
+
+iocfan3offset OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 offset"
+   ::= { iocFan3Entry 7119 }
+
+iocfan3dehumspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 dehum.speed"
+   ::= { iocFan3Entry 7120 }
+
+iocfan3upsspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 ups speed"
+   ::= { iocFan3Entry 7121 }
+
+iocfan3alarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 alarm delay"
+   ::= { iocFan3Entry 7127 }
+
+iocfan3filteralarmdelay OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 filter alarm delay"
+   ::= { iocFan3Entry 7130 }
+
+iocfan3runtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 runtime"
+   ::= { iocFan3Entry 7131 }
+
+iocfan3speed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 speed"
+   ::= { iocFan3Entry 7132 }
+
+iocfan3manopspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 man.op. speed"
+   ::= { iocFan3Entry 7133 }
+
+iocfan3minspeed OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "fan3 min speed"
+   ::= { iocFan3Entry 7134 }
+
+
+
+-- iocLouver1 Table
+
+iocLouver1Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocLouver1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Louver 1"
+   ::= { unitTypeAC 35 }
+
+iocLouver1Entry OBJECT-TYPE
+   SYNTAX IocLouver1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 34 data"
+   INDEX  { iocUnitsId }
+   ::= { iocLouver1Table 1 }
+
+IocLouver1Entry ::= SEQUENCE {
+   ioclouver1configactive INTEGER,
+   ioclouver1manopactive INTEGER,
+   ioclouver1open INTEGER,
+   ioclouver1manopopen INTEGER
+}
+
+ioclouver1configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "louver1 config active"
+   ::= { iocLouver1Entry 7200 }
+
+ioclouver1manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "louver1 man.op. active"
+   ::= { iocLouver1Entry 7201 }
+
+ioclouver1open OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "louver1 open"
+   ::= { iocLouver1Entry 7202 }
+
+ioclouver1manopopen OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "louver1 man.op. open"
+   ::= { iocLouver1Entry 7203 }
+
+
+
+-- iocLouver2 Table
+
+iocLouver2Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocLouver2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Louver 2"
+   ::= { unitTypeAC 36 }
+
+iocLouver2Entry OBJECT-TYPE
+   SYNTAX IocLouver2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 35 data"
+   INDEX  { iocUnitsId }
+   ::= { iocLouver2Table 1 }
+
+IocLouver2Entry ::= SEQUENCE {
+   ioclouver2configactive INTEGER,
+   ioclouver2manopactive INTEGER,
+   ioclouver2open INTEGER,
+   ioclouver2manopopen INTEGER
+}
+
+ioclouver2configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "louver2 config active"
+   ::= { iocLouver2Entry 7300 }
+
+ioclouver2manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "louver2 man.op. active"
+   ::= { iocLouver2Entry 7301 }
+
+ioclouver2open OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "louver2 open"
+   ::= { iocLouver2Entry 7302 }
+
+ioclouver2manopopen OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "louver2 man.op. open"
+   ::= { iocLouver2Entry 7303 }
+
+
+
+-- iocLouver3 Table
+
+iocLouver3Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocLouver3Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Louver 3"
+   ::= { unitTypeAC 37 }
+
+iocLouver3Entry OBJECT-TYPE
+   SYNTAX IocLouver3Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 36 data"
+   INDEX  { iocUnitsId }
+   ::= { iocLouver3Table 1 }
+
+IocLouver3Entry ::= SEQUENCE {
+   ioclouver3configactive INTEGER,
+   ioclouver3manopactive INTEGER,
+   ioclouver3open INTEGER,
+   ioclouver3manopopen INTEGER
+}
+
+ioclouver3configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "louver3 config active"
+   ::= { iocLouver3Entry 7400 }
+
+ioclouver3manopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "louver3 man.op. active"
+   ::= { iocLouver3Entry 7401 }
+
+ioclouver3open OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "louver3 open"
+   ::= { iocLouver3Entry 7402 }
+
+ioclouver3manopopen OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "louver3 man.op. open"
+   ::= { iocLouver3Entry 7403 }
+
+
+
+-- iocAuxAlarm1 Table
+
+iocAuxAlarm1Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocAuxAlarm1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Aux Alarm 1"
+   ::= { unitTypeAC 38 }
+
+iocAuxAlarm1Entry OBJECT-TYPE
+   SYNTAX IocAuxAlarm1Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 37 data"
+   INDEX  { iocUnitsId }
+   ::= { iocAuxAlarm1Table 1 }
+
+IocAuxAlarm1Entry ::= SEQUENCE {
+   iocextalarm1configactive INTEGER
+}
+
+iocextalarm1configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "ext.alarm 1 config active"
+   ::= { iocAuxAlarm1Entry 7500 }
+
+
+
+-- iocAuxAlarm2 Table
+
+iocAuxAlarm2Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocAuxAlarm2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Aux Alarm 2"
+   ::= { unitTypeAC 39 }
+
+iocAuxAlarm2Entry OBJECT-TYPE
+   SYNTAX IocAuxAlarm2Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 38 data"
+   INDEX  { iocUnitsId }
+   ::= { iocAuxAlarm2Table 1 }
+
+IocAuxAlarm2Entry ::= SEQUENCE {
+   iocextalarm2configactive INTEGER
+}
+
+iocextalarm2configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "ext.alarm 2 config active"
+   ::= { iocAuxAlarm2Entry 7600 }
+
+
+
+-- iocAuxAlarm3 Table
+
+iocAuxAlarm3Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocAuxAlarm3Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Aux Alarm 3"
+   ::= { unitTypeAC 40 }
+
+iocAuxAlarm3Entry OBJECT-TYPE
+   SYNTAX IocAuxAlarm3Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 39 data"
+   INDEX  { iocUnitsId }
+   ::= { iocAuxAlarm3Table 1 }
+
+IocAuxAlarm3Entry ::= SEQUENCE {
+   iocextalarm3configactive INTEGER
+}
+
+iocextalarm3configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "ext.alarm 3 config active"
+   ::= { iocAuxAlarm3Entry 7700 }
+
+
+
+-- iocAuxAlarm4 Table
+
+iocAuxAlarm4Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocAuxAlarm4Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Aux Alarm 4"
+   ::= { unitTypeAC 41 }
+
+iocAuxAlarm4Entry OBJECT-TYPE
+   SYNTAX IocAuxAlarm4Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 40 data"
+   INDEX  { iocUnitsId }
+   ::= { iocAuxAlarm4Table 1 }
+
+IocAuxAlarm4Entry ::= SEQUENCE {
+   iocextalarm4configactive INTEGER
+}
+
+iocextalarm4configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "ext.alarm 4 config active"
+   ::= { iocAuxAlarm4Entry 7800 }
+
+
+
+-- iocAuxAlarm5 Table
+
+iocAuxAlarm5Table OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocAuxAlarm5Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Aux Alarm 5"
+   ::= { unitTypeAC 42 }
+
+iocAuxAlarm5Entry OBJECT-TYPE
+   SYNTAX IocAuxAlarm5Entry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 41 data"
+   INDEX  { iocUnitsId }
+   ::= { iocAuxAlarm5Table 1 }
+
+IocAuxAlarm5Entry ::= SEQUENCE {
+   iocextalarm5configactive INTEGER
+}
+
+iocextalarm5configactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+        "ext.alarm 5 config active"
+   ::= { iocAuxAlarm5Entry 7900 }
+
+
+-- iocAlarmBits Table
+
+iocAlarmBitsTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocAlarmBitsEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Alarm-Bits"
+   ::= { unitTypeAC 43 }
+
+iocAlarmBitsEntry OBJECT-TYPE
+   SYNTAX IocAlarmBitsEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 44 data"
+   INDEX  { iocUnitsId }
+   ::= { iocAlarmBitsTable 1 }
+
+IocAlarmBitsEntry ::= SEQUENCE {
+   iocFan1failure INTEGER,
+   iocFan2failure INTEGER,
+   iocFan3failure INTEGER,
+   iocCompressor1failure INTEGER,
+   iocCompressor2failure INTEGER,
+   iocWaterdetector INTEGER,
+   iocPhasefailure INTEGER,
+   iocFiresmokedetector INTEGER,
+   iocReturnairtemptoohigh INTEGER,
+   iocReturnairhumidtoohigh INTEGER,
+   iocSupplyairtemptoohigh INTEGER,
+   iocSupplyairhumidtoohigh INTEGER,
+   iocWatertemptoohigh INTEGER,
+   iocReturnairtemptoolow INTEGER,
+   iocReturnairhumidtoolow INTEGER,
+   iocSupplyairtemptoolow INTEGER,
+   iocSupplyairhumidtoolow INTEGER,
+   iocWatertemptoolow INTEGER,
+   iocSensorfailure INTEGER,
+   iocCompressor1lowpressure INTEGER,
+   iocCompressor2lowpressure INTEGER,
+   iocReheat1failure INTEGER,
+   iocReheat2failure INTEGER,
+   iocReheat3failure INTEGER,
+   iocReheat4failure INTEGER,
+   iocDrycooler1failure INTEGER,
+   iocDrycooler2failure INTEGER,
+   iocDrycooler3failure INTEGER,
+   iocDrycooler4failure INTEGER,
+   iocPump1failure INTEGER,
+   iocPump2failure INTEGER,
+   iocPump3failure INTEGER,
+   iocPump4failure INTEGER,
+   iocHumidifier1failure INTEGER,
+   iocHumidifier2failure INTEGER,
+   iocConductivity1toohigh INTEGER,
+   iocConductivity2toohigh INTEGER,
+   iocFilter1clogged INTEGER,
+   iocFilter2clogged INTEGER,
+   iocFilter3clogged INTEGER,
+   iocAuxalarm1 INTEGER,
+   iocAuxalarm2 INTEGER,
+   iocAuxalarm3 INTEGER,
+   iocAuxalarm4 INTEGER,
+   iocAuxalarm5 INTEGER,
+   iocAuxalarm6 INTEGER,
+   iocAuxalarm7 INTEGER,
+   iocAuxalarm8 INTEGER,
+   iocAuxalarm9 INTEGER,
+   iocAuxalarm10 INTEGER
+}
+
+iocFan1failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Fan 1 failure"
+   ::= { iocAlarmBitsEntry 8500 }
+
+iocFan2failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Fan 2 failure"
+   ::= { iocAlarmBitsEntry 8501 }
+
+iocFan3failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Fan 3 failure"
+   ::= { iocAlarmBitsEntry 8502 }
+
+iocCompressor1failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Compressor 1 failure"
+   ::= { iocAlarmBitsEntry 8503 }
+
+iocCompressor2failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Compressor 2 failure"
+   ::= { iocAlarmBitsEntry 8504 }
+
+iocWaterdetector OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Water detector"
+   ::= { iocAlarmBitsEntry 8505 }
+
+iocPhasefailure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Phase failure"
+   ::= { iocAlarmBitsEntry 8506 }
+
+iocFiresmokedetector OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Fire/smoke detector"
+   ::= { iocAlarmBitsEntry 8507 }
+
+iocReturnairtemptoohigh OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Return air temp. too high"
+   ::= { iocAlarmBitsEntry 8508 }
+
+iocReturnairhumidtoohigh OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Return air humid. too high"
+   ::= { iocAlarmBitsEntry 8509 }
+
+iocSupplyairtemptoohigh OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Supply air temp. too high"
+   ::= { iocAlarmBitsEntry 8510 }
+
+iocSupplyairhumidtoohigh OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Supply air humid. too high"
+   ::= { iocAlarmBitsEntry 8511 }
+
+iocWatertemptoohigh OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Water temp. too high"
+   ::= { iocAlarmBitsEntry 8512 }
+
+iocReturnairtemptoolow OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Return air temp. too low"
+   ::= { iocAlarmBitsEntry 8513 }
+
+iocReturnairhumidtoolow OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Return air humid. too low"
+   ::= { iocAlarmBitsEntry 8514 }
+
+iocSupplyairtemptoolow OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Supply air temp. too low"
+   ::= { iocAlarmBitsEntry 8515 }
+
+iocSupplyairhumidtoolow OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Supply air humid. too low"
+   ::= { iocAlarmBitsEntry 8516 }
+
+iocWatertemptoolow OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Water temp. too low"
+   ::= { iocAlarmBitsEntry 8517 }
+
+iocSensorfailure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Sensor failure"
+   ::= { iocAlarmBitsEntry 8518 }
+
+iocCompressor1lowpressure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Compressor 1 low pressure"
+   ::= { iocAlarmBitsEntry 8562 }
+
+iocCompressor2lowpressure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Compressor 2 low pressure"
+   ::= { iocAlarmBitsEntry 8563 }
+
+iocReheat1failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Reheat 1 failure"
+   ::= { iocAlarmBitsEntry 8564 }
+
+iocReheat2failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Reheat 2 failure"
+   ::= { iocAlarmBitsEntry 8565 }
+
+iocReheat3failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Reheat 3 failure"
+   ::= { iocAlarmBitsEntry 8566 }
+
+iocReheat4failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Reheat 4 failure"
+   ::= { iocAlarmBitsEntry 8567 }
+
+iocDrycooler1failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Drycooler 1 failure"
+   ::= { iocAlarmBitsEntry 8568 }
+
+iocDrycooler2failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Drycooler 2 failure"
+   ::= { iocAlarmBitsEntry 8569 }
+
+iocDrycooler3failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Drycooler 3 failure"
+   ::= { iocAlarmBitsEntry 8570 }
+
+iocDrycooler4failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Drycooler 4 failure"
+   ::= { iocAlarmBitsEntry 8571 }
+
+iocPump1failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Pump 1 failure"
+   ::= { iocAlarmBitsEntry 8572 }
+
+iocPump2failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Pump 2 failure"
+   ::= { iocAlarmBitsEntry 8573 }
+
+iocPump3failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Pump 3 failure"
+   ::= { iocAlarmBitsEntry 8574 }
+
+iocPump4failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Pump 4 failure"
+   ::= { iocAlarmBitsEntry 8575 }
+
+iocHumidifier1failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Humidifier 1 failure"
+   ::= { iocAlarmBitsEntry 8576 }
+
+iocHumidifier2failure OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Humidifier 2 failure"
+   ::= { iocAlarmBitsEntry 8577 }
+
+iocConductivity1toohigh OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Conductivity 1 too high"
+   ::= { iocAlarmBitsEntry 8579 }
+
+iocConductivity2toohigh OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Conductivity 2 too high"
+   ::= { iocAlarmBitsEntry 8580 }
+
+iocFilter1clogged OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Filter 1 clogged"
+   ::= { iocAlarmBitsEntry 8588 }
+
+iocFilter2clogged OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Filter 2 clogged"
+   ::= { iocAlarmBitsEntry 8589 }
+
+iocFilter3clogged OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Filter 3 clogged"
+   ::= { iocAlarmBitsEntry 8590 }
+
+iocAuxalarm1 OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Aux. alarm 1"
+   ::= { iocAlarmBitsEntry 8591 }
+
+iocAuxalarm2 OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Aux. alarm 2"
+   ::= { iocAlarmBitsEntry 8592 }
+
+iocAuxalarm3 OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Aux. alarm 3"
+   ::= { iocAlarmBitsEntry 8593 }
+
+iocAuxalarm4 OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Aux. alarm 4"
+   ::= { iocAlarmBitsEntry 8594 }
+
+iocAuxalarm5 OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Aux. alarm 5"
+   ::= { iocAlarmBitsEntry 8595 }
+
+iocAuxalarm6 OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Aux. alarm 6"
+   ::= { iocAlarmBitsEntry 8596 }
+
+iocAuxalarm7 OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Aux. alarm 7"
+   ::= { iocAlarmBitsEntry 8597 }
+
+iocAuxalarm8 OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Aux. alarm 8"
+   ::= { iocAlarmBitsEntry 8598 }
+
+iocAuxalarm9 OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Aux. alarm 9"
+   ::= { iocAlarmBitsEntry 8599 }
+
+iocAuxalarm10 OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok (0),
+      alarm (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "Aux. alarm 10"
+   ::= { iocAlarmBitsEntry 8600 }
+
+
+-- iocMyZone Table
+
+iocMyZoneTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocMyZoneEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table MyZone"
+   ::= { unitTypeAC 44 }
+
+iocMyZoneEntry OBJECT-TYPE
+   SYNTAX IocMyZoneEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 42 data"
+   INDEX  { iocUnitsId }
+   ::= { iocMyZoneTable 1 }
+
+IocMyZoneEntry ::= SEQUENCE {
+   iocmyzone DisplayString,
+   iocmyzoneroomtemperature DisplayString,
+   iocmyzoneroomhumidity DisplayString,
+   iocmyzonesupplytemperature DisplayString,
+   iocmyzonesupplyhumidity DisplayString,
+   iocmyzonesequencingtime DisplayString,
+   iocmyzonenroferrorunits DisplayString,
+   iocmyzoneemergencytemp DisplayString,
+   iocmyzoneCWensaveactive INTEGER
+}
+
+iocmyzone OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "my zone"
+   ::= { iocMyZoneEntry 11700 }
+
+iocmyzoneroomtemperature OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "my zone room temperature"
+   ::= { iocMyZoneEntry 11701 }
+
+iocmyzoneroomhumidity OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "my zone room humidity"
+   ::= { iocMyZoneEntry 11702 }
+
+iocmyzonesupplytemperature OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "my zone supply temperature"
+   ::= { iocMyZoneEntry 11703 }
+
+iocmyzonesupplyhumidity OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "my zone supply humidity"
+   ::= { iocMyZoneEntry 11704 }
+
+iocmyzonesequencingtime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "my zone sequencing time"
+   ::= { iocMyZoneEntry 11705 }
+
+iocmyzonenroferrorunits OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "my zone nr. of error units"
+   ::= { iocMyZoneEntry 11706 }
+
+iocmyzoneemergencytemp OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "my zone emergency temp."
+   ::= { iocMyZoneEntry 11707 }
+
+iocmyzoneCWensaveactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "my zone CW en.save active"
+   ::= { iocMyZoneEntry 11708 }
+
+
+
+-- iocGlobalZoneData Table
+
+iocGlobalZoneDataTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF IocGlobalZoneDataEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Table Global Zone Data"
+   ::= { unitTypeAC 45 }
+
+iocGlobalZoneDataEntry OBJECT-TYPE
+   SYNTAX IocGlobalZoneDataEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Block 45 data"
+   INDEX  { iocUnitsId }
+   ::= { iocGlobalZoneDataTable 1 }
+
+IocGlobalZoneDataEntry ::= SEQUENCE {
+   iocemergencyopactive INTEGER
+}
+
+iocemergencyopactive OBJECT-TYPE
+   SYNTAX INTEGER {
+      off (0),
+      on (1)}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+        "emergency op.active"
+   ::= { iocGlobalZoneDataEntry 11800 }
+
+
+-- Chiller Table
+
+chillerTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF ChillerEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Table of chiller - Controllers"
+    ::= { unitTypeChiller 1 }
+
+chillerEntry OBJECT-TYPE
+    SYNTAX ChillerEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Each row is a chiller-unit"
+    INDEX  { chillerUnitId }
+    ::= { chillerTable 1 }
+
+-- The definition of the rows is following
+
+ChillerEntry ::= SEQUENCE {
+-- this is the concatenated datatype (one row of the table)
+-- the first element ChillerUnitId is the index to identify the row
+
+
+    chillerUnitId INTEGER,
+    chillerSwVersion DisplayString,
+    chillerFlowWaterTemp DisplayString,
+    chillerRetWaterTemp DisplayString,
+    chillerOutAirTemp DisplayString,
+    chillerSetpoinTemp1 DisplayString,
+    chillerSetpoinTemp2 DisplayString,
+    chillerHotgasPress1 DisplayString,
+    chillerHotgasPress2 DisplayString,
+
+-- Status
+
+    chillerUnitstop INTEGER,
+    chillerPcstop INTEGER,
+    chillerRemotestop INTEGER,
+    chillerLocalstop INTEGER,
+    chillerTimerstop INTEGER,
+    chillerSeqstop INTEGER,
+    chillerWarmupstop INTEGER,
+    chillerAlarmreset INTEGER,
+
+-- Alarms / Alarme
+
+    chillerAlarmIOCom INTEGER,
+    chillerAlarmIOExt INTEGER,
+    chillerAlarmComm INTEGER,
+    chillerAlarmFlow INTEGER,
+    chillerAlarmFire INTEGER,
+    chillerAlarmFreeze INTEGER,
+    chillerAlarmPhase INTEGER,
+    chillerAlarmWater INTEGER,
+    chillerAlarmExternal1 INTEGER,
+    chillerAlarmExternal2 INTEGER,
+    chillerAlarmExternal3 INTEGER,
+    chillerAlarmCompr1 INTEGER,
+    chillerAlarmCompr2 INTEGER,
+    chillerAlarmCompr3 INTEGER,
+    chillerAlarmCompr4 INTEGER,
+    chillerAlarmCompr5 INTEGER,
+    chillerAlarmCompr6 INTEGER,
+    chillerAlarmCond1 INTEGER,
+    chillerAlarmCond2 INTEGER,
+    chillerAlarmPump1 INTEGER,
+    chillerAlarmPump2 INTEGER,
+    chillerAlarmHP1 INTEGER,
+    chillerAlarmLP1 INTEGER,
+    chillerAlarmHP2 INTEGER,
+    chillerAlarmLP2 INTEGER,
+    chillerAlarmSoftHP1 INTEGER,
+    chillerAlarmSoftHP2 INTEGER,
+    chillerAlarmFlowWatertempHigh INTEGER,
+    chillerAlarmFlowWatertempLow INTEGER,
+    chillerAlarmRetWatertempHigh INTEGER,
+    chillerAlarmRetWatertempLow INTEGER,
+    chillerAlarmResTempHigh INTEGER,
+    chillerAlarmResTempLow INTEGER,
+    chillerAlarmSensorFlowTemp INTEGER,
+    chillerAlarmSensorRetTemp INTEGER,
+    chillerAlarmSensorOutTemp INTEGER,
+    chillerAlarmSensorPress1 INTEGER,
+    chillerAlarmSensorPress2 INTEGER,
+    chillerAlarmSensorResTemp INTEGER,
+
+-- Kompressoren / Compressors 
+
+    chillerCompr1 INTEGER,
+    chillerCompr2 INTEGER,
+    chillerCompr3 INTEGER,
+    chillerCompr4 INTEGER,
+    chillerCompr5 INTEGER,
+    chillerCompr6 INTEGER,
+    chillerCompr1Runtime DisplayString,
+    chillerCompr2Runtime DisplayString,
+    chillerCompr3Runtime DisplayString,
+    chillerCompr4Runtime DisplayString,
+    chillerCompr5Runtime DisplayString,
+    chillerCompr6Runtime DisplayString,
+    chillerFreezeProtHeat INTEGER,
+
+-- Pumpen / Pumps
+
+    chillerPump1 INTEGER,
+    chillerPump2 INTEGER,
+    chillerPumpSpeed DisplayString,
+    chillerPump1Runtime DisplayString,
+    chillerPump2Runtime DisplayString,
+
+-- Freie Kühlung / Free cooling
+
+    chillerFC INTEGER,
+    chillerFCValveOpenGrd DisplayString,
+    chillerFCCfg INTEGER,
+
+-- Kondensator / Condenser
+
+    chillerCond1 INTEGER,
+    chillerCond2 INTEGER,
+    chillerCond1Speed DisplayString,
+    chillerCond2Speed DisplayString,
+
+-- Heisggas Bypass / Hot gas bypass
+
+    chillerHGValve1 INTEGER,
+    chillerHGValve2 INTEGER
+}
+
+
+chillerUnitId OBJECT-TYPE
+    SYNTAX INTEGER (1..255)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Address of unit. Also used as index in the table."
+    ::= { chillerEntry 101 }
+
+chillerSwVersion OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Shows the version number of the board-firmware."
+    ::= { chillerEntry 102 }
+
+chillerFlowWaterTemp OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Flow water temperature"
+    ::= { chillerEntry 103 }
+
+chillerRetWaterTemp OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Return water temperature"
+    ::= { chillerEntry 104 }
+
+chillerOutAirTemp OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Outside air temperature"
+    ::= { chillerEntry 105 }
+
+chillerSetpoinTemp1 OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Setpoint temperature 1"
+    ::= { chillerEntry 106 }
+
+chillerSetpoinTemp2 OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Setpoint temperature 2"
+    ::= { chillerEntry 107 }
+
+chillerHotgasPress1 OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Hotgas pressure 1"
+    ::= { chillerEntry 108 }
+
+chillerHotgasPress2 OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Hotgas pressure 2"
+    ::= { chillerEntry 109 }
+
+-- Status
+
+chillerUnitstop OBJECT-TYPE
+    SYNTAX INTEGER {
+		unit-off (0),
+		unit-on (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "General flag for unit on / off"
+    ::= { chillerEntry 201 }
+
+chillerPcstop OBJECT-TYPE
+    SYNTAX INTEGER {
+		unit-off (0),
+		unit-on (1)}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "PC-Stop (by TeleComptrol or BMS)"
+    ::= { chillerEntry 202 }
+
+chillerRemotestop OBJECT-TYPE
+    SYNTAX INTEGER {
+		unit-off (0),
+		unit-on (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Remote-Stop (contact)"
+    ::= { chillerEntry 203 }
+
+chillerLocalstop OBJECT-TYPE
+    SYNTAX INTEGER {
+		unit-off (0),
+		unit-on (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Local-Stop (key)"
+    ::= { chillerEntry 204 }
+
+chillerTimerstop OBJECT-TYPE
+    SYNTAX INTEGER {
+		unit-off (0),
+		unit-on (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Timer-Stop (weekly operation)"
+    ::= { chillerEntry 205 }
+
+chillerSeqstop OBJECT-TYPE
+    SYNTAX INTEGER {
+		unit-off (0),
+		unit-on (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Sequencing-stop"
+    ::= { chillerEntry 206 }
+
+chillerWarmupstop OBJECT-TYPE
+    SYNTAX INTEGER {
+		unit-off (0),
+		unit-on (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Warm-up-stop"
+    ::= { chillerEntry 207 }
+
+chillerAlarmreset OBJECT-TYPE
+    SYNTAX INTEGER {
+		unit-off (0),
+		unit-on (1)}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm reset"
+    ::= { chillerEntry 208 }
+
+-- Alarms
+
+
+chillerAlarmIOCom OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: No communication with IO-board."
+    ::= { chillerEntry 301 }
+
+chillerAlarmIOExt OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: IO-extension error."
+    ::= { chillerEntry 302 }
+
+chillerAlarmComm OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Common alarm."
+    ::= { chillerEntry 303 }
+
+chillerAlarmFlow OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Flow alarm."
+    ::= { chillerEntry 304 }
+
+chillerAlarmFire OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Fire/smoke detected"
+    ::= { chillerEntry 305 }
+
+chillerAlarmFreeze OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Freeze alarm"
+    ::= { chillerEntry 306 }
+
+chillerAlarmPhase OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Phase error detected"
+    ::= { chillerEntry 307 }
+
+chillerAlarmWater OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Water detector"
+    ::= { chillerEntry 308 }
+
+chillerAlarmExternal1 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: External failure 1"
+    ::= { chillerEntry 309 }
+
+chillerAlarmExternal2 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: External failure 2"
+    ::= { chillerEntry 310 }
+
+chillerAlarmExternal3 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: External failure 3"
+    ::= { chillerEntry 311 }
+
+chillerAlarmCompr1 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Compressor 1 failure"
+    ::= { chillerEntry 312 }
+
+chillerAlarmCompr2 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Compressor 2 failure"
+    ::= { chillerEntry 313 }
+
+chillerAlarmCompr3 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Compressor 3 failure"
+    ::= { chillerEntry 314 }
+
+chillerAlarmCompr4 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Compressor 4 failure"
+    ::= { chillerEntry 315 }
+
+chillerAlarmCompr5 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Compressor 5 failure"
+    ::= { chillerEntry 316 }
+
+chillerAlarmCompr6 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Compressor 6 failure"
+    ::= { chillerEntry 317 }
+
+chillerAlarmCond1 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Condenser 1 failure"
+    ::= { chillerEntry 318 }
+
+chillerAlarmCond2 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Condenser 2 failure"
+    ::= { chillerEntry 319 }
+
+chillerAlarmPump1 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Pump 1 failure"
+    ::= { chillerEntry 320 }
+
+chillerAlarmPump2 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Pump 2 failure"
+    ::= { chillerEntry 321 }
+
+chillerAlarmHP1 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: High pressure 1 failure"
+    ::= { chillerEntry 322 }
+
+chillerAlarmLP1 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Low pressure 1 failure"
+    ::= { chillerEntry 323 }
+
+chillerAlarmHP2 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: High pressure 2 failure"
+    ::= { chillerEntry 324 }
+
+chillerAlarmLP2 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Low pressure 2 failure"
+    ::= { chillerEntry 325 }
+
+chillerAlarmSoftHP1 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Soft high pressure 1 failure"
+    ::= { chillerEntry 326 }
+
+chillerAlarmSoftHP2 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Soft high pressure 2 failure"
+    ::= { chillerEntry 327 }
+
+chillerAlarmFlowWatertempHigh OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Flow water temperature too high"
+    ::= { chillerEntry 328 }
+
+chillerAlarmFlowWatertempLow OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Flow water temperature too low"
+    ::= { chillerEntry 329 }
+
+chillerAlarmRetWatertempHigh OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Return water temperature too high"
+    ::= { chillerEntry 330 }
+
+chillerAlarmRetWatertempLow OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Return water temperature too low"
+    ::= { chillerEntry 331 }
+
+chillerAlarmResTempHigh OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Reservoir temperature too high"
+    ::= { chillerEntry 332 }
+
+chillerAlarmResTempLow OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Reservoir temperature too low"
+    ::= { chillerEntry 333 }
+
+chillerAlarmSensorFlowTemp OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Sensor for flow water temperature is broken"
+    ::= { chillerEntry 334 }
+
+chillerAlarmSensorRetTemp OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Sensor for return water temperature is broken"
+    ::= { chillerEntry 335 }
+
+chillerAlarmSensorOutTemp OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Sensor for outside air temperature is broken"
+    ::= { chillerEntry 336 }
+
+chillerAlarmSensorPress1 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Sensor 1 for high pressure is broken"
+    ::= { chillerEntry 337 }
+
+chillerAlarmSensorPress2 OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Sensor 2 for high pressure is broken"
+    ::= { chillerEntry 338 }
+
+chillerAlarmSensorResTemp OBJECT-TYPE
+    SYNTAX INTEGER {
+		ok (0),
+		alarm (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm: Sensor for reservoir teperature is broken"
+    ::= { chillerEntry 339 }
+
+
+-- Compressors
+
+chillerCompr1 OBJECT-TYPE
+    SYNTAX INTEGER {
+		inactive (0),
+		active (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Compressor 1"
+    ::= { chillerEntry 401 }
+
+chillerCompr2 OBJECT-TYPE
+    SYNTAX INTEGER {
+		inactive (0),
+		active (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Compressor 2"
+    ::= { chillerEntry 402 }
+
+chillerCompr3 OBJECT-TYPE
+    SYNTAX INTEGER {
+		inactive (0),
+		active (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Compressor 3"
+    ::= { chillerEntry 403 }
+
+chillerCompr4 OBJECT-TYPE
+    SYNTAX INTEGER {
+		inactive (0),
+		active (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Compressor 1"
+    ::= { chillerEntry 404 }
+
+chillerCompr5 OBJECT-TYPE
+    SYNTAX INTEGER {
+		inactive (0),
+		active (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Compressor 1"
+    ::= { chillerEntry 405 }
+
+chillerCompr6 OBJECT-TYPE
+    SYNTAX INTEGER {
+		inactive (0),
+		active (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Compressor 1"
+    ::= { chillerEntry 406 }
+
+chillerCompr1Runtime OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Compressor 1 runtime"
+    ::= { chillerEntry 407 }
+
+chillerCompr2Runtime OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Compressor 2 runtime"
+    ::= { chillerEntry 408 }
+
+chillerCompr3Runtime OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Compressor 3 runtime"
+    ::= { chillerEntry 409 }
+
+chillerCompr4Runtime OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Compressor 4 runtime"
+    ::= { chillerEntry 410 }
+
+chillerCompr5Runtime OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Compressor 5 runtime"
+    ::= { chillerEntry 411 }
+
+chillerCompr6Runtime OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Compressor 6 runtime"
+    ::= { chillerEntry 412 }
+
+chillerFreezeProtHeat OBJECT-TYPE
+    SYNTAX INTEGER {
+		inactive (0),
+		active (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Freeze Protction"
+    ::= { chillerEntry 413 }
+
+-- Pumps
+
+chillerPump1 OBJECT-TYPE
+    SYNTAX INTEGER {
+		inactive (0),
+		active (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Pump 1"
+    ::= { chillerEntry 501 }
+
+chillerPump2 OBJECT-TYPE
+    SYNTAX INTEGER {
+		inactive (0),
+		active (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Pump 2"
+    ::= { chillerEntry 502 }
+
+chillerPumpSpeed OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Pump speed"
+    ::= { chillerEntry 503 }
+
+chillerPump1Runtime OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Pump 1 runtime"
+    ::= { chillerEntry 504 }
+
+chillerPump2Runtime OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Pump 2 runtime"
+    ::= { chillerEntry 505 }
+
+-- Free cooling
+
+chillerFC OBJECT-TYPE
+    SYNTAX INTEGER {
+		inactive (0),
+		active (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Free Cooling"
+    ::= { chillerEntry 601 }
+
+chillerFCValveOpenGrd OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Free cooling opening grade"
+    ::= { chillerEntry 602 }
+
+chillerFCCfg OBJECT-TYPE
+    SYNTAX INTEGER {
+		inactive (0),
+		active (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Free Cooling configured"
+    ::= { chillerEntry 603 }
+
+-- Condensers
+
+chillerCond1 OBJECT-TYPE
+    SYNTAX INTEGER {
+		inactive (0),
+		active (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Condenser fan 1"
+    ::= { chillerEntry 701 }
+
+chillerCond2 OBJECT-TYPE
+    SYNTAX INTEGER {
+		inactive (0),
+		active (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Condenser fan 2"
+    ::= { chillerEntry 702 }
+
+chillerCond1Speed OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Condenser fan 1 speed"
+    ::= { chillerEntry 703 }
+
+chillerCond2Speed OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Condenser fan 2 speed"
+    ::= { chillerEntry 704 }
+
+-- Hot gas bypass
+
+chillerHGValve1 OBJECT-TYPE
+    SYNTAX INTEGER {
+		inactive (0),
+		active (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Hot gas valve 1"
+    ::= { chillerEntry 801 }
+
+chillerHGValve2 OBJECT-TYPE
+    SYNTAX INTEGER {
+		inactive (0),
+		active (1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Hot gas valve 2"
+    ::= { chillerEntry 802 }
+
+
+
+
+-- Trap-Definitionen AC-Units
+
+stulzWibFireAlert TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Fire Alert"
+    ::= 1
+
+stulzWibSensorFailure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Sensor failure"
+    ::= 2
+
+stulzWibControllerFailure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Controller failure"
+    ::= 3
+
+stulzWibIOFailure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "IO-Board failure"
+    ::= 4
+
+stulzWibAlarmSupervisorFailure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Supervisor failure"
+    ::= 5
+
+stulzWibAlarmRTTooHigh TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Room temperature too high"
+    ::= 6
+
+stulzWibAlarmRHTooHigh TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Room humidity too high"
+    ::= 7
+
+stulzWibAlarmSTTooHigh TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Supply temperature too high"
+    ::= 8
+
+stulzWibAlarmSHTooHigh TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Supply humidity too high"
+    ::= 9
+
+stulzWibAlarmWTTooHigh TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Water temperature too high"
+    ::= 10
+
+stulzWibAlarmRTTooLow TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Room temperature too low"
+    ::= 11
+
+stulzWibAlarmRHTooLow TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Room humidity too low"
+    ::= 12
+
+stulzWibAlarmSTTooLow TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Supply temperature too low"
+    ::= 13
+
+stulzWibAlarmSHTooLow TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Supply humidity too low"
+    ::= 14
+
+stulzWibAlarmWTTooLow TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Water temperature too low"
+    ::= 15
+
+stulzWibAlarmLP1 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Compressor 1 LP"
+    ::= 16
+
+stulzWibAlarmHP1 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Compressor 1 HP"
+    ::= 17
+
+stulzWibAlarmLP2 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Compressor 2 LP"
+    ::= 18
+
+stulzWibAlarmHP2 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Compressor 2 HP"
+    ::= 19
+
+stulzWibAlarmReheat1 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Reheat 1 failure"
+    ::= 20
+
+stulzWibAlarmReheat2 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Reheat 2 failure"
+    ::= 21
+
+stulzWibAlarmReheat3 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Reheat 3 failure"
+    ::= 22
+
+stulzWibAlarmReheat4 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Reheat 4 failure"
+    ::= 23
+
+stulzWibAlarmHumid1 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Humidifier 1 failure"
+    ::= 24
+
+stulzWibAlarmHumid2 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Humidifier 2 failure"
+    ::= 25
+
+stulzWibAlarmFan1 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Fan 1 failure"
+    ::= 26
+
+stulzWibAlarmFan2 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Fan 2 failure"
+    ::= 27
+
+stulzWibAlarmFan3 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Fan 3 failure"
+    ::= 28
+
+stulzWibAlarmFilter1 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Filter 1 clogged"
+    ::= 29
+
+stulzWibAlarmFilter2 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Filter 2 clogged"
+    ::= 30
+
+stulzWibAlarmFilter3 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Filter 3 clogged"
+    ::= 31
+
+stulzWibAlarmConduct1 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Conductivity 1 too high"
+    ::= 32
+
+stulzWibAlarmConduct2 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Conductivity 2 too high"
+    ::= 33
+
+stulzWibAlarmPump1 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Pump 1 failure"
+    ::= 34
+
+stulzWibAlarmPump2 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Pump 2 failure"
+    ::= 35
+
+stulzWibAlarmPump3 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Pump 3 failure"
+    ::= 36
+
+stulzWibAlarmPump4 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Pump 4 failure"
+    ::= 37
+
+stulzWibAlarmDrycooler1 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Drycooler 1 failure"
+    ::= 38
+
+stulzWibAlarmDrycooler2 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Drycooler 2 failure"
+    ::= 39
+
+stulzWibAlarmDrycooler3 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Drycooler 2 failure"
+    ::= 40
+
+stulzWibAlarmDrycooler4 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Drycooler 4 failure"
+    ::= 41
+
+stulzWibAlarmWater TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Waterdetector"
+    ::= 42
+
+stulzWibAlarmAux1 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Aux. Alarm 1"
+    ::= 43
+
+stulzWibAlarmAux2 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Aux. Alarm 2"
+    ::= 44
+
+stulzWibAlarmAux3 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Aux. Alarm 3"
+    ::= 45
+
+stulzWibAlarmAux4 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Aux. Alarm 4"
+    ::= 46
+
+stulzWibAlarmAux5 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Aux. Alarm 5"
+    ::= 47
+
+stulzWibAlarmAux6 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Aux. Alarm 6"
+    ::= 48
+
+stulzWibAlarmAux7 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Aux. Alarm 7"
+    ::= 49
+
+stulzWibAlarmAux8 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Aux. Alarm 8"
+    ::= 50
+
+stulzWibAlarmAux9 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Aux. Alarm 9"
+    ::= 51
+
+stulzWibAlarmAux10 TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Aux. Alarm 10"
+    ::= 52
+
+stulzWibAlarmPhase TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Phase failure"
+    ::= 53
+
+stulzWibAlarmFreeze TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Freeze alarm"
+    ::= 54
+
+stulzWibAlarmOffline TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Unit offline"
+    ::= 55
+
+
+
+-- Trap-Definitionen Chiller
+
+chilllerIOComFailure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "IO communication error"
+    ::= 100
+
+chilllerIOExtFailure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "IO-extension error"
+    ::= 101
+
+chilllerComAlarm TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Common alarm"
+    ::= 102
+
+chilllerFlowFailure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Flow failure"
+    ::= 103
+
+chilllerFireAlert TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Fire alert"
+    ::= 104
+
+chilllerFreezeAlarm TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Freeze alarm"
+    ::= 105
+
+chilllerPhaseError TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Phase error"
+    ::= 106
+
+chilllerWaterFailure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Water detector"
+    ::= 107
+
+chilllerExt1Alarm TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Aux.alarm 1"
+    ::= 108
+
+chilllerExt2Alarm TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Aux.alarm 2"
+    ::= 109
+
+chilllerExt3Alarm TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Aux.alarm 3"
+    ::= 110
+
+chilllerCompr1Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Compressor 1 failure"
+    ::= 111
+
+chilllerCompr2Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Compressor 2 failure"
+    ::= 112
+
+chilllerCompr3Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Compressor 3 failure"
+    ::= 113
+
+chilllerCompr4Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Compressor 4 failure"
+    ::= 114
+
+chilllerCompr5Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Compressor 5 failure"
+    ::= 115
+
+chilllerCompr6Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Compressor 6 failure"
+    ::= 116
+
+chilllerCond1Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Condenser 1 failure"
+    ::= 117
+
+chilllerCond2Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Condenser 2 failure"
+    ::= 118
+
+chilllerPump1Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Pump 1 failure"
+    ::= 119
+
+chilllerPump2Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Pump 2 failure"
+    ::= 120
+
+chilllerHP1Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "High Pressure 1 failure"
+    ::= 121
+
+chilllerHP2Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "High Pressure 2 failure"
+    ::= 122
+
+chilllerLP1Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Low Pressure 1 failure"
+    ::= 123
+
+chilllerLP2Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Low Pressure 2 failure"
+    ::= 124
+
+chilllerSoftHP1Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Soft High Pressure 1 failure"
+    ::= 125
+
+chilllerSoftHP2Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Soft High Pressure 2 failure"
+    ::= 126
+
+chilllerFlowTempTooHighAlarm TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Flow water temperature too high"
+    ::= 127
+
+chilllerFlowTempTooLowAlarm TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Flow water temperature too low"
+    ::= 128
+
+chilllerRetTempTooHighAlarm TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Return water temperature too high"
+    ::= 129
+
+chilllerRetTempTooLowAlarm TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Return water temperature too low"
+    ::= 130
+
+chilllerResTempTooHighAlarm TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Reservoir temperature too high"
+    ::= 131
+
+chilllerResTempTooLowAlarm TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Reservoir temperature too low"
+    ::= 132
+
+chilllerSensorFlowFailure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Flow water sensor failure"
+    ::= 133
+
+chilllerSensorRetFailure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Return water sensor failure"
+    ::= 134
+
+chilllerSensorOutFailure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Outside air sensor failure"
+    ::= 135
+
+chilllerSensorPress1Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Pressure sensor 1 failure"
+    ::= 136
+
+chilllerSensorPress2Failure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Pressure sensor 2 failure"
+    ::= 137
+
+chilllerSensorResFailure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Reservoir sensor failure"
+    ::= 138
+
+chillerOfflineFailure TRAP-TYPE
+  ENTERPRISE  stulzWib
+    VARIABLES   {wibAlarmText}
+    DESCRIPTION
+        "Unit offline"
+    ::= 139
+
+END

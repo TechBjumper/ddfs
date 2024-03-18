@@ -1,0 +1,2079 @@
+FS400 DEFINITIONS ::= BEGIN
+
+IMPORTS
+	MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+	enterprises, IpAddress, TimeTicks, Counter32, Integer32, Unsigned32, Counter64
+		FROM SNMPv2-SMI
+		
+	cooltera	FROM COOLTERA-GLOBAL-REG;		
+
+fs400main MODULE-IDENTITY
+	LAST-UPDATED "201903210800Z"
+	ORGANIZATION "Cooltera Limited"
+	CONTACT-INFO
+	"
+	Fircroft House
+	Fircroft Way
+	Edenbridge
+	Kent
+	TN8 6EJ
+	Phone: +44 1732 867105
+	E-mail: support@cooltera.com
+	"
+	DESCRIPTION
+	"
+	MIB Version 5.0 for Cooltera FS400 Cooling Distribution Unit
+	"
+::= { cooltera 1 }
+
+
+DisplayString ::= OCTET STRING
+AbsoluteCounter32 ::= Unsigned32
+
+-- The CDUFS400-MIB main groups
+cduTraps 			OBJECT IDENTIFIER ::= { fs400main 0 }
+statusSI 			OBJECT IDENTIFIER ::= { fs400main 1 }
+statusIMPERIAL 		OBJECT IDENTIFIER ::= { fs400main 2 }
+settingsSI			OBJECT IDENTIFIER ::= { fs400main 3 }
+settingsIMPERIAL	OBJECT IDENTIFIER ::= { fs400main 4 }
+control 			OBJECT IDENTIFIER ::= { fs400main 5 }
+statusRearDoors		OBJECT IDENTIFIER ::= { fs400main 7 }
+
+--traps 		OBJECT IDENTIFIER ::= { fs400main 4 }
+mtrapargs   OBJECT IDENTIFIER ::= { fs400main 6 }
+
+mtrapargsString OBJECT-TYPE
+	SYNTAX      DisplayString
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"This allows our traps to be sent with an octet string argument
+		that may not be defined in the MIB.
+
+		A get of this OID will return a NULL string."
+	::= { mtrapargs 1 }
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+-- status SI															 
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+cduStatusSIMode OBJECT-TYPE
+	SYNTAX INTEGER  {
+			modeNotConfigured(1),
+			modeShutdown(2),
+			modeShutdownNetwork(3),
+			modeManualOverride(4),
+			modeStandby(5),
+			modeOnline(6),
+			modeOnlineFilling(7),
+			modeFilling(8),
+			modeFaultShutdown(9),
+			modeGroupStandby(10)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current operating mode of CDU"
+	::= { statusSI 1 }
+
+cduStatusSIGroupMode OBJECT-TYPE
+	SYNTAX INTEGER  {
+			gmodeStandalone(1),
+			gmodeMaster(2),
+			gmodeSlave(3),
+			gmodeIndependent(4)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current group operating mode of CDU"
+	::= { statusSI 2 }
+
+cduStatusSICurrentPump OBJECT-TYPE
+	SYNTAX INTEGER  {
+			pump1and2(1),
+			pump1(2),
+			pump2(3)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current Secondary Pump."
+	::= { statusSI 3 }
+	
+cduStatusSIPump1Speed OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Pump 1 Speed"
+	::= { statusSI 4 }
+
+cduStatusSIPump2Speed OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Pump 2 Speed"
+	::= { statusSI 5 }
+
+
+cduStatusSIValveDemand OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Control Valve (Cooling) Demand %"
+	::= { statusSI 6 }
+
+cduStatusSIValveFeedback OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Control Valve Feedback %"
+	::= { statusSI 7 }
+
+	
+cduStatusSIPrimaryTempT1 OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Primary temperature (T1) sensor value in 10th of degree Cel
+		sius. Example 126 = 12.6 degree C"
+	::= { statusSI 8 }
+
+cduStatusSISecondaryTempT2a OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary supply temperature (T2a) sensor value in 10th of degree
+		Celsius. Example 178 = 178 degree C"
+	::= { statusSI 9 }
+
+cduStatusSISecondaryTempT2b OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary supply temperature (T2b) sensor value in 10th of degree
+		Celsius. Example 178 = 178 degree C"
+	::= { statusSI 10 }
+
+
+cduStatusSISecondaryTempT2c OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary supply temperature (T2) value in 10th of degree Celsius.
+		 This value is the average of T2a and T2b sensor values. Exa
+		mple 178 = 178 degree C"
+	::= { statusSI 11 }
+
+
+cduStatusSISecondaryTempT2 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary supply temperature (T2) value in 10th of degree Celsius.
+		 This value is the average of T2a and T2b sensor values. Exa
+		mple 178 = 178 degree C"
+	::= { statusSI 12 }
+
+	
+cduStatusSIRoomTempT3a OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Room Sensor A temperature (T3) sensor value in 10th of degree Celsiu
+		s. Example 178 = 178 degree C"
+	::= { statusSI 13 }
+
+cduStatusSIRoomRHa OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Room Sensor A Relative Humidity in 10th of %RH. Example 514 = 51.4 %R
+		H"
+	::= { statusSI 14 }
+
+
+cduStatusSIDewpointa OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Room Sensor A Dewpoint value in 10th of degree Celsius. Example 126 = 12
+		.6 degree C"
+	::= { statusSI 15 }
+
+cduStatusSIRoomTempT3b OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Room Sensor B temperature (T3) sensor value in 10th of degree Celsiu
+		s. Example 178 = 178 degree C"
+	::= { statusSI 16 }
+
+cduStatusSIRoomRHb OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Room Sensor B Relative Humidity in 10th of %RH. Example 514 = 51.4 %R
+		H"
+	::= { statusSI 17 }
+
+
+cduStatusSIDewpointb OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Room Sensor B Dewpoint value in 10th of degree Celsius. Example 126 = 12
+		.6 degree C"
+	::= { statusSI 18 }
+
+cduStatusSISecondaryTempT4 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary return temperature (T2) value in 10th of degree Celsius. Exa
+		mple 378 = 378 degree C"
+	::= { statusSI 19 }
+
+
+cduStatusSIPS1a OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Pressure PS1a sensor value in 100th of bar. Example
+		120 = 1.20bar"
+	::= { statusSI 20 }
+	
+cduStatusSIPS1b OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Pressure PS1b sensor value in 100th of bar. Example
+		120 = 1.20bar"
+	::= { statusSI 21 }
+	
+cduStatusSIPS1 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Pressure PS1 value in 100th of bar. Example
+		120 = 1.20bar"
+	::= { statusSI 22 }
+	
+cduStatusSIPS2 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Pressure PS2 sensor value in 100th of bar. Example
+		120 = 1.20bar"
+	::= { statusSI 23 }
+
+cduStatusSISecDiffPress OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Differential Pressure (PS2 - PS1)  value in 100th
+		of bar. Example 120 = 1.20bar"
+	::= { statusSI 24 }
+	
+cduStatusSIPS3 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Filter Inlet Pressure (PS3) sensor value in 100th of bar. Ex
+		ample 120 = 1.20bar"
+	::= { statusSI 25 }
+
+
+cduStatusSIPS4 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Filter Outlet Pressure (PS4) sensor value in 100th of bar. E
+		xample 120 = 1.20bar"
+	::= { statusSI 26 }
+	
+cduStatusSIFilterPressDiff OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Filter Differential Pressure (PS3 - PS4)  value in 100th of
+		bar. Example 120 = 1.20bar"
+	::= { statusSI 27 }
+	
+cduStatusSIPrimaryFlowRate OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Primary Chilled Water Flow Rate in litres/minute"
+	::= { statusSI 28 }
+	
+cduStatusSISecondaryFlowRate OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Circuit Flow Rate in litres/minute"
+	::= { statusSI 29 }
+
+cduStatusSISecondaryDuty OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Circuit Duty in kW"
+	::= { statusSI 30 }
+	
+cduStatusSICurrentSetpoint OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Operating setpoint value in 10th of degree Celsius. Example
+		180 = 18.0 degree C"
+	::= { statusSI 31 }
+
+cduStatusSIPumpRuntimeP1 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Pump 1 Runtime in hours"
+	::= { statusSI 32 }
+
+
+cduStatusSIPumpRuntimeP2 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Pump 2 Runtime in hours"
+	::= { statusSI 33 }
+
+
+cduStatusSIPS5a OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Filter Inlet Pressure (PS5a) sensor value in 100th of bar. E
+		xample 120 = 1.20bar"
+	::= { statusSI 34 }
+	
+cduStatusSIPS5b OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Filter Inlet Pressure (PS5b) sensor value in 100th of bar. E
+		xample 120 = 1.20bar"
+	::= { statusSI 35 }
+	
+cduStatusSISecFilter1PressDiff OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Filter Differential Pressure (PS3 - PS4)  value in 100th of
+		bar. Example 120 = 1.20bar"
+	::= { statusSI 36 }
+	
+cduStatusSISecFilter2PressDiff OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Filter Differential Pressure (PS3 - PS4)  value in 100th of
+		bar. Example 120 = 1.20bar"
+	::= { statusSI 37 }
+
+cduStatusSIGroupSecondaryFlowRate OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Group Total Secondary Circuit Flow Rate in litres/minute"
+	::= { statusSI 38 }
+
+cduStatusSIGroupSecDiffPress OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Group Average Secondary Differential Pressure value in 100th
+		of bar. Example 120 = 1.20bar"
+	::= { statusSI 39 }
+	
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+-- status IMPERIAL															 
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+	
+cduStatusIMPERIALMode OBJECT-TYPE
+	SYNTAX INTEGER {
+			modeNotConfigured(1),
+			modeShutdown(2),
+			modeShutdownNetwork(3),
+			modeManualOverride(4),
+			modeStandby(5),
+			modeOnline(6),
+			modeOnlineFilling(7),
+			modeFilling(8),
+			modeFaultShutdown(9),
+			modeGroupStandby(10)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current operating mode of CDU"
+	::= { statusIMPERIAL 1 }
+
+cduStatusIMPERIALGroupMode OBJECT-TYPE
+	SYNTAX INTEGER {
+			gmodeStandalone(1),
+			gmodeMaster(2),
+			gmodeSlave(3),
+			gmodeIndependent(4)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current group operating mode of CDU"
+	::= { statusIMPERIAL 2 }
+
+cduStatusIMPERIALCurrentPump OBJECT-TYPE
+	SYNTAX INTEGER {
+			pump1and2(1),
+			pump1(2),
+			pump2(3)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current Secondary Pump."
+	::= { statusIMPERIAL 3 }
+	
+cduStatusIMPERIALPump1Speed OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Pump 1 Speed"
+	::= { statusIMPERIAL 4 }
+
+cdustatusIMPERIALPump2Speed OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Pump 2 Speed"
+	::= { statusIMPERIAL 5 }
+
+
+cduStatusIMPERIALValveDemand OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Control Valve (Cooling) Demand %"
+	::= { statusIMPERIAL 6 }
+
+cduStatusIMPERIALValveFeedback OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Control Valve Feedback %"
+	::= { statusIMPERIAL 7 }
+
+	
+cduStatusIMPERIALPrimaryTempT1 OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Primary temperature (T1) sensor value in 10th of degree Cel
+		sius. Example 126 = 12.6 degree C"
+	::= { statusIMPERIAL 8 }
+
+cduStatusIMPERIALSecondaryTempT2a OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary supply temperature (T2a) sensor value in 10th of degree
+		Celsius. Example 178 = 178 degree C"
+	::= { statusIMPERIAL 9 }
+
+cduStatusIMPERIALSecondaryTempT2b OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary supply temperature (T2b) sensor value in 10th of degree
+		Celsius. Example 178 = 178 degree C"
+	::= { statusIMPERIAL 10 }
+
+
+cduStatusIMPERIALSecondaryTempT2c OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary supply temperature (T2) value in 10th of degree Celsius.
+		 This value is the average of T2a and T2b sensor values. Exa
+		mple 178 = 178 degree C"
+	::= { statusIMPERIAL 11 }
+
+
+cduStatusIMPERIALSecondaryTempT2 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary supply temperature (T2) value in 10th of degree Celsius.
+		 This value is the average of T2a and T2b sensor values. Exa
+		mple 178 = 178 degree C"
+	::= { statusIMPERIAL 12 }
+
+	
+cduStatusIMPERIALRoomTempT3a OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Room Sensor A temperature (T3) sensor value in 10th of degree Celsiu
+		s. Example 178 = 178 degree C"
+	::= { statusIMPERIAL 13 }
+
+cduStatusIMPERIALRoomRHa OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Room Sensor A Relative Humidity in 10th of %RH. Example 514 = 51.4 %R
+		H"
+	::= { statusIMPERIAL 14 }
+
+
+cduStatusIMPERIALDewpointa OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Room Sensor A Dewpoint value in 10th of degree Celsius. Example 126 = 12
+		.6 degree C"
+	::= { statusIMPERIAL 15 }
+
+cduStatusIMPERIALRoomTempT3b OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Room Sensor B temperature (T3) sensor value in 10th of degree Celsiu
+		s. Example 178 = 178 degree C"
+	::= { statusIMPERIAL 16 }
+
+cduStatusIMPERIALRoomRHb OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Room Sensor B Relative Humidity in 10th of %RH. Example 514 = 51.4 %R
+		H"
+	::= { statusIMPERIAL 17 }
+
+
+cduStatusIMPERIALDewpointb OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Room Sensor B Dewpoint value in 10th of degree Celsius. Example 126 = 12
+		.6 degree C"
+	::= { statusIMPERIAL 18 }
+
+cduStatusIMPERIALSecondaryTempT4 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary return temperature (T2) value in 10th of degree Celsius. Exa
+		mple 378 = 378 degree C"
+	::= { statusIMPERIAL 19 }
+
+
+cduStatusIMPERIALPS1a OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Pressure PS1a sensor value in 100th of bar. Example
+		120 = 1.20bar"
+	::= { statusIMPERIAL 20 }
+	
+cduStatusIMPERIALPS1b OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Pressure PS1b sensor value in 100th of bar. Example
+		120 = 1.20bar"
+	::= { statusIMPERIAL 21 }
+	
+cduStatusIMPERIALPS1 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Pressure PS1 value in 100th of bar. Example
+		120 = 1.20bar"
+	::= { statusIMPERIAL 22 }
+	
+cduStatusIMPERIALPS2 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Pressure PS2 sensor value in 100th of bar. Example
+		120 = 1.20bar"
+	::= { statusIMPERIAL 23 }
+
+cduStatusIMPERIALSecDiffPress OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Differential Pressure (PS2 - PS1)  value in 100th
+		of bar. Example 120 = 1.20bar"
+	::= { statusIMPERIAL 24 }
+	
+cduStatusIMPERIALPS3 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Filter Inlet Pressure (PS3) sensor value in 100th of bar. Ex
+		ample 120 = 1.20bar"
+	::= { statusIMPERIAL 25 }
+
+
+cduStatusIMPERIALPS4 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Filter Outlet Pressure (PS4) sensor value in 100th of bar. E
+		xample 120 = 1.20bar"
+	::= { statusIMPERIAL 26 }
+	
+cduStatusIMPERIALFilterPressDiff OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Filter Differential Pressure (PS3 - PS4)  value in 100th of
+		bar. Example 120 = 1.20bar"
+	::= { statusIMPERIAL 27 }
+	
+cduStatusIMPERIALPrimaryFlowRate OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Primary Chilled Water Flow Rate in litres/minute"
+	::= { statusIMPERIAL 28 }
+	
+cduStatusIMPERIALSecondaryFlowRate OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Circuit Flow Rate in litres/minute"
+	::= { statusIMPERIAL 29 }
+
+cduStatusIMPERIALSecondaryDuty OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Circuit Duty in kW"
+	::= { statusIMPERIAL 30 }
+	
+cduStatusIMPERIALCurrentSetpoint OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Operating setpoint value in 10th of degree Celsius. Example
+		180 = 18.0 degree C"
+	::= { statusIMPERIAL 31 }
+
+cduStatusIMPERIALPumpRuntimeP1 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Pump 1 Runtime in hours"
+	::= { statusIMPERIAL 32 }
+
+
+cduStatusIMPERIALPumpRuntimeP2 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Pump 2 Runtime in hours"
+	::= { statusIMPERIAL 33 }
+
+
+cduStatusIMPERIALPS5a OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Filter Inlet Pressure (PS5a) sensor value in 100th of bar. E
+		xample 120 = 1.20bar"
+	::= { statusIMPERIAL 34 }
+	
+cduStatusIMPERIALPS5b OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Filter Inlet Pressure (PS5b) sensor value in 100th of bar. E
+		xample 120 = 1.20bar"
+	::= { statusIMPERIAL 35 }
+	
+cduStatusIMPERIALSecFilter1PressDiff OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Filter Differential Pressure (PS3 - PS4)  value in 100th of
+		bar. Example 120 = 1.20bar"
+	::= { statusIMPERIAL 36 }
+	
+cduStatusIMPERIALSecFilter2PressDiff OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Filter Differential Pressure (PS3 - PS4)  value in 100th of
+		bar. Example 120 = 1.20bar"
+	::= { statusIMPERIAL 37 }
+
+cduStatusIMPERIALGroupSecondaryFlowRate OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Group Total Secondary Circuit Flow Rate in litres/minute"
+	::= { statusIMPERIAL 38 }
+
+cduStatusIMPERIALGroupSecDiffPress OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Group Average Secondary Differential Pressure value in 100th
+		of bar. Example 120 = 1.20bar"
+	::= { statusIMPERIAL 39 }
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+-- settings SI															 
+--------------------------------------------------------------------------- b
+---------------------------------------------------------------------------	
+cduSettingsSICoolingSetpoint OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-write
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Cooling Setpoint in 10th of a degreeC.
+		 Example 185 = 18.5degC"
+	::= { settingsSI 1 }
+
+cduSettingsSIFlowSetpoint OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-write
+	STATUS 		current
+	DESCRIPTION
+		"Secondary Flow Setpoint in litres/min."
+	::= { settingsSI 2 }
+
+cduSettingsSIDPSetpoint OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-write
+	STATUS 		current
+	DESCRIPTION
+		"Secondary DP Setpoint in 100th of a bar.
+		 Example 110 = 1.10 bar"
+	::= { settingsSI 3 }	
+	
+cduSettingsSIFirmwareVersion OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"FS400 Firmware Version. Example 101 = 1.01"
+	::= { settingsSI 4 }	
+	
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+-- settings IMPERIAL															 
+--------------------------------------------------------------------------- 
+---------------------------------------------------------------------------	
+--cduSettingsIMPERIALCoolingSetpoint OBJECT-TYPE
+--	SYNTAX 		Integer32
+--	MAX-ACCESS  read-write
+--	DESCRIPTION
+--		"Secondary Cooling Setpoint in 10th of a degreeC.
+--		 Example 185 = 18.5degC"
+--	::= { settingsIMPERIAL 1 }
+
+--cduSettingsIMPERIALFlowSetpoint OBJECT-TYPE
+--	SYNTAX 		Integer32
+--	MAX-ACCESS  read-write
+--	DESCRIPTION
+--		"Secondary Flow Setpoint in litres/min."
+--	::= { settingsIMPERIAL 2 }
+
+--cduSettingsIMPERIALDPSetpoint OBJECT-TYPE
+--	SYNTAX 		Integer32
+--	MAX-ACCESS  read-write
+--	DESCRIPTION
+--		"Secondary DP Setpoint in 100th of a bar.
+--		 Example 110 = 1.10 bar"
+--	::= { settingsIMPERIAL 3 }	
+	
+--cduSettingsIMPERIALFirmwareVersion OBJECT-TYPE
+--	SYNTAX 		Integer32
+--	MAX-ACCESS  read-only
+--	DESCRIPTION
+--		"FS400 Firmware Version. Example 101 = 1.01"
+--	::= { settingsIMPERIAL 4 }
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+-- control															 
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------	
+cduRemoteShutdown OBJECT-TYPE
+	SYNTAX INTEGER {
+			inactive(1),
+			active(2)
+			}
+	MAX-ACCESS  read-write
+	STATUS 		current
+	DESCRIPTION
+		"'Control action for the remote controlling of the CDU state
+
+		"
+	::= { control 1 }
+	
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+-- status Rear Doors														 
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+statusRDTable OBJECT-TYPE
+    SYNTAX     SEQUENCE OF StatusRDEntry
+	MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The (conceptual) table listing the capabilities of
+            the local SNMP application acting as a command
+            responder with respect to various MIB modules.
+            SNMP entities having dynamically-configurable support
+            of MIB modules will have a dynamically-varying number
+            of conceptual rows."
+    ::= { statusRearDoors 1 }
+
+
+statusRDEntry OBJECT-TYPE
+    SYNTAX     StatusRDEntry
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "An entry (conceptual row) in the sysORTable."
+    INDEX      { rdIndex }
+    ::= { statusRDTable 1 }
+
+StatusRDEntry ::= SEQUENCE {
+    rdIndex     				INTEGER,
+	rdStatusMode                INTEGER,
+	rdAlarmStatus				INTEGER,
+    rdStatusRDHxExitTempT1      Integer32,
+    rdStatusServerExitTempT2    Integer32,
+    rdStatusServerInletTempT3   Integer32,
+    rdStatusDiffPressure        Integer32,
+    rdStatusFanSpeed            Integer32,
+    rdStatusValveDemand	        Integer32,
+    rdStatusRDHxExitTempT1a     Integer32,
+    rdStatusRDHxExitTempT1b     Integer32,
+    rdStatusRDHxExitTempT1c     Integer32,
+	rdStatusServerExitTempT2a   Integer32,
+    rdStatusServerExitTempT2b   Integer32,
+    rdStatusServerExitTempT2c   Integer32,
+	rdStatusServerInletTempT3a  Integer32,
+    rdStatusServerInletTempT3b  Integer32,
+	rdAlarmStatusA01			INTEGER,
+	rdAlarmStatusA02			INTEGER,
+	rdAlarmStatusA03			INTEGER,
+	rdAlarmStatusA04			INTEGER,
+	rdAlarmStatusA05			INTEGER,
+	rdAlarmStatusA06			INTEGER,
+	rdAlarmStatusA07			INTEGER,
+	rdAlarmStatusA08			INTEGER,
+	rdAlarmStatusA09			INTEGER,
+	rdAlarmStatusA10			INTEGER,
+	rdAlarmStatusA11			INTEGER,
+	rdAlarmStatusA12			INTEGER,
+	rdAlarmStatusA13			INTEGER,
+	rdAlarmStatusA14			INTEGER,
+	rdAlarmStatusA15			INTEGER,
+	rdAlarmStatusA16			INTEGER,
+	rdAlarmStatusA17			INTEGER,
+	rdAlarmStatusA18			INTEGER,
+	rdAlarmStatusA19			INTEGER
+}
+
+
+rdIndex OBJECT-TYPE
+    SYNTAX     INTEGER (1..2147483647)
+    MAX-ACCESS not-accessible
+    STATUS     current
+    DESCRIPTION
+            "The auxiliary variable used for identifying instances
+            of the columnar objects in the sysORTable."
+    ::= { statusRDEntry 1 }
+
+rdStatusMode OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdmodeNotConfigured(1),
+			rdmodeShutdownNetwork(2),
+			rdmodeManualOverride(3),
+			rdmodeOff(4),
+			rdmodeON(5),
+			rdmodeFaultShutdown(6),
+			rdmodeGroupStandby(7),
+			rdmodeCommsFailure(8),
+			rdmodeNotConnected(9)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current operating mode of RDHx"
+	::= { statusRDEntry 2 }
+
+rdAlarmStatus OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current alarm status of RDHx"
+	::= { statusRDEntry 3 }	
+	
+rdStatusRDHxExitTempT1 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"RDHx exit temperature T1 value in 10th of degree Celsius.
+		Example 178 = 178 degree C"
+	::= { statusRDEntry 4 }
+
+rdStatusServerExitTempT2 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"RDHx exit temperature T2 value in 10th of degree Celsius.
+		Example 178 = 178 degree C"
+	::= { statusRDEntry 5 }
+
+rdStatusServerInletTempT3 OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"RDHx exit temperature T3 value in 10th of degree Celsius.
+		Example 178 = 178 degree C"
+	::= { statusRDEntry 6 }	
+
+rdStatusDiffPressure OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Differential Pressure (Pa)"
+	::= { statusRDEntry 7 }	
+
+rdStatusFanSpeed OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Fan Speed"
+	::= { statusRDEntry 8 }
+
+rdStatusValveDemand OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Control Valve (Cooling) Demand %"
+	::= { statusRDEntry 9 }
+	
+rdStatusRDHxExitTempT1a OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"RDHx exit temperature T1a value in 10th of degree Celsius.
+		Example 178 = 178 degree C"
+	::= { statusRDEntry 10 }
+
+rdStatusRDHxExitTempT1b OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"RDHx exit temperature T1b value in 10th of degree Celsius.
+		Example 178 = 178 degree C"
+	::= { statusRDEntry 11 }
+	
+rdStatusRDHxExitTempT1c OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"RDHx exit temperature T1c value in 10th of degree Celsius.
+		Example 178 = 178 degree C"
+	::= { statusRDEntry 12 }	
+	
+rdStatusServerExitTempT2a OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"RDHx exit temperature T2a value in 10th of degree Celsius.
+		Example 178 = 178 degree C"
+	::= { statusRDEntry 13 }
+
+rdStatusServerExitTempT2b OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"RDHx exit temperature T2b value in 10th of degree Celsius.
+		Example 178 = 178 degree C"
+	::= { statusRDEntry 14 }
+	
+rdStatusServerExitTempT2c OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"RDHx exit temperature T2c value in 10th of degree Celsius.
+		Example 178 = 178 degree C"
+	::= { statusRDEntry 15 }	
+	
+rdStatusServerInletTempT3a OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"RDHx exit temperature T3a value in 10th of degree Celsius.
+		Example 178 = 178 degree C"
+	::= { statusRDEntry 16 }
+
+rdStatusServerInletTempT3b OBJECT-TYPE
+	SYNTAX 		Integer32
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"RDHx exit temperature T3b value in 10th of degree Celsius.
+		Example 178 = 178 degree C"
+	::= { statusRDEntry 17 }	
+	
+rdAlarmStatusA01 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A01 - T1a RDHx Exit Temperature Sensor Fault"
+	::= { statusRDEntry 18 }	
+
+rdAlarmStatusA02 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A02 - T1b RDHx Exit Temperature Sensor Fault"
+	::= { statusRDEntry 19 }
+
+rdAlarmStatusA03 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A03 - T1c RDHx Exit Temperature Sensor Fault"
+	::= { statusRDEntry 20 }
+
+rdAlarmStatusA04 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A04 - T2a RDHx Inlet Temperature Sensor Fault"
+	::= { statusRDEntry 21 }	
+
+rdAlarmStatusA05 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A05 - T2b RDHx Inlet Temperature Sensor Fault"
+	::= { statusRDEntry 22 }
+
+rdAlarmStatusA06 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A06 - T2c RDHx Inlet Temperature Sensor Fault"
+	::= { statusRDEntry 23 }
+	
+rdAlarmStatusA07 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A07 - T3a Server Inlet Temperature Sensor Fault"
+	::= { statusRDEntry 24 }	
+
+rdAlarmStatusA08 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A08 - T3b Server Inlet Temperature Sensor Fault"
+	::= { statusRDEntry 25 }	
+
+rdAlarmStatusA09 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A09 - DP Sensor Fault"
+	::= { statusRDEntry 26 }	
+
+rdAlarmStatusA10 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A10 - Fan #1 Fault"
+	::= { statusRDEntry 27 }
+
+rdAlarmStatusA11 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A11 - Fan #2 Fault"
+	::= { statusRDEntry 28 }
+
+rdAlarmStatusA12 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A12 - Fan #3 Fault"
+	::= { statusRDEntry 29 }	
+
+rdAlarmStatusA13 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A13 - Fan #4 Fault"
+	::= { statusRDEntry 30 }
+
+rdAlarmStatusA14 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A14 - Fan #5 Fault"
+	::= { statusRDEntry 31 }
+	
+rdAlarmStatusA15 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A15 - Cooling Valve Fault Fault"
+	::= { statusRDEntry 32 }	
+
+rdAlarmStatusA16 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A16 - microSD Card Fault"
+	::= { statusRDEntry 33 }	
+
+rdAlarmStatusA17 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A17 - Server Inlet High Temperature"
+	::= { statusRDEntry 34 }
+	
+rdAlarmStatusA18 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A18 - RDHx Inlet High Temperature"
+	::= { statusRDEntry 35 }	
+
+rdAlarmStatusA19 OBJECT-TYPE
+	SYNTAX INTEGER {
+			rdalarmInactive(1),
+			rdalarmACTIVE(2)
+			}
+	MAX-ACCESS  read-only
+	STATUS 		current
+	DESCRIPTION
+		"Current status of alarm A19 - RDHx Exit High Temperature"
+	::= { statusRDEntry 36 }		
+	
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+-- CDU Traps --
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+--cduTraps OBJECT-TYPE
+--
+--	STATUS 		current
+--	DESCRIPTION
+--		"??
+--
+--		"
+--	::= { fs400main 0 }
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+-- CDU Traps --
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+
+cduA01Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A01 - T1 Temperature Sensor Fault"
+	::= { cduTraps 1 }
+
+cduA01AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A01 - T1 Temperature Sensor Fault Cleared"
+	::= { cduTraps 2 }
+
+cduA02Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A02 - T2a Temperature Sensor Fault"
+	::= { cduTraps 3 }
+
+cduA02AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A02 - T2a Temperature Sensor Fault Cleared"
+	::= { cduTraps 4 }
+	
+cduA03Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A03 - T2b Temperature Sensor Fault"
+	::= { cduTraps 5 }
+
+cduA03AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A03 - T2b Temperature Sensor Fault Cleared"
+	::= { cduTraps 6 }
+	
+cduA04Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A04 - T2c Temperature Sensor Fault"
+	::= { cduTraps 7 }
+
+cduA04AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A04 - T2c Temperature Sensor Fault Cleared"
+	::= { cduTraps 8 }
+	
+cduA05Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A05 - T3a Temperature Sensor Fault"
+	::= { cduTraps 9 }
+
+cduA05AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A05 - T3a Temperature Sensor Fault Cleared"
+	::= { cduTraps 10 }
+	
+cduA06Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A06 - T3b Temperature Sensor Fault"
+	::= { cduTraps 11 }
+
+cduA06AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A06 - T3b Temperature Sensor Fault Cleared"
+	::= { cduTraps 12 }
+	
+cduA07Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A07 - T4 Temperature Sensor Fault"
+	::= { cduTraps 13 }
+
+cduA07AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A07 - T4 Temperature Sensor Fault Cleared"
+	::= { cduTraps 14 }
+	
+cduA08Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A08 - RHa Relative Humidity Sensor Fault"
+	::= { cduTraps 15 }
+
+cduA08AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A08 - RHa Relative Humidity Sensor Fault Cleared"
+	::= { cduTraps 16 }
+	
+cduA09Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A09 - RHb Relative Humidity Sensor Fault"
+	::= { cduTraps 17 }
+
+cduA09AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A09 - RHb Relative Humidity Sensor Fault Cleared"
+	::= { cduTraps 18 }
+	
+cduA10Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A10 - PS1a Pressure Sensor Fault"
+	::= { cduTraps 19 }
+
+cduA10AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A10 - PS1a Pressure Sensor Fault Cleared"
+	::= { cduTraps 20 }
+	
+cduA11Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A11 - PS1b Pressure Sensor Fault"
+	::= { cduTraps 21 }
+
+cduA11AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A11 - PS1b Pressure Sensor Fault Cleared"
+	::= { cduTraps 22 }
+	
+cduA12Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A12 - PS2 Pressure Sensor Fault"
+	::= { cduTraps 23 }
+
+cduA12AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A12 - PS2 Pressure Sensor Fault Cleared"
+	::= { cduTraps 24 }
+	
+cduA13Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A13 - PS3 Pressure Sensor Fault"
+	::= { cduTraps 25 }
+
+cduA13AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A13 - PS3 Pressure Sensor Fault Cleared"
+	::= { cduTraps 26 }
+	
+cduA14Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A14 - PS4 Pressure Sensor Fault Fault"
+	::= { cduTraps 27 }
+
+cduA14AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A14 - PS4 Pressure Sensor Fault Cleared"
+	::= { cduTraps 28 }
+	
+cduA15Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A15 - PS5a Pressure Sensor Fault"
+	::= { cduTraps 29 }
+
+cduA15AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A15 - PS5a Pressure Sensor Fault Cleared"
+	::= { cduTraps 30 }
+	
+cduA16Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A16 - PS5b Pressure Sensor Fault"
+	::= { cduTraps 31 }
+
+cduA16AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A16 - PS5b Pressure Sensor Fault Cleared"
+	::= { cduTraps 32 }
+	
+cduA17Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A17 - Secondary Flow Meter Sensor Fault"
+	::= { cduTraps 33 }
+
+cduA17AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A17 - Secondary Flow Meter Sensor Fault Cleared"
+	::= { cduTraps 34 }
+	
+cduA18Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A18 - Primary Flow Meter Sensor Fault"
+	::= { cduTraps 35 }
+
+cduA18AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A18 - Primary Flow Meter Sensor Fault Cleared"
+	::= { cduTraps 36 }
+	
+cduA19Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A19 - microSD Card Fault"
+	::= { cduTraps 37 }
+
+cduA19AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A19 - microSD Card Fault Cleared"
+	::= { cduTraps 38 }
+	
+cduA20Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A20 - Water Make-up Empty"
+	::= { cduTraps 39 }
+
+cduA20AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A20 - Water Make-up Empty Cleared"
+	::= { cduTraps 40 }
+	
+cduA21Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A21 - Insufficient Water Level"
+	::= { cduTraps 41 }
+
+cduA21AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A21 - Insufficient Water Level Cleared"
+	::= { cduTraps 42 }
+	
+cduA22Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A22 - Pump 1 Inverter Fault"
+	::= { cduTraps 43 }
+
+cduA22AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A22 - Pump 1 Inverter Fault Cleared"
+	::= { cduTraps 44 }
+	
+cduA23Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A23 - Pump 1 Inverter Low Flow"
+	::= { cduTraps 45 }
+
+cduA23AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A23 - Pump 1 Inverter Low Flow Cleared"
+	::= { cduTraps 46 }
+	
+cduA24Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A24 - Pump 2 Inverter Fault"
+	::= { cduTraps 47 }
+
+cduA24AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A24 - Pump 2 Inverter Fault Cleared"
+	::= { cduTraps 48 }
+	
+cduA25Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A25 - Pump 2 Inverter Low Flow"
+	::= { cduTraps 49 }
+
+cduA25AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A25 - Pump 2 Inverter Low Flow Cleared"
+	::= { cduTraps 50 }
+	
+cduA26Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A26 - Pump Shutdown"
+	::= { cduTraps 51 }
+
+cduA26AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A26 - Pump Shutdown Cleared"
+	::= { cduTraps 52 }
+	
+cduA27Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A27 - Valve Fault"
+	::= { cduTraps 53 }
+
+cduA27AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A27 - Valve Fault Cleared"
+	::= { cduTraps 54 }
+	
+cduA28Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A28 - Primary Water Low Flow"
+	::= { cduTraps 55 }
+
+cduA28AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A28 - Primary Water Low Flow Cleared"
+	::= { cduTraps 56 }
+	
+cduA29Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A29 - Primary Filter Dirty"
+	::= { cduTraps 57 }
+
+cduA29AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A29 - Primary Filter Dirty Cleared"
+	::= { cduTraps 58 }
+	
+cduA30Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A30 - Primary Water Low Temperature"
+	::= { cduTraps 59 }
+
+cduA30AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A30 - Primary Water Low Temperature Cleared"
+	::= { cduTraps 60 }
+	
+cduA31Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A31 - Primary Water High Temperature"
+	::= { cduTraps 61 }
+
+cduA31AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A31 - Primary Water High Temperature Cleared"
+	::= { cduTraps 62 }
+	
+cduA32Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A32 - Secondary Water Low Temperature"
+	::= { cduTraps 63 }
+
+cduA32AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A32 - Secondary Water Low Temperature Cleared"
+	::= { cduTraps 64 }
+	
+cduA33Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A33 - Secondary Water High Temperature"
+	::= { cduTraps 65 }
+
+cduA33AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A33 - Secondary Water High TemperatureCleared"
+	::= { cduTraps 66 }
+	
+cduA34Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A34 - Flood - Unit"
+	::= { cduTraps 67 }
+
+cduA34AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A34 - Flood - Unit Cleared"
+	::= { cduTraps 68 }
+	
+cduA35Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A35 - PS1 Difference Out Of Limits"
+	::= { cduTraps 69 }
+
+cduA35AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A35 - PS1 Difference Out Of Limits Cleared"
+	::= { cduTraps 70 }
+	
+cduA36Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A36 - Secondary Over pressure Fault"
+	::= { cduTraps 71 }
+
+cduA36AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A36 - Secondary Over pressure Cleared"
+	::= { cduTraps 72 }
+cduA37larm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A37 - Flood - Under floor"
+	::= { cduTraps 73 }
+
+cduA37AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A37 - Flood - Under floor Cleared"
+	::= { cduTraps 74 }
+	
+cduA38Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A38 - Check Water Make-up Level"
+	::= { cduTraps 75 }
+
+cduA38AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A38 - Check Water Make-up Level Cleared"
+	::= { cduTraps 76 }
+cduA39Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A39 - System Low Pressure"
+	::= { cduTraps 77 }
+
+cduA39AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A39 - System Low Pressure Cleared"
+	::= { cduTraps 78 }
+cduA40Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A40 - Secondary Over pressure Shutdown Fault"
+	::= { cduTraps 79 }
+
+cduA40AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A40 - Secondary Over pressure Shutdown Cleared"
+	::= { cduTraps 80 }
+cduA41Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A41 - Primary No Flow"
+	::= { cduTraps 81 }
+
+cduA41AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A41 - Primary No Flow Cleared"
+	::= { cduTraps 82 }
+cduA42Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A42 - Level Sensor - No Water Detected"
+	::= { cduTraps 83 }
+
+cduA42AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A42 - Level Sensor - No Water Detected Cleared"
+	::= { cduTraps 84 }
+cduA43Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A43 - Invalid Water Sensor Condition"
+	::= { cduTraps 85 }
+
+cduA43AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A43 - Invalid Water Sensor Condition Cleared"
+	::= { cduTraps 86}
+cduA44Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A44 - Group Control Network Fault"
+	::= { cduTraps 87 }
+
+cduA44AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A44 - Group Control Network Fault Cleared"
+	::= { cduTraps 88 }
+cduA45Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A45 - Inverter 1 Comms Fault"
+	::= { cduTraps 89 }
+
+cduA45AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A45 - Inverter 1 Comms Fault Cleared"
+	::= { cduTraps 90 }
+	
+cduA46Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A46 - Inverter 2 Comms Fault Fault"
+	::= { cduTraps 91 }
+
+cduA46AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A46 - Inverter 2 Comms Fault Cleared"
+	::= { cduTraps 92 }
+
+cduA47Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"W47 - Secondary Filter 1 Dirty"
+	::= { cduTraps 93 }
+
+cduA47AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"W47 - Secondary Filter 1 Dirty Cleared"
+	::= { cduTraps 94 }
+
+cduA48Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A48 - Secondary Filter 2 Dirty"
+	::= { cduTraps 95 }
+
+cduA48AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A48 - Secondary Filter 2 Dirty Cleared"
+	::= { cduTraps 96 }
+
+cduA49Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A49 - Sec Temp T2a Diff Fault"
+	::= { cduTraps 97 }
+
+cduA49AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A49 - Sec Temp T2a Diff Fault Cleared"
+	::= { cduTraps 98 }
+
+cduA50Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A50 - Sec Temp T2b Diff Fault"
+	::= { cduTraps 99 }
+
+cduA50AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A50 - Sec Temp T2b Diff Fault Cleared"
+	::= { cduTraps 100 }
+
+cduA51Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A51 - Sec Temp T2c Diff Fault"
+	::= { cduTraps 101 }
+
+cduA51AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A51 - Sec Temp T2c Diff Fault Cleared"
+	::= { cduTraps 102 }
+
+cduA52Alarm NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A52 - Group Control Insufficient Units"
+	::= { cduTraps 103 }
+
+cduA52AlarmCleared NOTIFICATION-TYPE
+	OBJECTS { mtrapargsString }
+	STATUS current
+	DESCRIPTION
+	"A52 - Group Control Insufficient Units Cleared"
+	::= { cduTraps 104 }
+
+END

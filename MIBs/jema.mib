@@ -1,0 +1,2171 @@
+--
+-- JEMA-MIB { iso org(3) dod(6) internet(1) private(4)
+--    enterprises(1) jema(4550) }
+
+JEMA-UPS-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+       MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+       OBJECT-IDENTITY, Counter32, Gauge32, Integer32,
+         enterprises
+           FROM SNMPv2-SMI
+       DisplayString, TimeStamp, TimeInterval, TestAndIncr,
+         AutonomousType
+           FROM SNMPv2-TC
+       MODULE-COMPLIANCE, OBJECT-GROUP
+           FROM SNMPv2-CONF;
+
+jema                    OBJECT IDENTIFIER ::=  { enterprises 4550 }
+
+   jemaUpsMIB MODULE-IDENTITY
+       LAST-UPDATED "010207"
+       ORGANIZATION "JEMA UPS MIB Working Group"
+       CONTACT-INFO
+              "        Hiroshi Inoue
+
+                Postal: The Japan Electrical Manufacturers' Association
+                        JAPAN
+
+                   Tel: +81-3-3581-4844
+                   Fax: +81-3-3581-4864
+
+                E-mail: hiroshi_inoue@jema-net.or.jp"
+       DESCRIPTION
+               "The MIB module to describe Uninterruptible Power
+               Systems."
+       ::= { jema 1 }
+
+   PositiveInteger ::= TEXTUAL-CONVENTION
+       DISPLAY-HINT "d"
+       STATUS       current
+       DESCRIPTION
+               "This data type is a non-zero and non-negative value."
+       SYNTAX       INTEGER (1..2147483647)
+
+   NonNegativeInteger ::= TEXTUAL-CONVENTION
+       DISPLAY-HINT "d"
+       STATUS       current
+       DESCRIPTION
+               "This data type is a non-negative value."
+       SYNTAX       INTEGER (0..2147483647)
+
+   jemaUpsObjects            OBJECT IDENTIFIER ::= { jemaUpsMIB 1 }
+
+   --
+   -- The Device Identification group.
+   --      All objects in this group except for jemaUpsIdentName and
+   --      jemaUpsIdentAttachedDevices are set at device initialization
+   --      and remain static.
+   --
+
+   jemaUpsIdent              OBJECT IDENTIFIER ::= { jemaUpsObjects 1 }
+
+   jemaUpsIdentManufacturer OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..31))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The name of the UPS manufacturer."
+       ::= { jemaUpsIdent 1 }
+
+   jemaUpsIdentModel OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..63))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The UPS Model designation."
+       ::= { jemaUpsIdent 2 }
+
+   jemaUpsIdentUPSSoftwareVersion OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..63))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The UPS firmware/software version(s).  This variable
+               may or may not have the same value as
+               jemaUpsIdentAgentSoftwareVersion in some implementations."
+       ::= { jemaUpsIdent 3 }
+
+   jemaUpsIdentAgentSoftwareVersion OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..63))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The UPS agent software version.  This variable may or
+               may not have the same value as
+               jemaUpsIdentUPSSoftwareVersion in some implementations."
+       ::= { jemaUpsIdent 4 }
+
+   jemaUpsIdentName OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..63))
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "A string identifying the UPS.  This object should be
+               set by the administrator."
+       ::= { jemaUpsIdent 5 }
+
+   jemaUpsIdentAttachedDevices OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..63))
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "A string identifying the devices attached to the
+               output(s) of the UPS.  This object should be set by
+               the administrator."
+       ::= { jemaUpsIdent 6 }
+
+   jemaUpsIdentManufacturedDate OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..10))
+       UNITS      "mm/dd/yyyy"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The date when the UPS was manufactured in mm/dd/yyyy
+                format."
+       ::= { jemaUpsIdent 7 }
+
+   jemaUpsIdentManufacturedNumber OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..63))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The manufacture number of the UPS."
+       ::= { jemaUpsIdent 8 }
+
+   --
+   -- Battery Group
+   --
+
+   jemaUpsBattery            OBJECT IDENTIFIER ::= { jemaUpsObjects 2 }
+
+   jemaUpsBatteryStatus OBJECT-TYPE
+       SYNTAX     INTEGER {
+           unknown(1),
+           batteryNormal(2),
+           batteryLow(3),
+           batteryDepleted(4)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The indication of the capacity remaining in the UPS
+               system's batteries.   A value of batteryNormal
+               indicates that the remaining run-time is greater than
+               jemaUpsConfigLowBattTime.  A value of batteryLow indicates
+               that the remaining battery run-time is less than or
+               equal to jemaUpsConfigLowBattTime.  A value of
+               batteryDepleted indicates that the UPS will be unable
+               to sustain the present load when and if the utility
+               power is lost (including the possibility that the
+               utility power is currently absent and the UPS is
+               unable to sustain the output)."
+       ::= { jemaUpsBattery 1 }
+
+   jemaUpsSecondsOnBattery OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "seconds"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "If the unit is on battery power, the elapsed time
+               since the UPS last switched to battery power, or the
+               time since the network management subsystem was last
+               restarted, whichever is less.  Zero shall be returned
+               if the unit is not on battery power."
+       ::= { jemaUpsBattery 2 }
+
+   jemaUpsEstimatedMinutesRemaining OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       UNITS      "minutes"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "An estimate of the time to battery charge depletion
+               under the present load conditions if the utility power
+               is off and remains off, or if it were to be lost and
+               remain off."
+       ::= { jemaUpsBattery 3 }
+
+   jemaUpsEstimatedChargeRemaining OBJECT-TYPE
+       SYNTAX     INTEGER (0..100)
+       UNITS      "percent"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "An estimate of the battery charge remaining expressed
+               as a percent of full charge."
+       ::= { jemaUpsBattery 4 }
+
+   jemaUpsBatteryVoltage OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 Volt DC"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the present battery voltage."
+       ::= { jemaUpsBattery 5 }
+
+   jemaUpsBatteryCurrent OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "0.1 Amp DC"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present battery current."
+       ::= { jemaUpsBattery 6 }
+
+   jemaUpsBatteryTemperature OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "degrees Centigrade"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The ambient temperature at or near the UPS Battery
+               casing."
+       ::= { jemaUpsBattery 7 }
+
+   jemaUpsBatteryLastReplaceDate OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..10))
+       UNITS      "mm/dd/yyyy"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The date when the battery was replaced in mm/dd/yyyy
+                format."
+       ::= { jemaUpsBattery 8 }
+
+   jemaUpsBatteryReplaceIndicator OBJECT-TYPE
+       SYNTAX     INTEGER {
+           unknown(1),
+           noBatteryNeedsReplacing(2),
+           batteryNeedsReplacing(3)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Battery replacement warning."
+       ::= { jemaUpsBattery 9 }
+
+   jemaUpsBatteryLifeTimeRemaining OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "month"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Forecast the replacement remainder period."
+       ::= { jemaUpsBattery 10 }
+
+--
+-- Input Group
+--
+
+jemaUpsInput				OBJECT IDENTIFIER ::= { jemaUpsObjects 3 }
+
+   jemaUpsInputLineBads OBJECT-TYPE
+       SYNTAX     Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "A count of the number of times the input entered an
+               out-of-tolerance condition as defined by the
+               manufacturer.  This count is incremented by one each
+               time the input transitions from zero out-of-tolerance
+               lines to one or more input lines out-of-tolerance."
+       ::= { jemaUpsInput 1 }
+
+
+   jemaUpsInputNumLines OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The number of input lines utilized in this device.
+               This variable indicates the entry number in the
+               input table."
+       ::= { jemaUpsInput 2 }
+
+   jemaUpsInputTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF JemaUpsInputEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A list of input table entries.  The number of entries
+               is given by the value of jemaUpsInputNumLines."
+       ::= { jemaUpsInput 3 }
+
+   jemaUpsInputEntry OBJECT-TYPE
+       SYNTAX     JemaUpsInputEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "An entry containing information applicable to a
+               particular input line."
+       INDEX { jemaUpsInputLineIndex }
+       ::= { jemaUpsInputTable 1 }
+
+   JemaUpsInputEntry ::= SEQUENCE {
+       jemaUpsInputLineIndex   PositiveInteger,
+       jemaUpsInputFrequency   NonNegativeInteger,
+       jemaUpsInputVoltage     NonNegativeInteger,
+       jemaUpsInputCurrent     NonNegativeInteger,
+       jemaUpsInputTruePower   NonNegativeInteger,
+       jemaUpsInputPhase       INTEGER,
+       jemaUpsInputVoltage1    Integer32,
+       jemaUpsInputVoltage2    Integer32,
+       jemaUpsInputVoltage3    Integer32,
+       jemaUpsInputCurrent1    Integer32,
+       jemaUpsInputCurrent2    Integer32,
+       jemaUpsInputCurrent3    Integer32,
+       jemaUpsInputCurrent4    Integer32
+   }
+
+   jemaUpsInputLineIndex OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "The input line identifier."
+       ::= { jemaUpsInputEntry 1 }
+
+   jemaUpsInputFrequency OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 Hertz"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present input frequency."
+       ::= { jemaUpsInputEntry 2 }
+
+   jemaUpsInputVoltage OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the present input voltage.
+               If input is singlePhase2Wire at jemaUpsInputPhase,
+               the value indicates the effective (RMS) voltage.
+               If not, it defined by manufacturer, for example,
+               particular phase RMS/average/typical voltage."
+       ::= { jemaUpsInputEntry 3 }
+
+   jemaUpsInputCurrent OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the present input current.
+               If input is singlePhase2Wire at jemaUpsInputPhase,
+               the value indicates the effective (RMS) current.
+               If not, it defined by manufacturer, for example,
+               particular phase RMS/average/typical current"
+       ::= { jemaUpsInputEntry 4 }
+
+   jemaUpsInputTruePower OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "Watts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the present input true power."
+       ::= { jemaUpsInputEntry 5 }
+
+   jemaUpsInputPhase OBJECT-TYPE
+       SYNTAX     INTEGER {
+           unknown(1),
+           singlePhase2Wire(2),
+           singlePhase3Wire(3),
+           threePhase3Wire(4),
+           threePhase4Wire(5)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+              "The number of input phase.
+                unknown(1)          : unknown
+                singlePhase2Wire(2) : single phase 2 wire system
+                                     |------
+                      L line --------|
+                                     | UPS
+                                     | Input
+                                     | side
+                      N line --------|
+                                     |------
+                    jemaUpsInputVoltage1 and jemaUpsInputCurrent1 are defined.
+                    jemaUpsInputVoltage1 indicates the voltage between
+                    L and N lines.
+                    jemaUpsInputCurrent1 indicates the current of L line.
+                singlePhase3Wire(3) : single phase 3 wire system
+                                      |------
+                      L1 line --------|
+                                      | UPS
+                                      | Input
+                      N line  --------| side
+                                      |
+                                      |
+                      L2 line --------|
+                                      |------
+                    jemaUpsInputVoltage1, 2, 3 and jemaUpsInputCurrent1, 2
+                    are defined.
+                    jemaUpsInputVoltage1 indicates the voltage between
+                    L1 and N lines,
+                    jemaUpsInputVoltage2 indicates the voltage between
+                    L2 and N lines,
+                    jemaUpsInputVoltage3 indicates the voltage between
+                    L1 and L2 lines.
+                    jemaUpsInputCurrent1 indicates the current of L1 line,
+                    jemaUpsInputCurrent2 indicates the current of L2 line.
+                threePhase3Wire(4): three phase 3 wire system
+                                      |------
+                      L1 line --------|
+                                      | UPS
+                                      | Input
+                      L2 line --------| side
+                                      |
+                                      |
+                      L3 line --------|
+                                      |------
+                    jemaUpsInputVoltage1, 2, 3 and jemaUpsInputCurrent1, 2,
+                    3 are defined.
+                    jemaUpsInputVoltage1 indicates the voltage between
+                    L1 and L2 lines,
+                    jemaUpsInputVoltage2 indicates the voltage between
+                    L2 and L3 lines,
+                    jemaUpsInputVoltage3 indicates the voltage between
+                    L3 and L1 lines.
+                    jemaUpsInputCurrent1 indicates the current of L1 line,
+                    jemaUpsInputCurrent2 indicates the current of L2 line,
+                    jemaUpsInputCurrent3 indicates the current of L3 line.
+                threePhase4Wire(5): three phase 4 wire system
+                                      |------
+                      L1 line --------|
+                                      | UPS
+                                      | Input
+                      L2 line --------| side
+                                      |
+                                      |
+                      L3 line --------|
+                                      |
+                                      |
+                      N  Line --------|
+                                      |------
+                    jemaUpsInputVoltage1, 2, 3 and jemaUpsInputCurrent1, 2,
+                    3, 4 are defined.
+                    jemaUpsInputVoltage1 indicates the voltage between
+                    L1 and N lines,
+                    jemaUpsInputVoltage2 indicates the voltage between
+                    L2 and N lines,
+                    jemaUpsInputVoltage3 indicates the voltage between
+                    L3 ane N lines.
+                    jemaUpsInputCurrent1 indicates the current of L1 line,
+                    jemaUpsInputCurrent2 indicates the current of L2 line,
+                    jemaUpsInputCurrent3 indicates the current of L3 line,
+                    jemaUpsInputCurrent4 indicates the current of N line."
+       ::= { jemaUpsInputEntry 6 }
+
+   jemaUpsInputVoltage1 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the input voltage
+               defined by jemaUpsInputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsInputEntry 7 }
+
+   jemaUpsInputVoltage2 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the input voltage
+               defined by jemaUpsInputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsInputEntry 8 }
+
+   jemaUpsInputVoltage3 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the input voltage
+               defined by jemaUpsInputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsInputEntry 9 }
+
+   jemaUpsInputCurrent1 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               " This value indicates the input current
+               defined by jemaUpsInputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsInputEntry 10 }
+
+   jemaUpsInputCurrent2 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the input current
+               defined by jemaUpsInputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsInputEntry 11 }
+
+   jemaUpsInputCurrent3 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the input current
+               defined by jemaUpsInputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsInputEntry 12 }
+
+   jemaUpsInputCurrent4 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the input current
+               defined by jemaUpsInputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsInputEntry 13 }
+
+
+   --
+   -- The Output group.
+   --
+
+   jemaUpsOutput             OBJECT IDENTIFIER ::= { jemaUpsObjects 4 }
+
+   jemaUpsOutputSource OBJECT-TYPE
+       SYNTAX     INTEGER {
+           other(1),
+           none(2),
+           normal(3),
+           bypass(4),
+           battery(5),
+           booster(6),
+           reducer(7)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Status of power supply for output.
+                 other(1) : except below items
+                 none(2)  : no output
+                     There is no source of output power (and therefore
+                     no output power), for example, the system has
+                     opened the output breaker.
+                 normal(3): normal running
+                     There is normal output when input is normal.
+                 bypass(4): output with bypass
+                     There is bypass output when input is normal.
+                 battery(5): running on battery
+                     There is on-battery operation.
+                 booster(6): running on booster
+                     There is boosted output voltage when input voltage
+                     is low.
+                 reducer(7): running on reducer
+                     There is reduced output voltage when input voltage
+                     is high."
+       ::= { jemaUpsOutput 1 }
+
+   jemaUpsOutputFrequency OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 Hertz"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present output frequency."
+       ::= { jemaUpsOutput 2 }
+
+   jemaUpsOutputNumLines OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The number of output lines utilized in this device.
+               This variable indicates the entry number in the
+               output table(jemaUpsOutputTable)."
+       ::= { jemaUpsOutput 3 }
+
+   jemaUpsOutputTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF JemaUpsOutputEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A list of output table entries.  The number of
+               entries is given by the value of jemaUpsOutputNumLines."
+       ::= { jemaUpsOutput 4 }
+
+   jemaUpsOutputEntry OBJECT-TYPE
+       SYNTAX     JemaUpsOutputEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "An entry containing information applicable to a
+               particular output line."
+       INDEX { jemaUpsOutputLineIndex }
+       ::= { jemaUpsOutputTable 1 }
+
+   JemaUpsOutputEntry ::= SEQUENCE {
+       jemaUpsOutputLineIndex    PositiveInteger,
+       jemaUpsOutputVoltage      NonNegativeInteger,
+       jemaUpsOutputCurrent      NonNegativeInteger,
+       jemaUpsOutputPower        NonNegativeInteger,
+       jemaUpsOutputPercentLoad  INTEGER,
+       jemaUpsOutputStatus       INTEGER,
+       jemaUpsOutputPhase        INTEGER,
+       jemaUpsOutputVoltage1     Integer32,
+       jemaUpsOutputVoltage2     Integer32,
+       jemaUpsOutputVoltage3     Integer32,
+       jemaUpsOutputCurrent1     Integer32,
+       jemaUpsOutputCurrent2     Integer32,
+       jemaUpsOutputCurrent3     Integer32,
+       jemaUpsOutputCurrent4     Integer32,
+       jemaUpsOutputPercentLoad1 INTEGER,
+       jemaUpsOutputPercentLoad2 INTEGER,
+       jemaUpsOutputPercentLoad3 INTEGER
+   }
+
+   jemaUpsOutputLineIndex OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "The output line identifier."
+       ::= { jemaUpsOutputEntry 1 }
+
+   jemaUpsOutputVoltage OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the present output voltage.
+               If output is singlePhase2Wire at jemaUpsOutputPhase,
+               the voltage indicates the effective (RMS) voltage.
+               If not, it defined by manufacturer, for example,
+               particular phase RMS/average/typical voltage."
+       ::= { jemaUpsOutputEntry 2 }
+
+   jemaUpsOutputCurrent OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the present output current.
+               If output is singlePhase2Wire at jemaUpsOutputPhase,
+               the value indicates the effective (RMS) current.
+               If not, it defined by manufacturer, for example,
+               particular phase RMS/average/typical current."
+       ::= { jemaUpsOutputEntry 3 }
+
+   jemaUpsOutputPower OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "Watts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the present output true power."
+       ::= { jemaUpsOutputEntry 4 }
+
+   jemaUpsOutputPercentLoad OBJECT-TYPE
+       SYNTAX     INTEGER (0..200)
+       UNITS      "percent"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The percentage of the UPS power capacity presently
+               being used on this output line."
+       ::= { jemaUpsOutputEntry 5 }
+
+   jemaUpsOutputStatus OBJECT-TYPE
+       SYNTAX     INTEGER {
+           unknown(1),
+           none(2),
+           normal(3)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The state of output lines utilized in this device.
+                unknown(1): unknown state
+                none(2): no output
+                    There is no output power in the line.
+                normal(3): normal running
+                    There is normal output in the line."
+       ::= { jemaUpsOutputEntry 6 }
+
+   jemaUpsOutputPhase OBJECT-TYPE
+       SYNTAX     INTEGER {
+           unknown(1),
+           singlePhase2Wire(2),
+           singlePhase3Wire(3),
+           threePhase3Wire(4),
+           threePhase4Wire(5)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The number of output phase.
+                 unknown(1)     : unknown
+                 singlePhase2Wrire(2): single phase 2 wire system
+                       -------|
+                              |-------- L line
+                       UPS    |
+                       Output |
+                       side   |
+                              |-------- N line
+                       -------|
+                     jemaUpsOutputVoltage1 and jemaUpsOutputCurrent1,
+                     jemaUpsOutputPercentLoad1 are defined.
+                     jemaUpsOutputVoltage1 indicates the voltage between
+                     L and N lines, jemaUpsOutputCurrent1 indicates
+                     the current of L line.
+                     jemaUpsOutputPercentLoad1 indicates the percent load
+                     between L and N lines.
+                 singlePhase3Wire(3): single phase 3 wire system
+                       -------|
+                              |-------- L1 line
+                       UPS    |
+                       Output |
+                       side   |-------- N line
+                              |
+                              |
+                              |-------- L2 line
+                       -------|
+                     jemaUpsOutputVoltage1, 2, 3 and jemaUpsOutputCurrent1,
+                     2, jemaUpsOutputPercentLoad1, 2, 3 are defined.
+                     jemaUpsOutputVoltage1 indicates the voltage between
+                     L1 and N lines,
+                     jemaUpsOutputVoltage2 indicates the volgate between
+                     L2 and N lines,
+                     jemaUpsOutputVoltage3 indicates the voltage between
+                     L1 and L2 lines.
+                     jemaUpsOutputCurrent1 indicates the current of L1 line,
+                     jemaUpsOutputCurrent2 indicates the current of L2 line.
+                     jemaUpsOutputPercentLoad1 indicates the percent load
+                     between L1 and N lines,
+                     jemaUpsOutputPercentLoad2 indicates the percent load
+                     between L2 and N lines,
+                     jemaUpsOutputPercentLoad3 indicates the percent load
+                     between L1 and L2 lines.
+                 singlePhase3Wire(4): three phase 3 wire system
+                       -------|
+                              |-------- L1 line
+                       UPS    |
+                       Output |
+                       side   |-------- L2 line
+                              |
+                              |
+                              |-------- L3 line
+                       -------|
+                     jemaUpsOutputVoltage1, 2, 3 and jemaUpsOutputCurrent1, 2, 3,
+                     jemaUpsOutputPercentLoad1, 2, 3, 4 are defined.
+                     jemaUpsOutputVoltage1 indicates the voltage between
+                     L1 and L2 lines,
+                     jemaUpsOutputVoltage2 indicates the voltage between
+                     L2 and L3 lines,
+                     jemaUpsOutputVoltage3 indicates the voltage between
+                     L3 and L1 lines.
+                     jemaUpsOutputCurrent1 indicates the current of L1 line,
+                     jemaUpsOutputCurrent2 indicates the current of L2 line,
+                     jemaUpsOutputCurrent3 indicates the current of L3 line.
+                     jemaUpsOutputPercentLoad1 indicates the percent load
+                     between L1 and L2 lines,
+                     jemaUpsOutputPercentLoad2 indicates the percent load
+                     between L2 and L3 lines,
+                     jemaUpsOutputPercentLoad3 indicates the percent load
+                     between L3 and L1 lines,
+                     jemaUpsOutputPercentLoad4 indicates the total percent
+                     load between L1 and L2, L3 lines.
+                 threePhase4Wire(5): three phase 4 wire system
+                       -------|
+                              |-------- L1 line
+                       UPS    |
+                       Output |
+                       side   |-------- L2 line
+                              |
+                              |
+                              |-------- L3 line
+                              |
+                              |
+                              |-------- N line
+                       -------|
+                     jemaUpsOutputVoltage1, 2, 3 and jemaUpsOutputCurrent1, 2,
+                     3, 4, jemaUpsOutputPercentLoad1, 2, 3 ,4 are defined.
+                     jemaUpsOutputVoltage1 indicates the voltage between
+                     L1 and N lines,
+                     jemaUpsOutputVoltage2 indicates the voltage between
+                     L2 and N lines,
+                     jemaUpsOutputVoltage3 indicates the voltage between
+                     L3 and N lines.
+                     jemaUpsOutputCurrent1 indicates the current of L1 line,
+                     jemaUpsOutputCurrent2 indicates the current of L2 line,
+                     jemaUpsOutputCurrent3 indicates the current of L3 line,
+                     jemaUpsOutputCurrent4 indicates the current of N line.
+                     jemaUpsOutputPrecentLoad1 indicates the persent load
+                     between L1 and N lines,
+                     jemaUpsOutputPercentLoad2 indicates the persent load
+                     between L2 and N lines,
+                     jemaUpsOutputPercnetLoad3 indicates the persent load
+                     between L3 and N lines,
+                     jemaUpsOutputPercentLoad4 indicates the total persent
+                     load between L1 and L2, L3 lines."
+       ::= { jemaUpsOutputEntry 7 }
+
+   jemaUpsOutputVoltage1 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the output voltage
+               defined by jemaUpsOutputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsOutputEntry 8 }
+
+   jemaUpsOutputVoltage2 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the output voltage
+               defined by jemaUpsOutputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsOutputEntry 9 }
+
+   jemaUpsOutputVoltage3 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the output voltage
+               defined by jemaUpsOutputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsOutputEntry 10 }
+
+   jemaUpsOutputCurrent1 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the output current
+               defined by jemaUpsOutputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsOutputEntry 11 }
+
+   jemaUpsOutputCurrent2 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the output current
+               defined by jemaUpsOutputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsOutputEntry 12 }
+
+   jemaUpsOutputCurrent3 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the output current
+               defined by jemaUpsOutputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsOutputEntry 13 }
+
+   jemaUpsOutputCurrent4 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the output current
+               defined by jemaUpsOutputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsOutputEntry 14 }
+
+   jemaUpsOutputPercentLoad1 OBJECT-TYPE
+       SYNTAX     INTEGER (-1..200)
+       UNITS      "percent"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the present load defined by
+               jemaUpsOutputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsOutputEntry 15 }
+
+   jemaUpsOutputPercentLoad2 OBJECT-TYPE
+       SYNTAX     INTEGER (-1..200)
+       UNITS      "percent"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the percent load defined by
+               jemaUpsOutputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsOutputEntry 16 }
+
+   jemaUpsOutputPercentLoad3 OBJECT-TYPE
+       SYNTAX     INTEGER (-1..200)
+       UNITS      "percent"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the present load defined by
+               jemaUpsOutputPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsOutputEntry 17 }
+
+
+   --
+   -- The Bypass group.
+   --
+
+   jemaUpsBypass             OBJECT IDENTIFIER ::= { jemaUpsObjects 5 }
+
+   jemaUpsBypassFrequency OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 Hertz"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present bypass frequency."
+       ::= { jemaUpsBypass 1 }
+
+   jemaUpsBypassNumLines OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The number of bypass lines utilized in this device.
+               This variable indicates the entry number in the
+               bypass table( jemaUpsBypassTable)."
+       ::= { jemaUpsBypass 2 }
+
+   jemaUpsBypassTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF JemaUpsBypassEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A list of bypass table entries.  The number of
+               entries is given by the value of jemaUpsBypassNumLines."
+       ::= { jemaUpsBypass 3 }
+
+   jemaUpsBypassEntry OBJECT-TYPE
+       SYNTAX     JemaUpsBypassEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "An entry containing information applicable to a
+               particular bypass line."
+       INDEX { jemaUpsBypassLineIndex }
+       ::= { jemaUpsBypassTable 1 }
+
+   JemaUpsBypassEntry ::= SEQUENCE {
+       jemaUpsBypassLineIndex  PositiveInteger,
+       jemaUpsBypassVoltage    NonNegativeInteger,
+       jemaUpsBypassCurrent    NonNegativeInteger,
+       jemaUpsBypassPower      NonNegativeInteger,
+       jemaUpsBypassPhase      INTEGER,
+       jemaUpsBypassVoltage1   Integer32,
+       jemaUpsBypassVoltage2   Integer32,
+       jemaUpsBypassVoltage3   Integer32,
+       jemaUpsBypassCurrent1   Integer32,
+       jemaUpsBypassCurrent2   Integer32,
+       jemaUpsBypassCurrent3   Integer32,
+       jemaUpsBypassCurrent4   Integer32
+   }
+
+   jemaUpsBypassLineIndex OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "The bypass line identifier."
+       ::= { jemaUpsBypassEntry 1 }
+
+   jemaUpsBypassVoltage OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the present bypass voltage.
+               If bypass is singlePhase2Wire at jemaUpsBypassPhase,
+               the voltage indicates the effective (RMS) voltage.
+               If not, it defined by manufacturer, for example,
+               particular phase RMS/average/typical voltage."
+       ::= { jemaUpsBypassEntry 2 }
+
+   jemaUpsBypassCurrent OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the present bypass current.
+               If bypass is singlePhase2Wire at jemaUpsBypassPhase,
+               the value indicates the effective (RMS) current.
+               If not, it defined by manufacturer, for example,
+               particular phase RMS/average/typical current."
+       ::= { jemaUpsBypassEntry 3 }
+
+   jemaUpsBypassPower OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "Watts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the present bypass true power."
+       ::= { jemaUpsBypassEntry 4 }
+
+   jemaUpsBypassPhase OBJECT-TYPE
+       SYNTAX     INTEGER {
+           unknown(1),
+           singlePhase2Wire(2),
+           singlePhase3Wire(3),
+           threePhase3Wire(4),
+           threePhase4Wire(5),
+           noBypass(6)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The number of input phase.
+                 unknown(1) : unknown
+                 singlePhase2Wire(2): single phase 2 wire system
+                                      |------
+                       L line --------|
+                                      | UPS
+                                      | Input
+                                      | side
+                       N line --------|
+                                      |------
+                     jemaUpsBypassVoltage1 and jemaUpsBypassCurrent1 are defined.
+                     jemaUpsBypassVoltage1 indicates the voltage between
+                     L and N lines, jemaUpsBypassCurrent1 indicates
+                     the current of L line.
+                 singlePhase3Wire(3): single phase 3 wire system
+                                       |------
+                       L1 line --------|
+                                       | UPS
+                                       | Input
+                       N line  --------| side
+                                       |
+                                       |
+                       L2 line --------|
+                                       |------
+                     jemaUpsBypassVoltage1, 2, 3 and jemaUpsBypassCurrent1, 2
+                     are defined.
+                     jemaUpsBypassVoltage1 indicates the voltage between
+                     L1 and N lines,
+                     jemaUpsBypassVoltage2 indicates the voltage between
+                     L2 and N lines,
+                     jemaUpsBypassVoltage3 indicates the voltage between
+                     L1 and L2 lines.
+                     jemaUpsBypassCurrent1 indicates the current of L1 line,
+                     jemaUpsBypassCurrent2 indicates the current of L2 line.
+                 threePhase3Wire(4): three phase 3 wire system
+                                       |------
+                       L1 line --------|
+                                       | UPS
+                                       | Input
+                       L2 line --------| side
+                                       |
+                                       |
+                       L3 line --------|
+                                       |------
+                     jemaUpsBypassVoltage1, 2, 3 and jemaUpsBypassCurrent1, 2, 3
+                     are defined.
+                     jemaUpsBypassVoltage1 indicates the voltage between
+                     L1 and L2 lines,
+                     jemaUpsBypassVoltage2 indicates the voltage between
+                     L2 and L3 lines,
+                     jemaUpsBypassVoltage3 indicates the voltage between
+                     L3 and L1 lines.
+                     jemaUpsBypassCurrent1 indicates the current of L1 line,
+                     jemaUpsBypassCurrent2 indicates the current of L2 line,
+                     jemaUpsBypassCurrent3 indicates the current of L3 line.
+                 threePhase4Wire(5): three phase 4 wire system
+                                       |------
+                       L1 line --------|
+                                       | UPS
+                                       | Input
+                       L2 line --------| side
+                                       |
+                                       |
+                       L3 line --------|
+                                       |
+                                       |
+                       N  Line --------|
+                                       |------
+                     jemaUpsBypassVoltage1, 2, 3 and jemaUpsBypassCurrent1, 2, 3,
+                     4 are defined.
+                     jemaUpsBypassVoltage1 indicates the voltage between
+                     L1 and N lines,
+                     jemaUpsBypassVoltage2 indicates the voltage between
+                     L2 and N lines,
+                     jemaUpsBypassVoltage3 indicates the voltage between
+                     L3 and N lines.
+                     jemaUpsBypassCurrent1 indicates the current of L1 line,
+                     jemaUpsBypassCurrent2 indicates the current of L2 line,
+                     jemaUpsBypassCurrent3 indicates the current of L3 line,
+                     jemaUpsBypassCurrent4 indicates the current of N line.
+                 noBypass(6)
+                     This system have no bypass."
+       ::= { jemaUpsBypassEntry 5 }
+
+   jemaUpsBypassVoltage1 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the bypass voltage
+               defined by jemaUpsBypassPhase.
+               The value -1  means unknown."
+       ::= { jemaUpsBypassEntry 6 }
+
+   jemaUpsBypassVoltage2 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the bypass voltage
+               defined by jemaUpsBypassPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsBypassEntry 7 }
+
+   jemaUpsBypassVoltage3 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the bypass voltage
+               defined by jemaUpsBypassPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsBypassEntry 8 }
+
+   jemaUpsBypassCurrent1 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the bypass current
+               defined by jemaUpsBypassPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsBypassEntry 9 }
+
+   jemaUpsBypassCurrent2 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the bypass current
+               defined by jemaUpsBypassPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsBypassEntry 10 }
+
+   jemaUpsBypassCurrent3 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the bypass current
+               defined by jemaUpsBypassPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsBypassEntry 11 }
+
+   jemaUpsBypassCurrent4 OBJECT-TYPE
+       SYNTAX     Integer32
+       UNITS      "0.1 RMS Amp"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "This value indicates the bypass current
+               defined by jemaUpsBypassPhase.
+               The value -1 means unknown."
+       ::= { jemaUpsBypassEntry 12 }
+
+   --
+   -- The Alarm group.
+   --
+
+   jemaUpsAlarm              OBJECT IDENTIFIER ::= { jemaUpsObjects 6 }
+
+   jemaUpsAlarmFatalFaultStatus OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The fatal fault in the UPS has been detected.
+               Detailed information is obtained by referring to
+               jemaUpsAlarmFatalFaultDetail.
+               -1: Fatal fault none
+                1: Abnormal output
+                2: Main circuit failure
+                3: Fuse blown
+                4: Fan fault
+                5: Abnormal control
+                6: Abnormal battery
+                7-999: Reservation
+                1000- : Others(The content is defined by manufacturers.)"
+       ::= { jemaUpsAlarm 1 }
+
+   jemaUpsAlarmFatalFaultDetail OBJECT-TYPE
+       SYNTAX     DisplayString(SIZE(0..511))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Detailed information on jemaUpsAlarmFatalFaultStatus is given
+               by the character string. The content of detailed
+               information is defined by manufacturers."
+       ::= { jemaUpsAlarm 2 }
+
+
+
+   jemaUpsAlarmFaultStatus OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The fault in the UPS has been detected.
+               Detailed information is obtained by referring to
+               jemaUpsAlarmFaultDetail.
+               -1: Fault none
+                1: Abnormal input
+                2: Abnormal bypass
+                3: Abnormal battery
+                4-999: Reservation
+                1000-: Others(The content is defined by manufacturers.)"
+       ::= { jemaUpsAlarm 3 }
+
+   jemaUpsAlarmFaultDetail OBJECT-TYPE
+       SYNTAX     DisplayString(SIZE(0..511))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Detailed information on jemaUpsAlarmFaultStatus is given by
+               the character string. The content of detailed information
+               is defined by manufacturers."
+       ::= { jemaUpsAlarm 4 }
+
+
+
+   jemaUpsAlarmWarningStatus OBJECT-TYPE
+       SYNTAX     INTEGER {
+           none(-1),
+           occurred(1)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The warning in the UPS has been detected.
+               Detailed information is obtained by referring to
+               jemaUpsAlarmWarningDetail."
+       ::= { jemaUpsAlarm 5 }
+
+   jemaUpsAlarmWarningDetail OBJECT-TYPE
+       SYNTAX     DisplayString(SIZE(0..511))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Detailed information on jemaUpsAlarmWarningStatus is given by
+               the character string. The content of detailed information
+               is defined by manufacturers."
+       ::= { jemaUpsAlarm 6 }
+
+
+
+   jemaUpsAlarmCautionDetail OBJECT-TYPE
+       SYNTAX     DisplayString(SIZE(0..511))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Caution detailed information from UPS is given by the
+               character string. The content of detailed information
+               is defined by manufacturers."
+       ::= { jemaUpsAlarm 7 }
+
+
+
+   jemaUpsAlarmInputBadStatus OBJECT-TYPE
+       SYNTAX     INTEGER {
+           none(-1),
+           occurred(1)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "An abnormal condition of input in the UPS has been detected.
+               Detailed information is obtained by referring to
+               jemaUpsAlarmInputBadDetail."
+       ::= { jemaUpsAlarm 8 }
+
+   jemaUpsAlarmInputBadDetail OBJECT-TYPE
+       SYNTAX     DisplayString(SIZE(0..511))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+                "Detailed information on jemaUpsAlarmInputBadStatus is given
+                by the character string. The content of detailed
+                information is defined by manufacturers."
+       ::= { jemaUpsAlarm 9 }
+
+
+
+   jemaUpsAlarmOutputOverloadStatus OBJECT-TYPE
+       SYNTAX     INTEGER {
+           none(-1),
+           occurred(1)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The output overload in the UPS has been detected."
+       ::= { jemaUpsAlarm 10 }
+
+
+
+   jemaUpsAlarmBatteryBadStatus OBJECT-TYPE
+       SYNTAX     INTEGER {
+           none(-1),
+           occurred(1)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+              "An abnormal condition of the battery in the UPS has
+               been detected.
+               Detailed information is obtained by referring to
+               jemaUpsAlarmBatteryBadDetail."
+       ::= { jemaUpsAlarm 11 }
+
+   jemaUpsAlarmBatteryBadDetail OBJECT-TYPE
+       SYNTAX     DisplayString(SIZE(0..511))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+              "Detailed information on jemaUpsAlarmBatteryBadStatus is given
+               by the character string. The content of detailed
+               information is defined by manufacturers."
+       ::= { jemaUpsAlarm 12 }
+
+
+
+   jemaUpsAlarmTempBadStatus OBJECT-TYPE
+       SYNTAX     INTEGER {
+           none(-1),
+           occurred(1)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+              "An abnormal temperature of the UPS has been detected.
+               Detailed information is obtained by referring to
+               jemaUpsAlarmTempBadDetail."
+       ::= { jemaUpsAlarm 13 }
+
+   jemaUpsAlarmTempBadDetail OBJECT-TYPE
+       SYNTAX     DisplayString(SIZE(0..511))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+              "Detailed information on jemaUpsAlarmTempBadStatus is given
+               by the character string. The content of detailed
+               information is defined by manufacturers."
+       ::= { jemaUpsAlarm 14 }
+
+   --
+   -- The Test Group
+   --
+
+   jemaUpsTest               OBJECT IDENTIFIER ::= { jemaUpsObjects 7 }
+
+   jemaUpsTestId OBJECT-TYPE
+       SYNTAX     OBJECT IDENTIFIER
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The test is named by an OBJECT IDENTIFIER which
+               allows a standard mechanism for the initiation of
+               tests, including the well known tests identified in
+               this document as well as those introduced by a
+               particular implementation.
+               Setting this variable initiates the named test.
+               Sets to this variable require the presence of
+               jemaUpsTestSpinLock in the same SNMP message.
+               The set request will be rejected with an appropriate
+               error message if the	requested test cannot be
+               performed, including attempts to start a test when
+               another test is already in progress.
+	           The status of the current or last test is maintained
+	           in jemaUpsTestResultsSummary.
+               Tests in progress may be aborted by setting the
+               jemaUpsTestId variable to jemaUpsTestAbortTestInProgress.
+               Read operations return the value of the name of the
+               test in progress if a test is in progress or the name
+               of the last test performed.
+               If no test is in progress, unless no test has been
+               run, in which case the well known value
+               jemaUpsTestNoTestsInitiated is returned."
+       ::= { jemaUpsTest 1 }
+
+   jemaUpsTestSpinLock OBJECT-TYPE
+       SYNTAX     TestAndIncr
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The jemaUpsTestSpinLock is used in the exclusion control
+               when plural manager stations request to set jemaUpsTestId
+               at a time.
+               Sets to jemaUpsTestSpinLock require the presence of
+               jemaUpsTestId in the same SNMP message.
+
+	           Usage:
+  	             set(jemaUpsTestSpinLock=lock_value,jemaUpsTestId=test_id)
+               Refer to RFC1903 for more information on the semantics
+               of objects with SYNTAX of TestAndIncr.
+               If the current value of jemaUpsTestSpinLock equals
+               2147483647, then the variable is set to zero.
+               The initial value of jemaUpsTestSpinLock at agent
+               initialization shall be 1.
+
+               Before starting a test, a manager-station should
+               make sure that a test is not progress as follows.
+
+               try_again:
+                 get(jemaUpsTestSpinLock)
+                 get(jemaUpsTestResultsSummary)
+
+                 while (jemaUpsTestResultsSummary == inProgress) {
+					/* loop while a test is running for another manager
+					 */
+					short delay
+
+					get(jemaUpsTestSpinLock)
+				 }
+
+				 lock_value = jemaUpsTestSpinLock
+				 set(jemaUpsTestSpinLock=lock_value,
+				     jemaUpsTestId=requested_test)
+
+				 if (error_index == 1) { /* (jemaUpsTestSpinLock failed) */
+					/* if problem is not access control, then some other
+					   manager slipped in ahead of us */
+
+					goto try_again
+				 }
+
+				 /* wait for test completion by polling
+				    jemaUpsTestResultsSummary */
+				 get(jemaUpsTestSpinLock, jemaUpsTestResultsSummary,
+				     jemaUpsTestResultsDetail)
+
+				 while(jemaUpsTestResultsSummary == inProgress) {
+					short delay
+					get(jemaUpsTestSpinLock, jemaUpsTestResultsSummary,
+					    jemaUpsTestResultsDetail)
+                 }
+                 /* when tets completes, retrive any additional test
+                    results */
+                 /* if jemaUpsTestSpinLock == lock_value+1,
+                    then these are our test results */ "
+       ::= { jemaUpsTest 2 }
+
+   jemaUpsTestResultsSummary OBJECT-TYPE
+       SYNTAX     INTEGER {
+           donePass(1),
+           doneWarning(2),
+           doneError(3),
+           aborted(4),
+           inProgress(5),
+           noTestsInitiated(6)
+       }
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The results of the current or last UPS diagnostics
+               test performed.
+               The values for donePass(1), doneWarning(2),
+               and doneError(3) indicate that the test completed either
+               successfully.
+               The value aborted(4) is returned for tests which are
+               aborted by setting the value of jemaUpsTestId to
+               jemaUpsTestAbortTestInProgress.
+               Tests which have not yet concluded are indicated by
+               inProgress(5).
+               The value noTestsInitiated(6) indicates that no previous
+               test results are available, such as is the case when no
+               tests have been run since the last reinitialization of
+               the network management subsystem and the system has no
+               provision for non-volatile storage of test results.
+
+               donePass(1)         : Normal
+               doneWarning(2)      : Warning
+               doneError(3)        : Error
+               aborted(4)          : Aborted
+               inProgress(5)       : In progress
+               noTestsInitiated(6) : No tests initiated"
+       ::= { jemaUpsTest 3 }
+
+   jemaUpsTestResultsDetail OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..255))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Additional information about jemaUpsTestResultsSummary.
+               The content of detailed information is defined by
+               manufactures.
+               If no additional information available, a zero length
+               string is returned."
+       ::= { jemaUpsTest 4 }
+
+   jemaUpsTestStartTime OBJECT-TYPE
+       SYNTAX     TimeStamp
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The value of sysUpTime at the time the test in
+               progress was initiated, or, if no test is in progress,
+               the time the previous test was initiated.
+               If the value of jemaUpsTestResultsSummary is
+               noTestsInitiated(6), jemaUpsTestStartTime has the value 0."
+       ::= { jemaUpsTest 5 }
+
+   jemaUpsTestElapsedTime OBJECT-TYPE
+       SYNTAX     TimeInterval
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The amount of time, in TimeTicks, since the test in
+               progress was initiated, or, if no test is in progress,
+               the previous test took to complete.
+               If the value of jemaUpsTestResultsSummary is
+               noTestsInitiated(6), jemaUpsTestElapsedTime has the value 0."
+       ::= { jemaUpsTest 6 }
+
+   --
+   -- Well known tests.
+   --
+
+   jemaUpsWellKnownTests     OBJECT IDENTIFIER ::= { jemaUpsTest 7 }
+
+
+   jemaUpsTestNoTestsInitiated OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "No tests have been initiated and no test is in
+               progress."
+       ::= { jemaUpsWellKnownTests  1 }
+
+   jemaUpsTestAbortTestInProgress OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The test in progress is to be aborted / the test in
+               progress was aborted."
+       ::= { jemaUpsWellKnownTests  2 }
+
+   jemaUpsTestGeneralSystemsTest OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The manufacturer's standard test of UPS device
+               systems."
+       ::= { jemaUpsWellKnownTests  3 }
+
+   jemaUpsTestQuickBatteryTest OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "A test that is sufficient to determine if the battery
+               needs replacement."
+       ::= { jemaUpsWellKnownTests  4 }
+
+   jemaUpsTestDeepBatteryCalibration OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The system is placed on battery to a discharge level,
+               set by the manufacturer, sufficient to determine
+               battery replacement and battery run-time with a high
+               degree of confidence.
+               WARNING:  this test will leave the battery in a low
+               charge state and will require time for recharging to
+               a level sufficient to provide normal battery duration for
+               the protected load."
+       ::= { jemaUpsWellKnownTests  5 }
+
+
+   --
+   -- The Control group.
+   --
+
+   jemaUpsControl            OBJECT IDENTIFIER ::= { jemaUpsObjects 8 }
+
+   jemaUpsShutdownType OBJECT-TYPE
+       SYNTAX     INTEGER {
+           output(1),
+           system(2)
+       }
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "Shutdown type of UPS when the all outputs turn off.
+               output(1) : Output off
+               system(2) : System off
+               All output decides an action when it was been off.
+               Setting this object to output(1) indicates that
+               shutdown requests should cause only the output of the
+               UPS to turn off.
+               Setting this object to system(2) indicates that
+               shutdown requests will cause the entire UPS system to
+               turn off."
+       ::= { jemaUpsControl 1 }
+
+   jemaUpsOutputControlNumlines OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The number of output lines are used as the object of
+               output control.
+               This variable indicates the entry number in the output
+               control table."
+       ::= { jemaUpsControl 2 }
+
+   jemaUpsOutputControlTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF JemaUpsOutputControlEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A list of output control table entries.
+               The number of entries is given by the value of
+               jemaUpsOutputControlNumlines."
+       ::= { jemaUpsControl 3 }
+
+   jemaUpsOutputControlEntry OBJECT-TYPE
+       SYNTAX     JemaUpsOutputControlEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "An entry containing information applicable to a
+               particular output control line."
+       INDEX { jemaUpsOutputControlLineIndex }
+       ::= { jemaUpsOutputControlTable 1 }
+
+   JemaUpsOutputControlEntry ::= SEQUENCE {
+	   jemaUpsOutputControlLineIndex   PositiveInteger,
+	   jemaUpsShutdownAfterDelay       INTEGER,
+	   jemaUpsStartupAfterDelay        INTEGER,
+	   jemaUpsRebootWithDuration       INTEGER,
+	   jemaUpsAutoRestart              INTEGER
+   }
+
+   jemaUpsOutputControlLineIndex OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "The output control line identifier."
+       ::= { jemaUpsOutputControlEntry 1 }
+
+   jemaUpsShutdownAfterDelay OBJECT-TYPE
+       SYNTAX     INTEGER (-1..2147483648)
+       UNITS      "seconds"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+                "Setting this object will shutdown the UPS output
+                specified by index.
+                Each output line turns off after the indicated number of
+                seconds.
+
+                Setting this object to 0 will cause the shutdown to
+                occur immediately.
+                Setting this object to -1 will abort the countdown.
+                If the output is already in the off state at the time
+                the countdown reaches 0, then nothing will happen.
+                When read, jemaUpsShutdownAfterDelay will return the number
+                of seconds remaining until shutdown, or -1 if no
+                shutdown countdown is in effect."
+       ::= { jemaUpsOutputControlEntry 2 }
+
+   jemaUpsStartupAfterDelay OBJECT-TYPE
+       SYNTAX     INTEGER (-1..2147483648)
+       UNITS      "seconds"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+                "Setting this object will start the UPS output specified
+                by index after the indicated number of seconds,
+                including starting the UPS, if necessary.
+                Setting this object to 0 will cause the startup to occur
+                immediately.
+                Setting this object to -1 will abort the countdown.
+                If the output is already on at the time the coutdown
+                reachess 0, then noting will happen.
+                When read, jemaUpsStartupAfterDelay will return the number
+                of seconds until satrtup, or -1 if no startup countdown
+                is in effect."
+       ::= { jemaUpsOutputControlEntry 3 }
+
+
+   jemaUpsRebootWithDuration OBJECT-TYPE
+       SYNTAX     INTEGER (-1..300)
+       UNITS      "seconds"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+                "Setting this object will immediately shutdown the UPS
+                output specified by index for a period equal to the
+                indicated number of seconds, after which time the output
+                will be started, including starting the UPS, if necessary.
+                When read, jemaUpsRebootWithDuration shall return the numbet
+                of seconds remaining in the countdown, or -1 if no
+                countdown is in progress."
+       ::= { jemaUpsOutputControlEntry 4 }
+
+   jemaUpsAutoRestart OBJECT-TYPE
+       SYNTAX     INTEGER {
+	       on(1),
+	       off(2)
+       }
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+                "Setting this object to 'on' will cause the UPS system
+                to restart after a shutdown if the shutdown occured
+                during a power loss as a result of either a
+                jemaUpsShutdownAfterDelay or an internal battery depleted
+                condition.
+                Setting this object to 'off' will prevent the UPS system
+                from restarting after a shudown until an operator
+                menually or remotely explicitly restarts it.
+                If the UPS is in a startup or reboot countdown, then the
+                UPS will not restart until that delay has been
+                satisfied."
+       ::= { jemaUpsOutputControlEntry 5 }
+
+ --
+   -- The Configuration group.
+   --
+
+   jemaUpsConfig             OBJECT IDENTIFIER ::= { jemaUpsObjects 9 }
+
+   jemaUpsConfigInputVoltage OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the nominal input voltage. On those
+               systems which support read-write access to this
+               object, if there is an attempt to set this variable to
+               a value that is not supported, the request must be
+               rejected and the agent shall respond with an
+               appropriate error message, i.e., badValue for SNMPv1,
+               or inconsistentValue for SNMPv2."
+       ::= { jemaUpsConfig 1 }
+
+   jemaUpsConfigInputFreq OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 Hertz"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The nominal input frequency. On those systems which
+               support read-write access to this object, if there
+               is an attempt to set this variable to a value that
+               is not supported, the request must be rejected and
+               the agent shall respond with an appropriate error
+               message, i.e., badValue for SNMPv1,or inconsistentValue
+               for SNMPv2.
+               In case that the UPS distinguishes the frequency of utility
+               power automatically, the agent shall respond with a value
+               of the frequency that the UPS detects."
+       ::= { jemaUpsConfig 2 }
+
+   jemaUpsConfigOutputVoltage OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the nominal output voltage. On those
+               systems which support read-write access to this
+               object, if there is an attempt to set this variable to
+               a value that is not supported, the request must be
+               rejected and the agent shall respond with an
+               appropriate error message, i.e., badValue for SNMPv1,
+               or inconsistentValue for SNMPv2."
+       ::= { jemaUpsConfig 3 }
+
+   jemaUpsConfigOutputFreq OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 Hertz"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The nominal output frequency. On those
+               systems which support read-write access to this
+               object, if there is an attempt to set this variable to
+               a value that is not supported, the request must be
+               rejected and the agent shall respond with an
+               appropriate error message, i.e., badValue for SNMPv1,
+               or inconsistentValue for SNMPv2.
+               In case that the UPS distinguishes the frequency of utility
+               power automatically, the agent shall respond with a value
+               of the frequency that the UPS detects. In case that the output
+               frequency is fixed to 50Hz or 60Hz,the agent shall respond
+               with the fixed value regardless of the frequency of utility
+               power."
+       ::= { jemaUpsConfig 4 }
+
+   jemaUpsConfigOutputVA OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "Volt-Amps"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the nominal Volt-Amp rating."
+       ::= { jemaUpsConfig 5 }
+
+   jemaUpsConfigOutputPower OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "Watts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The magnitude of the nominal true power rating."
+       ::= { jemaUpsConfig 6 }
+
+   jemaUpsConfigLowBattTime OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "minutes"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The value of jemaUpsEstimatedMinutesRemaining for declaring
+                batteryLow(3) of jemaUpsBatteryStatus
+                For agents which support only discrete (discontinuous)
+                values, then the agent shall round up to the next supported
+                value.  If the requested value is larger than the largest
+                supported value, then the largest supported value
+                shall be selected."
+       ::= { jemaUpsConfig 7 }
+
+   jemaUpsConfigAudibleStatus OBJECT-TYPE
+       SYNTAX     INTEGER {
+           disabled(1),
+           enabled(2),
+           muted(3)
+       }
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The requested state of the audible alarm.
+                  disabled(1):Disabled buzzer operation.
+                  enabled(2) :Enabled buzzer operation.
+                  muted(3)   :Silence alarm temporarily.
+               To be enabled or disabled for buzzer operation is specified.
+               When in the disabled state, the audible alarm should never
+               sound regardless of abnormal condition. When in the enabled
+               state,the audible alarm is sounding during abnormal condition.
+               Setting this object to muted(3) when the audible alarm is
+               sounding shall temporarily silence the alarm. It will
+               remain muted until the next abnormal condition would occur and
+               the value returned for read operations during this
+               period shall equal muted(3).  At the end of this
+               period, the value shall revert to enabled(2).
+               Writes of the value muted(3) when the audible alarm is not
+               sounding shall be accepted but otherwise shall have no effect."
+       ::= { jemaUpsConfig 8 }
+
+   jemaUpsConfigLowVoltageTransferPoint OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The minimum input line voltage allowed before the UPS
+               system transfers to battery backup."
+       ::= { jemaUpsConfig 9 }
+
+   jemaUpsConfigHighVoltageTransferPoint OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "RMS Volts"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The maximum line voltage allowed before the UPS
+               system transfers to battery backup."
+       ::= { jemaUpsConfig 10 }
+
+   jemaUpsConfigTransferTrapControl OBJECT-TYPE
+       SYNTAX     INTEGER {
+           fatalFault(1),
+           fault(2),
+           warning(3),
+           all(4)
+       }
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The 4 levels of sending traps to the manager.
+               To be enabled/disabled to send the following 6 kinds of traps is specified,
+               according to degree of importance.
+                  jemaUpsTrapFatalFault
+                  jemaUpsTrapFault
+                  jemaUpsTrapFaultRemoved
+                  jemaUpsTrapWarning
+                  jemaUpsTrapWarningRemoved
+                  jemaUpsTrapCaution
+
+                  fatalFault(1):Send jemaUpsTrapFatalFault.
+                  fault(2)     :Send jemaUpsTrapFatalFault,jemaUpsTrapFault,jemaUpsTrapFaultRemoved.
+                  warning(3)   :Send jemaUpsTrapFatalFault,jemaUpsTrapFault,jemaUpsTrapFaultRemoved,
+                                jemaUpsTrapWarning,jemaUpsTrapWarningRemoved.
+                  all(4)       :Send all 6 traps."
+       ::= { jemaUpsConfig 11 }
+
+   jemaUpsConfigIntervalTrapControl OBJECT-TYPE
+       SYNTAX     INTEGER {
+           disabled(1),
+           enabled(2),
+           muted(3)
+       }
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The jemaUpsTrapAny control.
+                Trap transfer is controlled.
+                disabled(1):Disable to send jemaUpsTrapAny
+                enabled(2) :Enable to send jemaUpsTrapAny
+                muted(3)   :Muted to send jemaUpsTrapAny
+                When in the muted(3), it will remain muted until
+                at least, one of the following 7 Statuses would change.
+                At the end of this period, the value shall revert to enabled(2)
+                from muted(3).
+                jemaUpsAlarmFatalFaultStatus,        jemaUpsAlarmFaultStatus
+                jemaUpsAlarmWarningStatus,           jemaUpsAlarmInputBadStatus
+                jemaUpsAlarmOutputOverloadStatus,    jemaUpsAlarmBatteryBadStatus
+                jemaUpsAlarmTempBadStatus"
+       ::= { jemaUpsConfig 12 }
+
+   jemaUpsConfigIntervalTrapTime OBJECT-TYPE
+       SYNTAX     INTEGER (5..2147483648)
+       UNITS      "seconds"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The interval time of traps to be sent.
+                jemaUpsTrapBatteryLow and jemaUpsTrapAny are resent at this
+                interval time."
+       ::= { jemaUpsConfig 13 }
+
+ --
+   -- notifications, i.e., traps
+   --
+   jemaUpsTraps              OBJECT IDENTIFIER ::= { jemaUpsMIB 2 }
+
+   -- This section defines the general notifications sent by
+   -- the UPS agents.
+   -- Care must be taken to insure that no particular notification
+   -- is sent to a single receiving entity more often than once
+   -- every five seconds.
+
+   jemaUpsTrapOnBattery NOTIFICATION-TYPE
+       OBJECTS { jemaUpsEstimatedMinutesRemaining, jemaUpsSecondsOnBattery,
+                 jemaUpsConfigLowBattTime }
+       STATUS  current
+       DESCRIPTION
+               "The UPS is operating on battery power.  This trap is
+               persistent and is resent at one minute intervals until
+               the UPS either turns off or is no longer running on
+               battery."
+     ::= { jemaUpsTraps 1 }
+
+   jemaUpsTrapTestCompleted NOTIFICATION-TYPE
+       OBJECTS { jemaUpsTestId, jemaUpsTestSpinLock,
+                 jemaUpsTestResultsSummary, jemaUpsTestResultsDetail,
+                 jemaUpsTestStartTime, jemaUpsTestElapsedTime }
+       STATUS  current
+       DESCRIPTION
+               "This trap is sent upon completion of a UPS diagnostic
+               test. The test result is obtained by referring to
+                     jemaUpsTestResultSummary."
+
+     ::= { jemaUpsTraps 2 }
+
+
+jemaUpsTrapInputBad NOTIFICATION-TYPE
+       OBJECTS { jemaUpsAlarmInputBadDetail }
+       STATUS  current
+       DESCRIPTION
+               "An abnormal condition of input in the UPS has been detected."
+     ::= { jemaUpsTraps 3 }
+
+jemaUpsTrapInputBadRemoved NOTIFICATION-TYPE
+       STATUS  current
+       DESCRIPTION
+               "The input in the UPS has returned from the abnormal condition."
+     ::= { jemaUpsTraps 4 }
+
+jemaUpsTrapBatteryLow NOTIFICATION-TYPE
+       STATUS  current
+       DESCRIPTION
+               "The battery capacity is low.
+                Refer to jemaUpsBatteryStatus. This trap is resent according to
+                jemaUpsConfigIntervalTrapTime."
+     ::= { jemaUpsTraps 5 }
+
+jemaUpsTrapOutputOverload NOTIFICATION-TYPE
+       OBJECTS { jemaUpsOutputPercentLoad }
+       STATUS  current
+       DESCRIPTION
+               "An overload has been detected."
+     ::= { jemaUpsTraps 6 }
+
+jemaUpsTrapOutputOverloadRemoved NOTIFICATION-TYPE
+       OBJECTS { jemaUpsAlarmOutputOverloadStatus }
+       STATUS  current
+       DESCRIPTION
+               "The output in the UPS has returned from the overload."
+     ::= { jemaUpsTraps 7 }
+
+jemaUpsTrapBetteryBad NOTIFICATION-TYPE
+       OBJECTS { jemaUpsAlarmBatteryBadDetail, jemaUpsBatteryLifeTimeRemaining }
+       STATUS  current
+       DESCRIPTION
+              "An abnormal condition of the battery in the UPS has
+               been detected."
+     ::= { jemaUpsTraps 8 }
+
+jemaUpsTrapTempBad NOTIFICATION-TYPE
+       OBJECTS { jemaUpsAlarmTempBadDetail  }
+       STATUS  current
+       DESCRIPTION
+              "An abnormal temperature of the UPS has been detected."
+     ::= { jemaUpsTraps 9 }
+
+jemaUpsTrapTempBadRemoved NOTIFICATION-TYPE
+       STATUS  current
+       DESCRIPTION
+               "The temperature of the UPS has returned from the abnormal condition."
+     ::= { jemaUpsTraps 10 }
+
+jemaUpsTrapCommunicationsLost NOTIFICATION-TYPE
+       STATUS  current
+       DESCRIPTION
+               "The communication between the UPS and agent has been lost."
+     ::= { jemaUpsTraps 11 }
+
+jemaUpsTrapCommunicationsLostRemoved NOTIFICATION-TYPE
+       STATUS  current
+       DESCRIPTION
+               "The communication between the UPS and agent has been established."
+     ::= { jemaUpsTraps 12 }
+
+jemaUpsTrapConfigChange NOTIFICATION-TYPE
+       STATUS  current
+       DESCRIPTION
+               "The UPS configuration has been changed."
+     ::= { jemaUpsTraps 13 }
+
+   jemaUpsTrapFatalFault NOTIFICATION-TYPE
+       OBJECTS { jemaUpsAlarmFatalFaultStatus, jemaUpsAlarmFatalFaultDetail }
+       STATUS  current
+       DESCRIPTION
+               "The fatal fault in the UPS has been detected.
+                The UPS can't backup.
+                It depends
+                upon manufacturer's judgment whether the Abnormal Battery
+                Voltage is treated as fatal fault."
+     ::= { jemaUpsTraps 14 }
+
+jemaUpsTrapFault NOTIFICATION-TYPE
+       OBJECTS { jemaUpsAlarmFaultStatus, jemaUpsAlarmFaultDetail }
+       STATUS  current
+       DESCRIPTION
+               "A fault in the UPS has been detected. The UPS can backup.
+                The abnormal input means an abnormal input phase rotation or
+                an input earth fault."
+     ::= { jemaUpsTraps 15 }
+
+jemaUpsTrapFaultRemoved NOTIFICATION-TYPE
+       OBJECTS { jemaUpsAlarmFaultStatus, jemaUpsAlarmFaultDetail }
+       STATUS  current
+       DESCRIPTION
+               "The UPS has returned from a fault."
+     ::= { jemaUpsTraps 16 }
+
+jemaUpsTrapWarning NOTIFICATION-TYPE
+       OBJECTS { jemaUpsAlarmWarningStatus, jemaUpsAlarmWarningDetail }
+       STATUS  current
+       DESCRIPTION
+               "The warning in the UPS has been detected."
+     ::= { jemaUpsTraps 17 }
+
+jemaUpsTrapWarningRemoved NOTIFICATION-TYPE
+       OBJECTS { jemaUpsAlarmWarningStatus, jemaUpsAlarmWarningDetail }
+       STATUS  current
+       DESCRIPTION
+               "The UPS has returned from a warning."
+     ::= { jemaUpsTraps 18 }
+
+jemaUpsTrapCaution NOTIFICATION-TYPE
+       OBJECTS { jemaUpsAlarmCautionDetail }
+       STATUS  current
+       DESCRIPTION
+               "The caution in the UPS has been detected."
+     ::= { jemaUpsTraps 19 }
+
+jemaUpsTrapAny NOTIFICATION-TYPE
+       OBJECTS { jemaUpsAlarmFatalFaultStatus, jemaUpsAlarmFaultStatus,
+                 jemaUpsAlarmWarningStatus, jemaUpsAlarmInputBadStatus,
+                 jemaUpsAlarmOutputOverloadStatus, jemaUpsAlarmBatteryBadStatus,
+                 jemaUpsAlarmTempBadStatus  }
+       STATUS  current
+       DESCRIPTION
+               "The trap factors exist.
+                While any following Statuses indicate abnormal condition
+                (except -1),the traps are sent according to
+                jemaUpsConfigIntervalTrapControl and jemaUpsConfigIntervalTrapTime.
+
+                jemaUpsAlarmFatalFaultStatus,        jemaUpsAlarmFaultStatus
+                jemaUpsAlarmWarningStatus,           jemaUpsAlarmInputBadStatus
+                jemaUpsAlarmOutputOverloadStatus,    jemaUpsAlarmBatteryBadStatus
+                jemaUpsAlarmTempBadStatus
+
+                The first jemaUpsTrapAny is sent after jemaUpsConfigIntervalTrapTime
+                passed from detection of abnormal condition."
+     ::= { jemaUpsTraps 20 }
+
+   END
+
+

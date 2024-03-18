@@ -1,0 +1,379 @@
+CSI-BBX2-MIB 
+-- ******************************************************
+--Control Solutions, Inc., SNMP  MIB
+--Prefix for private enterprises:  1.3.6.1.4.1	
+--Control Solutions, Inc. private enterprize number:  3815
+--
+-- The following MIB is the definition of the SNMP based implementation
+-- of Babel Buster X2, Babel Buster SP, and i.CanDoIt BAS-700 ReMOTE I/O.
+-- This MIB provides access to general purpose data registers
+-- per BBX2 core implementation.
+--
+--
+-- ************************************************************
+
+DEFINITIONS ::= BEGIN
+
+IMPORTS  
+	MODULE-IDENTITY, OBJECT-TYPE, Integer32, NOTIFICATION-TYPE 
+		FROM SNMPv2-SMI
+	MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+		FROM SNMPv2-CONF
+ 	bbx2, bbx2v1 
+		FROM Control-Solutions-MIB-Registrations;
+
+
+sys700v1Module MODULE-IDENTITY
+	LAST-UPDATED "200507050000Z"
+	ORGANIZATION "Control Solutions, Inc."
+	CONTACT-INFO
+		"Jim Hogenson
+		Control Solutions, Inc.
+		2179 Fourth Street, Suite 2-G
+		PO Box 10789
+		White Bear Lake, MN 55110
+		jimhogenson@csimn.com
+		Voice: 651-426-4410
+		Fax: 651-426-4418"
+	DESCRIPTION
+		"The following MIB is the definition of SNMP access to
+		Babel Buster X2 core based on Control Solutions Babel Buster
+		Ethernet processor."
+	REVISION "200512020000Z"
+	DESCRIPTION
+		"Initial draft."
+	::= { bbx2v1 1 }
+
+
+          -- textual conventions
+
+          DisplayString ::=
+              OCTET STRING
+          -- This data type is used to model textual information taken
+          -- from the NVT ASCII character set.  By convention, objects
+          -- with this syntax are declared as having
+          --
+          --      SIZE (0..255)
+
+-- Major object categories for Babel Buster 10/100
+
+bbx2Objects	OBJECT IDENTIFIER ::= { bbx2 1 }  -- 3815.1.2.2.1
+
+dataRegs		OBJECT IDENTIFIER ::= { bbx2Objects 1 }		-- 3815.1.2.2.1.1
+events			OBJECT IDENTIFIER ::= { bbx2Objects 2 }		-- 3815.1.2.2.1.2
+
+dataRegInt		OBJECT IDENTIFIER ::= { dataRegs 1 }		-- 3815.1.2.2.1.1.1
+dataRegFloat    OBJECT IDENTIFIER ::= { dataRegs 2 }        -- 3815.1.2.2.1.1.2
+
+-- ******************************************************
+--
+-- INTEGER DATA REGISTER TABLE
+-- 
+-- ******************************************************
+
+dataIntTable OBJECT-TYPE
+	SYNTAX	SEQUENCE OF DataIntEntry
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"Integer data register table."
+	::= { dataRegInt 1 }
+
+dataIntEntry OBJECT-TYPE
+	SYNTAX	DataIntEntry
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"Integer data register table entry."
+	INDEX	{ dataIntIndex }
+	::= { dataIntTable 1 }
+
+DataIntEntry ::= SEQUENCE {
+	dataIntIndex		INTEGER,
+	dataIntRegister		Integer32,
+	dataIntName			DisplayString
+	}
+
+dataIntIndex OBJECT-TYPE
+	SYNTAX	INTEGER (1..65536) 
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"Register number, index into integer data register table."
+	::= { dataIntEntry 1 }
+
+dataIntRegister OBJECT-TYPE
+	SYNTAX	Integer32
+	MAX-ACCESS	read-write
+	STATUS	current
+	DESCRIPTION
+		"Register's data value."
+	::= { dataIntEntry 2 }
+
+dataIntName OBJECT-TYPE
+	SYNTAX	DisplayString (SIZE(0..40))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"Register's name."
+	::= { dataIntEntry 3 }
+
+-- ******************************************************
+--
+-- FLOATING POINT DATA REGISTER TABLE
+-- 
+-- ******************************************************
+
+dataFloatTable OBJECT-TYPE
+	SYNTAX	SEQUENCE OF DataFloatEntry
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"Floating point data register table."
+	::= { dataRegFloat 1 }
+
+dataFloatEntry OBJECT-TYPE
+	SYNTAX	DataFloatEntry
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"Floating point data register table entry."
+	INDEX	{ dataFloatIndex }
+	::= { dataFloatTable 1 }
+
+DataFloatEntry ::= SEQUENCE {
+	dataFloatIndex		INTEGER,
+	dataFloatRegister	DisplayString,
+	dataFloatName		DisplayString
+	}
+
+dataFloatIndex OBJECT-TYPE
+	SYNTAX	INTEGER (1..65536) 
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"Register number, index into floating point data register table."
+	::= { dataFloatEntry 1 }
+
+dataFloatRegister OBJECT-TYPE
+	SYNTAX	DisplayString (SIZE(0..40))
+	MAX-ACCESS	read-write
+	STATUS	current
+	DESCRIPTION
+		"Register's data value."
+	::= { dataFloatEntry 2 }
+
+dataFloatName OBJECT-TYPE
+	SYNTAX	DisplayString (SIZE(0..40))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"Register's name."
+	::= { dataFloatEntry 3 }
+
+
+-- ******************************************************
+--
+-- EVENT TABLE
+-- 
+-- ******************************************************
+
+eventTable OBJECT-TYPE
+	SYNTAX	SEQUENCE OF EventEntry
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"Event table."
+	::= { events 1 }
+
+eventEntry OBJECT-TYPE
+	SYNTAX	EventEntry
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"Event table entry."
+	INDEX	{ eventIndex }
+	::= { eventTable 1 }
+
+EventEntry ::= SEQUENCE {
+	eventIndex		INTEGER,
+	eventRegNum		INTEGER,
+	eventRegName	DisplayString, 
+	eventRegData	DisplayString,
+	eventName		DisplayString,
+	eventTestType	INTEGER,
+	eventTestVal	DisplayString,
+	eventState		INTEGER
+	}
+
+eventIndex OBJECT-TYPE
+	SYNTAX	INTEGER (1..4096)
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"Index into event table."
+	::= { eventEntry 1 }
+
+eventRegNum OBJECT-TYPE
+	SYNTAX	INTEGER (1..65536) 
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"Register number referenced by this event."
+	::= { eventEntry 2 }
+
+eventRegName OBJECT-TYPE
+	SYNTAX	DisplayString (SIZE(0..40))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"Name of register referenced by this event."
+	::= { eventEntry 3 }
+
+eventRegData OBJECT-TYPE
+	SYNTAX	DisplayString (SIZE(0..40))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"Floating point ASCII string representation of register data."
+	::= { eventEntry 4 }
+
+eventName OBJECT-TYPE
+	SYNTAX	DisplayString (SIZE(0..40))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"Name given to this event for identification purposes."
+	::= { eventEntry 5 }
+
+eventTestType OBJECT-TYPE
+	SYNTAX	INTEGER {
+		undefined(0),
+		greaterThan(1),
+		greaterOrEqual(2),
+		lessThan(3),
+		lessOrEqual(4),
+		equal(5),
+		notEqual(6)
+	}	
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"Event test type, comparision of register data against test value."
+	::= { eventEntry 6 }
+
+eventTestVal OBJECT-TYPE
+	SYNTAX	DisplayString (SIZE(0..40))
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"Floating point ASCII string representation of event test value."
+	::= { eventEntry 7 }
+
+eventState OBJECT-TYPE
+	SYNTAX	INTEGER {
+		false(0),
+		true(1)
+	}	
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"State of event, true means register meets test defined
+		by threshold rule, true may imply alarm condition active."
+	::= { eventEntry 8 }
+
+-- ******************************************************
+--
+-- SIMPLE I/O FOR SNMP NOTIFICATIONS
+-- 
+-- ******************************************************
+
+bbx2TrapPrefix	OBJECT IDENTIFIER ::= { bbx2 2 }
+bbx2Traps		OBJECT IDENTIFIER ::= { bbx2TrapPrefix 0 }
+
+eventStateChange	NOTIFICATION-TYPE
+	OBJECTS {
+		eventRegNum,
+		eventRegName,
+		eventRegData,
+		eventName,
+		eventTestType,
+		eventTestVal,
+		eventState
+	}
+	STATUS	 	current
+	DESCRIPTION
+		"This trap is sent when an event changes state
+		if notifications are enabled for the object that changed."
+	::= { bbx2Traps 1 }
+
+
+-- ******************************************************
+--
+-- SIMPLE I/O FOR SNMP COMPLIANCE
+-- 
+-- ******************************************************
+
+bbx2Conformance	OBJECT IDENTIFIER ::= { bbx2 3 }
+
+bbx2Groups		OBJECT IDENTIFIER ::= { bbx2Conformance 1 }
+bbx2Compliances OBJECT IDENTIFIER ::= { bbx2Conformance 2 }
+
+bbx2Compliance MODULE-COMPLIANCE
+	STATUS 	current
+	DESCRIPTION
+		"The compliance statement for SNMPv2 entities which
+		implement the agent supported by the Babel Buster X2 core."
+	MODULE
+	MANDATORY-GROUPS
+		{ bbx2DataRegIntGroup, bbx2DataRegFloatGroup, bbx2EventGroup, 
+		  bbx2NotificationGroup }
+	::= { bbx2Compliances 1 }
+
+bbx2DataRegIntGroup	OBJECT-GROUP
+	OBJECTS {
+		dataIntRegister,
+		dataIntName
+	}
+	STATUS 	current
+	DESCRIPTION
+		"Group of objects that define integer data registers."
+	::= { bbx2Groups 1 }
+
+bbx2DataRegFloatGroup	OBJECT-GROUP
+	OBJECTS {
+		dataFloatRegister,
+		dataFloatName
+	}
+	STATUS 	current
+	DESCRIPTION
+		"Group of objects that define floating point data registers."
+	::= { bbx2Groups 2 }
+
+bbx2EventGroup	OBJECT-GROUP
+	OBJECTS {
+		eventRegNum,
+		eventRegName, 
+		eventRegData,
+		eventName,
+		eventTestType,
+		eventTestVal,
+		eventState
+	}
+	STATUS 	current
+	DESCRIPTION
+		"Group of objects that define events used to generate traps."
+	::= { bbx2Groups 3 }
+
+bbx2NotificationGroup	NOTIFICATION-GROUP
+	NOTIFICATIONS { 
+		eventStateChange 
+	}
+	STATUS current
+	DESCRIPTION
+		"Group of objects that define notifications."
+	::= { bbx2Groups 4 }
+
+END
+
+

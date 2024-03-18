@@ -1,0 +1,638 @@
+<?xml version="1.0"?>
+<!-- version 4: scaling sensor values by transformer ratios -->
+<!-- version 5: using milliamps instead of converting to amps; likewise using Watts instead of kilowatts -->
+<!-- version 6: undid the milliamp thing. Customer wants Amps and kilowatts -->
+
+<APC_DDF
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+	ddfid="janitza_umg96s"
+	ddfname="Janitza UMG96S Meter"
+	ddfversion="6"
+	canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+
+	<device deviceid="defaultDevice">
+
+		<oidMustExist ruleid="OIDMustExist_modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<setProductData ruleid="vendordata" field="vendor">Janitza</setProductData>
+		<setProductData ruleid="modeldata" field="model">UMG96S</setProductData>
+		<setProductData ruleid="typedata" field="type">Power Meter</setProductData>
+    		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+	<!-- the following xformer values aren't generally displayed as sensors but in this device
+		all output sensor values are scaled by the ratio of these values so to help verify/debug
+		that our scaling is correct, we're going to put these values out there -->
+
+	  <numSensor ruleid="CTPrimary-Sensor">
+	  	<type>amperage</type>
+		<sensorId>XFORMER_CURRENT_PRIMARY</sensorId>
+		<value>
+			<getOid>CTPrimary</getOid>
+		</value>
+		<label>Primary Current Transformer</label>
+		<sensorSet>power meter</sensorSet>
+	  </numSensor>
+
+	  <numSensor ruleid="CTSecondary-Sensor">
+	  	<type>amperage</type>
+		<sensorId>XFORMER_CURRENT_SECONDARY</sensorId>
+		<value>
+			<getOid>CTSecondary</getOid>
+		</value>
+		<label>Secondary Current Transformer</label>
+		<sensorSet>power meter</sensorSet>
+	  </numSensor>
+
+	  <numSensor ruleid="VTPrimary-Sensor">
+	  	<type>voltage</type>
+		<sensorId>XFORMER_VOLTAGE_PRIMARY</sensorId>
+		<value>
+			<getOid>VTPrimary</getOid>
+		</value>
+		<label>Primary Voltage Transformer</label>
+		<sensorSet>power meter</sensorSet>
+	  </numSensor>
+
+	  <numSensor ruleid="VTSecondary-Sensor">
+	  	<type>voltage</type>
+		<sensorId>XFORMER_VOLTAGE_SECONDARY</sensorId>
+		<value>
+			<getOid>VTSecondary</getOid>
+		</value>
+		<label>Secondary Voltage Transformer</label>
+		<sensorSet>power meter</sensorSet>
+	  </numSensor>
+
+        <numSensor  ruleid="CurrentL1-Sensor">
+            <type>amperage</type>
+            <sensorId>CURRENT_1</sensorId>
+            <value>
+		    	<mult>
+		    		<op>0.001</op> <!-- scale by .001 to convert mA to Amps -->
+				<op>
+                			<mult> <!-- multiply sensor by the xformer ratio to get mA -->
+                    			<op>
+							<div> <!-- div to get xformer ratio -->
+								<op><getOid>CTPrimary</getOid></op>
+								<op><getOid>CTSecondary</getOid></op>
+							</div>
+			  			</op>
+                    			<op>
+                					<getOid>CurrentL1</getOid>
+                    			</op>
+                			</mult>
+				</op>
+			</mult>
+            </value>
+            <valueInc>0.0001</valueInc> <!-- precision = 1/10000 amp assuming normal units are mA -->
+            <label>Current L1</label>
+            <sensorSet>power meter</sensorSet>
+        </numSensor>
+
+        <numSensor  ruleid="CurrentL2-Sensor">
+            <type>amperage</type>
+            <sensorId>CURRENT_2</sensorId>
+            <value>
+		    	<mult>
+		    		<op>0.001</op> <!-- scale by .001 to convert mA to Amps -->
+				<op>
+                			<mult> <!-- multiply sensor by the xformer ratio to get mA -->
+                    			<op>
+							<div> <!-- div to get xformer ratio -->
+								<op><getOid>CTPrimary</getOid></op>
+								<op><getOid>CTSecondary</getOid></op>
+							</div>
+			  			</op>
+                    			<op>
+                					<getOid>CurrentL2</getOid>
+                    			</op>
+                			</mult>
+				</op>
+			</mult>
+            </value>
+            <valueInc>0.0001</valueInc> <!-- precision = 1/10000 amp assuming normal units are mA -->
+            <label>Current L2</label>
+            <sensorSet>power meter</sensorSet>
+        </numSensor>
+
+        <numSensor  ruleid="CurrentL3-Sensor">
+            <type>amperage</type>
+            <sensorId>CURRENT_3</sensorId>
+            <value>
+		    	<mult>
+		    		<op>0.001</op> <!-- scale by .001 to convert mA to Amps -->
+				<op>
+                			<mult> <!-- multiply sensor by the xformer ratio to get mA -->
+                    			<op>
+							<div> <!-- div to get xformer ratio -->
+								<op><getOid>CTPrimary</getOid></op>
+								<op><getOid>CTSecondary</getOid></op>
+							</div>
+			  			</op>
+                    			<op>
+                					<getOid>CurrentL3</getOid>
+                    			</op>
+                			</mult>
+				</op>
+			</mult>
+            </value>
+            <valueInc>0.0001</valueInc> <!-- precision = 1/10000 amp assuming normal units are mA -->
+            <label>Current L3</label>
+            <sensorSet>power meter</sensorSet>
+        </numSensor>
+
+
+        <numSensor  ruleid="ReactivePowerL1-Sensor">
+            <type>num/powerKVAR</type>
+            <sensorId>POWER_KVAR_1</sensorId>
+            <value>
+		    	<mult>
+		    		<op>0.0001</op> <!-- scale by .1 for device precision and then divide by 1000 to convert VAR to kVAR -->
+				<op>
+					<mult> <!-- multiply by sensor value to get VAR -->
+						<op>
+                					<mult> <!-- multiply to get xformer ratios -->
+                    					<op>
+									<div> <!-- div to get xformer ratio -->
+										<op><getOid>CTPrimary</getOid></op>
+										<op><getOid>CTSecondary</getOid></op>
+									</div>
+			  					</op>
+                    					<op>
+									<div> <!-- div to get xformer ratio -->
+										<op><getOid>VTPrimary</getOid></op>
+										<op><getOid>VTSecondary</getOid></op>
+									</div>
+                    					</op>
+                					</mult>
+						</op>
+						<op><getOid>ReactivePowerL1</getOid></op>
+					</mult>
+				</op>
+			</mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Reactive Power L1</label>
+            <sensorSet>power meter</sensorSet>
+        </numSensor>
+
+        <numSensor  ruleid="ReactivePowerL2-Sensor">
+            <type>num/powerKVAR</type>
+            <sensorId>POWER_KVAR_2</sensorId>
+            <value>
+		    	<mult>
+		    		<op>0.0001</op> <!-- scale by .1 for device precision and then divide by 1000 to convert VAR to kVAR -->
+				<op>
+					<mult> <!-- multiply by sensor value to get VAR -->
+						<op>
+                					<mult> <!-- multiply to get xformer ratios -->
+                    					<op>
+									<div> <!-- div to get xformer ratio -->
+										<op><getOid>CTPrimary</getOid></op>
+										<op><getOid>CTSecondary</getOid></op>
+									</div>
+			  					</op>
+                    					<op>
+									<div> <!-- div to get xformer ratio -->
+										<op><getOid>VTPrimary</getOid></op>
+										<op><getOid>VTSecondary</getOid></op>
+									</div>
+                    					</op>
+                					</mult>
+						</op>
+						<op><getOid>ReactivePowerL2</getOid></op>
+					</mult>
+				</op>
+			</mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Reactive Power L2</label>
+            <sensorSet>power meter</sensorSet>
+        </numSensor>
+
+        <numSensor  ruleid="ReactivePowerL3-Sensor">
+            <type>num/powerKVAR</type>
+            <sensorId>POWER_KVAR_3</sensorId>
+            <value>
+		    	<mult>
+		    		<op>0.0001</op> <!-- scale by .1 for device precision and then divide by 1000 to convert VAR to kVAR -->
+				<op>
+					<mult> <!-- multiply by sensor value to get VAR -->
+						<op>
+                					<mult> <!-- multiply to get xformer ratios -->
+                    					<op>
+									<div> <!-- div to get xformer ratio -->
+										<op><getOid>CTPrimary</getOid></op>
+										<op><getOid>CTSecondary</getOid></op>
+									</div>
+			  					</op>
+                    					<op>
+									<div> <!-- div to get xformer ratio -->
+										<op><getOid>VTPrimary</getOid></op>
+										<op><getOid>VTSecondary</getOid></op>
+									</div>
+                    					</op>
+                					</mult>
+						</op>
+						<op><getOid>ReactivePowerL3</getOid></op>
+					</mult>
+				</op>
+			</mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Reactive Power L3</label>
+            <sensorSet>power meter</sensorSet>
+        </numSensor>
+
+        <numSensor  ruleid="ReactivePowerTotal-Sensor">
+            <type>num/powerKVAR</type>
+            <sensorId>TOTAL_POWER_KVAR_1</sensorId>
+            <value>
+		    	<mult>
+		    		<op>0.001</op> <!-- divide by 1000 to convert VAR to kVAR -->
+				<op>
+					<mult> <!-- multiply by sensor value to get VAR -->
+						<op>
+                					<mult> <!-- multiply to get xformer ratios -->
+                    					<op>
+									<div> <!-- div to get xformer ratio -->
+										<op><getOid>CTPrimary</getOid></op>
+										<op><getOid>CTSecondary</getOid></op>
+									</div>
+			  					</op>
+                    					<op>
+									<div> <!-- div to get xformer ratio -->
+										<op><getOid>VTPrimary</getOid></op>
+										<op><getOid>VTSecondary</getOid></op>
+									</div>
+                    					</op>
+                					</mult>
+						</op>
+						<op><getOid>ReactivePowerTotal</getOid></op>
+					</mult>
+				</op>
+			</mult>
+            </value>
+            <valueInc>0.001</valueInc>
+            <label>Reactive Power Total</label>
+            <sensorSet/>
+        </numSensor>
+
+
+        <numSensor  ruleid="RealPowerL1-Sensor">
+            <type>num/powerKW</type>
+            <sensorId>POWER_KW_1</sensorId>
+            <value>
+		    	<mult>
+		    		<op>0.0001</op> <!-- scale by .1 for device precision and then divide by 1000 to convert W to kW -->
+				<op>
+					<mult> <!-- multiply by sensor value to get W -->
+						<op>
+                					<mult> <!-- multiply to get xformer ratios -->
+                    					<op>
+									<div> <!-- div to get xformer ratio -->
+										<op><getOid>CTPrimary</getOid></op>
+										<op><getOid>CTSecondary</getOid></op>
+									</div>
+			  					</op>
+                    					<op>
+									<div> <!-- div to get xformer ratio -->
+										<op><getOid>VTPrimary</getOid></op>
+										<op><getOid>VTSecondary</getOid></op>
+									</div>
+                    					</op>
+                					</mult>
+						</op>
+						<op><getOid>RealPowerL1</getOid></op>
+					</mult>
+				</op>
+			</mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Real Power L1</label>
+            <sensorSet>power meter</sensorSet>
+        </numSensor>
+
+        <numSensor  ruleid="RealPowerL2-Sensor">
+            <type>num/powerKW</type>
+            <sensorId>POWER_KW_2</sensorId>
+            <value>
+		    	<mult>
+		    		<op>0.0001</op> <!-- scale by .1 for device precision and then divide by 1000 to convert W to kW -->
+				<op>
+					<mult> <!-- multiply by sensor value to get W -->
+						<op>
+                					<mult> <!-- multiply to get xformer ratios -->
+                    					<op>
+									<div> <!-- div to get xformer ratio -->
+										<op><getOid>CTPrimary</getOid></op>
+										<op><getOid>CTSecondary</getOid></op>
+									</div>
+			  					</op>
+                    					<op>
+									<div> <!-- div to get xformer ratio -->
+										<op><getOid>VTPrimary</getOid></op>
+										<op><getOid>VTSecondary</getOid></op>
+									</div>
+                    					</op>
+                					</mult>
+						</op>
+						<op><getOid>RealPowerL2</getOid></op>
+					</mult>
+				</op>
+			</mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Real Power L2</label>
+            <sensorSet>power meter</sensorSet>
+        </numSensor>
+
+        <numSensor  ruleid="RealPowerL3-Sensor">
+            <type>num/powerKW</type>
+            <sensorId>POWER_KW_3</sensorId>
+            <value>
+		    	<mult>
+		    		<op>0.0001</op> <!-- scale by .1 for device precision and then divide by 1000 to convert W to kW -->
+				<op>
+					<mult> <!-- multiply by sensor value to get W -->
+						<op>
+                					<mult> <!-- multiply to get xformer ratios -->
+                    					<op>
+									<div> <!-- div to get xformer ratio -->
+										<op><getOid>CTPrimary</getOid></op>
+										<op><getOid>CTSecondary</getOid></op>
+									</div>
+			  					</op>
+                    					<op>
+									<div> <!-- div to get xformer ratio -->
+										<op><getOid>VTPrimary</getOid></op>
+										<op><getOid>VTSecondary</getOid></op>
+									</div>
+                    					</op>
+                					</mult>
+						</op>
+						<op><getOid>RealPowerL3</getOid></op>
+					</mult>
+				</op>
+			</mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Real Power L3</label>
+            <sensorSet>power meter</sensorSet>
+        </numSensor>
+
+        <numSensor  ruleid="RealPowerTotal-Sensor">
+            <type>num/powerKW</type>
+            <sensorId>TOTAL_POWER_KW_1</sensorId>
+            <value>
+		    	<mult>
+		    		<op>0.001</op> <!-- divide by 1000 to convert W to kW -->
+				<op>
+					<mult> <!-- multiply by sensor value to get W -->
+						<op>
+                					<mult> <!-- multiply to get xformer ratios -->
+                    					<op>
+									<div> <!-- div to get xformer ratio -->
+										<op><getOid>CTPrimary</getOid></op>
+										<op><getOid>CTSecondary</getOid></op>
+									</div>
+			  					</op>
+                    					<op>
+									<div> <!-- div to get xformer ratio -->
+										<op><getOid>VTPrimary</getOid></op>
+										<op><getOid>VTSecondary</getOid></op>
+									</div>
+                    					</op>
+                					</mult>
+						</op>
+						<op><getOid>RealPowerTotal</getOid></op>
+					</mult>
+				</op>
+			</mult>
+            </value>
+            <valueInc>0.001</valueInc>
+            <label>Real Power Total</label>
+            <sensorSet>power meter</sensorSet>
+        </numSensor>
+
+        <numSensor  ruleid="VoltageL1-Sensor">
+            <type>voltage</type>
+            <sensorId>VOLTAGE_LN_1</sensorId>
+            <value>
+		    	<mult>
+		    		<op>0.1</op> <!-- scale by .10 for device precision -->
+				<op>
+                			<mult> <!-- multiply sensor by the xformer ratio to get V -->
+                    			<op>
+							<div> <!-- div to get xformer ratio -->
+								<op><getOid>VTPrimary</getOid></op>
+								<op><getOid>VTSecondary</getOid></op>
+							</div>
+			  			</op>
+                    			<op>
+                					<getOid>VoltageL1</getOid>
+                    			</op>
+                			</mult>
+				</op>
+			</mult>
+            </value>
+            <valueInc>0.1</valueInc> <!-- precision = 1/10 v -->
+            <label>Voltage L1</label>
+            <sensorSet>power meter</sensorSet>
+        </numSensor>
+
+        <numSensor  ruleid="VoltageL2-Sensor">
+            <type>voltage</type>
+            <sensorId>VOLTAGE_LN_2</sensorId>
+            <value>
+		    	<mult>
+		    		<op>0.1</op> <!-- scale by .10 for device precision -->
+				<op>
+                			<mult> <!-- multiply sensor by the xformer ratio to get V -->
+                    			<op>
+							<div> <!-- div to get xformer ratio -->
+								<op><getOid>VTPrimary</getOid></op>
+								<op><getOid>VTSecondary</getOid></op>
+							</div>
+			  			</op>
+                    			<op>
+                					<getOid>VoltageL2</getOid>
+                    			</op>
+                			</mult>
+				</op>
+			</mult>
+            </value>
+            <valueInc>0.1</valueInc> <!-- precision = 1/10 v -->
+            <label>Voltage L2</label>
+            <sensorSet>power meter</sensorSet>
+        </numSensor>
+
+        <numSensor  ruleid="VoltageL3-Sensor">
+            <type>voltage</type>
+            <sensorId>VOLTAGE_LN_3</sensorId>
+            <value>
+		    	<mult>
+		    		<op>0.1</op> <!-- scale by .10 for device precision -->
+				<op>
+                			<mult> <!-- multiply sensor by the xformer ratio to get V -->
+                    			<op>
+							<div> <!-- div to get xformer ratio -->
+								<op><getOid>VTPrimary</getOid></op>
+								<op><getOid>VTSecondary</getOid></op>
+							</div>
+			  			</op>
+                    			<op>
+                					<getOid>VoltageL3</getOid>
+                    			</op>
+                			</mult>
+				</op>
+			</mult>
+            </value>
+            <valueInc>0.1</valueInc> <!-- precision = 1/10 v -->
+            <label>Voltage L3</label>
+            <sensorSet>power meter</sensorSet>
+        </numSensor>
+	</device>
+
+	<protocol>
+		<modbus>
+		<value_ref_id valid="CTPrimary">
+                <function>3</function>
+                <start_addr>600</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+		<value_ref_id valid="CTSecondary">
+                <function>3</function>
+                <start_addr>601</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+		<value_ref_id valid="VTPrimary">
+                <function>3</function>
+                <start_addr>602</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+		<value_ref_id valid="VTSecondary">
+                <function>3</function>
+                <start_addr>603</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+			
+            <value_ref_id valid="CurrentL1">
+                <function>3</function>
+                <start_addr>206</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="CurrentL2">
+                <function>3</function>
+                <start_addr>207</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="CurrentL3">
+                <function>3</function>
+                <start_addr>208</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+
+            <value_ref_id valid="ReactivePowerL1">
+                <function>3</function>
+                <start_addr>212</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="ReactivePowerL2">
+                <function>3</function>
+                <start_addr>213</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="ReactivePowerL3">
+                <function>3</function>
+                <start_addr>214</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+
+            <value_ref_id valid="ReactivePowerTotal">
+                <function>3</function>
+                <start_addr>280</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+
+            <value_ref_id valid="RealPowerL1">
+                <function>3</function>
+                <start_addr>209</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="RealPowerL2">
+                <function>3</function>
+                <start_addr>210</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="RealPowerL3">
+                <function>3</function>
+                <start_addr>211</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+
+            <value_ref_id valid="RealPowerTotal">
+                <function>3</function>
+                <start_addr>279</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+
+            <value_ref_id valid="VoltageL1">
+                <function>3</function>
+                <start_addr>200</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="VoltageL2">
+                <function>3</function>
+                <start_addr>201</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="VoltageL3">
+                <function>3</function>
+                <start_addr>202</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+
+            <packet>
+                <function>3</function>
+                <start_addr>200</start_addr>
+                <quantity>3</quantity>
+            </packet>
+            <packet>
+                <function>3</function>
+                <start_addr>206</start_addr>
+                <quantity>9</quantity>
+            </packet>
+            <packet>
+                <function>3</function>
+                <start_addr>279</start_addr>
+                <quantity>2</quantity>
+            </packet>
+            <packet>
+                <function>3</function>
+                <start_addr>600</start_addr>
+                <quantity>4</quantity>
+            </packet>
+		</modbus>
+	</protocol>
+</APC_DDF>

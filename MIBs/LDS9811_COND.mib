@@ -1,0 +1,1968 @@
+  -- ----------------------------------------------------------------------------
+--                    LDS9811 CONDITION MIB
+--                    LDS9811-CONDITION-MIB
+--
+--      Copyright (c) 1999-2000 HUAWEI ELECTRIC TECH. CO., LTD, SHENZHEN.
+--      Copyright (c) 2000-2001 AVANSYS POWER CO., LTD., SHENZHEN.
+--      Copyright (c) 2001-2007 EMERSON NETWORK POWER CO., LTD.
+--      All rights reserved.
+--
+--      Created    by: Zheng Chunhua
+--      Created  date: 2007-04-16
+--      Modified Date: 
+--
+-- ----------------------------------------------------------------------------
+
+LDS9811-CONDITION-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE
+        FROM RFC-1212
+
+    TRAP-TYPE
+        FROM RFC-1215
+
+    enterprises, IpAddress
+        FROM RFC1155-SMI;
+
+    DisplayString ::= OCTET STRING
+
+
+    -- ------------------------------------------------------------------------
+    -- the location of CONDITION group in ENP enterprise.
+    -- ------------------------------------------------------------------------ 
+    emersonNetworkPower     OBJECT IDENTIFIER ::= { enterprises 13400 }
+    products                OBJECT IDENTIFIER ::= { emersonNetworkPower 2 }    
+    emersonUps              OBJECT IDENTIFIER ::= { products 1 }
+    LDS9811Cond             OBJECT IDENTIFIER ::= { products 11 }
+    
+    -- ------------------------------------------------------------------------
+    -- the main objects about CONDITION
+    -- ------------------------------------------------------------------------ 
+    upsAgent        OBJECT IDENTIFIER ::= { emersonUps 1 }
+    upsCommon       OBJECT IDENTIFIER ::= { emersonUps 2 }
+    conditionSpecial      OBJECT IDENTIFIER ::= { LDS9811Cond 1 }
+    upsAlarm        OBJECT IDENTIFIER ::= { emersonUps 4 }
+
+    upsIdent        OBJECT IDENTIFIER ::= { upsCommon 1 }
+    
+    -- ------------------------------------------------------------------------
+    -- the common objects about a  CONDITION
+    -- ------------------------------------------------------------------------ 
+    upsBaseIdent    OBJECT IDENTIFIER ::=  { upsIdent 1 }
+    upsSmartIdent   OBJECT IDENTIFIER ::=  { upsIdent 2 }
+
+    upsBaseAlaram   OBJECT IDENTIFIER ::=  { upsAlarm 1 }
+    upsSmartAlarm   OBJECT IDENTIFIER ::=  { upsAlarm 2 }
+
+    -- ------------------------------------------------------------------------
+    -- the detail objects about a special CONDITION
+    -- ------------------------------------------------------------------------ 
+    conditionInput        OBJECT IDENTIFIER ::=  { conditionSpecial 1 }
+    conditionOutput       OBJECT IDENTIFIER ::=  { conditionSpecial 2 }
+    conditionStatus       OBJECT IDENTIFIER ::=  { conditionSpecial 3 }
+    conditionTest         OBJECT IDENTIFIER ::=  { conditionSpecial 4 }
+    conditionControl      OBJECT IDENTIFIER ::=  { conditionSpecial 5 }
+    conditionConfig       OBJECT IDENTIFIER ::=  { conditionSpecial 6 }
+   
+    conditionBaseInput    OBJECT IDENTIFIER ::=  { conditionInput 1 }
+    conditionSmartInput   OBJECT IDENTIFIER ::=  { conditionInput 2 }
+    
+    conditionBaseOutput   OBJECT IDENTIFIER ::=  { conditionOutput 1 }
+    conditionSmartOutput  OBJECT IDENTIFIER ::=  { conditionOutput 2 }
+
+    conditionBaseStatus   OBJECT IDENTIFIER ::=  { conditionStatus 1 }
+    conditionSmartStatus  OBJECT IDENTIFIER ::=  { conditionStatus 2 }
+    
+    conditionBaseControl  OBJECT IDENTIFIER ::=  { conditionControl 1 }
+    conditionSmartControl OBJECT IDENTIFIER ::=  { conditionControl 2 }
+    
+    conditionBaseTest     OBJECT IDENTIFIER ::=  { conditionTest 1 }
+    conditionSmartTest    OBJECT IDENTIFIER ::=  { conditionTest 2 }
+    
+    conditionBaseConfig   OBJECT IDENTIFIER ::=  { conditionConfig 1 }
+    conditionSmartConfig  OBJECT IDENTIFIER ::=  { conditionConfig 2 }
+
+    -- ------------------------------------------------------------------------
+    -- 1. upsAgent group
+    -- ------------------------------------------------------------------------ 
+   
+    agentRevision OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The software version of the agent."
+        ::= { upsAgent 1 }
+
+    agentManagersNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of managers that can manage the agent. "
+        ::= { upsAgent 2 }
+ 
+    agentManagersTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF AgentManagersEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of managers of the agent.  The number of
+            entries is given by the value of agentManagersNum."
+        ::= { upsAgent 3 }
+ 
+    agentManagersEntry OBJECT-TYPE
+        SYNTAX AgentManagersEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The managers of the agent."
+        INDEX  { managerIndex}
+        ::= { agentManagersTable 1 }
+ 
+    AgentManagersEntry ::=
+        SEQUENCE {
+            managerIndex
+                INTEGER,
+            managerAddr
+                IpAddress,
+            publicCommunityString
+                 DisplayString,
+            privateCommunityString
+                 DisplayString,
+            managerPrivilege
+                INTEGER,
+            acceptTrapLevel
+                INTEGER,
+            managerAccept
+                INTEGER
+        }
+ 
+    managerIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the managers entry."
+        ::= { agentManagersEntry 1 }
+    
+    managerAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The IP address of the manager."
+        ::= { agentManagersEntry 2 }
+
+    publicCommunityString OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "The public community name to use in the query request."
+        ::= { agentManagersEntry 3 }
+ 
+    privateCommunityString OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "The private community name to use int the control request."
+        ::= { agentManagersEntry 4 }
+ 
+    managerPrivilege OBJECT-TYPE
+        SYNTAX INTEGER {
+            forbidden(0),
+            query(1),
+            control(2),
+            administrator(3)
+       }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The privilege of the manager to access the agent.
+            setting forbidden(0) indicates the manager have no any privilege to access the agent,
+            setting query(1) indicates the manager can GET information from agent only,
+            setting control(2) indicates the manager can GET information from agent and 
+            send control command to the agent.
+            setting administrator(3) indicates the manager has all management privilege
+            including set or modify this managers table."
+       ::= { agentManagersEntry 5 }
+
+    acceptTrapLevel OBJECT-TYPE
+         SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3),
+            noTraps(4)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The severity threshold of traps to send to the manager.
+            traps are labeled in severity as informational(1), warning(2),
+            severe(3).  Only traps of equal or greater severity than
+            this value are sent to the manager. setting noTraps(4) indicates
+            agent do not send any traps to the manager."
+       ::= { agentManagersEntry 6 }
+
+    managerAccept OBJECT-TYPE
+        SYNTAX INTEGER   {
+            view(0),
+            new(1),
+            modify(2),
+            delete(3)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "An entry will be added if new(1), will be modified if modify(2), 
+           and will be removed if delete(3)."
+        ::= { agentManagersEntry 7 }
+
+    -- ------------------------------------------------------------------------
+    -- 2. upsCommon group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------
+    -- 2.1 upsIdent group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------ 
+    -- 2.1.1 the upsBaseIdent group
+    -- ------------------------------------------------------------------------ 
+
+    upsBaseIdentModel OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The CONDITION model name (e.g. 'LDS9811 CONDITION')."
+        ::= { upsBaseIdent 1 }
+
+    upsBaseIdentName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "An 8 byte ID string identifying the CONDITION.  This object
+             can be set by the administrator."
+        ::= { upsBaseIdent 2 }
+                
+    
+    -- ------------------------------------------------------------------------ 
+    -- 2.1.2 the upsSmartIdent group
+    -- ------------------------------------------------------------------------ 
+            
+    upsSmartIdentFirmwareRevision OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The firmware revision of the CONDITION system."
+        ::= { upsSmartIdent 1 }
+        
+    -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    -- IMPORTANT: LDS9811 CONDITION does NOT support manu-date and product-serial
+    --            to read these variables will get 'reserved'
+    upsSmartIdentDateOfManufacture OBJECT-TYPE
+        SYNTAX DisplayString
+       ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The date when the CONDITION was manufactured in yyyy/mm/dd format."
+        ::= { upsSmartIdent 2 }
+
+    upsSmartIdentSerialNumber OBJECT-TYPE
+         SYNTAX DisplayString
+        ACCESS read-only
+         STATUS mandatory
+         DESCRIPTION
+            "An 8-character string identifying the serial number of
+              the CONDITION internal microprocessor.  This number is set at
+              the factory.  NOTE: This number does NOT correspond to
+             the serial number on the rear of the CONDITION."
+        ::= { upsSmartIdent 3 }
+    
+    upsSmartIdentFactory OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The name of the factory that manufactured this CONDITION."
+        ::= { upsSmartIdent 4 }
+    
+    -- ------------------------------------------------------------------------
+    -- 3. conditionSpecial group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------
+    -- 3.3. the conditionInput group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.3.1 the conditionBaseInput group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.3.2 the conditionSmartInput group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.4. the conditionOutput group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.4.1 the conditionBaseOutput group
+    -- ------------------------------------------------------------------------
+    
+    -- ------------------------------------------------------------------------
+    -- 3.4.2 the conditionSmartOutput group
+    ------------------------------------------------------------------------
+    conditionSmartTemperature OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Temperature of the CONDITION system expressed in 1/10 °C."
+        ::= { conditionSmartOutput 1 }
+
+    conditionSmartHumidity OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Humidity of the CONDITION system expressed in %RH."
+        ::= { conditionSmartOutput 2 }
+
+    conditionSmartHeatPercent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Heat Percent of the CONDITION system expressed in  %."
+        ::= { conditionSmartOutput 3 }
+
+    conditionSmartCoolPercent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Cool Percent of the CONDITION system expressed in  %."
+        ::= { conditionSmartOutput 4 }
+
+    conditionSmartCompressor1RunHours OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Compressor 1 Run Hours of the CONDITION system expressed in Hours."
+        ::= { conditionSmartOutput 5 }
+
+    conditionSmartCompressor2RunHours OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Compressor 2 Run Hours of the CONDITION system expressed in Hours."
+        ::= { conditionSmartOutput 6 }
+        
+    conditionSmartGlycolPumpRunHours OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Glycol Pump Run Hours of the CONDITION system expressed in Hours."
+        ::= { conditionSmartOutput 7 }
+
+    conditionSmartDailyHighestTemperature OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Daily Highest Temperature of the CONDITION system expressed in 1/10 °C."
+        ::= { conditionSmartOutput 8 }
+
+    conditionSmartDailyLowestTemperature OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Daily Lowest Temperature of the CONDITION system expressed in 1/10 °C."
+        ::= { conditionSmartOutput 9 }
+        
+    conditionSmartDailyHighestHumidity OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Daily Highest Humidity of the CONDITION system expressed in %RH."
+        ::= { conditionSmartOutput 10 }
+
+    conditionSmartDailyLowestHumidity OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Daily Lowest Humidity of the CONDITION system expressed in %RH."
+        ::= { conditionSmartOutput 11 }
+
+    conditionSmartTemperatureDetected OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Temperature Detected of the CONDITION system expressed in 1/10 °C."
+        ::= { conditionSmartOutput 12 }
+        
+    conditionSmartHumidityDetected OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Humidity Detected of the CONDITION system expressed in %RH."
+        ::= { conditionSmartOutput 13 }
+
+    
+    -- ---------------------------------------------------------------------
+    -- 3.5. the conditionStatus group
+    ------------------------------------------------------------------------
+    -- ---------------------------------------------------------------------
+    -- 3.5.1 the conditionBaseStatus group
+    ------------------------------------------------------------------------
+    conditionBaseStatusCommunication OBJECT-TYPE
+        SYNTAX INTEGER {
+            unknown(1),
+            ok(2),
+            lostCommunication(3),
+            notEstablished(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The status of communication to CONDITION. lostCommunication(3) indicates
+            some errors occurred between CONDITION and agent. notEstablished(4) indicates
+            agent can not connect to CONDITION, maybe error on communication port or port
+            settings error."
+        ::= { conditionBaseStatus 1 }
+
+    -- ---------------------------------------------------------------------
+    -- 3.5.2 the conditionSmartStatus group
+    ------------------------------------------------------------------------
+    
+    conditionSmartStatusUnitOnOff OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            on(2),
+            off(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Unit OnOff"
+        ::= { conditionSmartStatus 1 }
+
+    conditionSmartStatusCoolMode OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            on(2),
+            off(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Cool Mode"
+        ::= { conditionSmartStatus 2 }
+
+    conditionSmartStatusHeatMode OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            on(2),
+            off(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Heat Mode"
+        ::= { conditionSmartStatus 3 }
+
+    conditionSmartStatusGlycolCoolSystem OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            on(2),
+            off(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Glycol Cool System"
+        ::= { conditionSmartStatus 4 }
+
+    conditionSmartStatusHumidifyMode OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            on(2),
+            off(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Humidify Mode"
+        ::= { conditionSmartStatus 5 }
+
+    conditionSmartStatusDehumidifyMode OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            on(2),
+            off(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Dehumidify Mode"
+        ::= { conditionSmartStatus 6 }
+
+    conditionSmartStatusCompressor1HighPressure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Compressor 1 High Pressure"
+        ::= { conditionSmartStatus 7 }
+
+    conditionSmartStatusCompressor2HighPressure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Compressor 2 High Pressure"
+        ::= { conditionSmartStatus 8 }
+
+    conditionSmartStatusAirLoss OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Air Loss"
+        ::= { conditionSmartStatus 9 }
+
+    conditionSmartStatusGlycolPumpStart OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Glycol Pump Start"
+        ::= { conditionSmartStatus 10 }
+
+    conditionSmartStatusWaterUnderfloor OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Water Underfloor"
+        ::= { conditionSmartStatus 11 }
+
+    conditionSmartStatusFliterFlog OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Fliter Flog"
+        ::= { conditionSmartStatus 12 }
+
+    conditionSmartStatusHighTemperature OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "High Temperature"
+        ::= { conditionSmartStatus 13 }
+
+    conditionSmartStatusLowTemperature OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Low Temperature"
+        ::= { conditionSmartStatus 14 }
+
+    conditionSmartStatusHighHumidify OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "High Humidify"
+        ::= { conditionSmartStatus 15 }
+
+    conditionSmartStatusLowHumidify OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Low Humidify"
+        ::= { conditionSmartStatus 16 }
+
+    conditionSmartStatusHumidifierFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Humidifier Failure"
+        ::= { conditionSmartStatus 17 }
+
+    conditionSmartStatusHumidifierNoWater OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Humidifier No Water"
+        ::= { conditionSmartStatus 18 }
+
+    conditionSmartStatusCompressor1Overload OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Compressor 1 Overload"
+        ::= { conditionSmartStatus 19 }
+
+    conditionSmartStatusCompressor2Overload OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Compressor 2 Overload"
+        ::= { conditionSmartStatus 20 }
+
+    conditionSmartStatusMainFanOverload OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Main Fan Overload"
+        ::= { conditionSmartStatus 21 }
+
+    conditionSmartStatusSmokeDetected OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Smoke Detected"
+        ::= { conditionSmartStatus 22 }
+
+    conditionSmartStatusWaterflowLoss OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Waterflow Loss"
+        ::= { conditionSmartStatus 23 }
+
+    conditionSmartStatusSpareUnitStart OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Spare Unit Start"
+        ::= { conditionSmartStatus 24 }
+
+    conditionSmartStatusReturnAirLowPressure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Return Air Low Pressure"
+        ::= { conditionSmartStatus 25 }
+
+    conditionSmartStatusShortCycle OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Short Cycle"
+        ::= { conditionSmartStatus 26 }
+
+    conditionSmartStatusPowerLost OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Power Lost"
+        ::= { conditionSmartStatus 27 }
+
+    conditionSmartStatusUnitCommFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Unit Communication Failure Status"
+        ::= { conditionSmartStatus 28 }
+
+    conditionSmartAlarmUnitCommFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Unit Communication Failure Alarm"
+        ::= { conditionSmartStatus 29 }
+
+
+    -- ------------------------------------------------------------------------ 
+    -- 3.6. the conditionTest group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------ 
+    -- 3.6.1 the conditionBaseTest group
+    -- ------------------------------------------------------------------------ 
+    
+    -- no conditionBaseTest variables
+
+    -- ------------------------------------------------------------------------ 
+    -- 3.6.2 the conditionSmartTest group
+    -- ------------------------------------------------------------------------ 
+
+    -- no conditionSmartTest variables
+
+
+    -- ------------------------------------------------------------------------ 
+    -- 3.7. the conditionControl group
+    -- ------------------------------------------------------------------------ 
+    -- 
+    -- ------------------------------------------------------------------------ 
+    -- 3.7.1 the conditionBaseControl group
+    -- ------------------------------------------------------------------------ 
+    
+    -- no variables
+
+    -- ------------------------------------------------------------------------ 
+    -- 3.7.2 the conditionSmartControl group
+    -- ------------------------------------------------------------------------ 
+
+    conditionSmartControlRemoteOn OBJECT-TYPE
+        SYNTAX INTEGER  {
+            noTurnOnCondition(1),
+            turnOnCondition(2)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "Setting this variable to turnOnCondition(2) to turn on condition.
+             Setting this value to noTurnOnCondition(1) has no effect.
+
+             The value noTurnOnCondition(1) will always be returned 
+             when the variable is read."
+        ::= { conditionSmartControl 1 }
+         
+    conditionSmartControlRemoteOff OBJECT-TYPE
+        SYNTAX INTEGER  {
+            noTurnOffCondition(1),
+            turnOffCondition(2)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "Setting this variable to turnOffCondition(2) to turn off condition.
+             Setting this value to noTurnOffCondition(1) has no effect.
+
+             The value noTurnOffCondition(1) will always be returned 
+             when the variable is read."
+        ::= { conditionSmartControl 2 }
+
+
+    -- ------------------------------------------------------------------------
+    -- 3.8. the conditionConfig group
+    -- ------------------------------------------------------------------------
+        -- ------------------------------------------------------------------------ 
+    -- 3.8.1 the conditionBaseConfig group
+    -- ------------------------------------------------------------------------ 
+    
+ 
+    -- ------------------------------------------------------------------------ 
+    -- 3.8.2 the conditionSmartConfig group
+    -- ------------------------------------------------------------------------ 
+
+    conditionSmartConfigTemperatureSetpoint OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The Temperature Setpoint in °C.  Allowed values are from 
+             5 to 32 °C.
+    
+             If a value other than a supported value is provided in a
+             set request, the condition interprets it as a the next higher
+             acceptable value.  If the provided value is higher than
+             the highest acceptable value, the highest acceptable
+             value is used."
+        ::= { conditionSmartConfig 1 }
+    
+    conditionSmartConfigTemperatureSensitivity OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The Temperature Sensitivity in °C.  Allowed values are from 
+             0.6 to 5.6 °C.
+    
+             If a value other than a supported value is provided in a
+             set request, the condition interprets it as a the next higher
+             acceptable value.  If the provided value is higher than
+             the highest acceptable value, the highest acceptable
+             value is used."
+        ::= { conditionSmartConfig 2 }
+    
+    
+    conditionSmartConfigTemperatureUpperLimit OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The Temperature Upper Limit in °C.  Allowed values are from 
+             2 to 32 °C.
+    
+             If a value other than a supported value is provided in a
+             set request, the condition interprets it as a the next higher
+             acceptable value.  If the provided value is higher than
+             the highest acceptable value, the highest acceptable
+             value is used."
+        ::= { conditionSmartConfig 3 }
+
+    conditionSmartConfigTemperatureLowerLimit OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The Temperature Lower Limit in °C.  Allowed values are from 
+             2 to 32 °C.
+    
+             If a value other than a supported value is provided in a
+             set request, the condition interprets it as a the next higher
+             acceptable value.  If the provided value is higher than
+             the highest acceptable value, the highest acceptable
+             value is used."
+        ::= { conditionSmartConfig 4 }
+
+    conditionSmartConfigHumidifySetpoint OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The Humidify Setpoint in %RH.  Allowed values are from 
+             15 to 85 %RH.
+    
+             If a value other than a supported value is provided in a
+             set request, the condition interprets it as a the next higher
+             acceptable value.  If the provided value is higher than
+             the highest acceptable value, the highest acceptable
+             value is used."
+        ::= { conditionSmartConfig 5 }
+    
+    conditionSmartConfigHumidifySensitivity OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The Humidify Sensitivity in %RH.  Allowed values are from 
+             1 to 30 %RH.
+    
+             If a value other than a supported value is provided in a
+             set request, the condition interprets it as a the next higher
+             acceptable value.  If the provided value is higher than
+             the highest acceptable value, the highest acceptable
+             value is used."
+        ::= { conditionSmartConfig 6 }
+    
+    
+    conditionSmartConfigHumidifyUpperLimit OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The Humidify Upper Limit in %RH.  Allowed values are from 
+             15 to 85 %RH.
+    
+             If a value other than a supported value is provided in a
+             set request, the condition interprets it as a the next higher
+             acceptable value.  If the provided value is higher than
+             the highest acceptable value, the highest acceptable
+             value is used."
+        ::= { conditionSmartConfig 7 }
+
+    conditionSmartConfigHumidifyLowerLimit OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The of Humidify Lower Limit in %RH.  Allowed values are from 
+             15 to 85 %RH.
+    
+             If a value other than a supported value is provided in a
+             set request, the condition interprets it as a the next higher
+             acceptable value.  If the provided value is higher than
+             the highest acceptable value, the highest acceptable
+             value is used."
+        ::= { conditionSmartConfig 8 }
+
+    conditionSmartConfigColdStartDelayTime OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The time of Cold Start Delay Time in Minutes.  Allowed values are from 
+             0 to 3 Minutes.
+    
+             If a value other than a supported value is provided in a
+             set request, the condition interprets it as a the next higher
+             acceptable value.  If the provided value is higher than
+             the highest acceptable value, the highest acceptable
+             value is used."
+        ::= { conditionSmartConfig 9 }
+    
+    conditionSmartConfigRestartDelayTime OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The time of Restart Delay Time in Minutes.  Allowed values are from 
+             0 to 9.9 Minutes.
+    
+             If a value other than a supported value is provided in a
+             set request, the condition interprets it as a the next higher
+             acceptable value.  If the provided value is higher than
+             the highest acceptable value, the highest acceptable
+             value is used."
+        ::= { conditionSmartConfig 10 }
+    
+    
+    conditionSmartConfigHumidifierFlushRate OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The number of Humidifier Flush Rate.  Allowed values are from 
+             11 to 50 .
+    
+             If a value other than a supported value is provided in a
+             set request, the condition interprets it as a the next higher
+             acceptable value.  If the provided value is higher than
+             the highest acceptable value, the highest acceptable
+             value is used."
+        ::= { conditionSmartConfig 11 }
+
+    conditionSmartConfigHumidifierFlushCylce OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The number of Humidifier Flush Cylce.  Allowed values are from 
+             0 to 24.
+    
+             If a value other than a supported value is provided in a
+             set request, the condition interprets it as a the next higher
+             acceptable value.  If the provided value is higher than
+             the highest acceptable value, the highest acceptable
+             value is used."
+        ::= { conditionSmartConfig 12 }
+
+    -- ------------------------------------------------------------------------
+    -- 4. the upsAlarm group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 4.1. the upsBaseAlaram group
+    -- ------------------------------------------------------------------------
+
+    -- no upsBaseAlaram variables
+
+    -- ------------------------------------------------------------------------
+    -- 4.2. the upsSmartAlarm group
+    -- ------------------------------------------------------------------------
+    upsSmartAlarmPresentNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The present number of active alarams."
+        ::= { upsSmartAlarm 1 }
+
+    upsSmartAlarmPresentTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UpsSmartAlarmPresentEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of current CONDITION alarms, The number of entries is given
+            by the value of conditionSmartAlarmPresentNum."
+        ::= { upsSmartAlarm 2 }
+
+    upsSmartAlarmPresentEntry OBJECT-TYPE
+        SYNTAX UpsSmartAlarmPresentEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The present alarms list."
+        INDEX  { presentAlarmIndex}
+        ::= { upsSmartAlarmPresentTable 1 }
+
+    UpsSmartAlarmPresentEntry ::=
+        SEQUENCE {
+            presentAlarmIndex
+                INTEGER,
+            presentAlarmTime
+                DisplayString,
+            presentAlarmId
+                INTEGER,
+            presentAlarmName
+                DisplayString,
+            presentAlaramLevel
+                INTEGER
+        }
+
+    presentAlarmIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the present alaram entry."
+        ::= { upsSmartAlarmPresentEntry 1 }
+
+    presentAlarmTime OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The time of the alarm generated, format as yyyy/mm/dd hh:mm:ss."
+        ::= { upsSmartAlarmPresentEntry 2 }
+
+    presentAlarmId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm ID."
+       ::= { upsSmartAlarmPresentEntry 3 }
+
+    presentAlarmName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The name of the alarm."
+        ::= { upsSmartAlarmPresentEntry 4 }
+
+    presentAlaramLevel OBJECT-TYPE
+        SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm level."
+       ::= { upsSmartAlarmPresentEntry 5 }
+
+    -- historical alarms
+    upsSmartAlarmHistoryNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of historical alarms."
+        ::= { upsSmartAlarm 3 }
+
+    upsSmartAlarmHistoryTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UpsSmartAlarmHistoryEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of historical CONDITION alarms, The number of entries is given
+            by the value of conditionSmartAlarmHistoryNum."
+        ::= { upsSmartAlarm 4 }
+
+    upsSmartAlarmHistoryEntry OBJECT-TYPE
+        SYNTAX UpsSmartAlarmHistoryEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The historical alarms list."
+        INDEX  { historyAlarmIndex}
+        ::= { upsSmartAlarmHistoryTable 1 }
+
+    UpsSmartAlarmHistoryEntry ::=
+        SEQUENCE {
+            historyAlarmIndex
+                INTEGER,
+            historyAlarmTime
+                DisplayString,
+            historyAlarmId
+                INTEGER,
+            historyAlarmName
+                DisplayString,
+            historyAlaramLevel
+                INTEGER
+        }
+
+    historyAlarmIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the historical alaram entry."
+        ::= { upsSmartAlarmHistoryEntry 1 }
+
+    historyAlarmTime OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The time of the alarm generated, format as yyyy/mm/dd hh:mm:ss."
+        ::= { upsSmartAlarmHistoryEntry 2 }
+
+    historyAlarmId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm ID."
+       ::= { upsSmartAlarmHistoryEntry 3 }
+
+    historyAlarmName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The name of the alarm."
+        ::= { upsSmartAlarmHistoryEntry 4 }
+
+    historyAlaramLevel OBJECT-TYPE
+        SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm level."
+       ::= { upsSmartAlarmHistoryEntry 5 }
+
+
+
+    -- ------------------------------------------------------------------------
+    -- Traps
+    -- ------------------------------------------------------------------------
+
+    --
+    -- trap args
+    --
+    trapArgsString OBJECT-TYPE
+        SYNTAX  DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "This OID allows LDS9811 CONDITION traps to be sent with an octet string argument
+             that may not be defined in the LDS9811 CONDITION MIB.
+
+             A get of this OID will return a NULL string."
+        ::= { upsAlarm 2002 }
+
+
+    communicationInterrupt TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Communication Interrupt."
+       --#TYPE "LDS9811 CONDITION: Communication Interrupt"
+       --#SUMMARY "Communication Interrupt."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 1
+
+
+    communicationRestored TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Communication Restored."
+       --#TYPE "LDS9811 CONDITION: Communication Restored"
+       --#SUMMARY "Communication Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 2
+
+
+    compressor1HighPressureRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Compressor 1 High Pressure Recovered."
+       --#TYPE "LDS9811 CONDITION: Compressor 1 High Pressure Recovered"
+       --#SUMMARY "Compressor 1 High Pressure Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 5
+
+    compressor1HighPressure TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Compressor 1 High Pressure."
+       --#TYPE "LDS9811 CONDITION: Compressor 1 High Pressure"
+       --#SUMMARY "Compressor 1 High Pressure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 6
+
+
+
+    compressor2HighPressureRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Compressor 2 High Pressure Recovered."
+       --#TYPE "LDS9811 CONDITION: Compressor 2 High Pressure Recovered"
+       --#SUMMARY "Compressor 2 High Pressure Recovered"
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 7
+
+
+    compressor2HighPressure TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Compressor 2 High Pressure."
+       --#TYPE "LDS9811 CONDITION: Compressor 2 High Pressure"
+       --#SUMMARY "Compressor 2 High Pressure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 8
+
+
+    airLossRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Air Loss Recovered."
+       --#TYPE "LDS9811 CONDITION: Air Loss Recovered"
+       --#SUMMARY "Air Loss Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 9
+
+
+    airLoss TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Air Loss."
+       --#TYPE "LDS9811 CONDITION: Air Loss"
+       --#SUMMARY "Air Loss."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 10
+
+
+    glycolPumpStartRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Glycol Pump Start Recovered."
+       --#TYPE "LDS9811 CONDITION: Glycol Pump Start Recovered"
+       --#SUMMARY "Glycol Pump Start Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 11
+
+
+    glycolPumpStart TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Glycol Pump Start."
+       --#TYPE "LDS9811 CONDITION: Glycol Pump Start"
+       --#SUMMARY "Glycol Pump Start."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 12
+
+
+    waterUnderfloorRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Water Underfloor Recovered."
+       --#TYPE "LDS9811 CONDITION: Water Underfloor Recovered"
+       --#SUMMARY "Water Underfloor Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 13
+
+
+    waterUnderfloor TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Water Underfloor."
+       --#TYPE "LDS9811 CONDITION: Water Underfloor"
+       --#SUMMARY "Water Underfloor."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 14
+
+
+    fliterFlogRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Fliter Flog Recovered."
+       --#TYPE "LDS9811 CONDITION: Fliter Flog Recovered"
+       --#SUMMARY "Fliter Flog Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 15
+
+
+    fliterFlog TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Fliter Flog."
+       --#TYPE "LDS9811 CONDITION: Fliter Flog"
+       --#SUMMARY "Fliter Flog."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 16
+
+
+    highTemperatureRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: High Temperature Recovered."
+       --#TYPE "LDS9811 CONDITION: High Temperature Recovered"
+       --#SUMMARY "High Temperature Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 17
+
+
+    highTemperature TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: High Temperature."
+       --#TYPE "LDS9811 CONDITION: High Temperature"
+       --#SUMMARY "High Temperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 18
+
+
+    lowTemperatureRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Low Temperature Recovered."
+       --#TYPE "LDS9811 CONDITION: Low Temperature Recovered"
+       --#SUMMARY "Low Temperature Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 19
+
+
+    lowTemperature TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Low Temperature."
+       --#TYPE "LDS9811 CONDITION: Low Temperature"
+       --#SUMMARY "Low Temperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 20
+
+
+    highHumidifyRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: High Humidify Recovered."
+       --#TYPE "LDS9811 CONDITION: High Humidify Recovered"
+       --#SUMMARY "High Humidify Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 21
+
+
+    highHumidify TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: High Humidify."
+       --#TYPE "LDS9811 CONDITION: High Humidify"
+       --#SUMMARY "High Humidify."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 22
+
+
+    lowHumidifyRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Low Humidify Recovered."
+       --#TYPE "LDS9811 CONDITION: Low Humidify Recovered"
+       --#SUMMARY "Low Humidify Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 23
+
+
+    lowHumidify TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Low Humidify."
+       --#TYPE "LDS9811 CONDITION: Low Humidify"
+       --#SUMMARY "Low Humidify."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 24
+
+
+    humidifierFailureRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Humidifier Failure Recovered."
+       --#TYPE "LDS9811 CONDITION: Humidifier Failure Recovered"
+       --#SUMMARY "Humidifier Failure Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 25
+
+
+    humidifierFailure TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Humidifier Failure."
+       --#TYPE "LDS9811 CONDITION: Humidifier Failure"
+       --#SUMMARY "Humidifier Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 26
+
+
+    humidifierNoWaterRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Humidifier No Water Recovered."
+       --#TYPE "LDS9811 CONDITION: Humidifier No Water Recovered"
+       --#SUMMARY "Humidifier No Water Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 27
+
+
+    humidifierNoWater TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Humidifier No Water."
+       --#TYPE "LDS9811 CONDITION: Humidifier No Water"
+       --#SUMMARY "Humidifier No Water."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 28
+
+
+    compressor1OverloadRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Compressor 1 Overload Recovered."
+       --#TYPE "LDS9811 CONDITION: Compressor 1 Overload Recovered"
+       --#SUMMARY "Compressor 1 Overload Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 29
+
+
+    compressor1Overload TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Compressor 1 Overload."
+       --#TYPE "LDS9811 CONDITION: Compressor 1 Overload"
+       --#SUMMARY "Compressor 1 Overload."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 30
+
+
+    compressor2OverloadRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Compressor 2 Overload Recovered."
+       --#TYPE "LDS9811 CONDITION: Compressor 2 Overload Recovered"
+       --#SUMMARY "Compressor 2 Overload Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 31
+
+
+    compressor2Overload TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Compressor 2 Overload."
+       --#TYPE "LDS9811 CONDITION: Compressor 2 Overload"
+       --#SUMMARY "Compressor 2 Overload."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 32
+
+
+    mainFanOverloadRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Main Fan Overload Recovered."
+       --#TYPE "LDS9811 CONDITION: Main Fan Overload Recovered"
+       --#SUMMARY "Main Fan Overload Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 33
+
+
+    mainFanOverload TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Main Fan Overload."
+       --#TYPE "LDS9811 CONDITION: Main Fan Overload"
+       --#SUMMARY "Main Fan Overload."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 34
+
+
+    smokeDetectedRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Smoke Detected Recovered."
+       --#TYPE "LDS9811 CONDITION: Smoke Detected Recovered"
+       --#SUMMARY "Smoke Detected Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 35
+
+
+    smokeDetected TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Smoke Detected."
+       --#TYPE "LDS9811 CONDITION: Smoke Detected"
+       --#SUMMARY "Smoke Detected."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 36
+
+
+    waterflowLossRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Waterflow Loss Recovered."
+       --#TYPE "LDS9811 CONDITION: Waterflow Loss Recovered"
+       --#SUMMARY "Waterflow Loss Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 37
+
+
+    waterflowLoss TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Waterflow Loss."
+       --#TYPE "LDS9811 CONDITION: Waterflow Loss"
+       --#SUMMARY "Waterflow Loss."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 38
+
+
+    spareUnitStartRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Spare Unit Start Recovered."
+       --#TYPE "LDS9811 CONDITION: Spare Unit Start Recovered"
+       --#SUMMARY "Spare Unit Start Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 39
+
+
+    spareUnitStart TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Spare Unit Start."
+       --#TYPE "LDS9811 CONDITION: Spare Unit Start"
+       --#SUMMARY "Spare Unit Start."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 40
+
+
+    returnAirLowPressureRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Return Air Low Pressure Recovered."
+       --#TYPE "LDS9811 CONDITION: Return Air Low Pressure Recovered"
+       --#SUMMARY "Return Air Low Pressure Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 41
+
+
+    returnAirLowPressure TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Return Air Low Pressure."
+       --#TYPE "LDS9811 CONDITION: Return Air Low Pressure"
+       --#SUMMARY "Return Air Low Pressure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 42
+
+
+    shortCycleRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Short Cycle Recovered."
+       --#TYPE "LDS9811 CONDITION: Short Cycle Recovered"
+       --#SUMMARY "Short Cycle Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 43
+
+
+    shortCycle TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Short Cycle."
+       --#TYPE "LDS9811 CONDITION: Short Cycle"
+       --#SUMMARY "Short Cycle."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 44
+
+
+    powerLostRecovered TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Power Lost Recovered."
+       --#TYPE "LDS9811 CONDITION: Power Lost Recovered"
+       --#SUMMARY "Power Lost Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 45
+
+
+    powerLost TRAP-TYPE
+        ENTERPRISE LDS9811Cond
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Power Lost."
+       --#TYPE "LDS9811 CONDITION: Power Lost"
+       --#SUMMARY "Power Lost."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 46
+
+
+
+END -- end of LDS9811-CONDITION-MIB

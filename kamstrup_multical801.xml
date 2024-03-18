@@ -1,0 +1,348 @@
+<?xml version="1.0"?>
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+		ddfid="kamstrup_multical801" ddfname="Kamstrup Multical 801" ddfversion="4" canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+
+	<device deviceid="kamstrup_multical801">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+		
+		<setProductData ruleid="vendordata" field="vendor">Kamstrup</setProductData>
+		<setProductData ruleid="modeldata" field="model">Multical 801</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+		
+		<numSensor ruleid="energy">
+			<type><mapValue mapid="sensor_type-vm"><getOid>address32</getOid></mapValue></type>
+			<sensorId>ENERGY</sensorId>
+			<value>
+				<mult>
+					<!-- first see if we need to adjust scaling for sensor type -->
+					<op><mapValue mapid="sensor_scaling-vm"><getOid>address32</getOid></mapValue></op>
+					<op>
+						<div>
+							<!-- retrieve value -->
+							<op><getOid>address40</getOid></op>
+							<op>
+								<!-- now adjust scaling based on scaling register -->
+								<mapValue mapid="ten_based_exponent-vm"><getOid>address72</getOid></mapValue>
+							</op>
+						</div>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Energy</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="flow">
+			<type><mapValue mapid="sensor_type-vm"><getOid>address34</getOid></mapValue></type>
+			<sensorId>FLOW</sensorId>
+			<value>
+				<mult>
+					<!-- first see if we need to adjust scaling for sensor type -->
+					<op><mapValue mapid="sensor_scaling-vm"><getOid>address34</getOid></mapValue></op>
+					<op>
+						<div>
+							<!-- retrieve value -->
+							<op><getOid>address44</getOid></op>
+							<op>
+								<!-- now adjust scaling based on scaling register -->
+								<mapValue mapid="ten_based_exponent-vm"><getOid>address74</getOid></mapValue>
+							</op>
+						</div>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Flow</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="volume">
+			<type>num</type>
+			<units>liters</units>
+			<sensorId>VOLUME</sensorId>
+			<value>
+				<mult>
+					<!-- m3 to liter -->
+					<op>1000</op>
+					<op>
+						<div>
+							<!-- retrieve value -->
+							<op><getOid>address48</getOid></op>
+							<op>
+								<!-- now adjust scaling based on scaling register -->
+								<mapValue mapid="ten_based_exponent-vm"><getOid>address76</getOid></mapValue>
+							</op>
+						</div>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Volume</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="power">
+			<type><mapValue mapid="sensor_type-vm"><getOid>address38</getOid></mapValue></type>
+			<sensorId>POWER</sensorId>
+			<value>
+				<mult>
+					<!-- first see if we need to adjust scaling for sensor type -->
+					<op><mapValue mapid="sensor_scaling-vm"><getOid>address38</getOid></mapValue></op>
+					<op>
+						<div>
+							<!-- retrieve value -->
+							<op><getOid>address52</getOid></op>
+							<op>
+								<!-- now adjust scaling based on scaling register -->
+								<mapValue mapid="ten_based_exponent-vm"><getOid>address78</getOid></mapValue>
+							</op>
+						</div>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Power</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		
+		<valueMap ruleid="sensor_type-vm">
+			<valueIn>1</valueIn><valueOut>powerW</valueOut> <!-- kW from device -->
+			<valueIn>2</valueIn><valueOut>powerW</valueOut> <!-- MW from device -->
+			<valueIn>17</valueIn><valueOut>num/kwatthr</valueOut> <!-- kWh from device -->
+			<valueIn>18</valueIn><valueOut>num/kwatthr</valueOut> <!-- MWh from device -->
+			<valueIn>33</valueIn><valueOut>liter</valueOut> <!-- liter from device -->
+			<valueIn>34</valueIn><valueOut>liter</valueOut> <!-- m3 from device -->
+			<valueIn>35</valueIn><valueOut>liter</valueOut> <!-- m3 * 10 from device -->
+			<valueIn>49</valueIn><valueOut>fluidflow</valueOut> <!-- liter/hr from device -->
+			<valueIn>50</valueIn><valueOut>fluidflow</valueOut> <!-- m3/hr from device -->
+			<valueIn>*</valueIn><valueOut>num</valueOut>
+		</valueMap>
+		
+		<valueMap ruleid="sensor_scaling-vm">
+			<valueIn>1</valueIn><valueOut>1000</valueOut> <!-- kW to W-->
+			<valueIn>2</valueIn><valueOut>1000000</valueOut> <!-- MW to W -->
+			<valueIn>17</valueIn><valueOut>1</valueOut> <!-- kWh to kWh -->
+			<valueIn>18</valueIn><valueOut>1000</valueOut> <!-- MWh to kWh -->
+			<valueIn>33</valueIn><valueOut>1</valueOut> <!-- liter to liter -->
+			<valueIn>34</valueIn><valueOut>1000</valueOut> <!-- m3 to liter -->
+			<valueIn>35</valueIn><valueOut>10000</valueOut> <!-- m3 * 10 to liter -->
+			<valueIn>49</valueIn><valueOut>0.016666666667</valueOut> <!-- liter/hr to liter/min-->
+			<valueIn>50</valueIn><valueOut>16.666666667</valueOut> <!-- m3/hr to liter/min -->
+			<valueIn>*</valueIn><valueOut>1</valueOut>
+		</valueMap>
+		
+		<!-- using a map to convert 10^n -->
+		<valueMap ruleid="ten_based_exponent-vm">
+			<valueIn>-3</valueIn><valueOut>0.001</valueOut>
+			<valueIn>-2</valueIn><valueOut>0.01</valueOut>
+			<valueIn>-1</valueIn><valueOut>0.1</valueOut>
+			<valueIn>0</valueIn><valueOut>1</valueOut>
+			<valueIn>1</valueIn><valueOut>10</valueOut> 
+			<valueIn>2</valueIn><valueOut>100</valueOut> 
+			<valueIn>3</valueIn><valueOut>1000</valueOut> 
+			<valueIn>4</valueIn><valueOut>10000</valueOut> 
+			<valueIn>5</valueIn><valueOut>100000</valueOut> 
+			<valueIn>6</valueIn><valueOut>1000000</valueOut> 
+			<valueIn>7</valueIn><valueOut>10000000</valueOut> 
+			<valueIn>8</valueIn><valueOut>100000000</valueOut> 
+			<valueIn>9</valueIn><valueOut>1000000000</valueOut> 
+			<valueIn>*</valueIn><valueOut>1</valueOut>
+		</valueMap>
+		
+		<numSensor ruleid="supply_temp">
+			<type>temp</type>
+			<sensorId>SUPPLY_TEMP</sensorId>
+			<value>
+				<mult>
+					<op>0.01</op>
+					<op><getOid>address56</getOid></op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Supply Temperature</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="return_temp">
+			<type>temp</type>
+			<sensorId>RETURN_TEMP</sensorId>
+			<value>
+				<mult>
+					<op>0.01</op>
+					<op><getOid>address60</getOid></op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Return Temperature</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="index_water_a">
+			<type>num</type>
+			<units>liters</units>
+			<sensorId>INDEX_WATER_A</sensorId>
+			<value>
+				<mult>
+					<!-- m3 to liter -->
+					<op>1000</op>
+					<op>
+						<div>
+							<!-- retrieve value -->
+							<op><getOid>address64</getOid></op>
+							<op>
+								<!-- now adjust scaling based on scaling register -->
+								<mapValue mapid="ten_based_exponent-vm"><getOid>address80</getOid></mapValue>
+							</op>
+						</div>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Index Water A</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="index_water_b">
+			<type>num</type>
+			<units>liters</units>
+			<sensorId>INDEX_WATER_B</sensorId>
+			<value>
+				<mult>
+					<!-- m3 to liter -->
+					<op>1000</op>
+					<op>
+						<div>
+							<!-- retrieve value -->
+							<op><getOid>address68</getOid></op>
+							<op>
+								<!-- now adjust scaling based on scaling register -->
+								<mapValue mapid="ten_based_exponent-vm"><getOid>address82</getOid></mapValue>
+							</op>
+						</div>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Index Water B</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+	</device>
+
+	<protocol>
+		<modbus>
+			<value_ref_id valid="address40"> <!-- Energy Uint32 Value -->
+				<function>3</function>
+				<start_addr>40</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address44"> <!-- Flow Uint32 Value -->
+				<function>3</function>
+				<start_addr>44</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address48"> <!-- Volume Uint32 Value -->
+				<function>3</function>
+				<start_addr>48</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address52"> <!-- Power Uint32 Value -->
+				<function>3</function>
+				<start_addr>52</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address56"> <!-- Supply Temp Uint32 Value -->
+				<function>3</function>
+				<start_addr>56</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address60"> <!-- Return Temp Uint32 Value -->
+				<function>3</function>
+				<start_addr>60</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address64"> <!-- Index Water A Uint32 Value -->
+				<function>3</function>
+				<start_addr>64</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address68"> <!-- Index Water B Uint32 Value -->
+				<function>3</function>
+				<start_addr>68</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			
+			<value_ref_id valid="address32"> <!-- Energy Units -->
+				<function>3</function>
+				<start_addr>32</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address34"> <!-- Flow Units -->
+				<function>3</function>
+				<start_addr>34</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address36"> <!-- Volume Units -->
+				<function>3</function>
+				<start_addr>36</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address38"> <!-- Power Units -->
+				<function>3</function>
+				<start_addr>38</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			
+			<value_ref_id valid="address72"> <!-- Energy Scaling -->
+				<function>3</function>
+				<start_addr>72</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address74"> <!-- Flow Scaling -->
+				<function>3</function>
+				<start_addr>74</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address76"> <!-- Volume Scaling -->
+				<function>3</function>
+				<start_addr>76</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address78"> <!-- Power Scaling -->
+				<function>3</function>
+				<start_addr>78</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address80"> <!-- Index Water A Scaling -->
+				<function>3</function>
+				<start_addr>80</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address82"> <!-- Index Water B Scaling -->
+				<function>3</function>
+				<start_addr>82</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			
+		</modbus>
+	</protocol>
+</APC_DDF>

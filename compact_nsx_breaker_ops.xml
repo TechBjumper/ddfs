@@ -1,0 +1,923 @@
+<?xml version="1.0"?>
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+		 ddfid="compact_nsx_breaker_ops" ddfname="Compact NSX Breaker (Operations)" ddfversion="7" canremove="yes">
+		 
+	<schemaVersion>1.6</schemaVersion>
+	
+	 <!-- **********************************************************************************
+    compact_nsx_breaker_ops.xml has been deprecated, use compact_nsx_micrologic.xml instead
+	************************************************************************************ -->
+
+	<device deviceid="compact_nsx_breaker">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<setProductData ruleid="vendordata" field="vendor">Compact</setProductData>
+		<setProductData ruleid="modeldata" field="model">NSX</setProductData>
+		<!-- setting this circuit breaker as a power meter to be able to define sensors in webservices, for operations -->
+		<setProductData ruleid="typedata" field="type">Power Meter</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+		
+		<setProductData ruleid="inputphasecount" field="inputphasecount">3</setProductData>
+		<setProductData ruleid="outputphasecount" field="outputphasecount">3</setProductData>
+
+ 		<valueMap ruleid="3phase_l2l-vm">
+			<valueIn>0</valueIn><valueOut>1-2</valueOut>
+			<valueIn>1</valueIn><valueOut>2-3</valueOut>
+			<valueIn>2</valueIn><valueOut>3-1</valueOut>
+			<valueIn>*</valueIn><valueOut>?</valueOut>
+		</valueMap>
+		
+ 		<valueMap ruleid="3phase_l2n-vm">
+			<valueIn>0</valueIn><valueOut>1-N</valueOut>
+			<valueIn>1</valueIn><valueOut>2-N</valueOut>
+			<valueIn>2</valueIn><valueOut>3-N</valueOut>
+			<valueIn>*</valueIn><valueOut>?</valueOut>
+		</valueMap>
+
+ 		<valueMap ruleid="3phase_and_neutral-vm">
+			<valueIn>0</valueIn><valueOut>1</valueOut>
+			<valueIn>1</valueIn><valueOut>2</valueOut>
+			<valueIn>2</valueIn><valueOut>3</valueOut>
+			<valueIn>3</valueIn><valueOut>N</valueOut>
+			<valueIn>*</valueIn><valueOut>?</valueOut>
+		</valueMap>
+
+ 		<valueMap ruleid="3phase_and_neutral_sensorid-vm">
+			<valueIn>0</valueIn><valueOut>1</valueOut>
+			<valueIn>1</valueIn><valueOut>2</valueOut>
+			<valueIn>2</valueIn><valueOut>3</valueOut>
+			<valueIn>3</valueIn><valueOut>NEUTRAL</valueOut>
+			<valueIn>*</valueIn><valueOut>?</valueOut>
+		</valueMap>
+
+ 		<valueMap ruleid="3phase_and_total-vm">
+			<valueIn>0</valueIn><valueOut>Phase 1</valueOut>
+			<valueIn>1</valueIn><valueOut>Phase 2</valueOut>
+			<valueIn>2</valueIn><valueOut>Phase 3</valueOut>
+			<valueIn>3</valueIn><valueOut>Total</valueOut>
+			<valueIn>*</valueIn><valueOut>?</valueOut>
+		</valueMap>
+
+ 		<valueMap ruleid="zerobased2onebased-vm">
+			<valueIn>0</valueIn><valueOut>1</valueOut>
+			<valueIn>1</valueIn><valueOut>2</valueOut>
+			<valueIn>2</valueIn><valueOut>3</valueOut>
+			<valueIn>3</valueIn><valueOut>4</valueOut>
+			<valueIn>*</valueIn><valueOut>?</valueOut>
+		</valueMap>
+
+		<valueMap ruleid="active_status-vm">
+			<valueIn>0</valueIn>  <valueOut>0</valueOut>
+			<valueIn>*</valueIn>  <valueOut>1</valueOut>
+		</valueMap>
+
+		<enumMap ruleid="active_status-em">
+			<label>Not Active</label>
+			<label>Active</label>
+		</enumMap>
+
+		<valueMap ruleid="input_status-vm">
+			<valueIn>0</valueIn>  <valueOut>0</valueOut>
+			<valueIn>*</valueIn>  <valueOut>1</valueOut>
+		</valueMap>
+
+		<enumMap ruleid="of_input_status-em">
+			<label>Circuit Breaker Open</label>
+			<label>Circuit Breaker Closed</label>
+		</enumMap>
+
+		<enumMap ruleid="sd_trip_indication-em">
+			<label>No Trip</label>
+			<label>Circuit Breaker Tripped on Electrical Default or Shunt Trip</label>
+		</enumMap>
+
+		<enumMap ruleid="sde_fault_trip_indication-em">
+			<label>No Trip</label>
+			<label>Circuit Breaker Tripped on Electrical Default</label>
+		</enumMap>
+
+		
+		<stateSensor ruleid="long_time_protection">
+			<type>state</type>
+			<sensorId>LONG_TIME_PROTECTION</sensorId>
+			<value>
+				<mapValue mapid="active_status-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+								<right_shift>
+									<op><getOid>register10000</getOid></op>
+									<op>0</op>
+								</right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<label>Trip Status - Long Time Protection</label>
+			<enum>active_status-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+		
+		<stateSensor ruleid="short_time_protection">
+			<type>state</type>
+			<sensorId>SHORT_TIME_PROTECTION</sensorId>
+			<value>
+				<mapValue mapid="active_status-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+								<right_shift>
+									<op><getOid>register10000</getOid></op>
+									<op>1</op>
+								</right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<label>Trip Status - Short Time Protection</label>
+			<enum>active_status-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+		
+		<stateSensor ruleid="instantaneous_protection">
+			<type>state</type>
+			<sensorId>INSTANTANEOUS_PROTECTION</sensorId>
+			<value>
+				<mapValue mapid="active_status-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+								<right_shift>
+									<op><getOid>register10000</getOid></op>
+									<op>2</op>
+								</right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<label>Trip Status - Instantaneous Protection</label>
+			<enum>active_status-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+		
+		<stateSensor ruleid="ground_fault_protection">
+			<type>state</type>
+			<sensorId>GROUND_FAULT_PROTECTION</sensorId>
+			<value>
+				<mapValue mapid="active_status-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+								<right_shift>
+									<op><getOid>register10000</getOid></op>
+									<op>3</op>
+								</right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<label>Trip Status - Ground Fault Protection</label>
+			<enum>active_status-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+		
+		<stateSensor ruleid="earth_leakage_protection">
+			<type>state</type>
+			<sensorId>EARTH_LEAKAGE_PROTECTION</sensorId>
+			<value>
+				<mapValue mapid="active_status-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+								<right_shift>
+									<op><getOid>register10000</getOid></op>
+									<op>4</op>
+								</right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<label>Trip Status - Earth Leakage Protection</label>
+			<enum>active_status-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+		
+		<stateSensor ruleid="integrated_instant_protection">
+			<type>state</type>
+			<sensorId>INTEGRATED_INSTANT_PROTECTION</sensorId>
+			<value>
+				<mapValue mapid="active_status-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+								<right_shift>
+									<op><getOid>register10000</getOid></op>
+									<op>5</op>
+								</right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<label>Trip Status - Integrated Instantaneous Protection</label>
+			<enum>active_status-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+		
+		<stateSensor ruleid="internal_failure_stop">
+			<type>state</type>
+			<sensorId>INTERNAL_FAILURE_STOP</sensorId>
+			<value>
+				<mapValue mapid="active_status-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+								<right_shift>
+									<op><getOid>register10000</getOid></op>
+									<op>6</op>
+								</right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<label>Trip Status - Internal Failure (STOP)</label>
+			<enum>active_status-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+		
+		<stateSensor ruleid="instant_earth_leakage_protection">
+			<type>state</type>
+			<sensorId>INSTANT_EARTH_LEAKAGE_PROTECTION</sensorId>
+			<value>
+				<mapValue mapid="active_status-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+								<right_shift>
+									<op><getOid>register10000</getOid></op>
+									<op>7</op>
+								</right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<label>Trip Status - Instantaneous with Earth Leakage Protection</label>
+			<enum>active_status-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+		
+		<stateSensor ruleid="unbalance_motor_protection">
+			<type>state</type>
+			<sensorId>UNBALANCE_MOTOR_PROTECTION</sensorId>
+			<value>
+				<mapValue mapid="active_status-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+								<right_shift>
+									<op><getOid>register10000</getOid></op>
+									<op>8</op>
+								</right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<label>Trip Status - Unbalance Motor Protection</label>
+			<enum>active_status-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+		
+		<stateSensor ruleid="jam_motor_protection">
+			<type>state</type>
+			<sensorId>JAM_MOTOR_PROTECTION</sensorId>
+			<value>
+				<mapValue mapid="active_status-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+								<right_shift>
+									<op><getOid>register10000</getOid></op>
+									<op>9</op>
+								</right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<label>Trip Status - Jam Motor Protection</label>
+			<enum>active_status-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+		
+		<stateSensor ruleid="underload_motor_protection">
+			<type>state</type>
+			<sensorId>UNDERLOAD_MOTOR_PROTECTION</sensorId>
+			<value>
+				<mapValue mapid="active_status-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+								<right_shift>
+									<op><getOid>register10000</getOid></op>
+									<op>10</op>
+								</right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<label>Trip Status - Underload Motor Protection</label>
+			<enum>active_status-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+		
+		<stateSensor ruleid="longstart_motor_protection">
+			<type>state</type>
+			<sensorId>LONGSTART_MOTOR_PROTECTION</sensorId>
+			<value>
+				<mapValue mapid="active_status-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+								<right_shift>
+									<op><getOid>register10000</getOid></op>
+									<op>11</op>
+								</right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<label>Trip Status - Longstart Motor Protection</label>
+			<enum>active_status-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+		
+		<stateSensor ruleid="reflex_tripping_protection">
+			<type>state</type>
+			<sensorId>REFLEX_TRIPPING_PROTECTION</sensorId>
+			<value>
+				<mapValue mapid="active_status-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+								<right_shift>
+									<op><getOid>register10000</getOid></op>
+									<op>12</op>
+								</right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<label>Trip Status - Reflex Tripping Protection</label>
+			<enum>active_status-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+		
+		<stateSensor ruleid="of_status">
+			<type>state</type>
+			<sensorId>OF_STATUS</sensorId>
+			<value>
+				<mapValue mapid="input_status-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+								<right_shift>
+									<op><getOid>register12001</getOid></op>
+									<op>0</op>
+								</right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<label>OF Status</label>
+			<enum>of_input_status-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+				
+		<stateSensor ruleid="sd_trip_indication">
+			<type>state</type>
+			<sensorId>SD_TRIP_INDICATION</sensorId>
+			<value>
+				<mapValue mapid="input_status-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+								<right_shift>
+									<op><getOid>register12001</getOid></op>
+									<op>1</op>
+								</right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<label>SD Trip Indication</label>
+			<enum>sd_trip_indication-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+		
+		<stateSensor ruleid="sde_fault_trip_indication">
+			<type>state</type>
+			<sensorId>SDE_FAULT_TRIP_INDICATION</sensorId>
+			<value>
+				<mapValue mapid="input_status-vm">
+                   <formatNumber>
+                        <bitwise_and>
+                            <op>
+								<right_shift>
+									<op><getOid>register12001</getOid></op>
+									<op>2</op>
+								</right_shift>
+                            </op>
+                            <op>1</op>
+                        </bitwise_and>
+                    </formatNumber>
+				</mapValue>
+			</value>
+			<label>SDE Fault Trip Indication</label>
+			<enum>sde_fault_trip_indication-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+	
+		<numSensor ruleid="rms_current_phase" index="registers12016-12019">
+			<type>amperage</type>
+			<!-- operations support: ^[a-zA-Z0-9]+_[a-zA-Z0-9]+_CURRENT_[123]$ -->
+			<sensorId>CURRENT_<formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber></sensorId>
+			<value>
+                <if>
+                    <op><eq><op><getRowOid>registers12016-12019</getRowOid></op><op>65535</op></eq></op>
+                    <op>0</op>
+                    <op><getRowOid>registers12016-12019</getRowOid></op>
+                </if>
+			</value>
+			<valueInc>1</valueInc>
+			<label>RMS Current Phase <mapValue mapid="3phase_and_neutral-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="rms_voltage_l2l_phase" index="registers12030-12032">
+			<type>voltage</type>
+			<!-- operations support: ^[a-zA-Z0-9]+_[a-zA-Z0-9]+_VOLTAGE_LL_[123]$ -->
+			<sensorId>VOLTAGE_LL_<formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber></sensorId>
+			<value>
+                <if>
+                    <op><eq><op><getRowOid>registers12030-12032</getRowOid></op><op>65535</op></eq></op>
+                    <op>0</op>
+                    <op><getRowOid>registers12030-12032</getRowOid></op>
+                </if>
+			</value>
+			<valueInc>1</valueInc>
+			<label>RMS Voltage Phase <mapValue mapid="3phase_l2l-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="rms_voltage_l2n_phase" index="registers12033-12035">
+			<type>voltage</type>
+			<!-- operations support: ^[a-zA-Z0-9]+_[a-zA-Z0-9]+_VOLTAGE_LN_[123]$ -->
+			<sensorId>VOLTAGE_LN_<formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber></sensorId>
+			<value>
+                <if>
+                    <op><eq><op><getRowOid>registers12033-12035</getRowOid></op><op>65535</op></eq></op>
+                    <op>0</op>
+                    <op><getRowOid>registers12033-12035</getRowOid></op>
+                </if>
+			</value>
+			<valueInc>1</valueInc>
+			<label>RMS Voltage Phase <mapValue mapid="3phase_l2n-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="frequency">
+			<type>frequency</type>
+			<!-- operations support: _FREQUENCY_1$ -->
+			<sensorId>FREQUENCY_1</sensorId>
+			<value>
+                <if>
+                    <op><eq><op><getOid>register12036</getOid></op><op>65535</op></eq></op>
+                    <op>0</op>
+                    <op><mult>
+                            <op>0.1</op>
+                            <op><getOid>register12036</getOid></op>
+                        </mult></op>
+                </if>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Frequency</label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="active_power" index="registers12038-12040">
+			<type>num/powerKW</type>
+			<!-- operations support: ^[a-zA-Z0-9]+_[a-zA-Z0-9]+_POWER_KW_[123]$ -->
+			<sensorId>POWER_KW_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+                <if>
+                    <op><eq><op><getRowOid>registers12038-12040</getRowOid></op><op>65535</op></eq></op>
+                    <op>0</op>
+                    <op><mult>
+                            <op>0.1</op>
+                            <op><getRowOid>registers12038-12040</getRowOid></op>
+                        </mult></op>
+                </if>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Active Power <mapValue mapid="3phase_and_total-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="total_active_power">
+			<type>num/powerKW</type>
+			<!-- operations support: _TOTAL_POWER_KW_1$ -->
+			<sensorId>TOTAL_POWER_KW_1</sensorId>
+			<value>
+                <if>
+                    <op><eq><op><getOid>register12041</getOid></op><op>65535</op></eq></op>
+                    <op>0</op>
+                    <op><mult>
+                            <op>0.1</op>
+                            <op><getOid>register12041</getOid></op>
+                        </mult></op>
+                </if>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Active Power Total</label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="reactive_power" index="registers12042-12044">
+			<type>num/powerKVAR</type>
+			<!-- operations support: ^[a-zA-Z0-9]+_[a-zA-Z0-9]+_POWER_KVAR_[123]$ -->
+			<sensorId>POWER_KVAR_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+                <if>
+                    <op><eq><op><getRowOid>registers12042-12044</getRowOid></op><op>65535</op></eq></op>
+                    <op>0</op>
+                    <op><mult>
+                            <op>0.1</op>
+                            <op><getRowOid>registers12042-12044</getRowOid></op>
+                        </mult></op>
+                </if>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Reactive Power <mapValue mapid="3phase_and_total-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="total_reactive_power">
+			<type>num/powerKVAR</type>
+			<!-- operations support: _TOTAL_POWER_KVAR_1$ -->
+			<sensorId>TOTAL_POWER_KVAR_1</sensorId>
+			<value>
+                <if>
+                    <op><eq><op><getOid>register12045</getOid></op><op>65535</op></eq></op>
+                    <op>0</op>
+                    <op><mult>
+                            <op>0.1</op>
+                            <op><getOid>register12045</getOid></op>
+                        </mult></op>
+                </if>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Reactive Power Total</label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="apparent_power" index="registers12046-12048">
+			<type>num/powerKVA</type>
+			<!-- operations support: ^[a-zA-Z0-9]+_[a-zA-Z0-9]+_POWER_KVA_[123]$ -->
+			<sensorId>POWER_KVA_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+                <if>
+                    <op><eq><op><getRowOid>registers12046-12048</getRowOid></op><op>65535</op></eq></op>
+                    <op>0</op>
+                    <op><mult>
+                            <op>0.1</op>
+                            <op><getRowOid>registers12046-12048</getRowOid></op>
+                        </mult></op>
+                </if>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Apparent Power <mapValue mapid="3phase_and_total-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="total_apparent_power">
+			<type>num/powerKVA</type>
+			<!-- operations support: _TOTAL_POWER_KVA_1$ -->
+			<sensorId>TOTAL_POWER_KVA_1</sensorId>
+			<value>
+                <if>
+                    <op><eq><op><getOid>register12049</getOid></op><op>65535</op></eq></op>
+                    <op>0</op>
+                    <op><mult>
+                            <op>0.1</op>
+                            <op><getOid>register12049</getOid></op>
+                        </mult></op>
+                </if>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Apparent Power Total</label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="active_energy">
+			<type>num/kwatthr</type>
+			<!-- operations support: _TOTAL_ENERGY_KWH_1$ -->
+			<sensorId>TOTAL_ENERGY_KWH_1</sensorId>
+			<value>
+				<getOid>register12050</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Active Energy</label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="reactive_energy">
+			<type>num/kVARhr</type>
+			<!-- operations support: _TOTAL_ENERGY_KVARH_1$ -->
+			<sensorId>TOTAL_ENERGY_KVARH_1</sensorId>
+			<value>
+				<getOid>register12052</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Reactive Energy</label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="apparent_energy">
+			<type>num/kVAhr</type>
+			<!-- operations support: ^[a-zA-Z0-9]+_[a-zA-Z0-9]+_TOTAL_ENERGY_KVAH_1$ -->
+			<sensorId>TOTAL_ENERGY_KVAH_1</sensorId>
+			<value>
+				<getOid>register12062</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Apparent Energy Total</label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+	</device>
+
+	<protocol>
+		<modbus>
+			<value_ref_id valid="register10000">
+				<function>3</function>
+				<start_addr>9999</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12001">
+				<function>3</function>
+				<start_addr>12000</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<table_ref_id indexid="registers12016-12019"> <!-- RMS_CURRENT_PH_n -->
+				<entry num="0">register12016</entry>
+				<entry num="1">register12017</entry>
+				<entry num="2">register12018</entry>
+				<entry num="3">register12019</entry>
+			</table_ref_id>
+			<value_ref_id valid="register12016">
+				<function>3</function>
+				<start_addr>12015</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12017">
+				<function>3</function>
+				<start_addr>12016</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12018">
+				<function>3</function>
+				<start_addr>12017</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12019">
+				<function>3</function>
+				<start_addr>12018</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="registers12030-12032"> <!-- RMS_VOLTAGE_L2L_PH_n -->
+				<entry num="0">register12030</entry>
+				<entry num="1">register12031</entry>
+				<entry num="2">register12032</entry>
+			</table_ref_id>
+			<value_ref_id valid="register12030">
+				<function>3</function>
+				<start_addr>12029</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12031">
+				<function>3</function>
+				<start_addr>12030</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12032">
+				<function>3</function>
+				<start_addr>12031</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="registers12033-12035"> <!-- RMS_VOLTAGE_L2N_PH_n -->
+				<entry num="0">register12033</entry>
+				<entry num="1">register12034</entry>
+				<entry num="2">register12035</entry>
+			</table_ref_id>
+			<value_ref_id valid="register12033">
+				<function>3</function>
+				<start_addr>12032</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12034">
+				<function>3</function>
+				<start_addr>12033</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12035">
+				<function>3</function>
+				<start_addr>12034</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="register12036"> <!-- FREQUENCY -->
+				<function>3</function>
+				<start_addr>12035</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="registers12038-12040"> <!-- ACTIVE_POWER_PH_n -->
+				<entry num="0">register12038</entry>
+				<entry num="1">register12039</entry>
+				<entry num="2">register12040</entry>
+			</table_ref_id>
+			<value_ref_id valid="register12038">
+				<function>3</function>
+				<start_addr>12037</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12039">
+				<function>3</function>
+				<start_addr>12038</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12040">
+				<function>3</function>
+				<start_addr>12039</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12041">
+				<function>3</function>
+				<start_addr>12040</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="registers12042-12044"> <!-- REACTIVE_POWER_PH_n -->
+				<entry num="0">register12042</entry>
+				<entry num="1">register12043</entry>
+				<entry num="2">register12044</entry>
+			</table_ref_id>
+			<value_ref_id valid="register12042">
+				<function>3</function>
+				<start_addr>12041</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12043">
+				<function>3</function>
+				<start_addr>12042</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12044">
+				<function>3</function>
+				<start_addr>12043</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12045">
+				<function>3</function>
+				<start_addr>12044</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="registers12046-12048"> <!-- APPARENT_POWER_PH_n -->
+				<entry num="0">register12046</entry>
+				<entry num="1">register12047</entry>
+				<entry num="2">register12048</entry>
+			</table_ref_id>
+			<value_ref_id valid="register12046">
+				<function>3</function>
+				<start_addr>12045</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12047">
+				<function>3</function>
+				<start_addr>12046</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12048">
+				<function>3</function>
+				<start_addr>12047</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register12049">
+				<function>3</function>
+				<start_addr>12048</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="register12050"> <!-- ACTIVE_ENERGY -->
+				<function>3</function>
+				<start_addr>12049</start_addr>
+				<quantity>2</quantity>
+				<type>int_32</type>
+			</value_ref_id>
+			<value_ref_id valid="register12052"> <!-- REACTIVE_ENERGY -->
+				<function>3</function>
+				<start_addr>12051</start_addr>
+				<quantity>2</quantity>
+				<type>int_32</type>
+			</value_ref_id>
+			<value_ref_id valid="register12062"> <!-- APPARENT_ENERGY -->
+				<function>3</function>
+				<start_addr>12061</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			
+			<packet>
+				<function>3</function>
+				<start_addr>9999</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>12000</start_addr>
+				<quantity>18</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>12029</start_addr>
+				<quantity>7</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>12037</start_addr>
+				<quantity>16</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>12061</start_addr>
+				<quantity>2</quantity>
+			</packet>
+		</modbus>
+	</protocol>
+</APC_DDF>

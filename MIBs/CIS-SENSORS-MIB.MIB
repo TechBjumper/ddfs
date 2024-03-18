@@ -1,0 +1,239 @@
+CIS-SENSORS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    SnmpAdminString
+	FROM SNMP-FRAMEWORK-MIB
+
+	OBJECT-GROUP, NOTIFICATION-GROUP, MODULE-COMPLIANCE
+	FROM SNMPv2-CONF
+	
+    MODULE-IDENTITY, NOTIFICATION-TYPE, enterprises, OBJECT-TYPE, Integer32
+	FROM SNMPv2-SMI
+		
+    DisplayString
+	FROM SNMPv2-TC;
+
+coolitSensorsMIB MODULE-IDENTITY
+    LAST-UPDATED "201704270000Z"
+    ORGANIZATION "CoolIT Systems, Inc."
+    CONTACT-INFO    
+        "Primary Contact: Mike Holden
+         email: mike.holden@coolitsystems.com"
+    DESCRIPTION
+        "This MIB module defines objects for DCLC sensors."
+    REVISION     "201704270000Z"
+    DESCRIPTION
+        "Removed deprecated control field, Changed integer feilds to string to pass floats"
+    REVISION     "201702220000Z"
+    DESCRIPTION
+        "Added simple SNMPv2 Notification."
+    REVISION     "201505260000Z"
+    DESCRIPTION
+        "Derived from LM-SENSORS-MIB."
+    ::= { coolitSensors 1 }
+
+coolit                    OBJECT IDENTIFIER ::= { enterprises 30518 }
+coolitMIBGroups           OBJECT IDENTIFIER ::= { coolit 17 }
+coolitSensors             OBJECT IDENTIFIER ::= { coolit 16 }
+coolitMIBCompliances      OBJECT IDENTIFIER ::= { coolit 2 }
+coolitNotifications       OBJECT IDENTIFIER ::= { coolit 1 }
+coolitNotificationPrefix  OBJECT IDENTIFIER ::= { coolitNotifications 0 }
+coolitNotificationObjects OBJECT IDENTIFIER ::= { coolitNotifications 2 }
+
+--
+
+coolitSensorsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CoolitSensorsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Table of sensors and their values."
+    ::= { coolitSensors 2 }
+
+coolitSensorsEntry OBJECT-TYPE
+    SYNTAX      CoolitSensorsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "An entry containing a device and its statistics."
+    INDEX       { coolitSensorsIndex }
+    ::= { coolitSensorsTable 1 }
+
+CoolitSensorsEntry ::= SEQUENCE {
+    coolitSensorsIndex    Integer32,
+    coolitSensorsDevice   DisplayString,
+    coolitSensorsValue    DisplayString,
+    coolitSensorsUnits    DisplayString,
+    coolitSensorsAlertEn  Integer32,
+    coolitSensorsMinValue DisplayString,
+    coolitSensorsMaxValue DisplayString,
+    coolitSensorsAlert    Integer32
+}
+
+coolitSensorsIndex OBJECT-TYPE
+    SYNTAX      Integer32 (0..65535)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "Reference index for each observed device."
+    ::= { coolitSensorsEntry 1 }
+
+coolitSensorsDevice OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of the sensor we are reading."
+    ::= { coolitSensorsEntry 2 }
+
+coolitSensorsValue OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The current value of this sensor."
+    ::= { coolitSensorsEntry 3 }
+
+coolitSensorsUnits OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The units of the device we are reading."
+    ::= { coolitSensorsEntry 4 }
+
+coolitSensorsAlertEn OBJECT-TYPE
+    SYNTAX      Integer32 (0..1)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "If alerts are enabled for this sensor."
+    ::= { coolitSensorsEntry 5 }
+
+coolitSensorsMinValue OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The minimum allowed value of this sensor."
+    ::= { coolitSensorsEntry 6 }
+
+coolitSensorsMaxValue OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "The maximum allowed value of this sensor."
+    ::= { coolitSensorsEntry 7 }	
+
+coolitSensorsAlert OBJECT-TYPE
+    SYNTAX      Integer32 (0..1)
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+        "If this sensor is in an alerted state."
+    ::= { coolitSensorsEntry 8 }
+	
+--
+--  CoolIT Notifications
+--
+	
+coolitSeverity OBJECT-TYPE
+	SYNTAX	    Integer32
+	MAX-ACCESS  read-only
+	STATUS		current
+	DESCRIPTION 
+		"Severity of a notification or trap from the DCLC
+		0 is only used for debug messages and can be ignored
+		1 is used for data-logging or raw information
+		2 indicates a warning where the administrator should
+		  look into the state of the system to ensure correct
+		  operation
+		3 critical; system is entering a failed state"
+	::= { coolitNotificationObjects 1 }
+                
+coolitMessage OBJECT-TYPE
+	SYNTAX      DisplayString
+	MAX-ACCESS  read-only
+	STATUS	  current
+	DESCRIPTION 
+		"coolitMessage contains the details of the event."
+	::= { coolitNotificationObjects 2 }
+
+coolitGenericTrap NOTIFICATION-TYPE
+	OBJECTS     { coolitSeverity, coolitMessage }
+	STATUS	  current
+	DESCRIPTION
+		"A coolitGenericTrap is sent on changes to the DCLC
+		system, when any sensors are over or under their high
+		and low values, or if a system error occurs. Severity
+		is from 0 (debug), 1 (informational), 2 (warning)
+		to 3 (critical). The message will contain details of
+		the alert."		
+	::= { coolitNotificationPrefix 1 }
+
+coolitNotification OBJECT-TYPE
+    SYNTAX      SnmpAdminString
+    MAX-ACCESS  accessible-for-notify
+    STATUS      obsolete
+    DESCRIPTION
+        "This object was improperly defined for its original purpose,
+         and should no longer be used."
+	::= { coolitNotifications 1 }
+	
+-- 	
+-- Group Conformance	
+-- 	
+
+coolitSensorsEntries OBJECT-GROUP
+	OBJECTS { coolitSensorsDevice,
+		coolitSensorsValue,
+	          coolitSensorsUnits,   
+	          coolitSensorsAlertEn,   
+	          coolitSensorsMinValue,
+	          coolitSensorsMaxValue,
+		coolitSensorsAlert }
+	STATUS current
+	DESCRIPTION
+		"A collection of objects used in coolitSensorsEntry"
+	::= { coolitMIBGroups 1 }		
+	
+coolitNotificationObjectEntries OBJECT-GROUP
+	OBJECTS { coolitSeverity, coolitMessage }
+	STATUS current
+	DESCRIPTION
+		"A collection of objects used in coolitSensorsEntry"
+	::= { coolitMIBGroups 2 }		
+
+coolitNotificationEntries NOTIFICATION-GROUP
+	NOTIFICATIONS { coolitGenericTrap }
+	STATUS current
+	DESCRIPTION
+		"A collection of objects used in coolitSensorsEntry"
+	::= { coolitMIBGroups 3 }		
+	
+coolitObsoleteEntries OBJECT-GROUP
+	OBJECTS { coolitNotification }
+	STATUS obsolete
+	DESCRIPTION
+		"A collection of objects used in coolitSensorsEntry"
+	::= { coolitMIBGroups 4 }		
+
+coolitModuleCompliance MODULE-COMPLIANCE
+ 	STATUS current
+ 	DESCRIPTION "Compliance statement."
+ 	MODULE -- this module
+ 		MANDATORY-GROUPS {  coolitSensorsEntries }
+		
+ 		GROUP coolitSensorsEntries
+ 		DESCRIPTION "This group is required to read sensor information or to control system behaviour."
+		
+ 		GROUP coolitNotificationObjectEntries
+ 		DESCRIPTION "This group is required to receive notification information."
+		
+ 		GROUP coolitNotificationEntries
+ 		DESCRIPTION "This group is required to receive notification information."
+
+	::= { coolitMIBCompliances 1 }
+	
+END

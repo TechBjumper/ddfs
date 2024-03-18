@@ -1,0 +1,4425 @@
+<?xml version="1.0"?>
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	ddfid="caterpillar_generator_emcp4"
+	ddfname="Caterpillar Generator (EMCP4)"
+	ddfversion="7"
+	canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+
+	<device deviceid="caterpillar_emcp4">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<setProductData ruleid="vendordata" field="vendor">Caterpillar</setProductData>
+		<setProductData ruleid="modeldata" field="model">Electronic Modular Control Panel 4</setProductData>
+		<setProductData ruleid="typedata" field="type">Generator</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+		<valueMap ruleid="2state-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>*</valueIn><valueOut>2</valueOut>
+		</valueMap>
+		<enumMap ruleid="pf-lag-em">
+			<label>Leading</label>
+			<label>Lagging</label>
+			<label>Unknown</label>
+		</enumMap>
+
+		<numSensor ruleid="avg_voltage">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_100</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>AVG_VOLTAGE</sensorId>
+			<value>
+				<getOid>reg_100</getOid>
+			</value>
+			<label>Average Voltage</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="avg_current">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_101</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>AVG_CURRENT</sensorId>
+			<value>
+				<getOid>reg_101</getOid>
+			</value>
+			<label>Average Current</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="avg_freq">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_102</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>frequency</type>
+			<sensorId>AVG_FREQ</sensorId>
+			<value>
+				<div>
+					<op><getOid>reg_102</getOid></op>
+					<op>128</op>
+				</div>	
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Average Frequency</label>
+			<sensorSet>Frequency Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="avg_pf">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_103</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/powerfactor</type>
+			<sensorId>AVG_PF</sensorId>
+			<value>
+				<add>
+					<op><div>
+							<op><getOid>reg_103</getOid></op>
+							<op>16384</op>
+						</div></op>
+					<op>-1.0</op>
+				</add>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Overall Power Factor</label>
+			<sensorSet>Power Factor Sensors</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="pf-lag-status">
+			<type>state</type>
+			<sensorId>PF_LAGLEAD</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+					<getOid>reg_104</getOid>
+				</mapValue>
+			</value>
+			<label>Lead / Lag PF Status</label>
+			<enum>pf-lag-em</enum>
+			<sensorSet>Power Factor Sensors</sensorSet>
+		</stateSensor>
+		<numSensor ruleid="percent-rated-real-power">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_105</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>percent</units>
+			<sensorId>PERCENT_RATED_REAL_POWER</sensorId>
+			<value>
+				<add>
+					<op><div>
+							<op><getOid>reg_105</getOid></op>
+							<op>128</op>
+						</div></op>
+					<op>-251.0</op>
+				</add>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>PerCent of Rated Power: Real Power</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="total_real_power">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_106</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/powerKW</type>
+			<sensorId>POWER_KW</sensorId>
+			<value>
+				<mult>
+					<op>0.001</op>
+					<op>
+						<add>
+							<op><getOid>reg_106</getOid></op>
+							<op>-2000000000</op>
+						</add>
+					</op>
+				</mult>	
+			</value>
+			<valueInc>1.0</valueInc>
+			<label>Real Power: Total</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="volts_ab">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_108</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>VOLTAGE_AB</sensorId>
+			<value>
+				<getOid>reg_108</getOid>
+			</value>
+			<label>Voltage, A-B</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="volts_bc">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_109</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>VOLTAGE_BC</sensorId>
+			<value>
+				<getOid>reg_109</getOid>
+			</value>
+			<label>Voltage, B-C</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="volts_ca">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_110</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>VOLTAGE_CA</sensorId>
+			<value>
+				<getOid>reg_110</getOid>
+			</value>
+			<label>Voltage, C-A</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="current_a">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_111</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>CURRENT_A</sensorId>
+			<value>
+				<getOid>reg_111</getOid>
+			</value>
+			<label>Current, A</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="current_b">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_112</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>CURRENT_B</sensorId>
+			<value>
+				<getOid>reg_112</getOid>
+			</value>
+			<label>Current, B</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="current_c">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_113</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>CURRENT_C</sensorId>
+			<value>
+				<getOid>reg_113</getOid>
+			</value>
+			<label>Current, C</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="volts_an">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_114</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>VOLTAGE_AN</sensorId>
+			<value>
+				<getOid>reg_114</getOid>
+			</value>
+			<label>Voltage, A-neutral</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="volts_bn">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_115</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>VOLTAGE_BN</sensorId>
+			<value>
+				<getOid>reg_115</getOid>
+			</value>
+			<label>Voltage, B-neutral</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="volts_cn">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_116</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>VOLTAGE_CN</sensorId>
+			<value>
+				<getOid>reg_116</getOid>
+			</value>
+			<label>Voltage, C-neutral</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="real_power_a">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_117</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/powerKW</type>
+			<sensorId>A_POWER_KW</sensorId>
+			<value>
+				<mult>
+					<op>0.001</op>
+					<op>
+						<add>
+							<op><getOid>reg_117</getOid></op>
+							<op>-2000000000</op>
+						</add>
+					</op>
+				</mult>	
+			</value>
+			<valueInc>1.0</valueInc>
+			<label>Real Power: Phase A</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="real_power_b">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_119</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/powerKW</type>
+			<sensorId>B_POWER_KW</sensorId>
+			<value>
+				<mult>
+					<op>0.001</op>
+					<op>
+						<add>
+							<op><getOid>reg_119</getOid></op>
+							<op>-2000000000</op>
+						</add>
+					</op>
+				</mult>	
+			</value>
+			<valueInc>1.0</valueInc>
+			<label>Real Power: Phase B</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="real_power_c">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_121</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/powerKW</type>
+			<sensorId>C_POWER_KW</sensorId>
+			<value>
+				<mult>
+					<op>0.001</op>
+					<op>
+						<add>
+							<op><getOid>reg_121</getOid></op>
+							<op>-2000000000</op>
+						</add>
+					</op>
+				</mult>	
+			</value>
+			<valueInc>1.0</valueInc>
+			<label>Real Power: Phase C</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="apparent_power_a">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_123</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>A_POWER_KVA</sensorId>
+			<value>
+				<mult>
+					<op>0.001</op>
+					<op>
+						<add>
+							<op><getOid>reg_123</getOid></op>
+							<op>-2000000000</op>
+						</add>
+					</op>
+				</mult>	
+			</value>
+			<valueInc>1.0</valueInc>
+			<label>Apparent Power: Phase A</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="apparent_power_b">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_125</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>B_POWER_KVA</sensorId>
+			<value>
+				<mult>
+					<op>0.001</op>
+					<op>
+						<add>
+							<op><getOid>reg_125</getOid></op>
+							<op>-2000000000</op>
+						</add>
+					</op>
+				</mult>	
+			</value>
+			<valueInc>1.0</valueInc>
+			<label>Apparent Power: Phase B</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="apparent_power_c">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_127</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>C_POWER_KVA</sensorId>
+			<value>
+				<mult>
+					<op>0.001</op>
+					<op>
+						<add>
+							<op><getOid>reg_127</getOid></op>
+							<op>-2000000000</op>
+						</add>
+					</op>
+				</mult>	
+			</value>
+			<valueInc>1.0</valueInc>
+			<label>Apparent Power: Phase C</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="reactive_power_a">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_129</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/powerKVAR</type>
+			<sensorId>A_POWER_KVAR</sensorId>
+			<value>
+				<mult>
+					<op>0.001</op>
+					<op>
+						<add>
+							<op><getOid>reg_129</getOid></op>
+							<op>-2000000000</op>
+						</add>
+					</op>
+				</mult>	
+			</value>
+			<valueInc>1.0</valueInc>
+			<label>Reactive Power: Phase A</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="reactive_power_b">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_131</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/powerKVAR</type>
+			<sensorId>B_POWER_KVAR</sensorId>
+			<value>
+				<mult>
+					<op>0.001</op>
+					<op>
+						<add>
+							<op><getOid>reg_131</getOid></op>
+							<op>-2000000000</op>
+						</add>
+					</op>
+				</mult>	
+			</value>
+			<valueInc>1.0</valueInc>
+			<label>Reactive Power: Phase B</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="reactive_power_c">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_133</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/powerKVAR</type>
+			<sensorId>C_POWER_KVAR</sensorId>
+			<value>
+				<mult>
+					<op>0.001</op>
+					<op>
+						<add>
+							<op><getOid>reg_133</getOid></op>
+							<op>-2000000000</op>
+						</add>
+					</op>
+				</mult>	
+			</value>
+			<valueInc>1.0</valueInc>
+			<label>Reactive Power: Phase C</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="pf_a">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_135</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/powerfactor</type>
+			<sensorId>A_PF</sensorId>
+			<value>
+				<add>
+					<op><div>
+							<op><getOid>reg_135</getOid></op>
+							<op>16384</op>
+						</div></op>
+					<op>-1.0</op>
+				</add>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Power Factor: Phase A</label>
+			<sensorSet>Power Factor Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="pf_b">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_136</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/powerfactor</type>
+			<sensorId>B_PF</sensorId>
+			<value>
+				<add>
+					<op><div>
+							<op><getOid>reg_136</getOid></op>
+							<op>16384</op>
+						</div></op>
+					<op>-1.0</op>
+				</add>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Power Factor: Phase B</label>
+			<sensorSet>Power Factor Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="pf_c">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_137</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/powerfactor</type>
+			<sensorId>C_PF</sensorId>
+			<value>
+				<add>
+					<op><div>
+							<op><getOid>reg_137</getOid></op>
+							<op>16384</op>
+						</div></op>
+					<op>-1.0</op>
+				</add>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Power Factor: Phase C</label>
+			<sensorSet>Power Factor Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="total_apparent_power">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_138</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>POWER_KVA</sensorId>
+			<value>
+				<mult>
+					<op>0.001</op>
+					<op>
+						<add>
+							<op><getOid>reg_138</getOid></op>
+							<op>-2000000000</op>
+						</add>
+					</op>
+				</mult>	
+			</value>
+			<valueInc>1.0</valueInc>
+			<label>Apparent Power: Total</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="percent-rated-apparent-power">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_140</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>percent</units>
+			<sensorId>PERCENT_RATED_APPARENT_POWER</sensorId>
+			<value>
+				<add>
+					<op><div>
+							<op><getOid>reg_140</getOid></op>
+							<op>128</op>
+						</div></op>
+					<op>-251.0</op>
+				</add>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>PerCent of Rated Power: Apparent Power</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="total_reactive_power">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_141</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/powerKVAR</type>
+			<sensorId>POWER_KVAR</sensorId>
+			<value>
+				<mult>
+					<op>0.001</op>
+					<op>
+						<add>
+							<op><getOid>reg_141</getOid></op>
+							<op>-2000000000</op>
+						</add>
+					</op>
+				</mult>	
+			</value>
+			<valueInc>1.0</valueInc>
+			<label>Reactive Power: Total</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="percent-rated-reactive-power">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_143</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>percent</units>
+			<sensorId>PERCENT_RATED_REACTIVE_POWER</sensorId>
+			<value>
+				<add>
+					<op><div>
+							<op><getOid>reg_143</getOid></op>
+							<op>128</op>
+						</div></op>
+					<op>-251.0</op>
+				</add>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>PerCent of Rated Power: Reactive Power</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="total_real_energy">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_144</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/kwatthr</type>
+			<sensorId>ENERGY_kWhr</sensorId>
+			<value>
+				<getOid>reg_144</getOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Real Energy: Total</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="total_reactive_energy">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_146</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num/kVARhr</type>
+			<sensorId>ENERGY_kVARhr</sensorId>
+			<value>
+				<getOid>reg_146</getOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Reactive Energy: Total</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="avg_line_to_N_voltage">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_148</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>AVG_VOLT_L2N</sensorId>
+			<value>
+				<getOid>reg_148</getOid>
+			</value>
+			<label>Average Voltage, line-to-neutral</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>  
+
+		<numSensor ruleid="fuel-level">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_198</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>percent</units>
+			<sensorId>FUEL_LEVEL</sensorId>
+			<value>
+				<add>
+					<op><div>
+							<op><getOid>reg_198</getOid></op>
+							<op>128</op>
+						</div></op>
+					<op>-251.0</op>
+				</add>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Fuel Level</label>
+			<sensorSet>Engine Status</sensorSet>
+		</numSensor>
+		<numSensor ruleid="engine_oil_temp">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_199</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>ENGINE_OIL_TEMP</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getOid>reg_199</getOid></op>
+					<op>32</op><!-- 0.03125 deg.C per bit -->
+					</div>
+				</op>
+				<op>273</op>
+				</sub>
+			</value>
+			<label>Engine Oil Temperature</label>
+			<sensorSet>Engine Status</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="engine_oil_pressure">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_200</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>ENGINE_OIL_PRESSURE</sensorId>
+			<value>
+				<div>
+				<op><getOid>reg_200</getOid></op>
+				<op>8</op><!-- 0.125 kPa per bit -->
+				</div>
+			</value>
+			<label>Engine Oil Pressure</label>
+			<sensorSet>Engine Status</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="engine_coolant_temp">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_201</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>ENGINE_COOLANT_TEMP</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getOid>reg_201</getOid></op>
+					<op>32</op><!-- 0.03125 deg.C per bit -->
+					</div>
+				</op>
+				<op>273</op>
+				</sub>
+			</value>
+			<label>Engine Coolant Temperature</label>
+			<sensorSet>Engine Status</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="battery_voltage">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_202</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>BATTERY_VOLTAGE</sensorId>
+			<value>
+				<div>
+				<op><getOid>reg_202</getOid></op>
+				<op>20</op><!-- 0.05 V per bit -->
+				</div>
+			</value>
+			<label>Battery Voltage</label>
+			<sensorSet>Engine Status</sensorSet>
+		</numSensor>
+		<numSensor ruleid="engine_rpm">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_203</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>rpm</units>
+			<sensorId>ENGINE_RPM</sensorId>
+			<value>
+				<div>
+				<op><getOid>reg_203</getOid></op>
+				<op>8</op><!-- 0.125 kPa per bit -->
+				</div>
+			</value>
+			<label>Engine RPM</label>
+			<sensorSet>Engine Status</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="engine-op-hrs">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_204</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>runhours</type>
+			<sensorId>ENGINE_OP_HRS</sensorId>
+			<value>
+				<div>
+				<op><getOid>reg_204</getOid></op>
+				<op>20</op><!-- 0.05 hr per bit -->
+				</div>
+			</value>
+			<label>Engine Operating Hours</label>
+			<sensorSet>Engine Status</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="automatic-startstop-state">
+			<type>state</type>
+			<sensorId>AUTOMATIC_STARTSTOP_STATE</sensorId>
+			<value>
+				<mapValue mapid="autoStopStart-vm">
+				<getOid>reg_206</getOid>
+				</mapValue>
+			</value>
+			<enum>autoStopStart-em</enum>
+			<label>Automatic Start/Stop State</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<valueMap ruleid="autoStopStart-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>2</valueIn><valueOut>2</valueOut>
+			<valueIn>3</valueIn><valueOut>3</valueOut>
+			<valueIn>4</valueIn><valueOut>4</valueOut>
+			<valueIn>5</valueIn><valueOut>5</valueOut>
+			<valueIn>6</valueIn><valueOut>6</valueOut>
+			<valueIn>7</valueIn><valueOut>7</valueOut>
+			<valueIn>8</valueIn><valueOut>8</valueOut>
+			<valueIn>*</valueIn><valueOut>9</valueOut>
+		</valueMap>
+		<enumMap ruleid="autoStopStart-em">
+			<label>Init</label>
+			<label>Pre-Crank</label>
+			<label>Starting</label>
+			<label>Running</label>
+			<label>Pre-Cooldown</label>
+			<label>Cooldown</label>
+			<label>Stopping</label>
+			<label>Stopped</label>
+			<label>Idling</label>
+			<label>Unknown</label>
+		</enumMap>
+		
+		<numSensor ruleid="interval_days_remaining">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_212</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>timeindays</type>
+			<sensorId>_INTERVAL_DAYS_REMAINING</sensorId>
+			<value>
+				<getOid>reg_212</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Service Maintenance Interval Days Remaining</label>
+			<sensorSet>Engine Status</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="num-cranks">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_213</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<sensorId>NUM_CRANKS</sensorId>
+			<value>
+				<getOid>reg_213</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Number of Crank Attempts</label>
+			<sensorSet>Engine Status</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="num-starts">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_215</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<sensorId>NUM_STARTS</sensorId>
+			<value>
+				<getOid>reg_215</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Number of Successful Starts</label>
+			<sensorSet>Engine Status</sensorSet>
+		</numSensor>  
+
+
+		<numSensor ruleid="cylinderN-exh-port-temp-dl" index="reg_221-240">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getRowOid>reg_221-240</getRowOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>CYLINDER_<rowNumber/>_EXH_PORT_TEMP_DL</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getRowOid>reg_221-240</getRowOid></op>
+					<op>32</op><!-- 0.03125 deg.C per bit -->
+					</div>
+				</op>
+				<op>273</op>
+				</sub>
+			</value>
+			<label>Cylinder #<formatNumber printffmt="%02.0f"><add><op>1</op><op><rowNumber/></op></add></formatNumber> Exhaust Port Temperature (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>  
+
+		<numSensor ruleid="exh-mfd1-temp-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_241</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>EXH_MFD1_TEMP_DL</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getOid>reg_241</getOid></op>
+					<op>32</op><!-- 0.03125 deg.C per bit -->
+					</div>
+				</op>
+				<op>273</op>
+				</sub>
+			</value>
+			<label>Exhaust Manifold #1 Temperature (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="exh-mfd2-temp-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_242</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>EXH_MFD2_TEMP_DL</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getOid>reg_242</getOid></op>
+					<op>32</op><!-- 0.03125 deg.C per bit -->
+					</div>
+				</op>
+				<op>273</op>
+				</sub>
+			</value>
+			<label>Exhaust Manifold #2 Temperature (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="in-mfd1-temp-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_243</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>IN_MFD1_TEMP_DL</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getOid>reg_243</getOid></op>
+					<op>32</op><!-- 0.03125 deg.C per bit -->
+					</div>
+				</op>
+				<op>273</op>
+				</sub>
+			</value>
+			<label>Intake Manifold #1 Temperature (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="in-mfd2-temp-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_244</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>IN_MFD2_TEMP_DL</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getOid>reg_244</getOid></op>
+					<op>32</op><!-- 0.03125 deg.C per bit -->
+					</div>
+				</op>
+				<op>273</op>
+				</sub>
+			</value>
+			<label>Intake Manifold #2 Temperature (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="eng-oil-temp-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_245</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>ENG_OIL_TEMP_DL</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getOid>reg_245</getOid></op>
+					<op>32</op><!-- 0.03125 deg.C per bit -->
+					</div>
+				</op>
+				<op>273</op>
+				</sub>
+			</value>
+			<label>Engine Oil Temperature (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="eng-fuel-temp-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_246</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>ENG_FUEL_TEMP_DL</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getOid>reg_246</getOid></op>
+					<op>32</op><!-- 0.03125 deg.C per bit -->
+					</div>
+				</op>
+				<op>273</op>
+				</sub>
+			</value>
+			<label>Engine Fuel Temperature (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="fuel_pressure-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_247</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>FUEL_PRESSURE_DL</sensorId>
+			<value>
+				<div>
+				<op><getOid>reg_247</getOid></op>
+				<op>8</op><!-- 0.125 kPa per bit -->
+				</div>
+			</value>
+			<label>Fuel Pressure (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="crankcase-pressure-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_248</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>CRANKCASE_PRESSURE_DL</sensorId>
+			<value>
+				<add>
+					<op>
+						<div>
+						<op><getOid>reg_248</getOid></op>
+						<op>128</op>
+						</div>
+					</op>
+					<op>-250.0</op>
+				</add>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Crankcase Pressure (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>
+		<numSensor ruleid="boost_pressure-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_249</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>BOOST_PRESSURE_DL</sensorId>
+			<value>
+				<div>
+				<op><getOid>reg_249</getOid></op>
+				<op>8</op><!-- 0.125 kPa per bit -->
+				</div>
+			</value>
+			<label>Boost Pressure (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="oil-filter-diff-pressure-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_251</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>OIL_FILTER_DIFF_PRESSURE_DL</sensorId>
+			<value>
+				<div>
+				<op><getOid>reg_251</getOid></op>
+				<op>2</op><!-- 0.5 kPa per bit -->
+				</div>
+			</value>
+			<label>Oil Filter Differential Pressure (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="fuel-filter-diff-pressure-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_252</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>FUEL_FILTER_DIFF_PRESSURE_DL</sensorId>
+			<value>
+				<div>
+				<op><getOid>reg_252</getOid></op>
+				<op>8</op><!-- 0.125 kPa per bit -->
+				</div>
+			</value>
+			<label>Fuel Filter Differential Pressure (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="air-filter-diff-pressure-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_253</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>AIR_FILTER_DIFF_PRESSURE_DL</sensorId>
+			<value>
+				<add>
+					<op>
+						<div>
+						<op><getOid>reg_253</getOid></op>
+						<op>128</op>
+						</div>
+					</op>
+					<op>-250.0</op>
+				</add>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Air Filter Differential Pressure (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>
+		<numSensor ruleid="fuel-consume-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_254</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>liters</units>
+			<sensorId>FUEL_CONSUME_DL</sensorId>
+			<value>
+				<div>
+				<op><getOid>reg_254</getOid></op>
+				<op>2</op><!-- 0.5 kPa per bit -->
+				</div>
+			</value>
+			<label>Total Fuel Consumption (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="inst-fuel-consume-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_256</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>fluidliterspermin</units>
+			<sensorId>INST_FUEL_CONSUME_DL</sensorId>
+			<value>
+				<div>
+				<op><getOid>reg_256</getOid></op>
+				<op>1200</op><!-- 0.05 hr per bit * 60 min/hr -->
+				</div>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Instantaneous Fuel Consumption (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>
+		<numSensor ruleid="atm-pressure-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_257</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>ATM_PRESSURE_DL</sensorId>
+			<value>
+				<div>
+				<op><getOid>reg_257</getOid></op>
+				<op>8</op><!-- 0.125 kPa per bit -->
+				</div>
+			</value>
+			<label>Atmospheric Pressure (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="net-batt-curr-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_259</getOid></op>
+					<op>250</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>NET_BATT_CURR_DL</sensorId>
+			<value>
+				<add>
+					<op><getOid>reg_259</getOid></op>
+					<op>-125</op>
+				</add>
+			</value>
+			<label>Net Battery Current (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>
+
+		<valueMap ruleid="stopAutoRun-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>2</valueIn><valueOut>2</valueOut>
+			<valueIn>*</valueIn><valueOut>3</valueOut>
+		</valueMap>
+		<enumMap ruleid="stopAutoRun-em">
+			<label>Stop</label>
+			<label>Auto</label>
+			<label>Run</label>
+			<label>Unknown</label>
+		</enumMap>
+		<stateSensor ruleid="eng-ctrl-switch">
+			<type>state</type>
+			<sensorId>ENG_CTRL_SWITCH</sensorId>
+			<value>
+				<mapValue mapid="stopAutoRun-vm">
+				<getOid>reg_301</getOid>
+				</mapValue>
+			</value>
+			<enum>stopAutoRun-em</enum>
+			<label>Engine Control Switch Position</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+
+		<enumMap ruleid="trueFalse-em">
+			<label>False</label>
+			<label>True</label>
+			<label>Unknown</label>
+		</enumMap>
+		<stateSensor ruleid="auto-fuel-ctrl">
+			<type>state</type>
+			<sensorId>AUTO_FUEL_CTRL</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_307</getOid>
+				</mapValue>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>Auto Start/Stop Fuel Control Enabled</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+
+		<valueMap ruleid="falseTrueErrNA-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>2</valueIn><valueOut>2</valueOut>
+			<valueIn>*</valueIn><valueOut>3</valueOut>
+		</valueMap>
+		<enumMap ruleid="falseTrueErrNA-em">
+			<label>False</label>
+			<label>True</label>
+			<label>Error</label>
+			<label>Disabled/Not Available</label>
+		</enumMap>
+		<stateSensor ruleid="scr-sys-check-req">
+			<type>state</type>
+			<sensorId>SCR_SYS_CHK_REQ</sensorId>
+			<value>
+				<mapValue mapid="falseTrueErrNA-vm">
+				<getOid>reg_319</getOid>
+				</mapValue>
+			</value>
+			<enum>falseTrueErrNA-em</enum>
+			<label>SCR System Check Required</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="fuel-unload-pump">
+			<type>state</type>
+			<sensorId>FUEL_UNLOAD_PUMP</sensorId>
+			<value>
+				<mapValue mapid="falseTrueErrNA-vm">
+				<getOid>reg_321</getOid>
+				</mapValue>
+			</value>
+			<enum>falseTrueErrNA-em</enum>
+			<label>Fuel Unload Pump Active</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="fuel-load-pump">
+			<type>state</type>
+			<sensorId>FUEL_LOAD_PUMP</sensorId>
+			<value>
+				<mapValue mapid="falseTrueErrNA-vm">
+				<getOid>reg_322</getOid>
+				</mapValue>
+			</value>
+			<enum>falseTrueErrNA-em</enum>
+			<label>Fuel Load Pump Active</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="sys-horn">
+			<type>state</type>
+			<sensorId>SYS_HORN</sensorId>
+			<value>
+				<mapValue mapid="falseTrueErrNA-vm">
+				<getOid>reg_333</getOid>
+				</mapValue>
+			</value>
+			<enum>falseTrueErrNA-em</enum>
+			<label>System Horn Active</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+
+		<numSensor ruleid="sys-event-count">
+			<type>num</type>
+			<sensorId>SYS_EVENT_COUNT</sensorId>
+			<value>
+				<getOid>reg_334</getOid>
+			</value>
+			<label>System Event Count</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>
+
+		<valueMap ruleid="sys-light-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>4</valueIn><valueOut>2</valueOut>
+			<valueIn>5</valueIn><valueOut>3</valueOut>
+			<valueIn>*</valueIn><valueOut>4</valueOut>
+		</valueMap>
+		<enumMap ruleid="sys-light-em">
+			<label>No Lamp Active</label>
+			<label>Red Lamp Active</label>
+			<label>Amber Lamp Active</label>
+			<label>Amber and Red Lamp Active</label>
+			<label>Unknown</label>
+		</enumMap>
+		<stateSensor ruleid="sys-light">
+			<type>state</type>
+			<sensorId>SYS_LIGHT</sensorId>
+			<value>
+				<mapValue mapid="sys-light-vm">
+				<getOid>reg_335</getOid>
+				</mapValue>
+			</value>
+			<enum>sys-light-em</enum>
+			<label>System Event Lamp Status</label>
+			<sensorSet>Data Link</sensorSet>
+		</stateSensor>
+
+		<stateSensor ruleid="forced-idle-cmd">
+			<type>state</type>
+			<sensorId>FORCED_IDLE_CMD</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_337</getOid>
+				</mapValue>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>Forced Idle Command Active</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+
+		<numSensor ruleid="gen-exfld-volt-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_338</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>GEN_EXFLD_VOLT_DL</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getOid>reg_338</getOid></op>
+					<op>20</op><!-- 0.05 V per bit -->
+					</div>
+				</op>
+				<op>1606.0</op>
+				</sub>
+			</value>
+			<label>Generator Excitation Field Voltage (from Data Link)</label>
+			<sensorSet>Engine Status</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen-exfld-amp-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_340</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>GEN_EXFLD_AMP_DL</sensorId>
+			<value>
+				<div>
+				<op><getOid>reg_340</getOid></op>
+				<op>20</op><!-- 0.05 V per bit -->
+				</div>
+			</value>
+			<label>Generator Excitation Field Current (from Data Link)</label>
+			<sensorSet>Engine Status</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="at1-total-def-used">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_374</getOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>liters</units>
+			<sensorId>AT1_TOTAL_DEF_USED</sensorId>
+			<value>
+				<div>
+				<op><getOid>reg_374</getOid></op>
+				<op>2</op><!-- 0.5 L per bit -->
+				</div>
+			</value>
+			<label>Aftertreatment #1 Total DEF Used</label>
+			<sensorSet>Aftertreatment</sensorSet>
+		</numSensor>
+		<numSensor ruleid="at1-def-dosing-temp">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_376</getOid></op>
+					<op>250</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>AT1_DEF_DOSING_TEMP</sensorId>
+			<value>
+				<sub>
+				<op><getOid>reg_376</getOid></op>
+				<op>40</op>
+				</sub>
+			</value>
+			<label>Aftertreatment #1 DEF Dosing Temp</label>
+			<sensorSet>Aftertreatment</sensorSet>
+		</numSensor>
+		<numSensor ruleid="urea-tank-level">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_377</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>percent</units>
+			<sensorId>UREA_TANK_LEVEL</sensorId>
+			<value>
+				<mult>
+				<op><getOid>reg_377</getOid></op>
+				<op>0.4</op>
+				</mult>
+			</value>
+			<label>Urea Tank Level</label>
+			<sensorSet>Aftertreatment</sensorSet>
+		</numSensor>
+		<numSensor ruleid="at1-scr-tank-temp">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_378</getOid></op>
+					<op>250</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>AT1_SCR_TANK_TEMP</sensorId>
+			<value>
+				<sub>
+				<op><getOid>reg_378</getOid></op>
+				<op>40</op>
+				</sub>
+			</value>
+			<label>Aftertreatment #1 SCR Catalyst Reagent Tank #1 Temperature</label>
+			<sensorSet>Aftertreatment</sensorSet>
+		</numSensor>
+		<numSensor ruleid="urea-inj-air-pressure">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_379</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>UREA_INJ_AIR_PRESSURE</sensorId>
+			<value>
+				<mult>
+				<op><getOid>reg_379</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<label>Urea Injection Air Pressure</label>
+			<sensorSet>Aftertreatment</sensorSet>
+		</numSensor>
+		<numSensor ruleid="cata-in-temp">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_381</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>CATA_IN_TEMP</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getOid>reg_381</getOid></op>
+					<op>32</op><!-- 0.03125 deg.C per bit -->
+					</div>
+				</op>
+				<op>273</op>
+				</sub>
+			</value>
+			<label>Catalyst Intake Temperature</label>
+			<sensorSet>Aftertreatment</sensorSet>
+		</numSensor>  
+		<numSensor ruleid="at1-scr-exh-diff-press">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_382</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>AT1_SCR_EXH_DIFF_PRESS</sensorId>
+			<value>
+				<mult>
+				<op><getOid>reg_382</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<label>Aftertreatment #1 SCR Catalyst Exhaust Gas Differential Pressure</label>
+			<sensorSet>Aftertreatment</sensorSet>
+		</numSensor>
+
+		<valueMap ruleid="at1-scr-state-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>2</valueIn><valueOut>2</valueOut>
+			<valueIn>3</valueIn><valueOut>3</valueOut>
+			<valueIn>5</valueIn><valueOut>4</valueOut>
+			<valueIn>6</valueIn><valueOut>5</valueOut>
+			<valueIn>7</valueIn><valueOut>6</valueOut>
+			<valueIn>8</valueIn><valueOut>7</valueOut>
+			<valueIn>9</valueIn><valueOut>8</valueOut>
+			<valueIn>10</valueIn><valueOut>9</valueOut>
+			<valueIn>14</valueIn><valueOut>10</valueOut>
+			<valueIn>*</valueIn><valueOut>11</valueOut>
+		</valueMap>
+		<enumMap ruleid="at1-scr-state-em">
+			<label>Sleep Mode</label>
+			<label>Preparing</label>
+			<label>Normal</label>
+			<label>System Error Pending</label>
+			<label>Heat Protection</label>
+			<label>Cold Protection</label>
+			<label>Shutoff</label>
+			<label>Diagnosis</label>
+			<label>Service Mode, Dose Allowed</label>
+			<label>Service Mode, Dose Not Allowed</label>
+			<label>Error</label>
+			<label>Not Available</label>
+		</enumMap>
+		<stateSensor ruleid="at1-scr-state">
+			<type>state</type>
+			<sensorId>SYS_LIGHT</sensorId>
+			<value>
+				<mapValue mapid="at1-scr-state-vm">
+				<getOid>reg_383</getOid>
+				</mapValue>
+			</value>
+			<enum>at1-scr-state-em</enum>
+			<label>Aftertreatment #1 SCR System State</label>
+			<sensorSet>Aftertreatment</sensorSet>
+		</stateSensor>
+
+		<numSensor ruleid="time-since-at">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_398</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>timeinhrs</type>
+			<sensorId>TIME_SINCE_AT</sensorId>
+			<value>
+				<mult>
+				<op><getOid>reg_398</getOid></op>
+				<op>0.2</op>
+				</mult>
+			</value>
+			<label>Time Since Aftertreatment Inducement</label>
+			<sensorSet>Aftertreatment</sensorSet>
+		</numSensor>
+		<numSensor ruleid="time-until-at">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_399</getOid></op>
+					<op>250</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>timeinhrs</type>
+			<sensorId>TIME_UNTIL_AT</sensorId>
+			<value>
+				<mult>
+				<op><getOid>reg_399</getOid></op>
+				<op>0.25</op>
+				</mult>
+			</value>
+			<label>Time Until Aftertreatment Inducement</label>
+			<sensorSet>Aftertreatment</sensorSet>
+		</numSensor>
+
+		<valueMap ruleid="actInactDisabled-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>3</valueIn><valueOut>2</valueOut>
+			<valueIn>*</valueIn><valueOut>3</valueOut>
+		</valueMap>
+		<enumMap ruleid="actInactDisabled-em">
+			<label>Inactive</label>
+			<label>Active</label>
+			<label>Disabled</label>
+			<label>Unknown</label>
+		</enumMap>
+		<stateSensor ruleid="dIn" index="reg_600-605">
+			<type>state</type>
+			<sensorId>DIN_<rowNumber/></sensorId>
+			<value>
+				<mapValue mapid="actInactDisabled-vm">
+				<getRowOid>reg_600-605</getRowOid>
+				</mapValue>
+			</value>
+			<enum>actInactDisabled-em</enum>
+			<label>Digital Input #<formatNumber printffmt="%02.0f"><add><op><rowNumber/></op><op>1</op></add></formatNumber> Active</label>
+			<sensorSet>Data Link</sensorSet>
+		</stateSensor>
+
+		<stateSensor ruleid="relayOut" index="reg_616-623">
+			<type>state</type>
+			<sensorId>RELAY_OUT_<rowNumber/></sensorId>
+			<value>
+				<mapValue mapid="actInactDisabled-vm">
+				<getRowOid>reg_616-623</getRowOid>
+				</mapValue>
+			</value>
+			<enum>actInactDisabled-em</enum>
+			<label>Relay Output #<formatNumber printffmt="%1.0f"><add><op><rowNumber/></op><op>1</op></add></formatNumber> Active</label>
+			<sensorSet>Data Link</sensorSet>
+		</stateSensor>
+
+		<stateSensor ruleid="dOut" index="reg_624-640">
+			<type>state</type>
+			<sensorId>DOUT_<rowNumber/></sensorId>
+			<value>
+				<mapValue mapid="actInactDisabled-vm">
+				<getRowOid>reg_624-640</getRowOid>
+				</mapValue>
+			</value>
+			<enum>actInactDisabled-em</enum>
+			<label>Digital Output #<formatNumber printffmt="%1.0f"><add><op><rowNumber/></op><op>1</op></add></formatNumber> Active</label>
+			<sensorSet>Data Link</sensorSet>
+		</stateSensor>
+
+		<numSensor ruleid="aInSensor" index="reg_648-651">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getRowOid>reg_648-651</getRowOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<sensorId>AIN_<rowNumber/>_SENSOR</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getRowOid>reg_648-651</getRowOid></op>
+					<op>16</op>
+					</div>
+				</op>
+				<op>16</op>
+				</sub>
+			</value>
+			<label>Analog Input #<formatNumber printffmt="%1.0f"><add><op><rowNumber/></op><op>1</op></add></formatNumber> Sensor Value</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>
+		<numSensor ruleid="aInData" index="reg_652-659">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getRowOid>reg_652-659</getRowOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<sensorId>AIN_<rowNumber/>_DATA</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getRowOid>reg_652-659</getRowOid></op>
+					<op>256</op>
+					</div>
+				</op>
+				<op>8224768</op>
+				</sub>
+			</value>
+			<label>Analog Input #<formatNumber printffmt="%1.0f"><add><op><rowNumber/></op><op>1</op></add></formatNumber> Data Value</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>
+		<numSensor ruleid="aOutData" index="reg_660-665">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getRowOid>reg_660-665</getRowOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<sensorId>AOUT_<rowNumber/>_DATA</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getRowOid>reg_660-665</getRowOid></op>
+					<op>256</op>
+					</div>
+				</op>
+				<op>8224768</op>
+				</sub>
+			</value>
+			<label>Analog Output #<formatNumber printffmt="%1.0f"><add><op><rowNumber/></op><op>1</op></add></formatNumber> Data Value</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>
+		<numSensor ruleid="pwmOut" index="reg_672-675">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getRowOid>reg_672-675</getRowOid></op>
+					<op>4211081215</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<sensorId>PWM_OUT_<rowNumber/></sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getRowOid>reg_672-675</getRowOid></op>
+					<op>256</op>
+					</div>
+				</op>
+				<op>8224768</op>
+				</sub>
+			</value>
+			<label>PWM Output #<formatNumber printffmt="%1.0f"><add><op><rowNumber/></op><op>1</op></add></formatNumber> Data Value</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="knock-level" index="reg_743-762">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getRowOid>reg_743-762</getRowOid></op>
+					<op>250</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>percent</units>
+			<sensorId>KNOCK_LEVEL_<rowNumber/></sensorId>
+			<value>
+				<getRowOid>reg_743-762</getRowOid>
+			</value>
+			<label>Engine Cylinder #<formatNumber printffmt="%1.0f"><add><op><rowNumber/></op><op>1</op></add></formatNumber> Knock Level (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>
+		<numSensor ruleid="ignition-timing" index="reg_767-786">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getRowOid>reg_767-786</getRowOid></op>
+					<op>250</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>degreeAngle</units>
+			<sensorId>IGNITION_TIMING_<rowNumber/></sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getRowOid>reg_767-786</getRowOid></op>
+					<op>128</op>
+					</div>
+				</op>
+				<op>200</op>
+				</sub>
+			</value>
+			<label>Cylinder #<formatNumber printffmt="%1.0f"><add><op><rowNumber/></op><op>1</op></add></formatNumber> Ignition Timing (from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="eng-oil-temp-io">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_800</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>ENG_OIL_TEMP_IO</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getOid>reg_800</getOid></op>
+					<op>32</op><!-- 0.03125 deg.C per bit -->
+					</div>
+				</op>
+				<op>273</op>
+				</sub>
+			</value>
+			<label>Engine Oil Temperature (from I/O Pin)</label>
+			<sensorSet>I/O Pins</sensorSet>
+		</numSensor>
+		<numSensor ruleid="exh-temp-io">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_801</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>EXH_TEMP_IO</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getOid>reg_801</getOid></op>
+					<op>32</op><!-- 0.03125 deg.C per bit -->
+					</div>
+				</op>
+				<op>273</op>
+				</sub>
+			</value>
+			<label>Exhaust Temperature (from I/O Pin)</label>
+			<sensorSet>I/O Pins</sensorSet>
+		</numSensor>
+		<numSensor ruleid="fuel-level-io">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_804</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>percent</units>
+			<sensorId>FUEL_LEVEL_IO</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getOid>reg_804</getOid></op>
+					<op>128</op>
+					</div>
+				</op>
+				<op>251</op>
+				</sub>
+			</value>
+			<label>Fuel Level (from I/O Pin)</label>
+			<sensorSet>I/O Pins</sensorSet>
+		</numSensor>
+		<numSensor ruleid="ext-fuel-level-io">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_805</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>percent</units>
+			<sensorId>EXT_FUEL_LEVEL_IO</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getOid>reg_805</getOid></op>
+					<op>128</op>
+					</div>
+				</op>
+				<op>251</op>
+				</sub>
+			</value>
+			<label>External Tank Fuel Level (from I/O Pin)</label>
+			<sensorSet>I/O Pins</sensorSet>
+		</numSensor>
+		<numSensor ruleid="urea-level-io">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_812</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>percent</units>
+			<sensorId>UREA_LEVEL_IO</sensorId>
+			<value>
+				<sub>
+				<op><getOid>reg_812</getOid></op>
+				<op>125</op>
+				</sub>
+			</value>
+			<label>Main Tank Urea Level (from I/O Pin)</label>
+			<sensorSet>I/O Pins</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="cooldown-remaining">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_1054</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>timeinsec</type>
+			<sensorId>COOLDOWN_REMAINING</sensorId>
+			<value>
+				<getOid>reg_1054</getOid>
+			</value>
+			<label>Cooldown Duration Remaining</label>
+			<sensorSet>Cooldown</sensorSet>
+		</numSensor>
+		<numSensor ruleid="desired-genset-output-voltage">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_1057</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>DESIRED_GENSET_OUTPUT_VOLTAGE</sensorId>
+			<value>
+				<getOid>reg_1057</getOid>
+			</value>
+			<label>Desired Genset Output Voltage</label>
+			<sensorSet></sensorSet>
+		</numSensor>
+		<numSensor ruleid="total-voltage-bias-percent">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_1058</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>percent</units>
+			<sensorId>TOTAL_VOLTAGE_BIAS_PERCENT</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getOid>reg_1058</getOid></op>
+					<op>128</op>
+					</div>
+				</op>
+				<op>251</op>
+				</sub>
+			</value>
+			<label>Total Voltage Bias Percent</label>
+			<sensorSet></sensorSet>
+		</numSensor>
+		<numSensor ruleid="req-eng-speed">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_1060</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>rpm</units>
+			<sensorId>REQ_ENG_SPEED</sensorId>
+			<value>
+				<div>
+				<op><getOid>reg_1060</getOid></op>
+				<op>8</op>
+				</div>
+			</value>
+			<label>Requested Engine Speed</label>
+			<sensorSet></sensorSet>
+		</numSensor>
+		<numSensor ruleid="total-speed-bias-percent">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_1061</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>percent</units>
+			<sensorId>TOTAL_SPEED_BIAS_PERCENT</sensorId>
+			<value>
+				<sub>
+				<op>
+					<div>
+					<op><getOid>reg_1061</getOid></op>
+					<op>128</op>
+					</div>
+				</op>
+				<op>251</op>
+				</sub>
+			</value>
+			<label>Total Speed Bias Percent</label>
+			<sensorSet></sensorSet>
+		</numSensor>
+
+		<valueMap ruleid="gen-circ-brk-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>2</valueIn><valueOut>2</valueOut>
+			<valueIn>7</valueIn><valueOut>3</valueOut>
+			<valueIn>*</valueIn><valueOut>4</valueOut>
+		</valueMap>
+		<enumMap ruleid="gen-circ-brk-em">
+			<label>Open</label>
+			<label>Closed</label>
+			<label>Locked Out</label>
+			<label>Error</label>
+			<label>Unknown</label>
+		</enumMap>
+		<stateSensor ruleid="gen-circ-brk">
+			<type>state</type>
+			<sensorId>GEN_CIRC_BRK</sensorId>
+			<value>
+				<mapValue mapid="gen-circ-brk-vm">
+				<getOid>reg_1065</getOid>
+				</mapValue>
+			</value>
+			<enum>gen-circ-brk-em</enum>
+			<label>Generator Circuit Breaker Status</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="gen-freq-within-limits">
+			<type>state</type>
+			<sensorId>GEN_FREQ_WITHIN_LIMITS</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1067</getOid>
+				</mapValue>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>Generator Frequency Within Limits</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="gen-voltage-within-limits">
+			<type>state</type>
+			<sensorId>GEN_VOLTAGE_WITHIN_LIMITS</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1068</getOid>
+				</mapValue>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>Generator Voltage Within Limits</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+
+		<stateSensor ruleid="eng-ctrl-online">
+			<type>state</type>
+			<sensorId>ENG_CTRL_ONLINE</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1091</getOid>
+				</mapValue>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>Engine Control Online</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="eng-ctrl-online-2">
+			<type>state</type>
+			<sensorId>ENG_CTRL_ONLINE_2</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1092</getOid>
+				</mapValue>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>Secondary Engine Control Online</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="ext-io1-online">
+			<type>state</type>
+			<sensorId>EXT_IO1_ONLINE</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1093</getOid>
+				</mapValue>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>External I/O #1 Online</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="ext-io2-online">
+			<type>state</type>
+			<sensorId>EXT_IO2_ONLINE</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1094</getOid>
+				</mapValue>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>External I/O #2 Online</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="ext-io3-online">
+			<type>state</type>
+			<sensorId>EXT_IO3_ONLINE</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1095</getOid>
+				</mapValue>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>External I/O #3 Online</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="ext-io4-online">
+			<type>state</type>
+			<sensorId>EXT_IO4_ONLINE</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1096</getOid>
+				</mapValue>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>External I/O #4 Online</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="dig-avr-online">
+			<type>state</type>
+			<sensorId>DIG_AVR_ONLINE</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1097</getOid>
+				</mapValue>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>Digital AVR Online</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="rtd-module-online">
+			<type>state</type>
+			<sensorId>RTD_MODULE_ONLINE</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1098</getOid>
+				</mapValue>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>RTD Module Online</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="therm1-online">
+			<type>state</type>
+			<sensorId>THERM1_ONLINE</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1099</getOid>
+				</mapValue>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>Thermocouple #1 Online</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="therm2-online">
+			<type>state</type>
+			<sensorId>THERM2_ONLINE</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1100</getOid>
+				</mapValue>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>Thermocouple #2 Online</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="scr-module-online">
+			<type>state</type>
+			<sensorId>SCR_MODULE_ONLINE</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1103</getOid>
+				</mapValue>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>SCR Module Online</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+
+		<enumMap ruleid="okFault-em">
+			<label>OK</label>
+			<label>Fault</label>
+			<label>Unknown</label>
+		</enumMap>
+		<stateSensor ruleid="primary-dl-status">
+			<type>state</type>
+			<sensorId>PRIMARY_DL_STATUS</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1140</getOid>
+				</mapValue>
+			</value>
+			<enum>okFault-em</enum>
+			<label>Primary Data Link Status</label>
+			<sensorSet>Data Link</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="acc-dl-status">
+			<type>state</type>
+			<sensorId>ACC_DL_STATUS</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1141</getOid>
+				</mapValue>
+			</value>
+			<enum>okFault-em</enum>
+			<label>Accessory Data Link Status</label>
+			<sensorSet>Data Link</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="rs485-scada-dl-status">
+			<type>state</type>
+			<sensorId>RS485_SCADA_DL_STATUS</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1142</getOid>
+				</mapValue>
+			</value>
+			<enum>okFault-em</enum>
+			<label>RS485 SCADA Data Link Status</label>
+			<sensorSet>Data Link</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="rs485-ann-dl-status">
+			<type>state</type>
+			<sensorId>RS485_ANN_DL_STATUS</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+				<getOid>reg_1144</getOid>
+				</mapValue>
+			</value>
+			<enum>okFault-em</enum>
+			<label>RS485 Annunciator Data Link Status</label>
+			<sensorSet>Data Link</sensorSet>
+		</stateSensor>
+
+		<numSensor ruleid="eng-cool-pressure1-dl">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_1261</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>ENG_COOL_PRESSURE1_DL</sensorId>
+			<value>
+				<div>
+				<op><getOid>reg_1261</getOid></op>
+				<op>8</op><!-- 0.125 kPa per bit -->
+				</div>
+			</value>
+			<label>Engine Coolant Pressure #1(from Data Link)</label>
+			<sensorSet>Data Link</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="low-idle-state-adem">
+			<type>state</type>
+			<sensorId>LOW_IDLE_STATE_ADEM</sensorId>
+			<value>
+				<mapValue mapid="falseTrueErrNA-vm">
+				<getOid>reg_1263</getOid>
+				</mapValue>
+			</value>
+			<enum>falseTrueErrNA-em</enum>
+			<label>Low Idle State from ADEM</label>
+			<sensorSet>Data Link</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="eng-prot-shutdown">
+			<type>state</type>
+			<sensorId>ENG_PROT_SHUTDOWN</sensorId>
+			<value>
+				<mapValue mapid="falseTrueErrNA-vm">
+				<getOid>reg_1275</getOid>
+				</mapValue>
+			</value>
+			<enum>falseTrueErrNA-em</enum>
+			<label>Engine Protection has Shut Down Engine</label>
+			<sensorSet>Data Link</sensorSet>
+		</stateSensor>
+		<numSensor ruleid="req-eng-speed-adem">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_1283</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>num</type>
+			<units>rpm</units>
+			<sensorId>REQ_ENG_SPEED_ADEM</sensorId>
+			<value>
+				<div>
+				<op><getOid>reg_1283</getOid></op>
+				<op>8</op>
+				</div>
+			</value>
+			<label>Desired Engine Speed from ADEM</label>
+			<sensorSet></sensorSet>
+		</numSensor>
+	</device>
+
+	<protocol>
+		<modbus>
+			<value_ref_id valid="reg_100">	<!-- avg voltage -->
+				<function>3</function>
+				<start_addr>99</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_101">	<!-- avg currrent -->
+				<function>3</function>
+				<start_addr>100</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_102">	<!-- avg frequency -->
+				<function>3</function>
+				<start_addr>101</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_103">	<!-- overall PF -->
+				<function>3</function>
+				<start_addr>102</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_104">	<!-- PF lag/lead -->
+				<function>3</function>
+				<start_addr>103</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_105">	<!-- total % Kw -->
+				<function>3</function>
+				<start_addr>104</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_106">	<!-- total real power -->
+				<function>3</function>
+				<start_addr>105</start_addr>
+				<quantity>2</quantity>
+				<type>int_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_108">	<!-- voltage : line-to-line	-->
+				<function>3</function>
+				<start_addr>107</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_109">
+				<function>3</function>
+				<start_addr>108</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_110">
+				<function>3</function>
+				<start_addr>109</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_111">	<!-- current -->
+				<function>3</function>
+				<start_addr>110</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_112">
+				<function>3</function>
+				<start_addr>111</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_113">
+				<function>3</function>
+				<start_addr>112</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_114">	<!-- voltage: line-to-neutral	-->
+				<function>3</function>
+				<start_addr>113</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_115">
+				<function>3</function>
+				<start_addr>114</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_116">
+				<function>3</function>
+				<start_addr>115</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_117">	<!-- real power for each phase -->
+				<function>3</function>
+				<start_addr>116</start_addr>
+				<quantity>2</quantity>
+				<type>int_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_119">
+				<function>3</function>
+				<start_addr>118</start_addr>
+				<quantity>2</quantity>
+				<type>int_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_121">
+				<function>3</function>
+				<start_addr>120</start_addr>
+				<quantity>2</quantity>
+				<type>int_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_123">	<!-- apparent power for each phase -->
+				<function>3</function>
+				<start_addr>122</start_addr>
+				<quantity>2</quantity>
+				<type>int_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_125">
+				<function>3</function>
+				<start_addr>124</start_addr>
+				<quantity>2</quantity>
+				<type>int_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_127">
+				<function>3</function>
+				<start_addr>126</start_addr>
+				<quantity>2</quantity>
+				<type>int_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_129">	<!-- reactive power for each phase -->
+				<function>3</function>
+				<start_addr>128</start_addr>
+				<quantity>2</quantity>
+				<type>int_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_131">
+				<function>3</function>
+				<start_addr>130</start_addr>
+				<quantity>2</quantity>
+				<type>int_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_133">
+				<function>3</function>
+				<start_addr>132</start_addr>
+				<quantity>2</quantity>
+				<type>int_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_135">	<!-- PF for each phase -->
+				<function>3</function>
+				<start_addr>134</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_136">
+				<function>3</function>
+				<start_addr>135</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_137">
+				<function>3</function>
+				<start_addr>136</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_138">	<!-- total apparent power -->
+				<function>3</function>
+				<start_addr>137</start_addr>
+				<quantity>2</quantity>
+				<type>int_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_140">	<!-- total % KVA -->
+				<function>3</function>
+				<start_addr>139</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_141">	<!-- total reactive power -->
+				<function>3</function>
+				<start_addr>140</start_addr>
+				<quantity>2</quantity>
+				<type>int_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_143">	<!-- total % KVAR -->
+				<function>3</function>
+				<start_addr>142</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_144">	<!-- total real energy -->
+				<function>3</function>
+				<start_addr>143</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_146">	<!-- total reactive energy -->
+				<function>3</function>
+				<start_addr>145</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_148">	<!-- avg line-to-neutral voltage -->
+				<function>3</function>
+				<start_addr>147</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="reg_198">
+				<function>3</function>
+				<start_addr>197</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_199">
+				<function>3</function>
+				<start_addr>198</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_200">
+				<function>3</function>
+				<start_addr>199</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_201">
+				<function>3</function>
+				<start_addr>200</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_202">
+				<function>3</function>
+				<start_addr>201</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_203">
+				<function>3</function>
+				<start_addr>202</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_204">
+				<function>3</function>
+				<start_addr>203</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_206">
+				<function>3</function>
+				<start_addr>205</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="reg_210">
+				<function>3</function>
+				<start_addr>209</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_212">
+				<function>3</function>
+				<start_addr>211</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_213">
+				<function>3</function>
+				<start_addr>212</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_215">
+				<function>3</function>
+				<start_addr>214</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="reg_221-240"> <!-- GENERAL_ALARM_RACK_? -->
+				<entry num="0">reg_221</entry>
+				<entry num="1">reg_222</entry>
+				<entry num="2">reg_223</entry>
+				<entry num="3">reg_224</entry>
+				<entry num="4">reg_225</entry>
+				<entry num="5">reg_226</entry>
+				<entry num="6">reg_227</entry>
+				<entry num="7">reg_228</entry>
+				<entry num="8">reg_229</entry>
+				<entry num="9">reg_230</entry>
+				<entry num="10">reg_231</entry>
+				<entry num="11">reg_232</entry>
+				<entry num="12">reg_233</entry>
+				<entry num="13">reg_234</entry>
+				<entry num="14">reg_235</entry>
+				<entry num="15">reg_236</entry>
+				<entry num="16">reg_237</entry>
+				<entry num="17">reg_238</entry>
+				<entry num="18">reg_239</entry>
+				<entry num="19">reg_240</entry>
+			</table_ref_id>
+
+			<value_ref_id valid="reg_221">
+				<function>3</function>
+				<start_addr>220</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_222">
+				<function>3</function>
+				<start_addr>221</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_223">
+				<function>3</function>
+				<start_addr>222</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_224">
+				<function>3</function>
+				<start_addr>223</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_225">
+				<function>3</function>
+				<start_addr>224</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_226">
+				<function>3</function>
+				<start_addr>225</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_227">
+				<function>3</function>
+				<start_addr>226</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_228">
+				<function>3</function>
+				<start_addr>227</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_229">
+				<function>3</function>
+				<start_addr>228</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_230">
+				<function>3</function>
+				<start_addr>229</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_231">
+				<function>3</function>
+				<start_addr>230</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_232">
+				<function>3</function>
+				<start_addr>231</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_233">
+				<function>3</function>
+				<start_addr>232</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_234">
+				<function>3</function>
+				<start_addr>233</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_235">
+				<function>3</function>
+				<start_addr>234</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_236">
+				<function>3</function>
+				<start_addr>235</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_237">
+				<function>3</function>
+				<start_addr>236</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_238">
+				<function>3</function>
+				<start_addr>237</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_239">
+				<function>3</function>
+				<start_addr>238</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_240">
+				<function>3</function>
+				<start_addr>239</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="reg_241">
+				<function>3</function>
+				<start_addr>240</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_242">
+				<function>3</function>
+				<start_addr>241</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_243">
+				<function>3</function>
+				<start_addr>242</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_244">
+				<function>3</function>
+				<start_addr>243</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_245">
+				<function>3</function>
+				<start_addr>244</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_246">
+				<function>3</function>
+				<start_addr>245</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_247">
+				<function>3</function>
+				<start_addr>246</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_248">
+				<function>3</function>
+				<start_addr>247</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_249">
+				<function>3</function>
+				<start_addr>248</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_251">
+				<function>3</function>
+				<start_addr>250</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_252">
+				<function>3</function>
+				<start_addr>251</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_253">
+				<function>3</function>
+				<start_addr>252</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_254">
+				<function>3</function>
+				<start_addr>253</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_256">
+				<function>3</function>
+				<start_addr>255</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_257">
+				<function>3</function>
+				<start_addr>256</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_259">
+				<function>3</function>
+				<start_addr>258</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="reg_301">
+				<function>3</function>
+				<start_addr>300</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_307">
+				<function>3</function>
+				<start_addr>306</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_319">
+				<function>3</function>
+				<start_addr>318</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_321">
+				<function>3</function>
+				<start_addr>320</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_322">
+				<function>3</function>
+				<start_addr>321</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_333">
+				<function>3</function>
+				<start_addr>332</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_334">
+				<function>3</function>
+				<start_addr>333</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_335">
+				<function>3</function>
+				<start_addr>334</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_337">
+				<function>3</function>
+				<start_addr>336</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_338">
+				<function>3</function>
+				<start_addr>337</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_340">
+				<function>3</function>
+				<start_addr>339</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="reg_374">
+				<function>3</function>
+				<start_addr>373</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_376">
+				<function>3</function>
+				<start_addr>375</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_377">
+				<function>3</function>
+				<start_addr>376</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_378">
+				<function>3</function>
+				<start_addr>377</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_379">
+				<function>3</function>
+				<start_addr>378</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_381">
+				<function>3</function>
+				<start_addr>380</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_382">
+				<function>3</function>
+				<start_addr>381</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_383">
+				<function>3</function>
+				<start_addr>382</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_398">
+				<function>3</function>
+				<start_addr>397</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_399">
+				<function>3</function>
+				<start_addr>398</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="reg_600-605">
+				<entry num="0">reg_600</entry>
+				<entry num="1">reg_601</entry>
+				<entry num="2">reg_602</entry>
+				<entry num="3">reg_603</entry>
+				<entry num="4">reg_604</entry>
+				<entry num="5">reg_605</entry>
+			</table_ref_id>
+			<value_ref_id valid="reg_600">
+				<function>3</function>
+				<start_addr>599</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_601">
+				<function>3</function>
+				<start_addr>600</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_602">
+				<function>3</function>
+				<start_addr>601</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_603">
+				<function>3</function>
+				<start_addr>602</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_604">
+				<function>3</function>
+				<start_addr>603</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_605">
+				<function>3</function>
+				<start_addr>604</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="reg_616-623">
+				<entry num="0">reg_616</entry>
+				<entry num="1">reg_617</entry>
+				<entry num="2">reg_618</entry>
+				<entry num="3">reg_619</entry>
+				<entry num="4">reg_620</entry>
+				<entry num="5">reg_621</entry>
+				<entry num="6">reg_622</entry>
+				<entry num="7">reg_623</entry>
+			</table_ref_id>
+			<value_ref_id valid="reg_616">
+				<function>3</function>
+				<start_addr>615</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_617">
+				<function>3</function>
+				<start_addr>616</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_618">
+				<function>3</function>
+				<start_addr>617</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_619">
+				<function>3</function>
+				<start_addr>618</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_620">
+				<function>3</function>
+				<start_addr>619</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_621">
+				<function>3</function>
+				<start_addr>620</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_622">
+				<function>3</function>
+				<start_addr>621</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_623">
+				<function>3</function>
+				<start_addr>622</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="reg_624-640">
+				<entry num="0">reg_624</entry>
+				<entry num="1">reg_625</entry>
+				<entry num="2">reg_626</entry>
+				<entry num="3">reg_627</entry>
+				<entry num="4">reg_628</entry>
+				<entry num="5">reg_629</entry>
+				<entry num="6">reg_630</entry>
+				<entry num="7">reg_631</entry>
+				<entry num="8">reg_632</entry>
+				<entry num="9">reg_633</entry>
+				<entry num="10">reg_634</entry>
+				<entry num="11">reg_635</entry>
+				<entry num="12">reg_636</entry>
+				<entry num="13">reg_637</entry>
+				<entry num="14">reg_638</entry>
+				<entry num="15">reg_639</entry>
+				<entry num="16">reg_640</entry>
+			</table_ref_id>
+			<value_ref_id valid="reg_624">
+				<function>3</function>
+				<start_addr>623</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_625">
+				<function>3</function>
+				<start_addr>624</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_626">
+				<function>3</function>
+				<start_addr>625</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_627">
+				<function>3</function>
+				<start_addr>626</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_628">
+				<function>3</function>
+				<start_addr>627</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_629">
+				<function>3</function>
+				<start_addr>628</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_630">
+				<function>3</function>
+				<start_addr>629</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_631">
+				<function>3</function>
+				<start_addr>630</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_632">
+				<function>3</function>
+				<start_addr>631</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_633">
+				<function>3</function>
+				<start_addr>632</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_634">
+				<function>3</function>
+				<start_addr>633</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_635">
+				<function>3</function>
+				<start_addr>634</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_636">
+				<function>3</function>
+				<start_addr>635</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_637">
+				<function>3</function>
+				<start_addr>636</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_638">
+				<function>3</function>
+				<start_addr>637</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_639">
+				<function>3</function>
+				<start_addr>638</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_640">
+				<function>3</function>
+				<start_addr>639</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="reg_648-651">
+				<entry num="0">reg_648</entry>
+				<entry num="1">reg_649</entry>
+				<entry num="2">reg_650</entry>
+				<entry num="3">reg_651</entry>
+			</table_ref_id>
+			<value_ref_id valid="reg_648">
+				<function>3</function>
+				<start_addr>647</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_649">
+				<function>3</function>
+				<start_addr>648</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_650">
+				<function>3</function>
+				<start_addr>649</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_651">
+				<function>3</function>
+				<start_addr>650</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="reg_652-659">
+				<entry num="0">reg_652</entry>
+				<entry num="1">reg_654</entry>
+				<entry num="2">reg_656</entry>
+				<entry num="3">reg_658</entry>
+			</table_ref_id>
+			<value_ref_id valid="reg_652">
+				<function>3</function>
+				<start_addr>651</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_654">
+				<function>3</function>
+				<start_addr>653</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_656">
+				<function>3</function>
+				<start_addr>655</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_658">
+				<function>3</function>
+				<start_addr>657</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="reg_660-665">
+				<entry num="0">reg_660</entry>
+				<entry num="1">reg_662</entry>
+				<entry num="2">reg_664</entry>
+			</table_ref_id>
+			<value_ref_id valid="reg_660">
+				<function>3</function>
+				<start_addr>659</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_662">
+				<function>3</function>
+				<start_addr>661</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_664">
+				<function>3</function>
+				<start_addr>663</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="reg_672-675">
+				<entry num="0">reg_672</entry>
+				<entry num="1">reg_674</entry>
+			</table_ref_id>
+			<value_ref_id valid="reg_672">
+				<function>3</function>
+				<start_addr>671</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_674">
+				<function>3</function>
+				<start_addr>673</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="reg_743-762">
+				<entry num="0">reg_743</entry>
+				<entry num="1">reg_744</entry>
+				<entry num="2">reg_745</entry>
+				<entry num="3">reg_746</entry>
+				<entry num="4">reg_747</entry>
+				<entry num="5">reg_748</entry>
+				<entry num="6">reg_749</entry>
+				<entry num="7">reg_750</entry>
+				<entry num="8">reg_751</entry>
+				<entry num="9">reg_752</entry>
+				<entry num="10">reg_753</entry>
+				<entry num="11">reg_754</entry>
+				<entry num="12">reg_755</entry>
+				<entry num="13">reg_756</entry>
+				<entry num="14">reg_757</entry>
+				<entry num="15">reg_758</entry>
+				<entry num="16">reg_759</entry>
+				<entry num="17">reg_760</entry>
+				<entry num="18">reg_761</entry>
+				<entry num="19">reg_762</entry>
+			</table_ref_id>
+			<value_ref_id valid="reg_743">
+				<function>3</function>
+				<start_addr>742</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_744">
+				<function>3</function>
+				<start_addr>743</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_745">
+				<function>3</function>
+				<start_addr>744</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_746">
+				<function>3</function>
+				<start_addr>745</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_747">
+				<function>3</function>
+				<start_addr>746</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_748">
+				<function>3</function>
+				<start_addr>747</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_749">
+				<function>3</function>
+				<start_addr>748</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_750">
+				<function>3</function>
+				<start_addr>749</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_751">
+				<function>3</function>
+				<start_addr>750</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_752">
+				<function>3</function>
+				<start_addr>751</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_753">
+				<function>3</function>
+				<start_addr>752</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_754">
+				<function>3</function>
+				<start_addr>753</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_755">
+				<function>3</function>
+				<start_addr>754</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_756">
+				<function>3</function>
+				<start_addr>755</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_757">
+				<function>3</function>
+				<start_addr>756</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_758">
+				<function>3</function>
+				<start_addr>757</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_759">
+				<function>3</function>
+				<start_addr>758</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_760">
+				<function>3</function>
+				<start_addr>759</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_761">
+				<function>3</function>
+				<start_addr>760</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_762">
+				<function>3</function>
+				<start_addr>761</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="reg_767-786">
+				<entry num="0">reg_767</entry>
+				<entry num="1">reg_768</entry>
+				<entry num="2">reg_769</entry>
+				<entry num="3">reg_770</entry>
+				<entry num="4">reg_771</entry>
+				<entry num="5">reg_772</entry>
+				<entry num="6">reg_773</entry>
+				<entry num="7">reg_774</entry>
+				<entry num="8">reg_775</entry>
+				<entry num="9">reg_776</entry>
+				<entry num="10">reg_777</entry>
+				<entry num="11">reg_778</entry>
+				<entry num="12">reg_779</entry>
+				<entry num="13">reg_780</entry>
+				<entry num="14">reg_781</entry>
+				<entry num="15">reg_782</entry>
+				<entry num="16">reg_783</entry>
+				<entry num="17">reg_784</entry>
+				<entry num="18">reg_785</entry>
+				<entry num="19">reg_786</entry>
+			</table_ref_id>
+			<value_ref_id valid="reg_767">
+				<function>3</function>
+				<start_addr>766</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_768">
+				<function>3</function>
+				<start_addr>767</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_769">
+				<function>3</function>
+				<start_addr>768</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_770">
+				<function>3</function>
+				<start_addr>769</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_771">
+				<function>3</function>
+				<start_addr>770</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_772">
+				<function>3</function>
+				<start_addr>771</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_773">
+				<function>3</function>
+				<start_addr>772</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_774">
+				<function>3</function>
+				<start_addr>773</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_775">
+				<function>3</function>
+				<start_addr>774</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_776">
+				<function>3</function>
+				<start_addr>775</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_777">
+				<function>3</function>
+				<start_addr>776</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_778">
+				<function>3</function>
+				<start_addr>777</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_779">
+				<function>3</function>
+				<start_addr>778</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_780">
+				<function>3</function>
+				<start_addr>779</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_781">
+				<function>3</function>
+				<start_addr>780</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_782">
+				<function>3</function>
+				<start_addr>781</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_783">
+				<function>3</function>
+				<start_addr>782</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_784">
+				<function>3</function>
+				<start_addr>783</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_785">
+				<function>3</function>
+				<start_addr>784</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_786">
+				<function>3</function>
+				<start_addr>785</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="reg_800">
+				<function>3</function>
+				<start_addr>799</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_801">
+				<function>3</function>
+				<start_addr>800</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_804">
+				<function>3</function>
+				<start_addr>803</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_805">
+				<function>3</function>
+				<start_addr>804</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_812">
+				<function>3</function>
+				<start_addr>811</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="reg_1054">
+				<function>3</function>
+				<start_addr>1053</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1057">
+				<function>3</function>
+				<start_addr>1056</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1058">
+				<function>3</function>
+				<start_addr>1057</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1060">
+				<function>3</function>
+				<start_addr>1059</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1061">
+				<function>3</function>
+				<start_addr>1060</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1065">
+				<function>3</function>
+				<start_addr>1064</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1067">
+				<function>3</function>
+				<start_addr>1066</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1068">
+				<function>3</function>
+				<start_addr>1067</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="reg_1091">
+				<function>3</function>
+				<start_addr>1090</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1092">
+				<function>3</function>
+				<start_addr>1091</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1093">
+				<function>3</function>
+				<start_addr>1092</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1094">
+				<function>3</function>
+				<start_addr>1093</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1095">
+				<function>3</function>
+				<start_addr>1094</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1096">
+				<function>3</function>
+				<start_addr>1095</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1097">
+				<function>3</function>
+				<start_addr>1096</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1098">
+				<function>3</function>
+				<start_addr>1097</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1099">
+				<function>3</function>
+				<start_addr>1098</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1100">
+				<function>3</function>
+				<start_addr>1099</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1103">
+				<function>3</function>
+				<start_addr>1102</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="reg_1140">
+				<function>3</function>
+				<start_addr>1139</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1141">
+				<function>3</function>
+				<start_addr>1140</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1142">
+				<function>3</function>
+				<start_addr>1141</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1144">
+				<function>3</function>
+				<start_addr>1143</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1261">
+				<function>3</function>
+				<start_addr>1260</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1263">
+				<function>3</function>
+				<start_addr>1262</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1275">
+				<function>3</function>
+				<start_addr>1274</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1283">
+				<function>3</function>
+				<start_addr>1282</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<packet>
+				<function>3</function>
+				<start_addr>99</start_addr>
+				<quantity>50</quantity>
+			</packet>
+		</modbus>
+	</protocol>
+</APC_DDF>

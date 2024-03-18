@@ -1,0 +1,3428 @@
+  -- ----------------------------------------------------------------------------
+--                    LTS MIB
+--                    LTS-UPS-MIB
+--
+--      Copyright (c) 1999-2000 HUAWEI ELECTRIC TECH. CO., LTD, SHENZHEN.
+--      Copyright (c) 2000-2001 AVANSYS POWER CO., LTD., SHENZHEN.
+--      Copyright (c) 2001-2006 EMERSON NETWORK POWER CO., LTD.
+--      All rights reserved.
+--
+--      Created    by: Zheng_chunhua
+--      Created  date: 2006-07-21
+--      Modified Date: 
+--
+-- ----------------------------------------------------------------------------
+
+LTS-UPS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE
+        FROM RFC-1212
+
+    TRAP-TYPE
+        FROM RFC-1215
+
+    enterprises, IpAddress
+        FROM RFC1155-SMI;
+
+    DisplayString ::= OCTET STRING
+
+
+    -- ------------------------------------------------------------------------
+    -- the location of UPS group in ENP enterprise.
+    -- ------------------------------------------------------------------------ 
+    emersonNetworkPower     OBJECT IDENTIFIER ::= { enterprises 13400 }
+    products                OBJECT IDENTIFIER ::= { emersonNetworkPower 2 }    
+    emersonUps              OBJECT IDENTIFIER ::= { products 1 }
+    lts                    OBJECT IDENTIFIER ::= { products 8 }
+    
+    -- ------------------------------------------------------------------------
+    -- the main objects about UPS
+    -- ------------------------------------------------------------------------ 
+    upsAgent        OBJECT IDENTIFIER ::= { emersonUps 1 }
+    upsCommon       OBJECT IDENTIFIER ::= { emersonUps 2 }
+    upsSpecial      OBJECT IDENTIFIER ::= { lts 3 }
+    upsAlarm        OBJECT IDENTIFIER ::= { emersonUps 4 }
+
+    upsIdent        OBJECT IDENTIFIER ::= { upsCommon 1 }
+    
+    -- ------------------------------------------------------------------------
+    -- the common objects about a  UPS
+    -- ------------------------------------------------------------------------ 
+    upsBaseIdent    OBJECT IDENTIFIER ::=  { upsIdent 1 }
+    upsSmartIdent   OBJECT IDENTIFIER ::=  { upsIdent 2 }
+
+    upsBaseAlaram   OBJECT IDENTIFIER ::=  { upsAlarm 1 }
+    upsSmartAlarm   OBJECT IDENTIFIER ::=  { upsAlarm 2 }
+
+    -- ------------------------------------------------------------------------
+    -- the detail objects about a special UPS
+    -- ------------------------------------------------------------------------ 
+    upsBattery      OBJECT IDENTIFIER ::=  { upsSpecial 2 }
+    upsInput        OBJECT IDENTIFIER ::=  { upsSpecial 3 }
+    upsOutput       OBJECT IDENTIFIER ::=  { upsSpecial 4 }
+    upsStatus       OBJECT IDENTIFIER ::=  { upsSpecial 5 }
+    upsTest         OBJECT IDENTIFIER ::=  { upsSpecial 6 }
+    upsControl      OBJECT IDENTIFIER ::=  { upsSpecial 7 }
+    upsConfig       OBJECT IDENTIFIER ::=  { upsSpecial 8 }
+    
+    upsBaseBattery  OBJECT IDENTIFIER ::=  { upsBattery 1 }
+    upsSmartBattery OBJECT IDENTIFIER ::=  { upsBattery 2 }
+    
+    upsBaseInput    OBJECT IDENTIFIER ::=  { upsInput 1 }
+    upsSmartInput   OBJECT IDENTIFIER ::=  { upsInput 2 }
+    upsSmartBypass  OBJECT IDENTIFIER ::=  { upsInput 3 }
+    
+    upsBaseOutput   OBJECT IDENTIFIER ::=  { upsOutput 1 }
+    upsSmartOutput  OBJECT IDENTIFIER ::=  { upsOutput 2 }
+
+    upsBaseStatus   OBJECT IDENTIFIER ::=  { upsStatus 1 }
+    upsSmartStatus  OBJECT IDENTIFIER ::=  { upsStatus 2 }
+    
+    upsBaseControl  OBJECT IDENTIFIER ::=  { upsControl 1 }
+    upsSmartControl OBJECT IDENTIFIER ::=  { upsControl 2 }
+    
+    upsBaseTest     OBJECT IDENTIFIER ::=  { upsTest 1 }
+    upsSmartTest    OBJECT IDENTIFIER ::=  { upsTest 2 }
+    
+    upsBaseConfig   OBJECT IDENTIFIER ::=  { upsConfig 1 }
+    upsSmartConfig  OBJECT IDENTIFIER ::=  { upsConfig 2 }
+    upsPlanConfig   OBJECT IDENTIFIER ::=  { upsConfig 3 }
+
+    -- ------------------------------------------------------------------------
+    -- 1. upsAgent group
+    -- ------------------------------------------------------------------------ 
+   
+    agentRevision OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The software version of the agent."
+        ::= { upsAgent 1 }
+
+    agentManagersNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of managers that can manage the agent. "
+        ::= { upsAgent 2 }
+ 
+    agentManagersTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF AgentManagersEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of managers of the agent.  The number of
+            entries is given by the value of agentManagersNum."
+        ::= { upsAgent 3 }
+ 
+    agentManagersEntry OBJECT-TYPE
+        SYNTAX AgentManagersEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The managers of the agent."
+        INDEX  { managerIndex}
+        ::= { agentManagersTable 1 }
+ 
+    AgentManagersEntry ::=
+        SEQUENCE {
+            managerIndex
+                INTEGER,
+            managerAddr
+                IpAddress,
+            publicCommunityString
+                 DisplayString,
+            privateCommunityString
+                 DisplayString,
+            managerPrivilege
+                INTEGER,
+            acceptTrapLevel
+                INTEGER,
+            managerAccept
+                INTEGER
+        }
+ 
+    managerIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the managers entry."
+        ::= { agentManagersEntry 1 }
+    
+    managerAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The IP address of the manager."
+        ::= { agentManagersEntry 2 }
+
+    publicCommunityString OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "The public community name to use in the query request."
+        ::= { agentManagersEntry 3 }
+ 
+    privateCommunityString OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "The private community name to use int the control request."
+        ::= { agentManagersEntry 4 }
+ 
+    managerPrivilege OBJECT-TYPE
+        SYNTAX INTEGER {
+            forbidden(0),
+            query(1),
+            control(2),
+            administrator(3)
+       }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The privilege of the manager to access the agent.
+            setting forbidden(0) indicates the manager have no any privilege to access the agent,
+            setting query(1) indicates the manager can GET information from agent only,
+            setting control(2) indicates the manager can GET information from agent and 
+            send control command to the agent.
+            setting administrator(3) indicates the manager has all management privilege
+            including set or modify this managers table."
+       ::= { agentManagersEntry 5 }
+
+    acceptTrapLevel OBJECT-TYPE
+         SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3),
+            noTraps(4)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The severity threshold of traps to send to the manager.
+            traps are labeled in severity as informational(1), warning(2),
+            severe(3).  Only traps of equal or greater severity than
+            this value are sent to the manager. setting noTraps(4) indicates
+            agent do not send any traps to the manager."
+       ::= { agentManagersEntry 6 }
+
+    managerAccept OBJECT-TYPE
+        SYNTAX INTEGER   {
+            view(0),
+            new(1),
+            modify(2),
+            delete(3)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "An entry will be added if new(1), will be modified if modify(2), 
+           and will be removed if delete(3)."
+        ::= { agentManagersEntry 7 }
+
+    -- ------------------------------------------------------------------------
+    -- 2. upsCommon group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------
+    -- 2.1 upsIdent group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------ 
+    -- 2.1.1 the upsBaseIdent group
+    -- ------------------------------------------------------------------------ 
+
+    upsBaseIdentModel OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The UPS model name (e.g. 'lts 40KVA')."
+        ::= { upsBaseIdent 1 }
+
+    upsBaseIdentUpsName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "An 8 byte ID string identifying the UPS.  This object
+             can be set by the administrator."
+        ::= { upsBaseIdent 2 }
+                
+    
+    -- ------------------------------------------------------------------------ 
+    -- 2.1.2 the upsSmartIdent group
+    -- ------------------------------------------------------------------------ 
+            
+    upsSmartIdentFirmwareRevision OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The firmware revision of the lts system."
+        ::= { upsSmartIdent 1 }
+        
+    -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    -- IMPORTANT: LTS does NOT support manu-date and product-serial
+    --            to read these variables will get 'reserved'
+    upsSmartIdentDateOfManufacture OBJECT-TYPE
+        SYNTAX DisplayString
+       ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The date when the UPS was manufactured in yyyy/mm/dd format."
+        ::= { upsSmartIdent 2 }
+
+    upsSmartIdentUpsSerialNumber OBJECT-TYPE
+         SYNTAX DisplayString
+        ACCESS read-only
+         STATUS mandatory
+         DESCRIPTION
+            "An 8-character string identifying the serial number of
+              the UPS internal microprocessor.  This number is set at
+              the factory.  NOTE: This number does NOT correspond to
+             the serial number on the rear of the UPS."
+        ::= { upsSmartIdent 3 }
+    
+    upsSmartIdentUpsFactory OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The name of the factory that manufactured this UPS."
+        ::= { upsSmartIdent 4 }
+    
+    -- ------------------------------------------------------------------------
+    -- 3. upsSpecial group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------
+    -- 3.2. the upsBattery group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.2.1 the upsBaseBattery group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.2.2 the upsSmartBattery group
+    ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.3. the upsInput group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.3.1 the upsBaseInput group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.3.2 the upsSmartInput group
+    -- ------------------------------------------------------------------------
+    upsSmartInputSource1L1L2Voltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Source1 L1-L2 Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartInput 1 }
+
+    upsSmartInputSource1L2L3Voltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Source1 L2-L3 Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartInput 2 }
+
+    upsSmartInputSource1L3L1Voltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Source1 L3-L1 Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartInput 3 }
+
+    upsSmartInputSource1L1Current OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Source1 L1 Current of the UPS system in 1/10 V."
+        ::= { upsSmartInput 4 }
+
+    upsSmartInputSource1L2Current OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Source1 L2 Current of the UPS system in 1/10 V."
+        ::= { upsSmartInput 5 }
+
+    upsSmartInputSource1L3Current OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Source1 L3 Current of the UPS system in 1/10 V."
+        ::= { upsSmartInput 6 }
+
+    upsSmartInputSource1Frequency OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Source1 Frequency of the UPS system in 1/10 V."
+        ::= { upsSmartInput 7 }
+
+    upsSmartInputSource2L1L2Voltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Source2 L1-L2 Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartInput 8 }
+
+    upsSmartInputSource2L2L3Voltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Source2 L2-L3 Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartInput 9 }
+
+    upsSmartInputSource2L3L1Voltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Source2 L3-L1 Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartInput 10 }
+
+    upsSmartInputSource2L1Current OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Source2 L1 Current of the UPS system in 1/10 V."
+        ::= { upsSmartInput 11 }
+
+    upsSmartInputSource2L2Current OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Source2 L2 Current of the UPS system in 1/10 V."
+        ::= { upsSmartInput 12 }
+
+    upsSmartInputSource2L3Current OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Source2 L3 Current of the UPS system in 1/10 V."
+        ::= { upsSmartInput 13 }
+
+    upsSmartInputSource2Frequency OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Source2 Frequency of the UPS system in 1/10 V."
+        ::= { upsSmartInput 14 }
+
+    upsSmartInputPhaseAngleBetweenTwoSource OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Phase Angle Between Two Source of the UPS system in 1/10 V."
+        ::= { upsSmartInput 15 }
+
+    -- ------------------------------------------------------------------------
+    -- 3.3.3. the upsSmartBypass group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.4. the upsOutput group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.4.1 the upsBaseOutput group
+    -- ------------------------------------------------------------------------
+    
+    -- ------------------------------------------------------------------------
+    -- 3.4.2 the upsSmartOutput group
+    ------------------------------------------------------------------------
+    upsSmartOutputL1L2Voltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output L1-L2 Voltage of the lts system expressed in 1/10 V."
+        ::= { upsSmartOutput 1 }
+
+    upsSmartOutputL2L3Voltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output L2-L3 Voltage of the lts system expressed in 1/10 V."
+        ::= { upsSmartOutput 2 }
+
+    upsSmartOutputL3L1Voltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output L3-L1 Voltage of the lts system expressed in 1/10 V."
+        ::= { upsSmartOutput 3 }
+
+    upsSmartOutputL1Current OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output L1 Current of the lts system expressed in 1/10 V."
+        ::= { upsSmartOutput 4 }
+
+    upsSmartOutputL2Current OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output L2 Current of the lts system expressed in 1/10 V."
+        ::= { upsSmartOutput 5 }
+
+    upsSmartOutputL3Current OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output L3 Current of the lts system expressed in 1/10 V."
+        ::= { upsSmartOutput 6 }
+
+    upsSmartOutputFrequency OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Frequency of the lts system expressed in 1/10 A."
+        ::= { upsSmartOutput 7 }
+
+    upsSmartL1Load OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "L1 Load of the lts system expressed in 1/10 A."
+        ::= { upsSmartOutput 8 }
+
+    upsSmartL2Load OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "L2 Load of the lts system expressed in 1/10 A."
+        ::= { upsSmartOutput 9 }
+
+    upsSmartL3Load OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "L3 Load of the lts system expressed in 1/10 A."
+        ::= { upsSmartOutput 10 }
+
+    upsSmartOutputPowerkVA OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Power(kVA) of the lts system expressed in 1/10 A."
+        ::= { upsSmartOutput 11 }
+
+    upsSmartOutputPowerkW OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Power(kW) of the lts system expressed in 1/10 A."
+        ::= { upsSmartOutput 12 }
+
+    -- ---------------------------------------------------------------------
+    -- 3.5. the upsStatus group
+    ------------------------------------------------------------------------
+    -- ---------------------------------------------------------------------
+    -- 3.5.1 the upsBaseStatus group
+    ------------------------------------------------------------------------
+    upsBaseStatusCommunication OBJECT-TYPE
+        SYNTAX INTEGER {
+            unknown(1),
+            ok(2),
+            lostCommunication(3),
+            notEstablished(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The status of communication to lts. lostCommunication(3) indicates
+            some errors occurred between lts and agent. notEstablished(4) indicates
+            agent can not connect to lts, maybe error on communication port or port
+            settings error."
+        ::= { upsBaseStatus 1 }
+
+    -- ---------------------------------------------------------------------
+    -- 3.5.2 the upsSmartStatus group
+    ------------------------------------------------------------------------    
+    upsSmartStatusPreferedSource OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            s1(2),
+            s2(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Prefered Source"
+        ::= { upsSmartStatus 1 }
+
+    upsSmartStatusCurrentSource OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            s1(2),
+            s2(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Current Source"
+        ::= { upsSmartStatus 2 }
+
+    upsSmartStatusSource1SCRsShort OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 1 SCR(s) Short"
+        ::= { upsSmartStatus 3 }
+
+    upsSmartStatusSource2SCRsShort OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 2 SCR(s) Short"
+        ::= { upsSmartStatus 4 }
+
+    upsSmartStatusSource1SCRsOpen OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 1 SCR(s) Open"
+        ::= { upsSmartStatus 5 }
+
+    upsSmartStatusSource2SCRsOpen OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 2 SCR(s) Open"
+        ::= { upsSmartStatus 6 }
+
+    upsSmartStatusPrimaryFanFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Primary Fan Failure"
+        ::= { upsSmartStatus 7 }
+
+    upsSmartStatusControlModuleFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Control Module Failure"
+        ::= { upsSmartStatus 8 }
+
+    upsSmartStatusElectricControlBoardAuxPSFault OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Electric Control Board Aux. P.S. Fault"
+        ::= { upsSmartStatus 9 }
+
+    upsSmartStatusAuxPowerSupplyBoardFault OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Aux. Power Supply Board Fault"
+        ::= { upsSmartStatus 10 }
+
+    upsSmartStatusS1ACpowersupplyinputfault OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "S1 AC power supply input fault"
+        ::= { upsSmartStatus 11 }
+
+    upsSmartStatusS2ACpowersupplyinputfault OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "S2 AC power supply input fault"
+        ::= { upsSmartStatus 12 }
+
+    upsSmartStatusElectricControlBoardCommFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Electric Control Board Comm Failure"
+        ::= { upsSmartStatus 13 }
+
+    upsSmartStatusOutputVoltSenseModuleFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Volt Sense Module Failure"
+        ::= { upsSmartStatus 14 }
+
+    upsSmartStatusS1VoltSenseModuleFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "S1 Volt Sense Module Failure"
+        ::= { upsSmartStatus 15 }
+
+    upsSmartStatusS2VoltSenseModuleFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "S2 Volt Sense Module Failure"
+        ::= { upsSmartStatus 16 }
+
+    upsSmartStatusS1SCRSenseModuleFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "S1 SCR Sense Module Failure"
+        ::= { upsSmartStatus 17 }
+
+    upsSmartStatusS2SCRSenseModuleFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "S2 SCR Sense Module Failure"
+        ::= { upsSmartStatus 18 }
+
+    upsSmartStatusS1CurrentSenseModuleFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "S1 Current Sense Module Failure"
+        ::= { upsSmartStatus 19 }
+
+    upsSmartStatusS2CurrentSenseModuleFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "S2 Current Sense Module Failure"
+        ::= { upsSmartStatus 20 }
+    
+    upsSmartStatusS1GateDriveModuleFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "S1 Gate Drive Module Failure"
+        ::= { upsSmartStatus 21 }
+
+    upsSmartStatusS2GateDriveModuleFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "S2 Gate Drive Module Failure"
+        ::= { upsSmartStatus 22 }
+
+    upsSmartStatusInternalCANCommFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Internal CAN Comm Failure"
+        ::= { upsSmartStatus 23 }
+
+    upsSmartStatusOptionsCANCommFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Option(s) CAN Comm Failure"
+        ::= { upsSmartStatus 24 }
+
+    upsSmartStatusCB1ShuntTripFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "CB1 Shunt Trip Failure"
+        ::= { upsSmartStatus 25 }
+
+    upsSmartStatusCB2ShuntTripFailure OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "CB2 Shunt Trip Failure"
+        ::= { upsSmartStatus 26 }
+
+    upsSmartStatusHeatsinkOvertemperature OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Heatsink Overtemperature"
+        ::= { upsSmartStatus 27 }
+
+    upsSmartStatusSource1UVFast OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 1 UV(Fast)"
+        ::= { upsSmartStatus 28 }
+
+    upsSmartStatusSource1UVSlow OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 1 UV(Slow)"
+        ::= { upsSmartStatus 29 }
+
+    upsSmartStatusSource1OverVoltage OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 1 Over Voltage"
+        ::= { upsSmartStatus 30 }
+    
+    upsSmartStatusSource1FrequencyAbnormal OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 1 Frequency Abnormal"
+        ::= { upsSmartStatus 31 }
+
+    upsSmartStatusSource1Fail OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 1 Fail"
+        ::= { upsSmartStatus 32 }
+
+
+    upsSmartStatusSource2UVFast OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 2 UV(Fast)"
+        ::= { upsSmartStatus 33 }
+
+    upsSmartStatusSource2UVSlow OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 2 UV(Slow)"
+        ::= { upsSmartStatus 34 }
+
+    upsSmartStatusSource2OverVoltage OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 2 Over Voltage"
+        ::= { upsSmartStatus 35 }
+    
+    upsSmartStatusSource2FrequencyAbnormal OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 2 Frequency Abnormal"
+        ::= { upsSmartStatus 36 }
+
+    upsSmartStatusSource2Fail OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 2 Fail"
+        ::= { upsSmartStatus 37 }
+
+    upsSmartStatusSource1OverCurrent OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 1 Over Current"
+        ::= { upsSmartStatus 38 }
+
+    upsSmartStatusSource2OverCurrent OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 2 Over Current"
+        ::= { upsSmartStatus 39 }
+
+    upsSmartStatusI-PKonSource1 OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "I-PK on Source 1"
+        ::= { upsSmartStatus 40 }
+    
+    upsSmartStatusI-PKonSource2 OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "I-PK on Source 2"
+        ::= { upsSmartStatus 41 }
+
+    upsSmartStatusSourcesOutofSync OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Sources Out of Sync"
+        ::= { upsSmartStatus 42 }
+
+    upsSmartStatusSTSonAlternateSource OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "STS on Alternate Source"
+        ::= { upsSmartStatus 43 }
+
+    upsSmartStatusAutoRetransferInhibited OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Auto Retransfer Inhibited"
+        ::= { upsSmartStatus 44 }
+
+    upsSmartStatusSource1CB1Open OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 1 CB1 Open"
+        ::= { upsSmartStatus 45 }
+
+    upsSmartStatusSource2CB2Open OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 2 CB2 Open"
+        ::= { upsSmartStatus 46 }
+
+    upsSmartStatusOnSource1BypassCB4closed OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "On Source 1 Bypass(CB4closed)"
+        ::= { upsSmartStatus 47 }
+
+    upsSmartStatusOnSource2BypassCB5closed OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "On Source 2 Bypass(CB5closed)"
+        ::= { upsSmartStatus 48 }
+
+    upsSmartStatusOutputCBCB3Open OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output CB(CB3)Open"
+        ::= { upsSmartStatus 49 }
+
+    upsSmartStatusOutputCBCB3AOpen OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output CB(CB3A)Open"
+        ::= { upsSmartStatus 50 }
+    
+    upsSmartStatusSource1PhaseRotationError OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 1 Phase Rotation Error"
+        ::= { upsSmartStatus 51 }
+
+    upsSmartStatusSource2PhaseRotationError OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Source 2 Phase Rotation Error"
+        ::= { upsSmartStatus 52 }
+
+    upsSmartStatusTransferInhibited OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Transfer Inhibited"
+        ::= { upsSmartStatus 53 }
+
+    upsSmartStatusOutputUndervoltage OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Undervoltage"
+        ::= { upsSmartStatus 54 }
+
+    upsSmartStatusFaultDataFull OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Fault Data Full"
+        ::= { upsSmartStatus 55 }
+
+    upsSmartStatusTransformerOverTemperature OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Transformer OverTemperature"
+        ::= { upsSmartStatus 56 }
+
+    upsSmartStatusEmergencyShutdown OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Emergency Shutdown"
+        ::= { upsSmartStatus 57 }
+
+    upsSmartStatusTransformerFanFail OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Transformer Fan Fail"
+        ::= { upsSmartStatus 58 }
+
+    upsSmartStatusBypassCBProtect OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass CB Protect"
+        ::= { upsSmartStatus 59 }
+    
+
+    -- ------------------------------------------------------------------------ 
+    -- 3.6. the upsTest group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------ 
+    -- 3.6.1 the upsBaseTest group
+    -- ------------------------------------------------------------------------ 
+    
+    -- no upsBaseTest variables
+
+    -- ------------------------------------------------------------------------ 
+    -- 3.6.2 the upsSmartTest group
+    -- ------------------------------------------------------------------------ 
+
+    -- no upsSmartTest variables
+
+
+    -- ------------------------------------------------------------------------ 
+    -- 3.7. the upsControl group
+    -- ------------------------------------------------------------------------ 
+    -- 
+    -- ------------------------------------------------------------------------ 
+    -- 3.7.1 the upsBaseControl group
+    -- ------------------------------------------------------------------------ 
+    
+    -- no variables
+
+    -- ------------------------------------------------------------------------ 
+    -- 3.7.2 the upsSmartControl group
+    -- ------------------------------------------------------------------------ 
+
+    -- no variables
+
+    -- ------------------------------------------------------------------------
+    -- 3.8. the upsConfig group
+    -- ------------------------------------------------------------------------
+
+
+    -- ------------------------------------------------------------------------
+    -- 4. the upsAlarm group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 4.1. the upsBaseAlaram group
+    -- ------------------------------------------------------------------------
+
+    -- no upsBaseAlaram variables
+
+    -- ------------------------------------------------------------------------
+    -- 4.2. the upsSmartAlarm group
+    -- ------------------------------------------------------------------------
+    upsSmartAlarmPresentNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The present number of active alarams."
+        ::= { upsSmartAlarm 1 }
+
+    upsSmartAlarmPresentTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UpsSmartAlarmPresentEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of current UPS alarms, The number of entries is given
+            by the value of upsSmartAlarmPresentNum."
+        ::= { upsSmartAlarm 2 }
+
+    upsSmartAlarmPresentEntry OBJECT-TYPE
+        SYNTAX UpsSmartAlarmPresentEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The present alarms list."
+        INDEX  { presentAlarmIndex}
+        ::= { upsSmartAlarmPresentTable 1 }
+
+    UpsSmartAlarmPresentEntry ::=
+        SEQUENCE {
+            presentAlarmIndex
+                INTEGER,
+            presentAlarmTime
+                DisplayString,
+            presentAlarmId
+                INTEGER,
+            presentAlarmName
+                DisplayString,
+            presentAlaramLevel
+                INTEGER
+        }
+
+    presentAlarmIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the present alaram entry."
+        ::= { upsSmartAlarmPresentEntry 1 }
+
+    presentAlarmTime OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The time of the alarm generated, format as yyyy/mm/dd hh:mm:ss."
+        ::= { upsSmartAlarmPresentEntry 2 }
+
+    presentAlarmId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm ID."
+       ::= { upsSmartAlarmPresentEntry 3 }
+
+    presentAlarmName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The name of the alarm."
+        ::= { upsSmartAlarmPresentEntry 4 }
+
+    presentAlaramLevel OBJECT-TYPE
+        SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm level."
+       ::= { upsSmartAlarmPresentEntry 5 }
+
+    -- historical alarms
+    upsSmartAlarmHistoryNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of historical alarms."
+        ::= { upsSmartAlarm 3 }
+
+    upsSmartAlarmHistoryTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UpsSmartAlarmHistoryEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of historical UPS alarms, The number of entries is given
+            by the value of upsSmartAlarmHistoryNum."
+        ::= { upsSmartAlarm 4 }
+
+    upsSmartAlarmHistoryEntry OBJECT-TYPE
+        SYNTAX UpsSmartAlarmHistoryEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The historical alarms list."
+        INDEX  { historyAlarmIndex}
+        ::= { upsSmartAlarmHistoryTable 1 }
+
+    UpsSmartAlarmHistoryEntry ::=
+        SEQUENCE {
+            historyAlarmIndex
+                INTEGER,
+            historyAlarmTime
+                DisplayString,
+            historyAlarmId
+                INTEGER,
+            historyAlarmName
+                DisplayString,
+            historyAlaramLevel
+                INTEGER
+        }
+
+    historyAlarmIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the historical alaram entry."
+        ::= { upsSmartAlarmHistoryEntry 1 }
+
+    historyAlarmTime OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The time of the alarm generated, format as yyyy/mm/dd hh:mm:ss."
+        ::= { upsSmartAlarmHistoryEntry 2 }
+
+    historyAlarmId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm ID."
+       ::= { upsSmartAlarmHistoryEntry 3 }
+
+    historyAlarmName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The name of the alarm."
+        ::= { upsSmartAlarmHistoryEntry 4 }
+
+    historyAlaramLevel OBJECT-TYPE
+        SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm level."
+       ::= { upsSmartAlarmHistoryEntry 5 }
+
+
+
+    -- ------------------------------------------------------------------------
+    -- Traps
+    -- ------------------------------------------------------------------------
+
+    --
+    -- trap args
+    --
+    trapArgsString OBJECT-TYPE
+        SYNTAX  DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "This OID allows lts traps to be sent with an octet string argument
+             that may not be defined in the lts MIB.
+
+             A get of this OID will return a NULL string."
+        ::= { upsAlarm 2002 }
+
+
+    communicationRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Communication Restored."
+       --#TYPE "lts: Communication Restored"
+       --#SUMMARY "Communication Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 1
+
+    communicationInterrupt TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Communication Interrupt."
+       --#TYPE "lts: Communication Interrupt"
+       --#SUMMARY "Communication Interrupt."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 2
+
+    source1SCRShortRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 1 SCR Short Restored."
+       --#TYPE "lts: Source 1 SCR Short Restored"
+       --#SUMMARY "Source 1 SCR Short Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 3
+
+
+    source1SCRShort TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 1 SCR Short."
+       --#TYPE "lts: Source 1 SCR Short"
+       --#SUMMARY "Source 1 SCR Short."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 4
+
+
+    source2SCRShortRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 2 SCR Short Restored."
+       --#TYPE "lts: Source 2 SCR Short Restored"
+       --#SUMMARY "Source 2 SCR Short Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 5
+
+
+    source2SCRShort TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 2 SCR Short."
+       --#TYPE "lts: Source 2 SCR Short"
+       --#SUMMARY "Source 2 SCR Short."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 6
+
+    source1SCROpenRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 1 SCR Open Restored."
+       --#TYPE "lts: Source 1 SCR Open Restored"
+       --#SUMMARY "Source 1 SCR Open Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 7
+
+
+    source1SCROpen TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 1 SCR Open."
+       --#TYPE "lts: Source 1 SCR Open"
+       --#SUMMARY "Source 1 SCR Open."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 8
+
+
+    source2SCROpenRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 2 SCR Open Restored."
+       --#TYPE "lts: Source 2 SCR Open Restored"
+       --#SUMMARY "Source 2 SCR Open Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 9
+
+
+    source2SCROpen TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 2 SCR Open."
+       --#TYPE "lts: Source 2 SCR Open"
+       --#SUMMARY "Source 2 SCR Open."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 10
+
+
+    primaryFanFailureRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Primary Fan Failure Restored."
+       --#TYPE "lts: Primary Fan Failure Restored"
+       --#SUMMARY "Primary Fan Failure Restored"
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 11
+
+
+    primaryFanFailure TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Primary Fan Failure."
+       --#TYPE "lts: Primary Fan Failure"
+       --#SUMMARY "Primary Fan Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 12
+
+
+    controlModuleFailureRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Control Module Failure Restored."
+       --#TYPE "lts: Control Module Failure Restored"
+       --#SUMMARY "Control Module Failure Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 13
+
+
+    controlModuleFailure TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Control Module Failure."
+       --#TYPE "lts: Control Module Failure"
+       --#SUMMARY "Control Module Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 14
+
+
+    electricBoardAuxPSFaultRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Electric Board Aux.P.S. Fault Restored."
+       --#TYPE "lts: Electric Board Aux.P.S. Fault Restored"
+       --#SUMMARY "Electric Board Aux.P.S. Fault Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 15
+
+
+    electricBoardAuxPSFault TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Electric Board Aux.P.S. Fault."
+       --#TYPE "lts: Electric Board Aux.P.S. Fault"
+       --#SUMMARY "Electric Board Aux.P.S. Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 16
+
+
+    auxPowerBoardFaultRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Aux. Power Board Fault Restored."
+       --#TYPE "lts: Aux. Power Board Fault Restored"
+       --#SUMMARY "Aux. Power Board Fault Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 17
+
+
+    auxPowerBoardFault TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Aux. Power Board Fault."
+       --#TYPE "lts: Aux. Power Board Fault"
+       --#SUMMARY "Aux. Power Board Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 18
+
+
+    s1ACPowerSupplyInputFaultRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: S1 AC Power Supply Input Fault Restored."
+       --#TYPE "lts: S1 AC Power Supply Input Fault Restored"
+       --#SUMMARY "S1 AC Power Supply Input Fault Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 19
+
+
+    s1ACPowerSupplyInputFault TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: S1 AC Power Supply Input Fault."
+       --#TYPE "lts: S1 AC Power Supply Input Fault"
+       --#SUMMARY "S1 AC Power Supply Input Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 20
+
+
+    s2ACPowerSupplyInputFaultRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: S2 AC Power Supply Input Fault Restored."
+       --#TYPE "lts: S2 AC Power Supply Input Fault Restored"
+       --#SUMMARY "S2 AC Power Supply Input Fault Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 21
+
+
+    s2ACPowerSupplyInputFault TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: S2 AC Power Supply Input Fault."
+       --#TYPE "lts: S2 AC Power Supply Input Fault"
+       --#SUMMARY "S2 AC Power Supply Input Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 22
+
+    electricBoardCommFailureRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Electric Board Comm. Failure Restored."
+       --#TYPE "lts: Electric Board Comm. Failure Restored"
+       --#SUMMARY "Electric Board Comm. Failure Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 23
+
+
+    electricBoardCommFailure TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Electric Board Comm. Failure."
+       --#TYPE "lts: Electric Board Comm. Failure"
+       --#SUMMARY "Electric Board Comm. Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 24
+
+
+    outputVoltSenseModuleFailRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Output Volt Sense Module Fail Restored."
+       --#TYPE "lts: Output Volt Sense Module Fail Restored"
+       --#SUMMARY "Output Volt Sense Module Fail Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 25
+
+
+    outputVoltSenseModuleFailure TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Output Volt Sense Module Failure."
+       --#TYPE "lts: Output Volt Sense Module Failure"
+       --#SUMMARY "Output Volt Sense Module Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 26
+
+
+    s1VoltSenseModuleFailRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: S1 Volt Sense Module Fail Restored."
+       --#TYPE "lts: S1 Volt Sense Module Fail Restored"
+       --#SUMMARY "S1 Volt Sense Module Fail Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 27
+
+
+    s1VoltSenseModuleFailure TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: S1 Volt Sense Module Failure."
+       --#TYPE "lts: S1 Volt Sense Module Failure"
+       --#SUMMARY "S1 Volt Sense Module Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 28
+
+
+    s2VoltSenseModuleFailRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: S2 Volt Sense Module Fail Restored."
+       --#TYPE "lts: S2 Volt Sense Module Fail Restored"
+       --#SUMMARY "S2 Volt Sense Module Fail Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 29
+
+
+    s2VoltSenseModuleFailure TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: S2 Volt Sense Module Failure."
+       --#TYPE "lts: S2 Volt Sense Module Failure"
+       --#SUMMARY "S2 Volt Sense Module Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 30
+
+    s1SCRSenseModuleFailureRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: S1 SCR Sense Module Failure Restored."
+       --#TYPE "lts: S1 SCR Sense Module Failure Restored"
+       --#SUMMARY "S1 SCR Sense Module Failure Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 31
+
+
+    s1SCRSenseModuleFailure TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: S1 SCR Sense Module Failure."
+       --#TYPE "lts: S1 SCR Sense Module Failure"
+       --#SUMMARY "S1 SCR Sense Module Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 32
+
+    s2SCRSenseModuleFailureRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: S2 SCR Sense Module Failure Restored."
+       --#TYPE "lts: S2 SCR Sense Module Failure Restored"
+       --#SUMMARY "S2 SCR Sense Module Failure Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 33
+
+
+    s2SCRSenseModuleFailure TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: S2 SCR Sense Module Failure."
+       --#TYPE "lts: S2 SCR Sense Module Failure"
+       --#SUMMARY "S2 SCR Sense Module Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 34
+
+
+    s1CurrentSenseModuleFailRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: S1 Current Sense Module Fail Restored."
+       --#TYPE "lts: S1 Current Sense Module Fail Restored"
+       --#SUMMARY "S1 Current Sense Module Fail Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 35
+
+
+    s1CurrentSenseModuleFailure TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: S1 Current Sense Module Failure."
+       --#TYPE "lts: S1 Current Sense Module Failure"
+       --#SUMMARY "S1 Current Sense Module Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 36
+
+
+    s2CurrentSenseModuleFailRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: S2 Current Sense Module Fail Restored."
+       --#TYPE "lts: S2 Current Sense Module Fail Restored"
+       --#SUMMARY "S2 Current Sense Module Fail Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 37
+
+
+    s2CurrentSenseModuleFailure TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: S2 Current Sense Module Failure."
+       --#TYPE "lts: S2 Current Sense Module Failure"
+       --#SUMMARY "S2 Current Sense Module Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 38
+
+
+    s1GateDriveModuleFailureRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: S1 Gate Drive Module Failure Restored."
+       --#TYPE "lts: S1 Gate Drive Module Failure Restored"
+       --#SUMMARY "S1 Gate Drive Module Failure Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 39
+
+
+    s1GateDriveModuleFailure TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: S1 Gate Drive Module Failure."
+       --#TYPE "lts: S1 Gate Drive Module Failure"
+       --#SUMMARY "S1 Gate Drive Module Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 40
+
+
+    s2GateDriveModuleFailureRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: S2 Gate Drive Module Failure Restored."
+       --#TYPE "lts: S2 Gate Drive Module Failure Restored"
+       --#SUMMARY "S2 Gate Drive Module Failure Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 41
+
+
+    s2GateDriveModuleFailure TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: S2 Gate Drive Module Failure."
+       --#TYPE "lts: S2 Gate Drive Module Failure"
+       --#SUMMARY "S2 Gate Drive Module Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 42
+
+    internalCANCommFailureRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Internal CAN Comm Failure Restored."
+       --#TYPE "lts: Internal CAN Comm Failure Restored"
+       --#SUMMARY "Internal CAN Comm Failure Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 43
+
+
+    internalCANCommFailure TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Internal CAN Comm Failure."
+       --#TYPE "lts: Internal CAN Comm Failure"
+       --#SUMMARY "Internal CAN Comm Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 44
+
+
+    optionCANCommFailureRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Option CAN Comm Failure Restored."
+       --#TYPE "lts: Option CAN Comm Failure Restored"
+       --#SUMMARY "Option CAN Comm Failure Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 45
+
+
+    optionCANCommFailure TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Option CAN Comm Failure."
+       --#TYPE "lts: Option CAN Comm Failure"
+       --#SUMMARY "Option CAN Comm Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 46
+
+    cB1ShuntTripFailureRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: CB1 Shunt Trip Failure Restored."
+       --#TYPE "lts: CB1 Shunt Trip Failure Restored"
+       --#SUMMARY "CB1 Shunt Trip Failure Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 47
+
+
+    cB1ShuntTripFailure TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: CB1 Shunt Trip Failure."
+       --#TYPE "lts: CB1 Shunt Trip Failure"
+       --#SUMMARY "CB1 Shunt Trip Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 48
+
+
+    cB2ShuntTripFailureRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: CB2 Shunt Trip Failure Restored."
+       --#TYPE "lts: CB2 Shunt Trip Failure Restored"
+       --#SUMMARY "CB2 Shunt Trip Failure Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 49
+
+
+    cB2ShuntTripFailure TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: CB2 Shunt Trip Failure."
+       --#TYPE "lts: CB2 Shunt Trip Failure"
+       --#SUMMARY "CB2 Shunt Trip Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 50
+
+    heatsinkOvertemperatureRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Heatsink Overtemperature Restored."
+       --#TYPE "lts: Heatsink Overtemperature Restored"
+       --#SUMMARY "Heatsink Overtemperature Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 51
+
+
+    heatsinkOvertemperature TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Heatsink Overtemperature."
+       --#TYPE "lts: Heatsink Overtemperature"
+       --#SUMMARY "Heatsink Overtemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 52
+
+
+    source1UVFastRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 1 UV(Fast)Restored."
+       --#TYPE "lts: Source 1 UV(Fast)Restored"
+       --#SUMMARY "Source 1 UV(Fast)Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 53
+
+
+    source1UVFast TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 1 UV(Fast)."
+       --#TYPE "lts: Source 1 UV(Fast)"
+       --#SUMMARY "Source 1 UV(Fast)."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 54
+
+
+    source1UVSlowRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 1 UV(Slow)Restored."
+       --#TYPE "lts: Source 1 UV(Slow)Restored"
+       --#SUMMARY "Source 1 UV(Slow)Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 55
+
+
+    source1UVSlow TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 1 UV(Slow)."
+       --#TYPE "lts: Source 1 UV(Slow)"
+       --#SUMMARY "Source 1 UV(Slow)."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 56
+
+    source1OverVoltageRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 1 Over Voltage Restored."
+       --#TYPE "lts: Source 1 Over Voltage Restored"
+       --#SUMMARY "Source 1 Over Voltage Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 57
+
+
+    source1OverVoltage TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 1 Over Voltage."
+       --#TYPE "lts: Source 1 Over Voltage"
+       --#SUMMARY "Source 1 Over Voltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 58
+
+
+    source1FrequencyAbnormalRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 1 Frequency Abnormal Restored."
+       --#TYPE "lts: Source 1 Frequency Abnormal Restored"
+       --#SUMMARY "Source 1 Frequency Abnormal Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 59
+
+
+    source1FrequencyAbnormal TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 1 Frequency Abnormal."
+       --#TYPE "lts: Source 1 Frequency Abnormal"
+       --#SUMMARY "Source 1 Frequency Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 60
+
+
+    source1FailRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 1 Fail Restored."
+       --#TYPE "lts: Source 1 Fail Restored"
+       --#SUMMARY "Source 1 Fail Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 61
+
+
+    source1Fail TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 1 Fail."
+       --#TYPE "lts: Source 1 Fail"
+       --#SUMMARY "Source 1 Fail."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 62
+
+
+    source2UVFastRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 2 UV(Fast)Restored."
+       --#TYPE "lts: Source 2 UV(Fast)Restored"
+       --#SUMMARY "Source 2 UV(Fast)Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 63
+
+
+    source2UVFast TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 2 UV(Fast)."
+       --#TYPE "lts: Source 2 UV(Fast)"
+       --#SUMMARY "Source 2 UV(Fast)."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 64
+
+
+    source2UVSlowRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 2 UV(Slow)Restored."
+       --#TYPE "lts: Source 2 UV(Slow)Restored"
+       --#SUMMARY "Source 2 UV(Slow)Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 65
+
+
+    source2UVSlow TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 2 UV(Slow)."
+       --#TYPE "lts: Source 2 UV(Slow)"
+       --#SUMMARY "Source 2 UV(Slow)."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 66
+
+    source2OverVoltageRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 2 Over Voltage Restored."
+       --#TYPE "lts: Source 2 Over Voltage Restored"
+       --#SUMMARY "Source 2 Over Voltage Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 67
+
+
+    source2OverVoltage TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 2 Over Voltage."
+       --#TYPE "lts: Source 2 Over Voltage"
+       --#SUMMARY "Source 2 Over Voltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 68
+
+
+    source2FrequencyAbnormalRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 2 Frequency Abnormal Restored."
+       --#TYPE "lts: Source 2 Frequency Abnormal Restored"
+       --#SUMMARY "Source 2 Frequency Abnormal Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 69
+
+
+    source2FrequencyAbnormal TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 2 Frequency Abnormal."
+       --#TYPE "lts: Source 2 Frequency Abnormal"
+       --#SUMMARY "Source 2 Frequency Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 70
+
+
+    source2FailRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 2 Fail Restored."
+       --#TYPE "lts: Source 2 Fail Restored"
+       --#SUMMARY "Source 2 Fail Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 71
+
+
+    source2Fail TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 2 Fail."
+       --#TYPE "lts: Source 2 Fail"
+       --#SUMMARY "Source 2 Fail."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 72
+
+    source1OverCurrentRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 1 Over Current Restored."
+       --#TYPE "lts: Source 1 Over Current Restored"
+       --#SUMMARY "Source 1 Over Current Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 73
+
+
+    source1OverCurrent TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 1 Over Current."
+       --#TYPE "lts: Source 1 Over Current"
+       --#SUMMARY "Source 1 Over Current."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 74
+
+    source2OverCurrentRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 2 Over Current Restored."
+       --#TYPE "lts: Source 2 Over Current Restored"
+       --#SUMMARY "Source 2 Over Current Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 75
+
+
+    source2OverCurrent TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 2 Over Current."
+       --#TYPE "lts: Source 2 Over Current"
+       --#SUMMARY "Source 2 Over Current."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 76
+
+
+    i_PKonSource1Restored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: I_PK on Source 1 Restored."
+       --#TYPE "lts: I_PK on Source 1 Restored"
+       --#SUMMARY "I_PK on Source 1 Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 77
+
+
+    i_PKonSource1 TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: I_PK on Source 1."
+       --#TYPE "lts: I_PK on Source 1"
+       --#SUMMARY "I_PK on Source 1."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 78
+
+
+    i_PKonSource2Restored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: I_PK on Source 2 Restored."
+       --#TYPE "lts: I_PK on Source 2 Restored"
+       --#SUMMARY "I_PK on Source 2 Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 79
+
+
+    i_PKonSource2 TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: I_PK on Source 2."
+       --#TYPE "lts: I_PK on Source 2"
+       --#SUMMARY "I_PK on Source 2."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 80
+
+    sourcesOutofSyncRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Sources Out of Sync Restored."
+       --#TYPE "lts: Sources Out of Sync Restored"
+       --#SUMMARY "Sources Out of Sync Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 81
+
+
+    sourcesOutofSync TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Sources Out of Sync."
+       --#TYPE "lts: Sources Out of Sync"
+       --#SUMMARY "Sources Out of Sync."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 82
+
+
+    sTSonAlternateSourceRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: STS on Alternate Source Restored."
+       --#TYPE "lts: STS on Alternate Source Restored"
+       --#SUMMARY "STS on Alternate Source Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 83
+
+
+    sTSonAlternateSource TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: STS on Alternate Source."
+       --#TYPE "lts: STS on Alternate Source"
+       --#SUMMARY "STS on Alternate Source."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 84
+
+
+    autoRetransferInhibitedRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Auto Retransfer Inhibited Restored."
+       --#TYPE "lts: Auto Retransfer Inhibited Restored"
+       --#SUMMARY "Auto Retransfer Inhibited Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 85
+
+
+    autoRetransferInhibited TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Auto Retransfer Inhibited."
+       --#TYPE "lts: Auto Retransfer Inhibited"
+       --#SUMMARY "Auto Retransfer Inhibited."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 86
+
+
+    source1CB1Close TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 1 CB1 Close."
+       --#TYPE "lts: Source 1 CB1 Close"
+       --#SUMMARY "Source 1 CB1 Close."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 87
+
+
+    source1CB1Open TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 1 CB1 Open."
+       --#TYPE "lts: Source 1 CB1 Open"
+       --#SUMMARY "Source 1 CB1 Open."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 88
+
+
+    source2CB2Close TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 2 CB2 Close."
+       --#TYPE "lts: Source 2 CB2 Close"
+       --#SUMMARY "Source 2 CB2 Close."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 89
+
+
+    source2CB2Open TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 2 CB2 Open."
+       --#TYPE "lts: Source 2 CB2 Open"
+       --#SUMMARY "Source 2 CB2 Open."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 90
+
+    onSource1BypassCB4Open TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: On Source 1 Bypass(CB4 Open)."
+       --#TYPE "lts: On Source 1 Bypass(CB4 Open)"
+       --#SUMMARY "On Source 1 Bypass(CB4 Open)."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 91
+
+
+    onSource1BypassCB4closed TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: On Source 1 Bypass(CB4 closed)."
+       --#TYPE "lts: On Source 1 Bypass(CB4 closed)"
+       --#SUMMARY "On Source 1 Bypass(CB4 closed)."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 92
+
+    onSource2BypassCB5Open TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: On Source 2 Bypass(CB5 Open)."
+       --#TYPE "lts: On Source 2 Bypass(CB5 Open)"
+       --#SUMMARY "On Source 2 Bypass(CB5 Open)."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 93
+
+
+    onSource2BypassCB5closed TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: On Source 2 Bypass(CB5 closed)."
+       --#TYPE "lts: On Source 2 Bypass(CB5 closed)"
+       --#SUMMARY "On Source 2 Bypass(CB5 closed)."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 94
+
+
+    outputCBCB3closed TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Output CB(CB3) closed."
+       --#TYPE "lts: Output CB(CB3) closed"
+       --#SUMMARY "Output CB(CB3) closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 95
+
+
+    outputCBCB3Open TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Output CB(CB3) Open."
+       --#TYPE "lts: Output CB(CB3) Open"
+       --#SUMMARY "Output CB(CB3) Open."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 96
+
+
+    outputCBCB3Aclosed TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Output CB(CB3A) closed."
+       --#TYPE "lts: Output CB(CB3A) closed"
+       --#SUMMARY "Output CB(CB3A) closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 97
+
+
+    outputCBCB3AOpen TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Output CB(CB3A) Open."
+       --#TYPE "lts: Output CB(CB3A) Open"
+       --#SUMMARY "Output CB(CB3A) Open."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 98
+
+    source1PhaseRotationErrRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 1 Phase Rotation Err Restored."
+       --#TYPE "lts: Source 1 Phase Rotation Err Restored"
+       --#SUMMARY "Source 1 Phase Rotation Err Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 99
+
+
+    source1PhaseRotationError TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 1 Phase Rotation Error."
+       --#TYPE "lts: Source 1 Phase Rotation Error"
+       --#SUMMARY "Source 1 Phase Rotation Error."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 100
+
+
+    source2PhaseRotationErrRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Source 2 Phase Rotation Err Restored."
+       --#TYPE "lts: Source 2 Phase Rotation Err Restored"
+       --#SUMMARY "Source 2 Phase Rotation Err Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 101
+
+
+    source2PhaseRotationError TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Source 2 Phase Rotation Error."
+       --#TYPE "lts: Source 2 Phase Rotation Error"
+       --#SUMMARY "Source 2 Phase Rotation Error."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 102
+
+    transferInhibitedRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Transfer Inhibited Restored."
+       --#TYPE "lts: Transfer Inhibited Restored"
+       --#SUMMARY "Transfer Inhibited Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 103
+
+
+    transferInhibited TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Transfer Inhibited."
+       --#TYPE "lts: Transfer Inhibited"
+       --#SUMMARY "Transfer Inhibited."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 104
+
+
+    outputUndervoltageRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Output Undervoltage Restored."
+       --#TYPE "lts: Output Undervoltage Restored"
+       --#SUMMARY "Output Undervoltage Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 105
+
+
+    outputUndervoltage TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Output Undervoltage."
+       --#TYPE "lts: Output Undervoltage"
+       --#SUMMARY "Output Undervoltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 106
+
+
+    faultDataFullRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Fault Data Full Restored."
+       --#TYPE "lts: Fault Data Full Restored"
+       --#SUMMARY "Fault Data Full Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 107
+
+
+    faultDataFull TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Fault Data Full."
+       --#TYPE "lts: Fault Data Full"
+       --#SUMMARY "Fault Data Full."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 108
+
+
+    transformerOverTemperatureRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Transformer OverTemperature Restored."
+       --#TYPE "lts: Transformer OverTemperature Restored"
+       --#SUMMARY "Transformer OverTemperature Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 109
+
+
+    transformerOverTemperature TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Transformer OverTemperature."
+       --#TYPE "lts: Transformer OverTemperature"
+       --#SUMMARY "Transformer OverTemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 110
+
+
+    emergencyShutdownRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Emergency Shutdown Restored."
+       --#TYPE "lts: Emergency Shutdown Restored"
+       --#SUMMARY "Emergency Shutdown Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 111
+
+    emergencyShutdown TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Emergency Shutdown."
+       --#TYPE "lts: Emergency Shutdown"
+       --#SUMMARY "Emergency Shutdown."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 112
+
+    transformerFanFailRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Transformer Fan Fail Restored."
+       --#TYPE "lts: Transformer Fan Fail Restored"
+       --#SUMMARY "Transformer Fan Fail Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 113
+
+    transformerFanFail TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Transformer Fan Fail."
+       --#TYPE "lts: Transformer Fan Fail"
+       --#SUMMARY "Transformer Fan Fail."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 114
+
+    bypassCBProtectRestored TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass CB Protect Restored."
+       --#TYPE "lts: Bypass CB Protect Restored"
+       --#SUMMARY "Bypass CB Protect Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 115
+
+    bypassCBProtect TRAP-TYPE
+        ENTERPRISE lts
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass CB Protect."
+       --#TYPE "lts: Bypass CB Protect"
+       --#SUMMARY "Bypass CB Protect."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 116
+
+
+END -- end of LTS-UPS-MIB

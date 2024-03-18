@@ -1,0 +1,1882 @@
+-- Ingrasys iPoMan MIB
+-- MIB for Intelligent Power Management 
+--
+-- { iso org(3) dod(6) internet(1) private(4) enterprises(1) ingrasys(2468)
+-- product(1) pduAgent(4) iPoMan(1)
+-- ==============================================================================================
+---
+---     Revision History
+---
+---     v0.80   20-Apr-2005     Ming Lu/Ingrasys
+---                             Created
+---
+---     v0.90   20-Apr-2005     Johnny Lin/Ingrasys
+---                             Restructured
+---
+---     v1.00   25-Oct-2005     Ming Lu/Ingrasys
+---                             1.Modify Trap voltage too high (trap level from warning to critical)
+---                             2.Modify Hum data +-0.5 => +- 1.0 , +-1.0 => +-2.0 ... ,+- 3.0 => +-6.0 
+---
+IPOMAN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+  enterprises
+    FROM RFC1155-SMI
+  OBJECT-TYPE
+    FROM RFC-1212
+  DisplayString
+    FROM RFC1213-MIB
+  TRAP-TYPE
+    FROM RFC-1215;
+
+ingrasys            OBJECT IDENTIFIER ::= { enterprises 2468 }
+product             OBJECT IDENTIFIER ::= { ingrasys 1 }
+pduAgent            OBJECT IDENTIFIER ::= { product 4 }
+iPoMan              OBJECT IDENTIFIER ::= { pduAgent  1 }
+ipmObjects          OBJECT IDENTIFIER ::= { iPoMan 1 }
+ipmTraps            OBJECT IDENTIFIER ::= { iPoMan 2 }
+                    
+ipmIdent            OBJECT IDENTIFIER ::= { ipmObjects 1 }
+ipmAgent	        OBJECT IDENTIFIER ::= { ipmObjects 2 }
+ipmDevice           OBJECT IDENTIFIER ::= { ipmObjects 3 }
+ipmEnv              OBJECT IDENTIFIER ::= { ipmObjects 4 }
+
+-- ===========================================================================
+--
+-- ipmIdent
+--
+--	iPoMan Identification Group
+--
+-- ===========================================================================
+ipmIdentManufacturer OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The name of manufacturer."
+       ::= { ipmIdent 1 }
+
+ipmIdentModel OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (0..31))
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+          "The Model designation of device."
+      ::= { ipmIdent 2 }
+
+ipmIdentAgentSoftwareVersion OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..63))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The firmware version of the device."
+      ::= { ipmIdent 3 }
+
+ipmIdentName OBJECT-TYPE
+      SYNTAX DisplayString (SIZE(0..31))
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+               "A description of this device."
+      ::= { ipmIdent 4 }
+
+ipmAgentConfig    OBJECT IDENTIFIER ::= { ipmAgent 1 }
+-- ===========================================================================
+--
+-- ipmConfig
+--
+--	iPoMan Configuration Group, configure the secific features of iPoMan
+--
+-- ===========================================================================
+ipmAgentMibVersion OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) --
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The Mib Version implemented on this device."
+        ::= { ipmAgentConfig 1 }
+
+ipmAgentTime    OBJECT IDENTIFIER ::= { ipmAgent 2 }
+-- ===========================================================================
+--
+-- ipmConfigTime
+--
+--	Date/Time Configuration Group of the device.
+--
+-- ===========================================================================
+ipmAgentTimeDate OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (10..10))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The date in agent, format is (dd/mm/yyyy)"
+        ::= { ipmAgentTime 1 }
+
+ipmAgentTimeTime OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (8..8))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The time in agent, format is (hh:mm:ss)"
+        ::= { ipmAgentTime 2 }
+
+ipmAgentTimerFromNtp OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable or disable the agent to synchronize date/time with NTP server."
+        ::= { ipmAgentTime 3 }
+
+ipmAgentNtpIpAddress OBJECT-TYPE
+       SYNTAX IpAddress
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The ip address of NTP server."
+       ::= { ipmAgentTime 4 }
+
+ipmAgentNtpTimeZone OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    gMT-1200(1),
+                    gMT-1100(2),
+                    gMT-1000(3),
+                    gMT-0900(4),
+                    gMT-0800(5),
+                    gMT-0700(6),
+                    gMT-0600(7),
+                    gMT-0500(8),
+                    gMT-0400(9),
+                    gMT-0330(10),
+                    gMT-0300(11),
+                    gMT-0200(12),
+                    gMT-0100(13),
+                    gMT-0000(14),
+                    gMT0100(15),
+                    gMT0200(16),
+                    gMT0300(17),
+                    gMT0330(18),
+                    gMT0400(19),
+                    gMT0500(20),
+                    gMT0530(21),
+                    gMT0600(22),
+                    gMT0700(23),
+                    gMT0800(24),
+                    gMT0900(25),
+                    gMT1000(26),
+                    gMT1100(27),
+                    gMT1200(28)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Time Zone to use when synchronize with NTP server."
+        ::= { ipmAgentTime 5 }
+
+ipmAgentDayLightSaving OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the Day Light Saving when synchronize with NTP server."
+        ::= { ipmAgentTime 6 }
+
+ipmAgentNetwork    OBJECT IDENTIFIER ::= { ipmAgent 3 }
+-- ===========================================================================
+--
+-- ipmConfigNetwork
+--
+--	Network Configuration Group of the device.
+--
+-- ===========================================================================
+
+ipmAgentNetworkIp    OBJECT IDENTIFIER ::= { ipmAgentNetwork 1 }
+-- ===========================================================================
+--
+-- ipmAgentNetworkIp
+--
+--	Ip address Configuration Group of the device.
+--
+-- ===========================================================================
+ipmAgentNetworkIpAdress OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The ip address that NMS can identify the managed device."
+        ::= { ipmAgentNetworkIp 1}
+
+ipmAgentNetworkIpGateway OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The default gateway that allow device managed through routers."
+        ::= { ipmAgentNetworkIp 2}
+
+ipmAgentNetworkIpSubnet OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Internet address subnet mask"
+        ::= { ipmAgentNetworkIp 3}
+
+ipmAgentNetworkDhcpControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable DHCP protocol"
+        ::= { ipmAgentNetwork 2 }
+
+ipmAgentNetworkPingControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable to response to PING request."
+        ::= { ipmAgentNetwork 3 }
+
+ipmAgentNetworkTftpControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable TFTP protocol"
+        ::= { ipmAgentNetwork 4 }
+
+ipmAgentNetworkTelnet    OBJECT IDENTIFIER ::= { ipmAgentNetwork 5 }
+-- ===========================================================================
+--
+-- ipmConfigNetworkTelnet
+--
+--	Telnet Configuration Group of the device.
+--
+-- ===========================================================================
+ipmAgentTelnetControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable Telnet protocol."
+        ::= { ipmAgentNetworkTelnet 1 }
+        
+ipmAgentTelnetPort OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The TCP port for telnet"
+        ::= { ipmAgentNetworkTelnet 2}
+
+ipmAgentNetworkHttp    OBJECT IDENTIFIER ::= { ipmAgentNetwork 6 }
+-- ===========================================================================
+--
+-- ipmConfigNetworkHttp
+--
+--	HTTP Configuration Group of the device.
+--
+-- ===========================================================================
+ipmAgentHttpControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable HTTP protocol."
+        ::= { ipmAgentNetworkHttp 1 }
+        
+ipmAgentHttpPort OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The TCP port for HTTP."
+        ::= { ipmAgentNetworkHttp 2}
+
+ipmAgentNetworkSnmp    OBJECT IDENTIFIER ::= { ipmAgentNetwork 7 }
+-- ===========================================================================
+--
+-- ipmAgentNetworkSnmp
+--
+--	SNMP Configuration Group of the device.
+--
+-- ===========================================================================
+ipmAgentSnmpControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable SNMP protocol."
+        ::= { ipmAgentNetworkSnmp 1 }
+        
+ipmAgentSnmpPort OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The UDP port for SNMP."
+        ::= { ipmAgentNetworkSnmp 2}
+
+ipmAgentLog    OBJECT IDENTIFIER ::= { ipmAgentConfig 4 }
+-- ===========================================================================
+--
+-- ipmConfigLog
+--
+--	Log Configuration Group of the device.
+--
+-- ===========================================================================
+pduAgentDataLogInterval OBJECT-TYPE
+        SYNTAX INTEGER (5..28800) -- in seconds
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The interval of the updation of the data log. The value
+                 is in seconds"
+        ::= { ipmAgentLog 1 }
+
+ipmAgentControl    OBJECT IDENTIFIER ::= { ipmAgentConfig 5 }
+-- ===========================================================================
+--
+-- ipmAgentAgentControl
+--
+--	Agent Control Configuration Group of the device.
+--
+-- ===========================================================================
+ipmAgentControlDefault OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset(1),
+                nothing(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset all parameters of the agent to default value."
+        ::= { ipmAgentControl 1}
+
+ipmAgentControlRestart OBJECT-TYPE
+        SYNTAX  INTEGER {
+                restart(1),
+                nothing(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Restart the agent."
+        ::= { ipmAgentControl 2}
+
+ipmAgentTrap    OBJECT IDENTIFIER ::= { ipmAgentConfig 6 }
+-- ===========================================================================
+--
+-- ipmAgentTrap
+--
+--	Trap Configuration Group of the agent.
+--
+-- ===========================================================================
+ipmAgentTrapRetryCount OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The count of repeat traps send to NMS before trap
+                 acknowledgement received."
+        ::= { ipmAgentTrap 1}
+
+ipmAgentTrapRetryTime OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The time interval in seconds between retry traps sned to NMS."
+        ::= { ipmAgentTrap 2}
+
+ipmAgentTrapAckSignature OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The signature of trap acknowledgement."
+        ::= { ipmAgentTrap 3}
+
+
+-- ===========================================================================
+--
+-- ipmAgentTrapsReceiversTable
+-- 
+-- ===========================================================================
+
+ipmAgentTrapsReceiversTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF IpmAgentTrapsReceiversEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of managers to send traps to.  The number of
+                 entries is given by the value of agentConfigNumTrapReceivers"
+        ::= { ipmAgentConfig 7}
+
+ipmAgentTrapsReceiversEntry OBJECT-TYPE
+        SYNTAX IpmAgentTrapsReceiversEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The managers to send traps to."
+        INDEX  { trapsIndex}
+        ::= { ipmAgentTrapsReceiversTable 1 }
+
+IpmAgentTrapsReceiversEntry ::=
+        SEQUENCE {
+                trapsIndex
+                        INTEGER,
+                trapsReceiverAddr
+                        IpAddress,
+                receiverCommunityString
+                         DisplayString,
+                receiverNmsType
+                        INTEGER,
+                receiverSeverityLevel
+                        INTEGER,
+                receiverDescription
+                         DisplayString
+        }
+
+trapsIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a trap receiver entry."
+        ::= { ipmAgentTrapsReceiversEntry 1 }
+
+trapsReceiverAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The IP address of the manager to send a trap to."
+        ::= { ipmAgentTrapsReceiversEntry 2 }
+
+receiverCommunityString OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..19))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The community name to use in the trap when
+                 sent to the manager."
+        ::= { ipmAgentTrapsReceiversEntry 3 }
+
+receiverNmsType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                none(1),
+                iPoMan-trap(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The trap group that NMS desired."
+        ::= { ipmAgentTrapsReceiversEntry 4 }
+
+receiverSeverityLevel OBJECT-TYPE
+        SYNTAX  INTEGER {
+                informational(1),
+                warning(2),
+                severe(3)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The severity level of traps to be received by this manager."
+        ::= { ipmAgentTrapsReceiversEntry 5 }
+
+receiverDescription OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..31))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Description of trap receivers"
+        ::= { ipmAgentTrapsReceiversEntry 6 }
+
+
+-- ===========================================================================
+--
+-- ipmAgentAccessControlTable
+-- 
+-- ===========================================================================
+ipmAgentAccessControlTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF IpmAgentAccessControlEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of managers which can access the device with private
+                community string."
+        ::= { ipmAgentConfig 8}
+
+ipmAgentAccessControlEntry OBJECT-TYPE
+        SYNTAX IpmAgentAccessControlEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The managers."
+        INDEX  { accessIndex}
+        ::= { ipmAgentAccessControlTable 1 }
+
+IpmAgentAccessControlEntry ::=
+        SEQUENCE {
+                accessIndex
+                        INTEGER,
+                accessControlAddr
+                        IpAddress,
+                accessControlMode
+                        INTEGER
+        }
+
+accessIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a access control entry."
+        ::= { ipmAgentAccessControlEntry 1 }
+
+accessControlAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The IP address of the manager to access the device."
+        ::= { ipmAgentAccessControlEntry 2 }
+
+accessControlMode OBJECT-TYPE
+        SYNTAX  INTEGER {
+                permitted (1),
+                denied (2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Access type, only read/Write access type can change parameter
+                 of the device."
+        ::= { ipmAgentAccessControlEntry 3 }
+
+ipmDeviceInlet	    OBJECT IDENTIFIER ::= { ipmDevice 1 }      
+-- ===========================================================================
+--
+-- ipmDeviceInlet
+--
+--	Inlet  Group
+--
+-- ===========================================================================
+ipmDeviceInletNumber OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The inlet number on this device."
+        ::= { ipmDeviceInlet 1}
+
+ipmDeviceInletConfigTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF IpmDeviceInletConfigEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of inlet on this device."
+        ::= { ipmDeviceInlet 2}
+
+ipmDeviceInletConfigEntry OBJECT-TYPE
+        SYNTAX IpmDeviceInletConfigEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The inlet number of device."
+        INDEX  { inletConfigIndex}
+        ::= { ipmDeviceInletConfigTable 1 }
+
+IpmDeviceInletConfigEntry ::=
+        SEQUENCE {
+                inletConfigIndex
+                        INTEGER,
+                inletConfigDesc
+                        DisplayString,
+                inletConfigVoltageHigh
+                        INTEGER,
+                inletConfigVoltageHighAction
+                        INTEGER,
+                inletConfigVoltageLow
+                        INTEGER,
+                inletConfigVoltageLowAction
+                        INTEGER,
+                inletConfigCurrentHigh
+                        INTEGER,
+                inletConfigCurrentHighAction
+                        INTEGER,
+                inletConfigFrequencyHigh
+                        INTEGER,
+                inletConfigfrequencyHighAction
+                        INTEGER,                
+                inletConfigFrequencyLow
+                        INTEGER,
+                inletConfigfrequencyLowAction
+                        INTEGER,
+                inletConfigFrequencyAction
+                        INTEGER
+        }
+
+inletConfigIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a access inlet configuration table."
+        ::= { ipmDeviceInletConfigEntry 1 }
+
+inletConfigDesc OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..31))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "A Description of inlet of device."
+        ::= { ipmDeviceInletConfigEntry 2 }
+
+inletConfigVoltageHigh OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) -- 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The Inlet high voltage threshold, in volts."
+        ::= { ipmDeviceInletConfigEntry 3 }
+
+inletConfigVoltageHighAction OBJECT-TYPE
+        SYNTAX  INTEGER {
+                outletsOff (1),
+                nothing (2)
+                } 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reaction of the device when inlet voltage higher than set point."
+        ::= { ipmDeviceInletConfigEntry 4 }
+
+inletConfigVoltageLow OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) -- 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The Inlet low voltage threshold, in volts."
+        ::= { ipmDeviceInletConfigEntry 5 }
+
+inletConfigVoltageLowAction OBJECT-TYPE
+        SYNTAX  INTEGER {
+                outletsOff (1),
+                nothing (2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reaction of the device when inlet voltage lower than set point."
+        ::= { ipmDeviceInletConfigEntry 6 }
+        
+inletConfigCurrentHigh OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) -- 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The Inlet low voltage threshold, in amps."
+        ::= { ipmDeviceInletConfigEntry 7 }
+
+inletConfigCurrentHighAction OBJECT-TYPE
+        SYNTAX  INTEGER {
+                outletsOff (1),
+                nothing (2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reaction of the device when inlet current higher than set point."
+        ::= { ipmDeviceInletConfigEntry 8 }
+
+inletConfigFrequencyHigh OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) -- 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The Inlet high frequency threshold, in hz."
+        ::= { ipmDeviceInletConfigEntry 9 }
+
+inletConfigfrequencyHighAction OBJECT-TYPE
+        SYNTAX  INTEGER {
+                outletsOff (1),
+                nothing (2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reaction of the device when inlet frequency higher than set point."
+        ::= { ipmDeviceInletConfigEntry 10 }
+
+inletConfigFrequencyLow OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) -- 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The Inlet low frequency threshold, in hz."
+        ::= { ipmDeviceInletConfigEntry 11 }
+
+inletConfigfrequencyLowAction OBJECT-TYPE
+        SYNTAX  INTEGER {
+                outletsOff (1),
+                nothing (2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reaction of the device when inlet frequency lower than set point."
+        ::= { ipmDeviceInletConfigEntry 12 }
+
+ipmDeviceInletStatusTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF IpmDeviceInletStatusEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of inlet on this device."
+        ::= { ipmDeviceInlet 3}
+
+ipmDeviceInletStatusEntry OBJECT-TYPE
+        SYNTAX IpmDeviceInletStatusEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The inlet number of device."
+        INDEX  { inletStatusIndex}
+        ::= { ipmDeviceInletStatusTable 1 }
+
+IpmDeviceInletStatusEntry ::=
+        SEQUENCE {
+                inletStatusIndex
+                        INTEGER,
+                inletStatusVoltage
+                        INTEGER,
+                inletStatusCurrent
+                        INTEGER,
+                inletStatusFrequency
+                        INTEGER
+        }
+
+inletStatusIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a access inlet configuration table."
+        ::= { ipmDeviceInletStatusEntry 1 }
+
+inletStatusVoltage OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) -- 
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The Inlet Voltage in 0.1 volts"
+        ::= { ipmDeviceInletStatusEntry 2 }
+        
+inletStatusCurrent OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) --
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The Inlet Current in 0.1 Amp."
+        ::= { ipmDeviceInletStatusEntry 3 }
+
+inletStatusFrequency OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) -- 
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The Inlet Frequency in 0.1 Hz"
+        ::= { ipmDeviceInletStatusEntry 4 }
+
+ipmDeviceOutlet	    OBJECT IDENTIFIER ::= { ipmDevice 2 }      
+-- ===========================================================================
+--
+-- ipmDeviceOutlet
+--
+--	Inlet  Group
+--
+-- ===========================================================================
+ipmDeviceOutletNumber OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The outlet number on this device."
+        ::= { ipmDeviceOutlet 1}
+
+ipmDeviceOutletConfigTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF IpmDeviceOutletConfigEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of outlet on this device."
+        ::= { ipmDeviceOutlet 2}
+
+ipmDeviceOutletConfigEntry OBJECT-TYPE
+        SYNTAX IpmDeviceOutletConfigEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The inlet number of device."
+        INDEX  { inletConfigIndex}
+        ::= { ipmDeviceOutletConfigTable 1 }
+
+IpmDeviceOutletConfigEntry ::=
+        SEQUENCE {
+                outletConfigIndex
+                        INTEGER,
+                outletConfigDesc
+                        DisplayString,
+                outletConfigLocation
+                        DisplayString,
+                outletConfigOnDelay
+                        INTEGER,
+                outletConfigOffDelay
+                        INTEGER,
+                outletConfigCurrentHigh
+                        INTEGER,
+                outletConfigCurrentHighAction
+                        INTEGER
+         }
+
+outletConfigIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a access inlet configuration table."
+        ::= { ipmDeviceOutletConfigEntry 1 }
+
+outletConfigDesc OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..31))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "A Description of outlet of device."
+        ::= { ipmDeviceOutletConfigEntry 2 }
+
+outletConfigLocation OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..31))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Location of device connectted to this outlet."
+        ::= { ipmDeviceOutletConfigEntry 3 }
+
+outletConfigOnDelay OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The delay time before turn on tis outlet, in seconds."
+        ::= { ipmDeviceOutletConfigEntry 4 }
+
+outletConfigOffDelay OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The delay time before turn off tis outlet, in seconds."
+        ::= { ipmDeviceOutletConfigEntry 5 }
+
+outletConfigCurrentHigh OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) -- 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The outlet high current threshold, in amp."
+        ::= { ipmDeviceOutletConfigEntry 6 }
+
+outletConfigCurrentHighAction OBJECT-TYPE
+        SYNTAX  INTEGER {
+                outletOff (1),
+                nothing (2)
+                } 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reaction of the device when outlet current higher than set point."
+        ::= { ipmDeviceOutletConfigEntry 7 }
+
+   
+
+ipmDeviceOutletStatusTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF IpmDeviceOutletStatusEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of outlet on this device."
+        ::= { ipmDeviceOutlet 3}
+
+ipmDeviceOutletStatusEntry OBJECT-TYPE
+        SYNTAX IpmDeviceOutletStatusEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The outlet number of device."
+        INDEX  { outletStatusIndex}
+        ::= { ipmDeviceOutletStatusTable 1 }
+
+IpmDeviceOutletStatusEntry ::=
+        SEQUENCE {
+                outletStatusIndex
+                        INTEGER,
+                outletStatusStatus
+                        INTEGER,
+                outletStatusCurrent
+                        INTEGER,
+                outletStatusStateTime
+                        INTEGER,
+                outletStatusTimeToGo
+                        INTEGER
+        }
+
+outletStatusIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a access outlet configuration table."
+        ::= { ipmDeviceOutletStatusEntry 1 }
+
+outletStatusStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknow (1),
+                outletOff (2),
+                outletOn (3),
+                outletOffToOn (4),
+                outletOnToOff (5),
+		outletCycling (6)
+                }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "Outlet state"
+        ::= { ipmDeviceOutletStatusEntry 2 }     
+
+outletStatusCurrent OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) --
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The outlet Current in 0.1 Amp."
+        ::= { ipmDeviceOutletStatusEntry 3 }
+
+outletStatusStateTime OBJECT-TYPE
+        SYNTAX  INTEGER 
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "Time in seconds since the outlet changed to current state."
+        ::= { ipmDeviceOutletStatusEntry 4 }     
+
+outletStatusTimeToGo OBJECT-TYPE
+        SYNTAX  INTEGER 
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "Remain time the outlet state will be changed by agent, in seconds"
+        ::= { ipmDeviceOutletStatusEntry 5 }     
+
+ipmDeviceOutletControlTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF IpmDeviceOutletControlEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of outlet on this device."
+        ::= { ipmDeviceOutlet 4}
+
+ipmDeviceOutletControlEntry OBJECT-TYPE
+        SYNTAX IpmDeviceOutletControlEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The outlet number of device."
+        INDEX  { outletControlIndex}
+        ::= { ipmDeviceOutletControlTable 1 }
+
+IpmDeviceOutletControlEntry ::=
+        SEQUENCE {
+                outletControlIndex
+                        INTEGER,
+                outletControlControl
+                        INTEGER
+        }
+
+outletControlIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a access outlet configuration table."
+        ::= { ipmDeviceOutletControlEntry 1 }
+
+outletControlControl OBJECT-TYPE
+        SYNTAX INTEGER {
+		none(1),
+                cancelAction(2),
+                onImmediately(3),
+                offImmediately(4),
+                cycleImmediately(5),
+                onByActionTimer(6),
+                offByActionTimer(7),
+                cycleByActionTimer(8),
+                onThenOffByActionTimers(9),
+                offThenOnByActionTimers(10)
+	}
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Set to control the outlet perform action as requested."
+        ::= { ipmDeviceOutletControlEntry 2 }
+
+ipmDeviceOutletControlAll OBJECT-TYPE
+        SYNTAX INTEGER {
+		none(1),
+                cancelAction(2),
+                onImmediately(3),
+                offImmediately(4),
+                cycleImmediately(5),
+                onByActionTimers(6),
+                offByActionTimers(7),
+                cycleByActionTimers(8),
+                onThenOffByActionTimers(9),
+                offThenOnByActionTimers(10)
+	}
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Set to control all outlets perform action as requested."
+        ::= { ipmDeviceOutlet 5}
+
+ipmDeviceCcOut	    OBJECT IDENTIFIER ::= { ipmDevice 3 }      
+-- ===========================================================================
+--
+-- ipmDeviceCCOut
+--
+--	Contact Closure Output Group
+--
+-- ===========================================================================
+ipmDeviceCcOutNumber OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The contact closure output number on this device."
+        ::= { ipmDeviceCcOut 1}
+
+ipmDeviceCcOutConfigTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF IpmDeviceCcOutConfigEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of contact closure output on this device."
+        ::= { ipmDeviceCcOut 2}
+
+ipmDeviceCcOutConfigEntry OBJECT-TYPE
+        SYNTAX IpmDeviceCcOutConfigEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The CC number of device."
+        INDEX  { ccOutConfigIndex}
+        ::= { ipmDeviceCcOutConfigTable 1 }
+
+IpmDeviceCcOutConfigEntry ::=
+        SEQUENCE {
+                ccOutConfigIndex
+                        INTEGER,
+                ccOutConfigDesc
+                        DisplayString,
+                ccOutConfigEventAction
+                        INTEGER,
+                ccOutConfigCloseDelay
+                        INTEGER,
+                ccOutConfigOpenDelay
+                        INTEGER
+         }
+
+ccOutConfigIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to access contact closure output configuration table."
+        ::= { ipmDeviceCcOutConfigEntry 1 }
+
+ccOutConfigDesc OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..31))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "A Description of a contact closure output of device."
+        ::= { ipmDeviceCcOutConfigEntry 2 }
+
+ccOutConfigEventAction OBJECT-TYPE
+        SYNTAX INTEGER {
+		yes (1),
+		no (2)
+	}
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disble the contact closure output to react to events."
+        ::= { ipmDeviceCcOutConfigEntry 3 }
+
+ccOutConfigCloseDelay OBJECT-TYPE
+        SYNTAX INTEGER 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The delay time in seconds when the contact closure output set to close."
+        ::= { ipmDeviceCcOutConfigEntry 4 }
+
+ccOutConfigOpenDelay OBJECT-TYPE
+        SYNTAX INTEGER 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The delay time in seconds when the contact closure output set to open."
+        ::= { ipmDeviceCcOutConfigEntry 5 }
+
+ipmDeviceCcOutStatusTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF IpmDeviceCcOutStatusEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of contact closure output on this device."
+        ::= { ipmDeviceCcOut 3}
+
+ipmDeviceCcOutStatusEntry OBJECT-TYPE
+        SYNTAX IpmDeviceCcOutStatusEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The CC number of device."
+        INDEX  { ccOutStatusIndex}
+        ::= { ipmDeviceCcOutStatusTable 1 }
+
+IpmDeviceCcOutStatusEntry ::=
+        SEQUENCE {
+                ccOutStatusIndex
+                        INTEGER,
+                ccOutStatusStatus
+                        INTEGER,
+                ccOutStatusTimeOnState
+                        INTEGER
+         }
+
+ccOutStatusIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to access contact closure output configuration table."
+        ::= { ipmDeviceCcOutStatusEntry 1 }
+
+ccOutStatusStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+		closed (1),
+		open (2)
+	}
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "State of a contact closure output of device."
+        ::= { ipmDeviceCcOutStatusEntry 2 }
+
+ccOutStatusTimeOnState OBJECT-TYPE
+        SYNTAX INTEGER 
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "Time in seconds since the contact closure output changed to current state."
+        ::= { ipmDeviceCcOutStatusEntry 3 }
+
+ipmDeviceCcOutControlTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF IpmDeviceCcOutControlEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of contact closure output on this device."
+        ::= { ipmDeviceCcOut 4}
+
+ipmDeviceCcOutControlEntry OBJECT-TYPE
+        SYNTAX IpmDeviceCcOutControlEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The outlet number of device."
+        INDEX  { ccOutControlIndex}
+        ::= { ipmDeviceCcOutControlTable 1 }
+
+IpmDeviceCcOutControlEntry ::=
+        SEQUENCE {
+                ccOutControlIndex
+                        INTEGER,
+		ccOutControlControl
+			INTEGER
+        }
+
+ccOutControlIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a access contact closure output configuration table."
+        ::= { ipmDeviceCcOutControlEntry 1 }
+
+ccOutControlControl OBJECT-TYPE
+        SYNTAX INTEGER {
+		none(1),
+                cancelAction(2),
+                closeImmediately(3),
+                openImmediately(4),
+                cycleImmediately(5),
+                closeByCloseTimer(6),
+                openByOpenTimer(7),
+                cycleByActionTimer(8),
+                closeThenOpenByActionTimers(9),
+                openThenCloseByActionTimers(10)
+	}
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Set to control the contact closure output perform action as requested."
+        ::= { ipmDeviceCcOutControlEntry 2 }
+
+ipmEnvEmd	    OBJECT IDENTIFIER ::= { ipmEnv 1 }      
+-- ===========================================================================
+--
+-- ipmEnvEmd
+--
+--	Environmental Monitor Device Group
+--
+-- ===========================================================================
+
+ipmEnvEmdStatus	    OBJECT IDENTIFIER ::= { ipmEnvEmd 1 }      
+-- ===========================================================================
+--
+-- ipmEnvEmd
+--
+--	Environmental Monitor Device Status Group
+--
+-- ===========================================================================
+
+ipmEnvEmdStatusEmdType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknown(1),
+                disabled(2),
+                eMD-HT(3),
+                eMD-T(4)
+                }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Type."
+        ::= { ipmEnvEmdStatus 1 }
+
+ipmEnvEmdStatusTemperature OBJECT-TYPE
+        SYNTAX INTEGER (1..10000) --
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Temperature in 0.1 degree C."
+        ::= { ipmEnvEmdStatus  2 }
+
+ipmEnvEmdStatusHumidity OBJECT-TYPE
+        SYNTAX INTEGER (1..10000) --
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Humidity in 0.1%."
+        ::= { ipmEnvEmdStatus  3 }
+
+ipmEnvEmdStatusAlarm1 OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknown(1),
+                disabled(2),
+                alarm(3),
+                normal(4)
+                }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Alarm-1 state."
+        ::= { ipmEnvEmdStatus 4 }
+
+ipmEnvEmdStatusAlarm2 OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknown(1),
+                disabled(2),
+                alarm(3),
+                normal(4)
+                }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Alarm-2 state."
+        ::= { ipmEnvEmdStatus 5 }
+
+ipmEnvEmdConfig	    OBJECT IDENTIFIER ::= { ipmEnvEmd 2 }      
+-- ===========================================================================
+--
+-- ipmEnvEmd
+--
+--	Environmental Monitor Device Configuration Group
+--
+-- ===========================================================================
+ipmEnvEmdConfigEmdPresence OBJECT-TYPE
+        SYNTAX  INTEGER {
+                disabled(1),
+                autoDetect(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Configure the EMD presence by auto-detect or not exist (disabled)."
+        ::= { ipmEnvEmdConfig 1 }
+
+ipmEnvEmdConfigEmdName OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The name of Emd."
+       ::= { ipmEnvEmdConfig 2 }
+
+ipmEnvEmdConfigTemp	    OBJECT IDENTIFIER ::= { ipmEnvEmdConfig 3 }      
+-- ===========================================================================
+--
+-- ipmEnvEmdConfigTemp
+--
+--	Environmental Monitor Device Temperature Configuration Group
+--
+-- ===========================================================================
+ipmEnvEmdConfigTempName OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The name of EMD Temperature sensor."
+       ::= { ipmEnvEmdConfigTemp 1 }
+
+ipmEnvEmdConfigTempHighSetPoint OBJECT-TYPE
+        SYNTAX INTEGER (1..10000) --
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Temperature set point high, alarm will active when temperature 
+		 over this value, in degree C."
+        ::= { ipmEnvEmdConfigTemp  2 }
+
+ipmEnvEmdConfigTempHighStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enabled/disabled the high setpoint be applied or not"
+        ::= { ipmEnvEmdConfigTemp 3 }
+
+ipmEnvEmdConfigTempLowSetPoint OBJECT-TYPE
+        SYNTAX INTEGER (1..10000) --
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Temperature set point high, alarm will active when temperature 
+		 under this value, in degree C."
+        ::= { ipmEnvEmdConfigTemp  4 }
+
+ipmEnvEmdConfigTempLowStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enabled/disabled the low setpoint be applied or not"
+        ::= { ipmEnvEmdConfigTemp 5 }
+
+ipmEnvEmdConfigTempOffset OBJECT-TYPE
+        SYNTAX  INTEGER {
+                t0_0(1),
+                t0_5(2),
+                t1_0(3),
+                t1_5(4),
+                t2_0(5),
+                t2_5(6),
+                t3_0(7),
+                t-0_5(8),
+                t-1_0(9),
+                t-1_5(10),
+                t-2_0(11),
+                t-2_5(12),
+                t-3_0(13)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Offset of temperature in degree C to adjust EMD temperature measurement."
+        ::= { ipmEnvEmdConfigTemp 6 }
+        
+ipmEnvEmdConfigHumi	    OBJECT IDENTIFIER ::= { ipmEnvEmdConfig 4 }      
+-- ===========================================================================
+--
+-- ipmEnvEmdConfigHumi
+--
+--	Environmental Monitor Device Humidity Configuration Group
+--
+-- ===========================================================================
+ipmEnvEmdConfigHumiName OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The name of EMD Humidity."
+       ::= { ipmEnvEmdConfigHumi 1 }
+
+ipmEnvEmdConfigHumiHighSetPoint OBJECT-TYPE
+        SYNTAX INTEGER (1..10000) --
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "EMD humidity set point high, alarm will active when humidity 
+		 over this value, in %."
+        ::= { ipmEnvEmdConfigHumi  2 }
+
+ipmEnvEmdConfigHumiHighStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enabled/disabled the high setpoint be applied or not"
+        ::= { ipmEnvEmdConfigHumi 3 }
+
+ipmEnvEmdConfigHumiLowSetPoint OBJECT-TYPE
+        SYNTAX INTEGER (1..10000) --
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "EMD humidity set point low, alarm will active when humidity 
+		 under this value, in %."
+        ::= { ipmEnvEmdConfigHumi  4 }
+
+ipmEnvEmdConfigHumiLowStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enabled/disabled the high setpoint be applied or not"
+        ::= { ipmEnvEmdConfigHumi 5 }
+
+ipmEnvEmdConfigHumiOffset OBJECT-TYPE
+        SYNTAX  INTEGER {
+                h0_0(1),
+                h1_0(2),
+                h2_0(3),
+                h3_0(4),
+                h4_0(5),
+                h5_0(6),
+                h6_0(7),
+                h-1_0(8),
+                h-2_0(9),
+                h-3_0(10),
+                h-4_0(11),
+                h-5-0(12),
+                h-6_0(13)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Emd Hum Offset;"
+        ::= { ipmEnvEmdConfigHumi 6 }
+
+ipmEnvEmdConfigAlarm1	    OBJECT IDENTIFIER ::= { ipmEnvEmdConfig 5 }      
+-- ===========================================================================
+--
+-- ipmEnvEmdConfigAlarm1
+--
+--	Environmental Monitor Device Alarm-1 Configuration Group
+--
+-- ===========================================================================
+ipmEnvEmdConfigAlarm1Name OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The name of EMD Alarm-1."
+       ::= { ipmEnvEmdConfigAlarm1 1 }
+
+ipmEnvEmdConfigAlarm1Type OBJECT-TYPE
+        SYNTAX  INTEGER {
+                disabled(1),
+                normalOpen(2),
+                normalClose(3)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Alarm-1 type"
+        ::= { ipmEnvEmdConfigAlarm1 2 }
+
+ipmEnvEmdConfigAlarm2	    OBJECT IDENTIFIER ::= { ipmEnvEmdConfig 6 }      
+-- ===========================================================================
+--
+-- ipmEnvEmdConfigAlarm2
+--
+--	Environmental Monitor Device Alarm-2 Configuration Group
+--
+-- ===========================================================================
+ipmEnvEmdConfigAlarm2Name OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The name of EMD Alarm-2."
+       ::= { ipmEnvEmdConfigAlarm2 1 }
+
+ipmEnvEmdConfigAlarm2Type OBJECT-TYPE
+        SYNTAX  INTEGER {
+                disabled(1),
+                normalOpen(2),
+                normalClose(3)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Alarm-2 type"
+        ::= { ipmEnvEmdConfigAlarm2 2 }
+
+
+-- ===========================================================================
+-- ipmTraps
+--
+-- iPoMan Trap group
+-- ===========================================================================
+
+   -- This section defines the well-known notifications sent by
+   -- iPoMan agents.
+
+ipmInletVoltageTooHigh TRAP-TYPE
+        ENTERPRISE ipmTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusVoltage,
+        inletConfigVoltageHigh,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "CRITICAL: The input voltage over high threshold."
+        ::= 1
+
+ipmInletVoltageNotTooHigh TRAP-TYPE
+        ENTERPRISE ipmTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusVoltage,
+        inletConfigVoltageHigh,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "WARNING: The input voltage return from over high threshold."
+        ::= 2
+
+ipmInletVoltageTooLow TRAP-TYPE
+        ENTERPRISE ipmTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusVoltage,
+        inletConfigVoltageLow,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "CRITICAL: The input voltage under low threshold."
+        ::= 3
+
+ipmInletVoltageNotTooLow TRAP-TYPE
+        ENTERPRISE ipmTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusVoltage,
+        inletConfigVoltageLow,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "WARNING: The input voltage return from under low threshold."
+        ::= 4
+
+ipmInletCurrentTooHigh TRAP-TYPE
+        ENTERPRISE ipmTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusCurrent,
+        inletConfigCurrentHigh,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "CRITICAL: The input current over high threshold."
+        ::= 5
+
+ipmInletCurrentNotTooHigh TRAP-TYPE
+        ENTERPRISE ipmTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusCurrent,
+        inletConfigCurrentHigh,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "WARNING: The input current return from over high threshold."
+        ::= 6
+
+ipmInletFrequencyTooHigh TRAP-TYPE
+        ENTERPRISE ipmTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusFrequency,
+        inletConfigFrequencyHigh,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "CRITICAL: The input frequency over high threshold."
+        ::= 7
+
+ipmInletFrequencyNotTooHigh TRAP-TYPE
+        ENTERPRISE ipmTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusFrequency,
+        inletConfigFrequencyHigh,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "WARNING: The input frequency return from over high threshold."
+        ::= 8
+
+ipmInletFrequencyTooLow TRAP-TYPE
+        ENTERPRISE ipmTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusFrequency,
+        inletConfigFrequencyLow,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "CRITICAL: The input frequency under low threshold."
+        ::= 9
+
+ipmInletFrequencyNotTooLow TRAP-TYPE
+        ENTERPRISE ipmTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusFrequency,
+        inletConfigFrequencyLow,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "WARNING: The input frequency return from under low threshold."
+        ::= 10
+
+ipmOutletCurrentTooHigh TRAP-TYPE
+        ENTERPRISE ipmTraps
+        VARIABLES {
+	outletConfigIndex,
+        outletStatusCurrent,
+        outletConfigCurrentHigh,
+        outletConfigDesc
+        }
+        DESCRIPTION
+                "CRITICAL: The output current of outlet over high threshold."
+        ::= 11
+
+ipmOutletCurrentNotTooHigh TRAP-TYPE
+        ENTERPRISE ipmTraps
+        VARIABLES {
+	outletConfigIndex,
+        outletStatusCurrent,
+        outletConfigCurrentHigh,
+        outletConfigDesc
+        }
+        DESCRIPTION
+                "WARNING: The output current of outlet return from over high threshold."
+        ::= 12
+
+ipmOutletStateChanged TRAP-TYPE
+        ENTERPRISE ipmTraps
+        VARIABLES {
+	outletConfigIndex,
+	outletStatusStatus,
+        outletConfigDesc
+        }
+        DESCRIPTION
+                "INFORMATION: The outlet state had changed from on to off, or from off to on."
+        ::= 13
+
+ipmEmdTemperatureNotHigh TRAP-TYPE
+        ENTERPRISE      ipmTraps
+        VARIABLES {
+        ipmEnvEmdStatusTemperature,
+        ipmEnvEmdConfigTempHighSetPoint,
+        ipmEnvEmdConfigTempName
+        }
+        DESCRIPTION
+                "INFORMATION: emd Temperature Not High."
+        ::= 14
+
+ipmEmdTemperatureTooHigh TRAP-TYPE
+        ENTERPRISE      ipmTraps
+        VARIABLES {
+        ipmEnvEmdStatusTemperature,
+        ipmEnvEmdConfigTempHighSetPoint,
+        ipmEnvEmdConfigTempName
+        }
+        DESCRIPTION
+                "WARNING:  emd Temperature Too High."
+        ::= 15
+
+ipmEmdTemperatureNotLow TRAP-TYPE
+        ENTERPRISE      ipmTraps
+        VARIABLES {
+        ipmEnvEmdStatusTemperature,
+        ipmEnvEmdConfigTempLowSetPoint,
+        ipmEnvEmdConfigTempName
+        }
+        DESCRIPTION
+                "INFORMATION: emd Temperature Not Low."
+        ::= 16
+
+ipmEmdTemperatureTooLow TRAP-TYPE
+        ENTERPRISE      ipmTraps
+        VARIABLES {
+        ipmEnvEmdStatusTemperature,
+        ipmEnvEmdConfigTempLowSetPoint,
+        ipmEnvEmdConfigTempName
+        }
+        DESCRIPTION
+                "WARNING: emd Temperature Too Low."
+        ::= 17
+
+ipmEmdHumidityNotHigh TRAP-TYPE
+        ENTERPRISE      ipmTraps
+        VARIABLES {
+        ipmEnvEmdStatusHumidity,
+        ipmEnvEmdConfigHumiHighSetPoint,
+        ipmEnvEmdConfigHumiName
+        }
+        DESCRIPTION
+                "INFORMATION: emd Humidity Not High."
+        ::= 18
+
+ipmEmdHumidityTooHigh TRAP-TYPE
+        ENTERPRISE      ipmTraps
+        VARIABLES {
+        ipmEnvEmdStatusHumidity,
+        ipmEnvEmdConfigHumiHighSetPoint,
+        ipmEnvEmdConfigHumiName
+        }
+        DESCRIPTION
+                "WARNING: emd Humidity Too High."
+        ::= 19
+
+ipmEmdHumidityNotLow TRAP-TYPE
+        ENTERPRISE      ipmTraps
+        VARIABLES {
+        ipmEnvEmdStatusHumidity,
+        ipmEnvEmdConfigHumiLowSetPoint,
+        ipmEnvEmdConfigHumiName
+        }
+        DESCRIPTION
+                "INFORMATION: emd Humidity Not Low."
+        ::= 20
+
+ipmEmdHumidityTooLow TRAP-TYPE
+        ENTERPRISE      ipmTraps
+        VARIABLES {
+        ipmEnvEmdStatusHumidity,
+        ipmEnvEmdConfigHumiLowSetPoint,
+        ipmEnvEmdConfigHumiName
+        }
+        DESCRIPTION
+                "WARNING: emd Humidity Too Low."
+        ::= 21
+
+ipmEmdAlarm1Normal TRAP-TYPE
+        ENTERPRISE      ipmTraps
+        VARIABLES {
+        ipmEnvEmdConfigAlarm1Type,
+        ipmEnvEmdConfigAlarm1Name
+        }
+        DESCRIPTION
+                "INFORMATION: emd Alarm1 Normal."
+        ::= 22
+
+ipmEmdAlarm1Active TRAP-TYPE
+        ENTERPRISE      ipmTraps
+        VARIABLES {
+        ipmEnvEmdConfigAlarm1Type,
+        ipmEnvEmdConfigAlarm1Name
+        }
+        DESCRIPTION
+                "WARNING: emd Alarm1 Active."
+        ::= 23
+        
+ipmEmdAlarm2Normal TRAP-TYPE
+        ENTERPRISE      ipmTraps
+        VARIABLES {
+        ipmEnvEmdConfigAlarm2Type,
+        ipmEnvEmdConfigAlarm2Name
+        }
+        DESCRIPTION
+                "INFORMATION: emd Alarm2 Normal."
+        ::= 24
+
+ipmEmdAlarm2Active TRAP-TYPE
+        ENTERPRISE      ipmTraps
+        VARIABLES {
+        ipmEnvEmdConfigAlarm2Type,
+        ipmEnvEmdConfigAlarm2Name
+        }
+        DESCRIPTION
+                "WARNING: emd Alarm2 Active."
+        ::= 25
+
+
+   END

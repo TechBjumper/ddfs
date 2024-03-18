@@ -1,0 +1,1558 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="apc_ddf_1_6.xsl"?>
+<APC_DDF
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+	ddfid="carrier_chiller_yyotta"
+	ddfname="Carrier Chiller"
+	ddfversion="3"
+	canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+	<device deviceid="carrier_chiller">
+		<setProductData ruleid="vendordata" field="vendor">Carrier</setProductData>
+		<setProductData ruleid="modeldata" field="model">Chiller</setProductData>
+		<setProductData ruleid="typedata" field="type">Cooling Device</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<valueMap ruleid="stat-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>2</valueIn><valueOut>2</valueOut>
+			<valueIn>3</valueIn><valueOut>3</valueOut>
+			<valueIn>4</valueIn><valueOut>4</valueOut>
+			<valueIn>5</valueIn><valueOut>5</valueOut>
+			<valueIn>6</valueIn><valueOut>6</valueOut>
+			<valueIn>7</valueIn><valueOut>7</valueOut>
+			<valueIn>8</valueIn><valueOut>8</valueOut>
+			<valueIn>9</valueIn><valueOut>9</valueOut>
+			<valueIn>*</valueIn><valueOut>10</valueOut>
+		</valueMap>
+		<enumMap ruleid="stat-em">
+			<label>Test</label>
+			<label>Local Off</label>
+			<label>CCN Off</label>
+			<label>Clock Off</label>
+			<label>Emergency Stop</label>
+			<label>Local On</label>
+			<label>CCN On</label>
+			<label>Clock On</label>
+			<label>Heat Enabled</label>
+			<label>Pump Delay</label>
+			<label>Unknown</label>
+		</enumMap>
+		<stateSensor ruleid="stat">
+			<type>state</type>
+			<sensorId>STAT</sensorId>
+			<value>
+				<mapValue mapid="stat-vm">
+				<getOid>STAT</getOid>
+				</mapValue>
+			</value>
+			<label>Control Mode</label>
+			<enum>stat-em</enum>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="occ">
+			<type>state</type>
+			<sensorId>OCC</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>OCC</getOid>
+				</mapValue>
+			</value>
+			<label>Occupied</label>
+			<enum>noYes-em</enum>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="chil_s_s">
+			<type>state</type>
+			<sensorId>CHIL_S_S</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>CHIL_S_S</getOid>
+				</mapValue>
+			</value>
+			<label>CCN Chiller</label>
+			<enum>startStop-em</enum>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</stateSensor>
+		<numSensor ruleid="dem_lim">
+			<type>pctofcapacity</type>
+			<sensorId>DEM_LIM</sensorId>
+			<value>
+				<mult>
+				<op><getOid>DEM_LIM</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Active Demand Limit</label>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="mode">
+			<type>state</type>
+			<sensorId>MODE</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>MODE</getOid>
+				</mapValue>
+			</value>
+			<label>Override Modes in Effect</label>
+			<enum>noYes-em</enum>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</stateSensor>
+		<numSensor ruleid="cap_t">
+			<type>pctofcapacity</type>
+			<sensorId>CAP_T</sensorId>
+			<value>
+				<mult>
+				<op><getOid>CAP_T</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Percent Total Capacity</label>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</numSensor>
+		<numSensor ruleid="stage">
+			<type>num</type>
+			<sensorId>STAGE</sensorId>
+			<value>
+				<mult>
+				<op><getOid>STAGE</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Requested Stage</label>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</numSensor>
+		<numSensor ruleid="sp">
+			<type>temp</type>
+			<sensorId>SP</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>SP</getOid></op>
+						<op>1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Active Setpoint</label>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</numSensor>
+		<numSensor ruleid="ctrl_pnt">
+			<type>temp</type>
+			<sensorId>CTRL_PNT</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>CTRL_PNT</getOid></op>
+						<op>1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Control Point</label>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</numSensor>
+		<numSensor ruleid="ewt">
+			<type>temp</type>
+			<sensorId>EWT</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>EWT</getOid></op>
+						<op>1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Entering Fluid Temp</label>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</numSensor>
+		<numSensor ruleid="lwt">
+			<type>temp</type>
+			<sensorId>LWT</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>LWT</getOid></op>
+						<op>1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Leaving Fluid Temp</label>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="emstop">
+			<type>state</type>
+			<sensorId>EMSTOP</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>EMSTOP</getOid>
+				</mapValue>
+			</value>
+			<label>Emergency Stop</label>
+			<enum>emstop-em</enum>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</stateSensor>
+		<numSensor ruleid="min_left">
+			<type>timeinmin</type>
+			<sensorId>MIN_LEFT</sensorId>
+			<value>
+				<mult>
+				<op><getOid>MIN_LEFT</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Minutes Left for Start</label>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="coolpmp1">
+			<type>state</type>
+			<sensorId>COOLPMP1</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>COOLPMP1</getOid>
+				</mapValue>
+			</value>
+			<label>Cooler Pump Relay 1</label>
+			<enum>offOn-em</enum>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="coolpmp2">
+			<type>state</type>
+			<sensorId>COOLPMP2</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>COOLPMP2</getOid>
+				</mapValue>
+			</value>
+			<label>Cooler Pump Relay 2</label>
+			<enum>offOn-em</enum>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="pmp1_fbk">
+			<type>state</type>
+			<sensorId>PMP1_FBK</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>PMP1_FBK</getOid>
+				</mapValue>
+			</value>
+			<label>Cooler Pump 1 Interlock</label>
+			<enum>openClose-em</enum>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="pmp2_fbk">
+			<type>state</type>
+			<sensorId>PMP2_FBK</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>PMP2_FBK</getOid>
+				</mapValue>
+			</value>
+			<label>Cooler Pump 2 Interlock</label>
+			<enum>openClose-em</enum>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="coolflow">
+			<type>state</type>
+			<sensorId>COOLFLOW</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>COOLFLOW</getOid>
+				</mapValue>
+			</value>
+			<label>Cooler Flow Switch</label>
+			<enum>openClose-em</enum>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</stateSensor>
+
+		<valueMap ruleid="leadpump-vm">
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>2</valueIn><valueOut>2</valueOut>
+			<valueIn>3</valueIn><valueOut>3</valueOut>
+			<valueIn>4</valueIn><valueOut>4</valueOut>
+			<valueIn>*</valueIn><valueOut>0</valueOut>
+		</valueMap>
+		<enumMap ruleid="leadpump-em">
+			<label>Unknown</label>
+			<label>Automatic</label>
+			<label>Pump 1</label>
+			<label>Pump 2</label>
+			<label>No Configuration</label>
+		</enumMap>
+		<stateSensor ruleid="leadpump">
+			<type>state</type>
+			<sensorId>LEADPUMP</sensorId>
+			<value>
+				<mapValue mapid="leadpump-vm">
+				<getOid>LEADPUMP</getOid>
+				</mapValue>
+			</value>
+			<label>Lead Pump</label>
+			<enum>leadpump-em</enum>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="rot_pump">
+			<type>state</type>
+			<sensorId>ROT_PUMP</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>ROT_PUMP</getOid>
+				</mapValue>
+			</value>
+			<label>Rotate Cooler Pumps Now</label>
+			<enum>noYes-em</enum>
+			<sensorSet>General Unit Parameters</sensorSet>
+		</stateSensor>
+		<numSensor ruleid="capa_t">
+			<type>pctofcapacity</type>
+			<sensorId>CAPA_T</sensorId>
+			<value>
+				<mult>
+				<op><getOid>CAPA_T</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Circuit A Percent Total Capacity</label>
+			<sensorSet>Circuit A Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="capa_a">
+			<type>pctofcapacity</type>
+			<sensorId>CAPA_A</sensorId>
+			<value>
+				<mult>
+				<op><getOid>CAPA_A</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Circuit A Percent Available Capacity</label>
+			<sensorSet>Circuit A Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="dp_a">
+			<type>pressure</type>
+			<sensorId>DP_A</sensorId>
+			<value>
+				<mult>
+				<op><getOid>DP_A</getOid></op>
+				<op>6.89476</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Circuit A Discharge Pressure</label>
+			<sensorSet>Circuit A Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="sp_a">
+			<type>pressure</type>
+			<sensorId>SP_A</sensorId>
+			<value>
+				<mult>
+				<op><getOid>SP_A</getOid></op>
+				<op>6.89476</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Circuit A Suction Pressure</label>
+			<sensorSet>Circuit A Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="hspa">
+			<type>temp</type>
+			<sensorId>HSPA</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>HSPA</getOid></op>
+						<op>1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Circuit A Head Setpoint</label>
+			<sensorSet>Circuit A Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="tmp_scta">
+			<type>temp</type>
+			<sensorId>TMP_SCTA</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>TMP_SCTA</getOid></op>
+						<op>1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Circuit A Saturated Condensing Temp</label>
+			<sensorSet>Circuit A Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="tmp_ssta">
+			<type>temp</type>
+			<sensorId>TMP_SSTA</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>TMP_SSTA</getOid></op>
+						<op>1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Circuit A Saturated Suction Temp</label>
+			<sensorSet>Circuit A Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="exv_a">
+			<type>pctofcapacity</type>
+			<sensorId>EXV_A</sensorId>
+			<value>
+				<mult>
+				<op><getOid>EXV_A</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Circuit A EXV Pct. Open</label>
+			<sensorSet>Circuit A Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="vhpa_act">
+			<type>pctofcapacity</type>
+			<sensorId>VHPA_ACT</sensorId>
+			<value>
+				<mult>
+				<op><getOid>VHPA_ACT</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Circuit A Var. Head Press Output</label>
+			<sensorSet>Circuit A Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="tmp_rgta">
+			<type>temp</type>
+			<sensorId>TMP_RGTA</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>TMP_RGTA</getOid></op>
+						<op>1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Circuit A Compr. Return Gas Temp.</label>
+			<sensorSet>Circuit A Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="disgas">
+			<type>temp</type>
+			<sensorId>DISGAS</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>DISGAS</getOid></op>
+						<op>1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Circuit A Discharge Gas Temp.</label>
+			<sensorSet>Circuit A Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="sh_a">
+			<type>num/difftemp</type>
+			<sensorId>SH_A</sensorId>
+			<value>
+				<mult>
+				<op><getOid>SH_A</getOid></op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Circuit A Suction Superheat Temp.</label>
+			<sensorSet>Circuit A Analog</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="k_a1_rly">
+			<type>state</type>
+			<sensorId>K_A1_RLY</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>K_A1_RLY</getOid>
+				</mapValue>
+			</value>
+			<label>Circuit A Compressor A1 Relay</label>
+			<enum>offOn-em</enum>
+			<sensorSet>Circuit A Discrete Input/Output</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="k_a2_rly">
+			<type>state</type>
+			<sensorId>K_A2_RLY</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>K_A2_RLY</getOid>
+				</mapValue>
+			</value>
+			<label>Circuit A Compressor A2 Relay</label>
+			<enum>offOn-em</enum>
+			<sensorSet>Circuit A Discrete Input/Output</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="k_a3_rly">
+			<type>state</type>
+			<sensorId>K_A3_RLY</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>K_A3_RLY</getOid>
+				</mapValue>
+			</value>
+			<label>Circuit A Compressor A3 Relay</label>
+			<enum>offOn-em</enum>
+			<sensorSet>Circuit A Discrete Input/Output</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="mlv_rly">
+			<type>state</type>
+			<sensorId>MLV_RLY</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>MLV_RLY</getOid>
+				</mapValue>
+			</value>
+			<label>Circuit A Minimum Load Valve Relay</label>
+			<enum>offOn-em</enum>
+			<sensorSet>Circuit A Discrete Input/Output</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="ccha">
+			<type>state</type>
+			<sensorId>CCHA</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>CCHA</getOid>
+				</mapValue>
+			</value>
+			<label>Circuit A Crankcase Heater</label>
+			<enum>offOn-em</enum>
+			<sensorSet>Circuit A Discrete Input/Output</sensorSet>
+		</stateSensor>
+		<numSensor ruleid="capb_t">
+			<type>pctofcapacity</type>
+			<sensorId>CAPB_T</sensorId>
+			<value>
+				<mult>
+				<op><getOid>CAPB_T</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Circuit B Percent Total Capacity</label>
+			<sensorSet>Circuit B Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="capb_a">
+			<type>pctofcapacity</type>
+			<sensorId>CAPB_A</sensorId>
+			<value>
+				<mult>
+				<op><getOid>CAPB_A</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Circuit B Percent Available Capacity</label>
+			<sensorSet>Circuit B Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="dp_b">
+			<type>pressure</type>
+			<sensorId>DP_B</sensorId>
+			<value>
+				<mult>
+				<op><getOid>DP_B</getOid></op>
+				<op>6.89476</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Circuit B Discharge Pressure</label>
+			<sensorSet>Circuit B Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="sp_b">
+			<type>pressure</type>
+			<sensorId>SP_B</sensorId>
+			<value>
+				<mult>
+				<op><getOid>SP_B</getOid></op>
+				<op>6.89476</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Circuit B Suction Pressure</label>
+			<sensorSet>Circuit B Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="hspb">
+			<type>temp</type>
+			<sensorId>HSPB</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>HSPB</getOid></op>
+						<op>1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Circuit B Head Setpoint</label>
+			<sensorSet>Circuit B Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="tmp_sctb">
+			<type>temp</type>
+			<sensorId>TMP_SCTB</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>TMP_SCTB</getOid></op>
+						<op>1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Circuit B Saturated Condensing Temp.</label>
+			<sensorSet>Circuit B Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="tmp_sstb">
+			<type>temp</type>
+			<sensorId>TMP_SSTB</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>TMP_SSTB</getOid></op>
+						<op>1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Circuit B Saturated Suction Temp.</label>
+			<sensorSet>Circuit B Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="exv_b">
+			<type>pctofcapacity</type>
+			<sensorId>EXV_B</sensorId>
+			<value>
+				<mult>
+				<op><getOid>EXV_B</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Circuit B EXV Pct. Open</label>
+			<sensorSet>Circuit B Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="vhpb_act">
+			<type>pctofcapacity</type>
+			<sensorId>VHPB_ACT</sensorId>
+			<value>
+				<mult>
+				<op><getOid>VHPB_ACT</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Circuit B Var. Head Press Output</label>
+			<sensorSet>Circuit B Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="tmp_rgtb">
+			<type>temp</type>
+			<sensorId>TMP_RGTB</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>TMP_RGTB</getOid></op>
+						<op>1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Circuit B Compr. Return Gas Temp.</label>
+			<sensorSet>Circuit B Analog</sensorSet>
+		</numSensor>
+		<numSensor ruleid="sh_b">
+			<type>num/difftemp</type>
+			<sensorId>SH_B</sensorId>
+			<value>
+				<mult>
+				<op><getOid>SH_B</getOid></op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Circuit B Suction Superheat Temp.</label>
+			<sensorSet>Circuit B Analog</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="k_b1_rly">
+			<type>state</type>
+			<sensorId>K_B1_RLY</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>K_B1_RLY</getOid>
+				</mapValue>
+			</value>
+			<label>Circuit B Compressor B1 Relay</label>
+			<enum>offOn-em</enum>
+			<sensorSet>Circuit B Discrete Input/Output</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="k_b2_rly">
+			<type>state</type>
+			<sensorId>K_B2_RLY</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>K_B2_RLY</getOid>
+				</mapValue>
+			</value>
+			<label>Circuit B Compressor B2 Relay</label>
+			<enum>offOn-em</enum>
+			<sensorSet>Circuit B Discrete Input/Output</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="k_b3_rly">
+			<type>state</type>
+			<sensorId>K_B3_RLY</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>K_B3_RLY</getOid>
+				</mapValue>
+			</value>
+			<label>Circuit B Compressor B3 Relay</label>
+			<enum>offOn-em</enum>
+			<sensorSet>Circuit B Discrete Input/Output</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="mlv_rly">
+			<type>state</type>
+			<sensorId>MLV_RLY</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>MLV_RLY</getOid>
+				</mapValue>
+			</value>
+			<label>Circuit B Minimum Load Valve Relay</label>
+			<enum>offOn-em</enum>
+			<sensorSet>Circuit B Discrete Input/Output</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="cchb">
+			<type>state</type>
+			<sensorId>CCHB</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>CCHB</getOid>
+				</mapValue>
+			</value>
+			<label>Circuit B Crankcase Heater</label>
+			<enum>offOn-em</enum>
+			<sensorSet>Circuit B Discrete Input/Output</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="fan_1">
+			<type>state</type>
+			<sensorId>FAN_1</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>FAN_1</getOid>
+				</mapValue>
+			</value>
+			<label>Fan 1 Relay</label>
+			<enum>offOn-em</enum>
+			<sensorSet>Options</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="fan_2">
+			<type>state</type>
+			<sensorId>FAN_2</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>FAN_2</getOid>
+				</mapValue>
+			</value>
+			<label>Fan 2 Relay</label>
+			<enum>offOn-em</enum>
+			<sensorSet>Options</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="fan_3">
+			<type>state</type>
+			<sensorId>FAN_3</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>FAN_3</getOid>
+				</mapValue>
+			</value>
+			<label>Fan 3 Relay</label>
+			<enum>offOn-em</enum>
+			<sensorSet>Options</sensorSet>
+		</stateSensor>
+		<numSensor ruleid="csp1">
+			<type>temp</type>
+			<sensorId>CSP1</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>CSP1</getOid></op>
+						<op>0.1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Cooling Setpoint 1</label>
+			<sensorSet>Setpoint</sensorSet>
+		</numSensor>
+		<numSensor ruleid="csp2">
+			<type>temp</type>
+			<sensorId>CSP2</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>CSP2</getOid></op>
+						<op>0.1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Cooling Setpoint 2</label>
+			<sensorSet>Setpoint</sensorSet>
+		</numSensor>
+		<numSensor ruleid="csp3">
+			<type>temp</type>
+			<sensorId>CSP3</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>CSP3</getOid></op>
+						<op>0.1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>ICE Setpoint</label>
+			<sensorSet>Setpoint</sensorSet>
+		</numSensor>
+		<numSensor ruleid="cramp">
+			<type>num</type>
+			<sensorId>CRAMP</sensorId>
+			<value>
+				<mult>
+				<op><getOid>CRAMP</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Cooling Ramp Loading</label>
+			<sensorSet>Setpoint</sensorSet>
+		</numSensor>
+		<numSensor ruleid="brn_frz">
+			<type>temp</type>
+			<sensorId>BRN_FRZ</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>BRN_FRZ</getOid></op>
+						<op>0.1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Brine Freeze Point</label>
+			<sensorSet>Setpoint</sensorSet>
+		</numSensor>
+		<numSensor ruleid="fanonsp">
+			<type>temp</type>
+			<sensorId>FANONSP</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>FANONSP</getOid></op>
+						<op>0.1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Fan On Setpoint</label>
+			<sensorSet>Setpoint</sensorSet>
+		</numSensor>
+		<numSensor ruleid="fanoffsp">
+			<type>temp</type>
+			<sensorId>FANOFFSP</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>FANOFFSP</getOid></op>
+						<op>0.1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Fan Off Setpoint</label>
+			<sensorSet>Setpoint</sensorSet>
+		</numSensor>
+		<numSensor ruleid="fstgdlta">
+			<type>temp</type>
+			<sensorId>FSTGDLTA</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>FSTGDLTA</getOid></op>
+						<op>0.1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Fan Stage Delta</label>
+			<sensorSet>Setpoint</sensorSet>
+		</numSensor>
+		<numSensor ruleid="b_fanoff">
+			<type>temp</type>
+			<sensorId>B_FANOFF</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>B_FANOFF</getOid></op>
+						<op>0.1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Base Fan Off Delta Temp</label>
+			<sensorSet>Setpoint</sensorSet>
+		</numSensor>
+		<numSensor ruleid="oat_lock">
+			<type>temp</type>
+			<sensorId>OAT_LOCK</sensorId>
+			<value>
+				<mult>
+				<op>
+					<sub>
+					<op>
+						<mult>
+						<op><getOid>OAT_LOCK</getOid></op>
+						<op>0.1</op>
+						</mult>
+					</op>
+					<op>32</op>
+					</sub>
+				</op>
+				<op><div><op>5</op><op>9</op></div></op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Outside Air Temp. Lock</label>
+			<sensorSet>Setpoint</sensorSet>
+		</numSensor>
+		<valueMap ruleid="binaryDefaultZero-vm">
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>*</valueIn><valueOut>0</valueOut>
+		</valueMap>
+		<enumMap ruleid="offOn-em">
+			<label>Off</label>
+			<label>On</label>
+		</enumMap>
+		<enumMap ruleid="startStop-em">
+			<label>Off</label>
+			<label>On</label>
+		</enumMap>
+		<enumMap ruleid="onOff-em">
+			<label>On</label>
+			<label>Off</label>
+		</enumMap>
+		<enumMap ruleid="noYes-em">
+			<label>No</label>
+			<label>Yes</label>
+		</enumMap>
+		<enumMap ruleid="alarm-em">
+			<label>Normal</label>
+			<label>Alert</label>
+			<label>Alarm</label>
+		</enumMap>
+		<enumMap ruleid="emstop-em">
+			<label>Enable</label>
+			<label>Emergency Stop</label>
+		</enumMap>
+		<enumMap ruleid="openClose-em">
+			<label>Open</label>
+			<label>Close</label>
+		</enumMap>
+		<enumMap ruleid="heatCool-em">
+			<label>Heat</label>
+			<label>Cool</label>
+		</enumMap>
+
+	</device>
+	<protocol>
+		<modbus>
+			<value_ref_id valid="STAT">
+				<function>3</function>
+				<start_addr>16383</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OCC">
+				<function>3</function>
+				<start_addr>16384</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="CHIL_S_S">
+				<function>3</function>
+				<start_addr>16385</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="ALARM">
+				<function>3</function>
+				<start_addr>16386</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="DEM_LIM">
+				<function>3</function>
+				<start_addr>16387</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="MODE">
+				<function>3</function>
+				<start_addr>16388</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="CAP_T">
+				<function>3</function>
+				<start_addr>16389</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="STAGE">
+				<function>3</function>
+				<start_addr>16390</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="SP">
+				<function>3</function>
+				<start_addr>16391</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="CTRL_PNT">
+				<function>3</function>
+				<start_addr>16392</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="EWT">
+				<function>3</function>
+				<start_addr>16393</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="LWT">
+				<function>3</function>
+				<start_addr>16394</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="EMSTOP">
+				<function>3</function>
+				<start_addr>16395</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="MIN_LEFT">
+				<function>3</function>
+				<start_addr>16396</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="COOLPMP1">
+				<function>3</function>
+				<start_addr>16397</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="COOLPMP2">
+				<function>3</function>
+				<start_addr>16398</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="PMP1_FBK">
+				<function>3</function>
+				<start_addr>16399</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="PMP2_FBK">
+				<function>3</function>
+				<start_addr>16400</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="COOLFLOW">
+				<function>3</function>
+				<start_addr>16401</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="LEADPUMP">
+				<function>3</function>
+				<start_addr>16402</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="ROT_PUMP">
+				<function>3</function>
+				<start_addr>16403</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="CAPA_T">
+				<function>3</function>
+				<start_addr>16404</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="CAPA_A">
+				<function>3</function>
+				<start_addr>16405</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="DP_A">
+				<function>3</function>
+				<start_addr>16406</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="SP_A">
+				<function>3</function>
+				<start_addr>16407</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="HSP">
+				<function>3</function>
+				<start_addr>16408</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="TMP_SCTA">
+				<function>3</function>
+				<start_addr>16409</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="TMP_SSTA">
+				<function>3</function>
+				<start_addr>16410</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="EXV_A">
+				<function>3</function>
+				<start_addr>16411</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="VHPA_ACT">
+				<function>3</function>
+				<start_addr>16412</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="TMP_RGTA">
+				<function>3</function>
+				<start_addr>16413</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="DISGAS">
+				<function>3</function>
+				<start_addr>16414</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="SH_A">
+				<function>3</function>
+				<start_addr>16415</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="K_A1_RLY">
+				<function>3</function>
+				<start_addr>16416</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="K_A2_RLY">
+				<function>3</function>
+				<start_addr>16417</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="K_A3_RLY">
+				<function>3</function>
+				<start_addr>16418</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="MLV_RLY">
+				<function>3</function>
+				<start_addr>16419</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="CCHA">
+				<function>3</function>
+				<start_addr>16420</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="CAPB_T">
+				<function>3</function>
+				<start_addr>16421</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="CAPB_A">
+				<function>3</function>
+				<start_addr>16422</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="DP_B">
+				<function>3</function>
+				<start_addr>16423</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="SP_B">
+				<function>3</function>
+				<start_addr>16424</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="HSP">
+				<function>3</function>
+				<start_addr>16425</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="TMP_SCTB">
+				<function>3</function>
+				<start_addr>16426</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="TMP_SSTB">
+				<function>3</function>
+				<start_addr>16427</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="EXV_B">
+				<function>3</function>
+				<start_addr>16428</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="VHPB_ACT">
+				<function>3</function>
+				<start_addr>16429</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="TMP_RGTB">
+				<function>3</function>
+				<start_addr>16430</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="SH_B">
+				<function>3</function>
+				<start_addr>16431</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="K_B1_RLY">
+				<function>3</function>
+				<start_addr>16432</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="K_B2_RLY">
+				<function>3</function>
+				<start_addr>16433</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="K_B3_RLY">
+				<function>3</function>
+				<start_addr>16434</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="MLV_RLY">
+				<function>3</function>
+				<start_addr>16435</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="CCHB">
+				<function>3</function>
+				<start_addr>16436</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="FAN_1">
+				<function>3</function>
+				<start_addr>16437</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="FAN_2">
+				<function>3</function>
+				<start_addr>16438</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="FAN_3">
+				<function>3</function>
+				<start_addr>16439</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="CSP1">
+				<function>3</function>
+				<start_addr>32767</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="CSP2">
+				<function>3</function>
+				<start_addr>32768</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="CSP3">
+				<function>3</function>
+				<start_addr>32769</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="CRAMP">
+				<function>3</function>
+				<start_addr>32770</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="BRN_FRZ">
+				<function>3</function>
+				<start_addr>32771</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="FANONSP">
+				<function>3</function>
+				<start_addr>32772</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="FANOFFSP">
+				<function>3</function>
+				<start_addr>32773</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="FSTGDLTA">
+				<function>3</function>
+				<start_addr>32774</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="B_FANOFF">
+				<function>3</function>
+				<start_addr>32775</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OAT_LOCK">
+				<function>3</function>
+				<start_addr>32776</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+		</modbus>
+	</protocol>
+</APC_DDF>

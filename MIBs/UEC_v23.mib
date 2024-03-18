@@ -1,0 +1,1893 @@
+--
+--   Universal Electric Corp.
+--   STARLINE measurement devices MIB
+--
+
+
+UEC-STARLINE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, NOTIFICATION-TYPE,
+    OBJECT-TYPE, enterprises, Integer32,
+    IpAddress                               FROM SNMPv2-SMI
+    DisplayString, MacAddress, DateAndTime  FROM SNMPv2-TC
+    OBJECT-GROUP, NOTIFICATION-GROUP,
+    MODULE-COMPLIANCE                       FROM SNMPv2-CONF;
+
+uecStarlineMxx  MODULE-IDENTITY
+    LAST-UPDATED  "201503250333Z"  -- 2015 MAR 25, 03:33 UTC, rev23
+    ORGANIZATION "Universal Electric Corp."
+    CONTACT-INFO
+      "Universal Electric Corp.
+       168 Georgetown Road
+       Canonsburg, PA 15317
+       Phone: +01 724.597.7800
+       email: info@uecorp.com"
+
+    DESCRIPTION
+      "MIB module for managing measurement and control devices
+       produced by the Universal Electric Corporation."
+
+      REVISION     "201503250333Z"  -- 2015 MAR 25, 03:33 UTC, rev23
+        DESCRIPTION
+          "A fifth item, neutralM(5), was added to infeedLineIndex,
+           and the fourth item, neutral(4), was changed to neutralC(4)."
+
+      REVISION     "201406031616Z"  -- 2014 JUN 03, 16:16 UTC, rev22
+        DESCRIPTION
+          "infeedLineCurrentRating changed from read-only to read-write."
+
+      REVISION     "201401201617Z"  -- 2014 JAN 20, 16:17 UTC, rev21
+        DESCRIPTION
+          "PowerFactorAverage changed to TotalPowerFactor."
+
+      REVISION     "201310141400Z"  -- 2013 OCT 14, 14:00 UTC, rev20
+        DESCRIPTION
+          "read-only changed to read-write in 21 places. calibrationDate
+           changed from read-write to read-only. productType changed to
+           catalogNumber. Added: wifiSSID, wifiEncryption, modbusParity."
+
+      REVISION     "201309091350Z"  -- 2013 SEP 9, 13:50 UTC, rev19
+        DESCRIPTION
+          "removed infeedCurrentAverageDemand and infeedCurrentPeakAverageDemand.
+           Added measuredNeutralCurrent."
+
+      REVISION     "201308261620Z"  -- 2013 AUG 26, 16:20 UTC, rev18
+        DESCRIPTION
+          "removed infeedPhaseCurrent and infeedPhaseCurrentAverage."
+
+      REVISION     "201308221615Z"  -- 2013 AUG 22, 16:15 UTC, rev17
+        DESCRIPTION
+          "added outletLineCurrentMin, outletLineCurrentMax."
+
+      REVISION     "201308072005Z"  -- 2013 AUG 07, 20:05 UTC, rev16
+        DESCRIPTION
+          "changed lineToLineVoltage Alarms from read-only to read-write."
+
+      REVISION     "201308071703Z"  -- 2013 AUG 07, 17:03 UTC, rev15
+        DESCRIPTION
+          "Corrected units."
+
+      REVISION     "201308071442Z"  -- 2013 AUG 07, 14:42 UTC, rev14
+        DESCRIPTION
+          "Moved lineToNeutVoltage to phase table, added energyReset"
+
+      REVISION     "201308061829Z"  -- 2013 AUG 06, 18:29 UTC, rev13
+        DESCRIPTION
+          "Renamed line and phase voltage variables."
+
+      REVISION     "201305302111Z"  -- 2013 MAY 30, 21:11 UTC, rev12
+        DESCRIPTION
+          "Renamed outletReceptacleIndex to outletOutletIndex."
+
+
+      REVISION     "201305211539Z"  -- 2013 MAY 21, 15:39 UTC, rev11
+        DESCRIPTION
+          "Added outlet alarms and traps."
+
+      REVISION     "201303261949Z"  -- 2013 MAR 26, 19:39 UTC, rev10
+        DESCRIPTION
+          "Changed Trap definitions."
+
+      REVISION     "201303081343Z"  -- 2013 MAR 08, 13:43 UTC, rev09
+        DESCRIPTION
+          "Minor corrections to MIB."
+
+      REVISION     "201303061728Z"  -- 2013 MAR 07, 17:28 UTC, rev08
+        DESCRIPTION
+          "Deleted infeedPeakPowerDemand. Swapped the
+           sequential order of infeedActivePowerDemand and
+           infeedPeakActivePowerDemand. Updated compliance
+           groups. Minor MIB reformatting."
+
+      REVISION     "201303012032Z"  -- 2013 MAR 01, 20:32 UTC, rev07
+        DESCRIPTION
+          "Deleted infeedPeakPowerDemand. Swapped the
+           sequential order of infeedActivePowerDemand and
+           infeedPeakActivePowerDemand. Updated compliance
+           groups. Minor MIB reformatting."
+
+      REVISION     "201302272223Z"  -- 2013 FEB 27, 22:23 UTC, rev06
+        DESCRIPTION
+          "Added vInterfaces and vProtocols groups, added vEmail,
+          vDigitalIo and vAnalogIo. Minor MIB reformatting."
+
+      REVISION     "201302252105Z"  -- 2013 FEB 25, 21:05 UTC, rev05
+        DESCRIPTION
+          "Split the infeedphasetable into a seperate line
+           table and phase table. Updated syntax to meet
+           validation severity level 3. Reformatted MIB."
+
+      REVISION     "201302221904Z"  -- 2013 FEB 22, 19:04 UTC, rev04
+        DESCRIPTION
+          "Removed Receptacle X, Phase (A,B,C definitions."
+
+      REVISION     "201302201603Z"  -- 2013 FEB 20, 16:03 UTC, rev03
+        DESCRIPTION
+          "Removed Starline M9 MIB Definitions."
+
+      REVISION     "201302141402Z"  -- 2013 FEB 14, 14:02 UTC, rev02
+        DESCRIPTION
+          "Updated MIBs to match requirements."
+
+      REVISION     "201206131801Z"  -- 2012 JUN 13, 18:01 UTC, rev01
+        DESCRIPTION
+          "Added UECs M50 and M51 measurement devices MIB."
+
+      REVISION     "201104251700Z"  -- 2011 APR 25, 17:00 UTC, Draft
+        DESCRIPTION
+          "MIB definition for UECs M20 and M21 measurement devices."
+
+    ::= { universalElectricCorp 1 }
+
+universalElectricCorp   OBJECT IDENTIFIER ::= { enterprises 35774 }
+
+DisplayString ::= OCTET STRING
+
+
+
+--
+--  StarLine Devices
+--
+
+starline   OBJECT IDENTIFIER ::= { universalElectricCorp 2 }
+
+
+    --
+    --  Virgo Meter
+    --
+
+    virgo   OBJECT IDENTIFIER ::= { starline 1 }
+
+
+        --
+        --  General
+        --
+
+        vGeneral   OBJECT IDENTIFIER ::= { virgo 1 }
+
+        deviceName  OBJECT-TYPE
+            SYNTAX      DisplayString  -- ( SIZE(0..32) )
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The name of the meter assigned by the user."
+            ::= { vGeneral 1 }
+
+        deviceLocation  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "A field for the user to describe the location of the device."
+            ::= { vGeneral 2 }
+
+        deviceId  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "A field for the user to describe the device's identification."
+            ::= { vGeneral 3 }
+
+        modelNumber  OBJECT-TYPE
+           SYNTAX      DisplayString  -- (SIZE(0..32))
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The factory set model number."
+            ::= { vGeneral 4 }
+
+        serialNumber  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The factory set serial number."
+            ::= { vGeneral 5 }
+
+        catalogNumber  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..40))
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The factory set catalog number."
+            ::= { vGeneral 6 }
+
+        firmwareVersion  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "A factory set string to define the firmware revision."
+            ::= { vGeneral 7 }
+
+        calibrationDate  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "Factory set date of calibration."
+            ::= { vGeneral 8 }
+
+        energyReset  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "Energy reset. Set to 1 to issue reset energy command."
+            ::= { vGeneral 9 }
+
+        --  End of General.
+
+
+        --
+        --  Physical Interfaces
+        --
+
+        vInterfaces   OBJECT IDENTIFIER ::= { virgo 2 }
+
+
+            --
+            --  Ethernet
+            --
+
+            vEthernet   OBJECT IDENTIFIER ::= { vInterfaces 1 }
+
+            enetMacAddress  OBJECT-TYPE
+                SYNTAX      DisplayString  -- (SIZE(0..32))
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                    "The factory set MAC address."
+                ::= { vEthernet 1 }
+
+            enetIpAddress  OBJECT-TYPE
+                SYNTAX      DisplayString
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                    "The currently assigned IP address."
+                ::= { vEthernet 2 }
+
+            enetIpNetmask  OBJECT-TYPE
+                SYNTAX     DisplayString
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                    "The currently assigned IP subnet mask."
+                ::= { vEthernet 3 }
+
+            enetIpGateway  OBJECT-TYPE
+                SYNTAX      DisplayString
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                    "The currently assigned gateway address."
+                ::= { vEthernet 4 }
+
+            enetEnableDHCP  OBJECT-TYPE
+                SYNTAX      DisplayString  -- (SIZE(0..32))
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "Flag indicating if Static IP or DHCP should be used."
+                ::= { vEthernet 5 }
+
+            enetStaticIpAddress  OBJECT-TYPE
+                SYNTAX      DisplayString
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The IP address to use if not using DHCP."
+                ::= { vEthernet 6 }
+
+            enetStaticIpNetmask  OBJECT-TYPE
+                SYNTAX     DisplayString
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The IP subnet mask to use if not using DHCP."
+                ::= { vEthernet 7 }
+
+            enetStaticIpGateway  OBJECT-TYPE
+                SYNTAX      DisplayString
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The gateway address to use if not using DHCP."
+                ::= { vEthernet 8 }
+
+            --  End of Ethernet.
+
+
+            --
+            --  WiFi
+            --
+
+            vWifi   OBJECT IDENTIFIER ::= { vInterfaces 2 }
+
+            wifiMacAddress  OBJECT-TYPE
+                SYNTAX      DisplayString  -- (SIZE(0..32))
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                    "The factory set MAC address."
+                ::= { vWifi 1 }
+
+            wifiIpAddress  OBJECT-TYPE
+                SYNTAX      DisplayString
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                    "The currently assigned IP address."
+                ::= { vWifi 2 }
+
+            wifiIpNetmask  OBJECT-TYPE
+                SYNTAX     DisplayString
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                    "The currently assigned IP subnet mask."
+                ::= { vWifi 3 }
+
+            wifiIpGateway  OBJECT-TYPE
+                SYNTAX      DisplayString
+                MAX-ACCESS  read-only
+                STATUS      current
+                DESCRIPTION
+                    "The currently assigned gateway address."
+                ::= { vWifi 4 }
+
+            wifiEnableDHCP  OBJECT-TYPE
+                SYNTAX      DisplayString  -- (SIZE(0..32))
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "Flag indicating if Static IP or DHCP should be used."
+                ::= { vWifi 5 }
+
+            wifiStaticIpAddress  OBJECT-TYPE
+                SYNTAX      DisplayString
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The IP address to use if not using DHCP."
+                ::= { vWifi 6 }
+
+            wifiStaticIpNetmask  OBJECT-TYPE
+                SYNTAX     DisplayString
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The IP subnet mask to use if not using DHCP."
+                ::= { vWifi 7 }
+
+            wifiStaticIpGateway  OBJECT-TYPE
+                SYNTAX      DisplayString
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The gateway address to use if not using DHCP."
+                ::= { vWifi 8 }
+
+            wifiSSID  OBJECT-TYPE
+                SYNTAX      DisplayString  -- (SIZE(0..32))
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The SSID (network name) of the wireless local area network (WLAN)."
+                ::= { vWifi 9 }
+
+            wifiEncryptionType  OBJECT-TYPE
+                SYNTAX      DisplayString
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The type of encryption being used by the WLAN: wep, wpa, wpa2."
+                ::= { vWifi 10 }
+
+            --  End of WiFi.
+
+
+            --
+            --  Modbus
+            --
+
+            vModbus   OBJECT IDENTIFIER ::= { vInterfaces 3 }
+            
+            modbusAddress  OBJECT-TYPE
+                SYNTAX      DisplayString  -- (SIZE(0..32))
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "A user given serial address used for Modbus."
+                ::= { vModbus 1 }
+           
+            modbusBaudRate  OBJECT-TYPE
+                SYNTAX      DisplayString  -- (SIZE(0..32))
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "User selected baud rate of serial communications: 9600 or 19200."
+                ::= { vModbus 2 }
+
+            modbusStopBits  OBJECT-TYPE
+                SYNTAX      DisplayString  -- (SIZE(0..32))
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "User selected number of stop bits: 1 or 2."
+                ::= { vModbus 3 }
+
+            modbusParity  OBJECT-TYPE
+                SYNTAX      DisplayString
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "User selected parity: none, even, odd."
+                ::= { vModbus 4 }
+
+            --  End of Modbus.
+
+
+            --
+            --  Digital I/O
+            --
+
+            vDigitalIo  OBJECT-TYPE
+                SYNTAX      SEQUENCE OF VDigitalIoEntry 
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION
+                    "Table of Digital I/O line data."
+                ::= { vInterfaces 4 }
+
+            vDigitalIoEntry  OBJECT-TYPE
+                SYNTAX      VDigitalIoEntry
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION
+                    "Variables pertaining to Digital I/Os."
+                INDEX { digitalIoIndex }
+                ::= { vDigitalIo 1 }
+
+            VDigitalIoEntry ::= SEQUENCE
+            {
+                digitalIoIndex              INTEGER,
+                digitalIoName               DisplayString,
+                digitalIoValue              DisplayString,
+                digitalIoDirection          DisplayString,
+                digitalIoLevel              DisplayString,
+                digitalIoAlarm              DisplayString
+            }
+
+            digitalIoIndex  OBJECT-TYPE 
+                SYNTAX      INTEGER { port1(1), port2(2) }
+                MAX-ACCESS  not-accessible
+                STATUS      current
+                DESCRIPTION
+                    "The index to the Digital I/O entry."
+                ::= { vDigitalIoEntry 1 }
+
+            digitalIoName  OBJECT-TYPE
+                SYNTAX      DisplayString --(0..32)
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The Digital I/O name."
+                ::= { vDigitalIoEntry 2 }
+
+            digitalIoValue  OBJECT-TYPE
+                SYNTAX      DisplayString --(0..32)
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The current value of the digital I/O."
+                ::= { vDigitalIoEntry 3 }
+
+            digitalIoDirection  OBJECT-TYPE
+                SYNTAX      DisplayString --(0..32)
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The direction of the digital I/O."
+                ::= { vDigitalIoEntry 4 }
+
+            digitalIoLevel  OBJECT-TYPE
+                SYNTAX      DisplayString --(0..32)
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The active level of the digital I/O."
+                ::= { vDigitalIoEntry 5 }
+
+            digitalIoAlarm  OBJECT-TYPE
+                SYNTAX      DisplayString --(0..32)
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "Set to generate an alarm on input."
+                ::= { vDigitalIoEntry 6 }
+
+            --  End of Digital I/O.
+
+
+            --
+            --  Analog I/O
+            --
+
+            vAnalogIo   OBJECT IDENTIFIER ::= { vInterfaces 5 }
+
+            ma420PortName  OBJECT-TYPE
+                SYNTAX      DisplayString
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The name of the 4-20 ma port."
+                ::= { vAnalogIo 1 }
+
+            ma420Value  OBJECT-TYPE
+                SYNTAX      DisplayString
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The value of the 4-20 ma port."
+                ::= { vAnalogIo 2 }
+
+            --  End of Analog I/O.
+            
+        --  End of Physical Interfaces.
+
+
+        --
+        --  Protocols
+        --
+        
+        vProtocols   OBJECT IDENTIFIER ::= { virgo 3 }
+
+
+            --
+            --  SNMP
+            --
+
+            vSnmp   OBJECT IDENTIFIER ::= { vProtocols 1 }
+
+            snmpTrapDestination1  OBJECT-TYPE
+                SYNTAX      DisplayString
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "A user set ip address for revceiving traps."
+                ::= { vSnmp 1 }
+
+            snmpTrapDestination2  OBJECT-TYPE
+                SYNTAX      DisplayString
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "A user set ip address for revceiving traps."
+                ::= { vSnmp 2 }
+
+            --  End of SNMP.
+
+
+            --
+            --  Email
+            --
+
+            vEmail   OBJECT IDENTIFIER ::= { vProtocols 2 }
+
+            emailFromAddress  OBJECT-TYPE
+                SYNTAX      DisplayString  -- (SIZE(0..32))
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "A user set email address  representing the originator of
+                     the alarm message."
+                ::= { vEmail 1 }
+
+            emailToAddress  OBJECT-TYPE
+                SYNTAX      DisplayString  -- (SIZE(0..32))
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "A user set email address  representing the recipient of
+                     the alarm message."
+                ::= { vEmail 2 }
+
+            emailServer  OBJECT-TYPE
+                SYNTAX      DisplayString  -- (SIZE(0..32))
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    ""
+                ::= { vEmail 3 }
+
+            emailPort  OBJECT-TYPE
+                SYNTAX      DisplayString  -- (SIZE(0..32))
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The port used by the email server"
+                ::= { vEmail 4 }
+
+            emailAuthentication  OBJECT-TYPE
+                SYNTAX      DisplayString  -- (SIZE(0..32))
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    ""
+                ::= { vEmail 5 }
+
+            emailLogin  OBJECT-TYPE
+                SYNTAX      DisplayString  -- (SIZE(0..32))
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The user name required for login to the
+                     email server."
+                ::= { vEmail 6 }
+
+            emailPassword  OBJECT-TYPE
+                SYNTAX      DisplayString  -- (SIZE(0..32))
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    "The password required for login to the
+                     email server."
+                ::= { vEmail 7 }
+
+            --  End of Email.
+
+
+            --
+            --  SNTP
+            --
+
+            vSntp   OBJECT IDENTIFIER ::= { vProtocols 3 }
+
+            sntpServer  OBJECT-TYPE
+                SYNTAX      DisplayString  -- (SIZE(0..32))
+                MAX-ACCESS  read-write
+                STATUS      current
+                DESCRIPTION
+                    ""
+                ::= { vSntp 1 }
+
+
+            --
+            --  Telnet
+            --
+
+            vTelnet   OBJECT IDENTIFIER ::= { vProtocols 4 }
+
+            --  End of Telnet.
+            
+        --  End of Protocols.
+
+
+        --
+        --  Infeed
+        --
+
+        vInfeed   OBJECT IDENTIFIER ::= { virgo 4 }
+
+        lineToNeutVoltAverage  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "Volts (rms)"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The Line to Neutral RMS voltage of the infeed."
+            ::= { vInfeed 1 }
+
+        lineToLineVoltAverage  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "Volts (rms)"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The Line to Line RMS voltage of the infeed."
+            ::= { vInfeed 2 }
+
+        infeedLineCurrentAverage  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "Amps (rms)"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The total RMS current flowing through the infeed."
+            ::= { vInfeed 3 }
+
+        infeedCurrentDemand  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "Amps (rms)"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The current demand of the infeed."
+            ::= { vInfeed 4 }
+
+        infeedCurrentPeakDemand  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "Amps (rms)"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The highest infeedCurrentDemand measured
+                 since the last operator reset of this value."
+            ::= { vInfeed 5 }
+
+         infeedDemandTime  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "minutes"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The interval of time over which the demand
+                 is calculated for the infeed parameters."
+            ::= { vInfeed 6 }
+
+        infeedTotalActivePower  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "W"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The total active power of the infeed."
+            ::= { vInfeed 7 }
+
+        infeedPeakTotalActivePower  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "W"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The highest infeedTotalActivePower measured
+                 since the last operator reset of this value."
+            ::= { vInfeed 8 }
+
+        infeedTotalActivePowerDemand  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "W per demand interval"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The active power demand of the infeed."
+            ::= { vInfeed 9 }
+
+        infeedPeakTotalActivePowerDemand  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "W per demand interval"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The highest infeedActivePowerDemand measured
+                 since the last operator reset of this value."
+            ::= { vInfeed 10 }
+
+        infeedTotalReactivePower  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "var per demand interval"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The total reactive power of the infeed."
+            ::= { vInfeed 11 }
+
+        infeedTotalReactivePowerDemand  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "var per demand interval"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The reactive power demand of the infeed."
+            ::= { vInfeed 12 }
+
+        infeedPeakTotalReactivePowerDemand  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "var per demand interval"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The highest infeedReactivePowerDemand measured
+                 since the last operator reset of this value."
+            ::= { vInfeed 13 }
+
+        infeedTotalApparentPower  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "VA"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The total apparent power of the infeed."
+            ::= { vInfeed 14 }
+
+        infeedTotalApparentPowerDemand  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "VA per demand interval"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The apparent power demand of the infeed."
+            ::= { vInfeed 15 }
+
+        infeedPeakTotalApparentPowerDemand  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "VA per demand interval"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The highest infeedApparentPowerDemand measured
+                 since the last operator reset of this value."
+            ::= { vInfeed 16 }
+
+        infeedTotalPowerFactor  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       ""
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The total power factor of the infeed."
+            ::= { vInfeed 17 }
+
+        frequency  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "Hz"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The frequency of the infeed."
+            ::= { vInfeed 18 }
+
+        infeedTotalEnergy  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "kWh"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The total energy being consumed via the inlet, since
+                 the last operator reset of this cumulative value."
+            ::= { vInfeed 19 }
+
+        infeedLineCurrentRating  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "amps (rms)"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The maximum current allow per the device rating on infeed."
+            ::= { vInfeed 20 }
+
+        infeedMeasuredNeutralCurrent    OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "Amps (rms)"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The measured neutral current."
+            ::= { vInfeed 21 }
+
+        --  End of Infeed.
+
+
+        --
+        --  Infeed Line Table
+        --
+
+        vInfeedLine  OBJECT-TYPE
+            SYNTAX      SEQUENCE OF VInfeedLineEntry 
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Table of infeed line data."
+            ::= { virgo 5 }
+
+        vInfeedLineEntry  OBJECT-TYPE
+            SYNTAX      VInfeedLineEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Variables pertaining to infeed line."
+            INDEX { infeedLineIndex }
+            ::= { vInfeedLine 1 }
+
+        VInfeedLineEntry ::= SEQUENCE
+        {
+            infeedLineIndex                     INTEGER,
+            infeedLineCurrent                   DisplayString,
+            infeedLineCurrentMin                DisplayString,
+            infeedLineCurrentMax                DisplayString,
+            infeedLineCurrentRatingPercentOf    DisplayString,
+            infeedLineCurrentMinAlarm           DisplayString,
+            infeedLineCurrentMaxAlarm           DisplayString,
+            infeedLineCurrentDemand             DisplayString,
+            infeedLineCurrentPeakDemand         DisplayString
+        }
+
+        infeedLineIndex  OBJECT-TYPE 
+            SYNTAX      INTEGER { line1(1), line2(2), line3(3), neutralC(4), neutralM(5) }
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The index to the infeed line entry."
+            ::= { vInfeedLineEntry 1 }
+
+        infeedLineCurrent  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "amps (rms)"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The current measurement of infeed."
+            ::= { vInfeedLineEntry 3 }
+
+        infeedLineCurrentMin  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "amps (rms)"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The minimum current measured on infeed."
+            ::= { vInfeedLineEntry 4 }
+
+        infeedLineCurrentMax  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "amps (rms)"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The maximum current measured on infeed."
+            ::= { vInfeedLineEntry 5 }
+
+        infeedLineCurrentRatingPercentOf  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "% of rated"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "(current / rated current * 100) for infeed."
+            ::= { vInfeedLineEntry 6 }
+
+        infeedLineCurrentMinAlarm  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "amps (RMS)"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The minimum current threshold for alarm activiation."
+            ::= { vInfeedLineEntry 7 }
+
+        infeedLineCurrentMaxAlarm  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "amps (RMS)"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The maximum current threshold for alarm activiation."
+            ::= { vInfeedLineEntry 8 }
+
+        infeedLineCurrentDemand  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "amps per demand interval"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The current demand of this line."
+            ::= { vInfeedLineEntry 9 }
+
+        infeedLineCurrentPeakDemand  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "amps per demand interval"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The highest infeedLineCurrentDemand measured
+                 since the last operator reset of this value."
+            ::= { vInfeedLineEntry 10 }
+
+        --  End of Infeed Line Table.
+
+
+        --
+        --  Infeed Phase Table
+        --
+
+        vInfeedPhase  OBJECT-TYPE
+            SYNTAX      SEQUENCE OF VInfeedPhaseEntry 
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Table of infeed phase data."
+            ::= { virgo 6 }
+
+        vInfeedPhaseEntry  OBJECT-TYPE
+            SYNTAX      VInfeedPhaseEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Variables pertaining to infeed phase."
+            INDEX   { infeedPhaseIndex }
+            ::= { vInfeedPhase 1 }
+
+        VInfeedPhaseEntry ::= SEQUENCE
+        {
+            infeedPhaseIndex             INTEGER,
+            lineToNeutVoltage            DisplayString,
+            lineToLineVoltage            DisplayString,  
+            lineToLineVoltageMin         DisplayString,  
+            lineToLineVoltageMax         DisplayString,  
+            lineToLineVoltageMinAlarm    DisplayString,  
+            lineToLineVoltageMaxAlarm    DisplayString,  
+            infeedPhasePowerFactor       DisplayString,       
+            infeedPhaseApparentPower     DisplayString,       
+            infeedPhaseActivePower       DisplayString,       
+            infeedPhasePeakActivePower   DisplayString,       
+            infeedPhaseReactivePower     DisplayString,       
+            infeedPhaseEnergy            DisplayString    
+        }
+
+        infeedPhaseIndex  OBJECT-TYPE 
+            SYNTAX      INTEGER { phaseA(1), phaseB(2), phaseC(3) }
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The index to the infeed phase entry."
+            ::= { vInfeedPhaseEntry 1 }
+
+        lineToNeutVoltage  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "volts (rms)"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The current measurement of infeed."
+            ::= { vInfeedPhaseEntry 2 }
+
+       lineToLineVoltage  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "volts (rms)"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "Phase A,B,C voltage."
+            ::= { vInfeedPhaseEntry 3 }
+
+       lineToLineVoltageMin  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "volts (rms)"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "Phase A,B,C voltage minimum."
+            ::= { vInfeedPhaseEntry 4 }
+
+       lineToLineVoltageMax  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "volts (rms)"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "Phase A,B,C voltage maximum."
+            ::= { vInfeedPhaseEntry 5 }
+
+       lineToLineVoltageMinAlarm  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "volts (rms)"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "Phase A,B,C voltage minimum alarm threshold."
+            ::= { vInfeedPhaseEntry 6 }
+
+       lineToLineVoltageMaxAlarm  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "volts (rms)"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "Phase A,B,C voltage maximum alarm threshold."
+            ::= { vInfeedPhaseEntry 7 }
+
+       infeedPhasePowerFactor  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "Phase A,B,C power factor."
+            ::= { vInfeedPhaseEntry 8 }
+
+       infeedPhaseApparentPower  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "VA"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "Phase A,B,C apparent power."
+            ::= { vInfeedPhaseEntry 9 }
+
+       infeedPhaseActivePower  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "W"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "Phase A,B,C active power"
+            ::= { vInfeedPhaseEntry 10 }
+
+       infeedPhasePeakActivePower  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "W"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "Phase A,B,C peak active power."
+            ::= { vInfeedPhaseEntry 11 }
+
+       infeedPhaseReactivePower  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "var"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "Phase A,B,C reactive power."
+            ::= { vInfeedPhaseEntry 12 }
+
+       infeedPhaseEnergy  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            UNITS       "kWh"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "Phase A,B,C metered energy."
+            ::= { vInfeedPhaseEntry 13 }
+
+        --  End of Infeed Phase Table.
+
+
+        --
+        --  Outlet Table
+        --
+     
+        vOutlet  OBJECT-TYPE
+            SYNTAX      SEQUENCE OF VOutletEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Table of outlet data."
+            ::= { virgo 7 }
+
+        vOutletEntry  OBJECT-TYPE
+            SYNTAX      VOutletEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Variables pertaining to the outlet table."
+            INDEX { outletIndex }
+            ::= { vOutlet 1 }
+
+        VOutletEntry ::= SEQUENCE
+        {
+            outletIndex                 INTEGER,
+            outletId                    DisplayString,
+            outletLineCurrentRating     DisplayString,
+            outletDemandTime            DisplayString,
+            outletTotalActivePower      DisplayString,
+            outletPeakTotalActivePower  DisplayString,
+            outletTotalReactivePower    DisplayString,
+            outletTotalApparentPower    DisplayString,
+            outletTotalPowerFactor      DisplayString,
+            outletTotalEnergy           DisplayString,
+            outletCurrentMinAlarm       DisplayString,
+            outletCurrentMaxAlarm       DisplayString
+        }
+
+        outletIndex  OBJECT-TYPE 
+            SYNTAX      INTEGER { outlet1(1), outlet2(2), outlet3(3), outlet4(4) }
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The index to the outlet entry."
+            ::= { vOutletEntry 1 }
+
+        outletId  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The name assigned to this outlet."
+            ::= { vOutletEntry 2 }
+
+        outletLineCurrentRating  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "amps (rms)"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The rated current of this outlet."
+            ::= { vOutletEntry 3 }
+
+        outletDemandTime  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "minutes"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The interval of time over which the demand
+                 is calculated for the outlet parameters."
+            ::= { vOutletEntry 4 }
+
+        outletTotalActivePower  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "W"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The total active power being supplied by this outlet."
+            ::= { vOutletEntry 5 }
+
+        outletPeakTotalActivePower  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "W"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The peak total active power being supplied by this outlet."
+            ::= { vOutletEntry 6 }
+
+        outletTotalReactivePower  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "var"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The total reactive power being supplied by this outlet."
+            ::= { vOutletEntry 7 }
+
+        outletTotalApparentPower  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "VA"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The total apparent power being supplied by this outlet."
+            ::= { vOutletEntry 8 }
+
+        outletTotalPowerFactor  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       ""
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The total power factor of this outlet."
+            ::= { vOutletEntry 9 }
+
+        outletTotalEnergy  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "kWh"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The total energy supplied by this outlet, since
+                 the last operator reset of this cumulative value."
+            ::= { vOutletEntry 10 }
+
+        outletCurrentMinAlarm  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "amps (rms)"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The minumum outlet current alarm threshold. Current
+                values below threshold will trigger an alarm."
+            ::= { vOutletEntry 11 }
+
+        outletCurrentMaxAlarm  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "amps (rms)"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The maximun outlet current alarm threshold. Current
+                values above threshold will trigger an alarm."
+           ::= { vOutletEntry 12 }
+
+        --  End of Outlet Table.
+
+
+        --
+        --  Outlet Line Table
+        --
+
+        vOutletLine  OBJECT-TYPE
+            SYNTAX      SEQUENCE OF VOutletLineEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Table of outlet line data."
+            ::= { virgo 8 }
+
+        vOutletLineEntry  OBJECT-TYPE
+            SYNTAX      VOutletLineEntry
+            MAX-ACCESS  not-accessible
+            STATUS      current
+            DESCRIPTION
+                "Variables pertaining to the outlet line table."
+            INDEX { outletOutletIndex, outletLineIndex }
+            ::= { vOutletLine 1 }
+
+        VOutletLineEntry ::= SEQUENCE
+        {
+            outletOutletIndex                   INTEGER,
+            outletLineIndex                     INTEGER,
+            outletPhaseId                       DisplayString,
+            outletLineCurrent                   DisplayString,
+            outletLineCurrentRatingPercentOf    DisplayString,
+            outletLineCurrentDemand             DisplayString,
+            outletLineCurrentPeakDemand         DisplayString,
+            outletLineCurrentMin                DisplayString,
+            outletLineCurrentMax                DisplayString
+        }
+
+        outletOutletIndex  OBJECT-TYPE 
+            SYNTAX      INTEGER { outlet1(1), outlet2(2), outlet3(3), outlet4(4) }
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The index to the outlet entry."
+            ::= { vOutletLineEntry 1 }
+
+        outletLineIndex  OBJECT-TYPE 
+            SYNTAX      INTEGER { line1(1), line2(2), line3(3), neutral(4) }
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The index to the outlet line entry."
+            ::= { vOutletLineEntry 2 }
+
+        outletPhaseId  OBJECT-TYPE
+            SYNTAX      DisplayString --(0..32)
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The name assigned to this phase of the outlet."
+            ::= { vOutletLineEntry 3 }
+
+        outletLineCurrent  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "amps (rms)"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The current flowing in Line 1 of this outlet."
+            ::= { vOutletLineEntry 4 }
+
+        outletLineCurrentRatingPercentOf  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "% of rated"
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The percent of rated current flowing in
+                 Line 1 of this outlet."
+            ::= { vOutletLineEntry 5 }
+
+        outletLineCurrentDemand  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "amps (rms) per demand interval"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The current demand of this outlet."
+            ::= { vOutletLineEntry 6 }
+
+        outletLineCurrentPeakDemand  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "amps (rms) per demand interval"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The highest outletCurrentDemand measured since
+                 the last operator reset of this value."
+            ::= { vOutletLineEntry 7 }
+
+        outletLineCurrentMin  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "amps (rms) per demand interval"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The lowest outletCurrent measured since
+                 the last operator reset of this value."
+            ::= { vOutletLineEntry 8 }
+
+        outletLineCurrentMax  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            UNITS       "amps (rms) per demand interval"
+            MAX-ACCESS  read-write
+            STATUS      current
+            DESCRIPTION
+                "The highest outletCurrent measured since
+                 the last operator reset of this value."
+            ::= { vOutletLineEntry 9 }
+
+        --  End of Outlet Line Table.
+
+
+        --
+        --  Alarms
+        --
+
+        vAlarms   OBJECT IDENTIFIER ::= { virgo 9 }
+
+        infeedAlarmStatus  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The infeed alarm status."
+            ::= { vAlarms 1 }
+
+        outletAlarmStatus  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The outlet alarm status."
+            ::= { vAlarms 2 }
+
+        --  End of Alarms Table.
+
+
+        --
+        --  Diagnostics
+        --
+
+        vDiagnostics   OBJECT IDENTIFIER ::= { virgo 10 }
+
+        firstErrorMessage  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The oldest error message."
+            ::= { vDiagnostics 1 }
+
+        lastErrorMessage  OBJECT-TYPE
+            SYNTAX      DisplayString  -- (SIZE(0..32))
+            MAX-ACCESS  read-only
+            STATUS      current
+            DESCRIPTION
+                "The most recent error message."
+            ::= { vDiagnostics 2 }
+
+        --  End of Diagnostics Table.
+
+
+        --
+        --  Notifications
+        --
+ 
+        vNotifications   OBJECT IDENTIFIER ::= { virgo 50 }
+
+        events OBJECT IDENTIFIER ::= { vNotifications 0 }
+     
+        infeedOverCurrentAssertEvent NOTIFICATION-TYPE
+            OBJECTS
+            {
+              deviceName,
+              serialNumber,
+              deviceLocation,
+              infeedLineIndex
+            }
+            STATUS  current
+            DESCRIPTION
+                ""
+            ::= { events 1 }
+
+        infeedOverCurrentDeassertEvent NOTIFICATION-TYPE
+            OBJECTS
+            {
+              deviceName,
+              serialNumber,
+              deviceLocation,
+              infeedLineIndex
+            }
+            STATUS  current
+            DESCRIPTION
+                ""
+            ::= { events 2 }
+
+        infeedUnderCurrentAssertEvent NOTIFICATION-TYPE
+            OBJECTS
+            {
+              deviceName,
+              serialNumber,
+              deviceLocation,
+              infeedLineIndex
+            }
+            STATUS  current
+            DESCRIPTION
+                ""
+            ::= { events 3 }
+
+        infeedUnderCurrentDeassertEvent NOTIFICATION-TYPE
+            OBJECTS
+            {
+              deviceName,
+              serialNumber,
+              deviceLocation,
+              infeedLineIndex
+            }
+            STATUS  current
+            DESCRIPTION
+                ""
+            ::= { events 4 }
+
+        infeedOverVoltageAssertEvent NOTIFICATION-TYPE
+            OBJECTS
+            {
+              deviceName,
+              serialNumber,
+              deviceLocation,
+              infeedPhaseIndex
+            }
+            STATUS  current
+            DESCRIPTION
+                ""
+            ::= { events 5 }
+
+        infeedOverVoltageDeassertEvent NOTIFICATION-TYPE
+            OBJECTS
+            {
+              deviceName,
+              serialNumber,
+              deviceLocation,
+              infeedPhaseIndex
+            }
+            STATUS  current
+            DESCRIPTION
+                ""
+            ::= { events 6 }
+
+        infeedUnderVoltageAssertEvent NOTIFICATION-TYPE
+            OBJECTS
+            {
+              deviceName,
+              serialNumber,
+              deviceLocation,
+              infeedPhaseIndex
+            }
+            STATUS  current
+            DESCRIPTION
+                ""
+            ::= { events 7 }
+
+        infeedUnderVoltageDeassertEvent NOTIFICATION-TYPE
+            OBJECTS
+            {
+              deviceName,
+              serialNumber,
+              deviceLocation,
+              infeedPhaseIndex
+            }
+            STATUS  current
+            DESCRIPTION
+                ""
+            ::= { events 8 }
+
+        outletOverCurrentAssertEvent NOTIFICATION-TYPE
+            OBJECTS
+            {
+              deviceName,
+              serialNumber,
+              deviceLocation,
+              outletOutletIndex,
+              outletLineIndex
+            }
+            STATUS  current
+            DESCRIPTION
+                ""
+            ::= { events 9 }
+
+        outletOverCurrentDeassertEvent NOTIFICATION-TYPE
+            OBJECTS
+            {
+              deviceName,
+              serialNumber,
+              deviceLocation,
+              outletOutletIndex,
+              outletLineIndex
+            }
+            STATUS  current
+            DESCRIPTION
+                ""
+            ::= { events 10 }
+
+        outletUnderCurrentAssertEvent NOTIFICATION-TYPE
+            OBJECTS
+            {
+              deviceName,
+              serialNumber,
+              deviceLocation,
+              outletOutletIndex,
+              outletLineIndex
+            }
+            STATUS  current
+            DESCRIPTION
+                ""
+            ::= { events 11 }
+
+        outletUnderCurrentDeassertEvent NOTIFICATION-TYPE
+            OBJECTS
+            {
+              deviceName,
+              serialNumber,
+              deviceLocation,
+              outletOutletIndex,
+              outletLineIndex
+            }
+            STATUS  current
+            DESCRIPTION
+                ""
+            ::= { events 12 }
+
+        --  End of Notifications.
+
+
+--
+-- Groups
+--
+    --
+    -- Starline Virgo Object and Notification Groups
+    --
+
+    vGroups OBJECT IDENTIFIER ::= { virgo 100 }
+
+    vGeneralGroup  OBJECT-GROUP
+        OBJECTS
+        {
+          deviceName,
+          deviceLocation,
+          deviceId,
+          modelNumber,
+          serialNumber,
+          catalogNumber,
+          firmwareVersion,
+          calibrationDate,
+          energyReset
+        }
+        STATUS  current
+        DESCRIPTION
+            "A collection of Starline Virgo general objects."
+        ::= { vGroups 1 }
+
+    vPhysicalInterfaceGroup  OBJECT-GROUP
+        OBJECTS
+        {
+          enetMacAddress,
+          enetIpAddress,
+          enetIpNetmask,
+          enetIpGateway,
+          enetEnableDHCP,
+          enetStaticIpAddress,
+          enetStaticIpNetmask,
+          enetStaticIpGateway,
+          wifiMacAddress,
+          wifiIpAddress,
+          wifiIpNetmask,
+          wifiIpGateway,
+          wifiEnableDHCP,
+          wifiStaticIpAddress,
+          wifiStaticIpNetmask,
+          wifiStaticIpGateway,
+          wifiSSID,
+          wifiEncryptionType,
+          modbusAddress,
+          modbusBaudRate,
+          modbusStopBits,
+          modbusParity,
+          digitalIoName,
+          digitalIoValue,
+          digitalIoDirection,
+          digitalIoLevel,
+          digitalIoAlarm,
+          ma420PortName,
+          ma420Value
+        }
+        STATUS  current
+        DESCRIPTION
+            "A collection of Starline Virgo physical interface objects."
+        ::= { vGroups 2 }
+
+    vProtocolGroup  OBJECT-GROUP
+        OBJECTS
+        {
+          snmpTrapDestination1,
+          snmpTrapDestination2,
+          emailFromAddress,
+          emailToAddress,
+          emailServer,
+          emailPort,
+          emailAuthentication,
+          emailLogin,
+          emailPassword,
+          sntpServer
+        }
+        STATUS  current
+        DESCRIPTION
+            "A collection of Starline Virgo protocol objects."
+        ::= { vGroups 3 }
+
+    vInfeedGroup  OBJECT-GROUP
+        OBJECTS
+        {
+          lineToNeutVoltAverage,
+          lineToLineVoltAverage,
+          infeedLineCurrentAverage,
+          infeedCurrentDemand,
+          infeedCurrentPeakDemand,
+          infeedDemandTime,
+          infeedTotalActivePower,
+          infeedPeakTotalActivePower,
+          infeedTotalActivePowerDemand,
+          infeedPeakTotalActivePowerDemand,
+          infeedTotalReactivePower,
+          infeedTotalReactivePowerDemand,
+          infeedPeakTotalReactivePowerDemand,
+          infeedTotalApparentPower,
+          infeedTotalApparentPowerDemand,
+          infeedPeakTotalApparentPowerDemand,
+          infeedTotalPowerFactor,
+          frequency,
+          infeedTotalEnergy,
+          infeedMeasuredNeutralCurrent,
+          infeedLineCurrent,
+          infeedLineCurrentMin,
+          infeedLineCurrentMax,
+          infeedLineCurrentMinAlarm,
+          infeedLineCurrentMaxAlarm,
+          infeedLineCurrentRating,
+          infeedLineCurrentRatingPercentOf,
+          infeedLineCurrentDemand,
+          infeedLineCurrentPeakDemand,
+          lineToNeutVoltage,
+          lineToLineVoltage,
+          lineToLineVoltageMin,     
+          lineToLineVoltageMax,     
+          lineToLineVoltageMinAlarm,
+          lineToLineVoltageMaxAlarm,
+          infeedPhasePowerFactor,
+          infeedPhaseApparentPower,
+          infeedPhaseActivePower,
+          infeedPhasePeakActivePower,
+          infeedPhaseReactivePower,
+          infeedPhaseEnergy,
+          infeedMeasuredNeutralCurrent  
+        }
+        STATUS  current
+        DESCRIPTION
+            "A collection of Starline Virgo infeed objects."
+        ::= { vGroups 4 }
+
+    vOutletGroup  OBJECT-GROUP
+        OBJECTS
+        {
+          outletId,
+          outletLineCurrentRating,
+          outletDemandTime,
+          outletTotalActivePower,
+          outletPeakTotalActivePower,
+          outletTotalReactivePower,
+          outletTotalApparentPower,
+          outletTotalPowerFactor,
+          outletTotalEnergy,
+          outletCurrentMinAlarm,
+          outletCurrentMaxAlarm,
+          outletPhaseId,
+          outletLineCurrent,               
+          outletLineCurrentRatingPercentOf,
+          outletLineCurrentDemand,             
+          outletLineCurrentPeakDemand,
+          outletLineCurrentMin,
+          outletLineCurrentMax
+        }
+        STATUS  current
+        DESCRIPTION
+            "A collection of Starline Virgo outlet objects."
+        ::= { vGroups 5 }
+
+    vAlarmsGroup  OBJECT-GROUP
+        OBJECTS
+        {
+          infeedAlarmStatus,
+          outletAlarmStatus
+        }
+        STATUS  current
+        DESCRIPTION
+            "A collection of Starline Virgo alarm objects."
+        ::= { vGroups 6 }
+
+    vDiagnosticsGroup  OBJECT-GROUP
+        OBJECTS
+        {
+          firstErrorMessage,
+          lastErrorMessage
+        }
+        STATUS  current
+        DESCRIPTION
+            "A collection of Starline Virgo diagnostic objects."
+        ::= { vGroups 7 }
+
+    vNotificationGroup  NOTIFICATION-GROUP
+        NOTIFICATIONS  
+        {
+          infeedOverCurrentAssertEvent,
+          infeedOverCurrentDeassertEvent,
+          infeedUnderCurrentAssertEvent,
+          infeedUnderCurrentDeassertEvent,
+          infeedOverVoltageAssertEvent,
+          infeedOverVoltageDeassertEvent,
+          infeedUnderVoltageAssertEvent,
+          infeedUnderVoltageDeassertEvent,
+          outletOverCurrentAssertEvent,
+          outletOverCurrentDeassertEvent,
+          outletUnderCurrentAssertEvent,
+          outletUnderCurrentDeassertEvent
+         }
+        STATUS  current
+        DESCRIPTION
+            "A collection of Starline Virgo notification objects."
+        ::= { vGroups 8 }
+
+
+    --
+    -- Starline Virgo Module Compliance Groups
+    --
+
+    vCompliances OBJECT IDENTIFIER ::= { virgo 150 }
+
+    starlineVirgoCompliance  MODULE-COMPLIANCE
+        STATUS current
+        DESCRIPTION
+            "This compliance statement for is for entities
+            which implement the Starline Virgo MIB."
+        MODULE -- this module
+            MANDATORY-GROUPS
+            {
+              vGeneralGroup,
+              vPhysicalInterfaceGroup,
+              vProtocolGroup,
+              vInfeedGroup,
+              vOutletGroup,
+              vAlarmsGroup,
+              vDiagnosticsGroup,
+              vNotificationGroup
+			      }
+        GROUP vGroups
+        DESCRIPTION
+            "This group is mandatory."
+        ::= { vCompliances 1}
+
+END

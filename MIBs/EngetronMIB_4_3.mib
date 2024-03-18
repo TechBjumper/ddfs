@@ -1,0 +1,2049 @@
+-- Engetron proprietary MIB  rev.4.3 05/12/2014
+ ENGETRON-MIB DEFINITIONS ::= BEGIN
+
+     IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+        OBJECT-IDENTITY, Counter32, Gauge32, Integer32, Unsigned32
+           FROM SNMPv2-SMI
+        DisplayString, TimeStamp, TimeInterval, TestAndIncr,
+         AutonomousType, TEXTUAL-CONVENTION
+          FROM SNMPv2-TC
+       MODULE-COMPLIANCE, OBJECT-GROUP
+          FROM SNMPv2-CONF
+      enterprises, IpAddress 
+      	  FROM RFC1155-SMI; 
+
+   engetron MODULE-IDENTITY
+       LAST-UPDATED "201412050000Z"
+       ORGANIZATION "Engetron Engenharia Eletronica Ltda"
+       CONTACT-INFO
+              "        Wilton Padrao e Marlon de Souza Lima
+
+                Postal: Via Socrates Mariani Bittencourt, 1099
+                        Cinco - Contagem - Minas Gerais
+                        Brazil
+
+                   Tel: +55 3359 5800
+                   Fax: +55 3359 5890
+
+                E-mail: wpadrao@engetron.com.br
+                		msouza@engetron.com.br"
+       DESCRIPTION
+               "The proprietary MIB module to describe Uninterruptible Power
+               Supplies."
+       REVISION  "201412050000Z"
+       
+       DESCRIPTION
+       		   "Novos alarmes para manutencao preventiva e corretiva"              
+       
+       ::= { enterprises 3677 }
+
+   PositiveInteger ::= TEXTUAL-CONVENTION
+       DISPLAY-HINT "d"
+       STATUS       current
+       DESCRIPTION
+               "This data type is a non-zero and non-negative value."
+       SYNTAX       INTEGER (1..2147483647)
+
+   NonNegativeInteger ::= TEXTUAL-CONVENTION
+       DISPLAY-HINT "d"
+       STATUS       current
+       DESCRIPTION
+               "This data type is a non-negative value."
+       SYNTAX       INTEGER (0..2147483647)
+                                                         
+   ups           OBJECT IDENTIFIER ::= { engetron 1 }   
+   bms           OBJECT IDENTIFIER ::= { engetron 2 }  
+   
+  
+  bmsTotalNumberOfBatteries OBJECT-TYPE
+       SYNTAX     INTEGER 
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Total number of batteries connected to the Battery Monitoring System."
+       ::= { bms 1 }   
+       
+   bmsGexIdentity OBJECT-TYPE
+       SYNTAX     INTEGER 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "Identity of the battery bank managed."
+       ::= { bms 2 }
+       
+    bmsNominalVoltageOfBatteries OBJECT-TYPE
+       SYNTAX     INTEGER  
+       UNITS      "0,01 x VOLT"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "Nominal voltage of the batteries in the system. One must change the value depending on the application."
+       ::= { bms 3 }          
+   
+   bmsAverageTemperature OBJECT-TYPE
+       SYNTAX     INTEGER 
+       UNITS      "0,1 x Celsius Degrees"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Arithmetic mean temperature of the battery bank."
+       ::= { bms 4 }
+   
+   bmsAverageVoltage OBJECT-TYPE
+       SYNTAX     INTEGER  
+       UNITS      "0,01 x VOLT"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Arithmetic mean voltage of the battery bank."
+       ::= { bms 5 }  
+                        
+                           
+   bmsAverageCurrent OBJECT-TYPE
+       SYNTAX     INTEGER  
+       UNITS "0,1 x AMPERE"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Object reserved for future use."
+       ::= { bms 6 }
+       
+    bmsAverageInternalTemperature OBJECT-TYPE
+       SYNTAX     INTEGER  
+       UNITS      "0,1 x Celsius Degrees"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Object reserved for future use."
+       ::= { bms 7 }   
+                 
+   bmsVoltageVariance OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "0,0001 x VOLT x VOLT"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Voltage variance of the battery bank."
+       ::= { bms 8 }
+       
+   bmsTemperatureVariance OBJECT-TYPE
+       SYNTAX     INTEGER 
+       UNITS "0,01 x Celsius Degrees x Celsius Degrees"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Temperature variance of the battery bank."
+       ::= { bms 9 } 
+             
+    bmsChargeUpperCurrentLimit OBJECT-TYPE
+       SYNTAX     INTEGER  
+       UNITS "0,1 x AMPERE" 
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Object reserved for future use."
+       ::= { bms 10 }
+       
+    bmsDischargeUpperCurrentLimit OBJECT-TYPE
+       SYNTAX     INTEGER  
+       UNITS "0,1 x AMPERE" 
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Object reserved for future use."
+       ::= { bms 11 }  
+                 
+    bmsNumberOfActiveAlarms OBJECT-TYPE
+       SYNTAX     INTEGER 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "Number of batteries in the bank with present alarms."
+       ::= { bms 12 }
+       
+    bmsChargeUpperVoltagePercentLimit OBJECT-TYPE
+       SYNTAX     INTEGER    
+       UNITS      "percent" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "Voltage upper limit  during the charge of the batteries. If the measured voltage of any battery in the bank 
+               under charge  is higher than this limit the UpperVoltage alarm is triggered, i.e, if the inserted value is 25%
+               and the nominal voltage is 12 V the UpperVoltage alarm will be triggered for any battery in wich its voltage is superior than 15V."       
+	   ::= { bms 13 }
+    
+    bmsChargeLowerVoltagePercentLimit OBJECT-TYPE
+       SYNTAX     INTEGER   
+       UNITS      "percent"
+       MAX-ACCESS read-write 
+       STATUS     current
+       DESCRIPTION
+               "Voltage lower limit  during the charge of the batteries. If the measured voltage of any battery in the bank under charge
+                is lower than this limit the UnderVoltage alarm is triggered, i.e, if the inserted value is 15% and the nominal voltage is 12 V t
+                he UnderVoltage alarm will be triggered for any battery in wich its voltage is bellow 10,2V."       
+               
+               ::= { bms 14 }   
+    
+    bmsDischargeUpperVoltagePercentLimit OBJECT-TYPE
+       SYNTAX     INTEGER  
+       UNITS      "percent" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "Voltage upper limit  during the discharge of the batteries. If the measured voltage of any battery in the bank 
+               under discharge  is higher than this limit the UpperVoltage alarm is triggered, i.e, if the inserted value is 25%
+               and the nominal voltage is 12 V the UpperVoltage alarm will be triggered for any battery in wich its voltage is superior than 15V."
+       ::= { bms 15 }
+ 
+    bmsDischargeLowerVoltagePercentLimit OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "percent" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "Voltage lower limit  during the discharge of the batteries. If the measured voltage of any battery in the bank under discharge
+                is lower than this limit the UnderVoltage alarm is triggered, i.e, if the inserted value is 15% and the nominal voltage is 12 V t
+                he UnderVoltage alarm will be triggered for any battery in wich its voltage is bellow 10,2V."        
+               ::= { bms 16 }
+  
+     bmsChargeUpperTemperatureLimit OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "0,1 x Celsius Degrees"     
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+                "Temperature upper limit during the charge of the battery bank. If the temperature measured in any battery of the bank
+                 is higher than this limit the Uppertemperature alarm is triggered. "
+       ::= { bms 17 }
+            
+     bmsChargeLowerTemperatureLimit OBJECT-TYPE
+       SYNTAX     INTEGER    
+       UNITS      "0,1 x Celsius Degrees"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "Temperature lower limit during the charge of the batteries. If the measured temperature of any battery in the bank under charge  is
+               lower than this value the UnderTemperature Alarm is triggered."       
+               ::= { bms 18 }   
+               
+     bmsDischargeUpperTemperatureLimit OBJECT-TYPE
+       SYNTAX     INTEGER    
+       UNITS      "0,1 x Celsius Degrees"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "Temperature upper limit during the discharge of the battery bank. If the temperature measured in any battery of the bank
+                is higher than this limit the Uppertemperature alarm is triggered. "
+
+       ::= { bms 19 } 
+             
+      bmsDischargeLowerTemperatureLimit OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "0,1 x Celsius Degrees" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "Temperature lower limit during the discharge of the batteries. If the measured temperature of any battery in the bank under discharge  is
+               lower than this value the UnderTemperature Alarm is triggered."
+       ::= { bms 20 }  
+                      
+     bmsUpperTemperatureInternalLimit OBJECT-TYPE
+       SYNTAX     INTEGER  
+       UNITS "0,1 x CELSIUS DEGREES" 
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Upper limit of the internal temperature of the battery bank.
+               If the measured temperature of the battery bank exceeds this value the alarm is triggered the alarm on temperature internal temperature.."
+       ::= { bms 21 } 
+       
+     bmsLowerTemperatureInternalLimit OBJECT-TYPE
+       SYNTAX     INTEGER  
+       UNITS "0,1 x CELSIUS DEGREES" 
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Lower limit of the internal temperature of the battery bank.
+               If the measured temperature of the battery bank exceeds this value the alarm is triggered the alarm on Under Temperature internal."
+       ::= { bms 22 }   
+      
+      bmsTransmittedPackets OBJECT-TYPE
+       SYNTAX     INTEGER 
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Counter of transmitted packets from the Battery Monitoring Central to the Baterry Monitoring Units."
+       ::= { bms 23 }  
+       
+      bmsReceivedPackets OBJECT-TYPE
+       SYNTAX     INTEGER 
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Counter of received packets from the Battery Monitoring Units."
+       ::= { bms 24 }   
+       
+      bmsManagementFlag OBJECT-TYPE
+       SYNTAX     INTEGER 
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Flag that tells the manager that the data should be collected batteries because there was some variation.. "
+       ::= { bms 25 }           
+     
+       --Tabela de Elementos--
+                       
+       bmuTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF BmuEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "Table monitoring battery."
+       ::= { bms 26 }
+
+       bmuEntry OBJECT-TYPE
+       SYNTAX     BmuEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "Entry in BMU Table."
+       INDEX {bmuIndex }
+       ::= { bmuTable 1 }
+
+       BmuEntry ::= SEQUENCE {
+       bmuIndex   									 Unsigned32,
+       bmuAddress  									 INTEGER,
+       bmuVersion									 INTEGER,
+       bmuVoltage 									 INTEGER,
+       bmuTemperature    							 INTEGER,
+       bmuBatteryCapacity                            INTEGER,
+       bmuBatteryModel                               OCTET STRING,
+       bmuActiveAlarms                               INTEGER,
+       bmuActiveLedState                             INTEGER,
+       bmuLedTimeOn                                  INTEGER
+       }                
+   
+	   bmuIndex OBJECT-TYPE
+       SYNTAX     Unsigned32
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "The output line identifier."
+       ::= { bmuEntry 1 }
+       
+       bmuAddress OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Battery Monitoring Unit Adress."
+       ::= { bmuEntry 2 }
+       
+       bmuVersion OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Battery Monitoring Unit Version."
+       ::= { bmuEntry 3 }
+       
+       bmuVoltage OBJECT-TYPE
+       SYNTAX     INTEGER   
+       UNITS "0,01 x VOLT" 
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Battery measured voltage"
+       ::= { bmuEntry 4 }
+               
+       bmuTemperature OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS "0,1 x CELSIUS DEGREES" 
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Battery measured temperature ."
+       ::= { bmuEntry 5 } 
+                        
+       bmuBatteryCapacity OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS "AMPERE-HOUR" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The battery capacity in Ampere-Hour."
+       ::= { bmuEntry 6 }
+        
+       bmuBatteryModel OBJECT-TYPE
+       SYNTAX      OCTET STRING
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The model of the battery."
+       ::= { bmuEntry 7 }
+       
+       bmuActiveAlarms OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Battery Alarms Mask.Contains encoded information that
+               indicates present alarms in the battery. "
+       ::= { bmuEntry 8 }
+       
+       bmuActiveLedState OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The state of the LED in the Battery Management Unit:
+               
+               0 - LED is at Off-State
+               1 - LED is at Blinking-State
+               2 - LED is at Alight-State"
+               
+       ::= { bmuEntry 9 }
+       
+       bmuLedTimeOn OBJECT-TYPE
+       SYNTAX     INTEGER 
+       UNITS "MINUTES" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "When read the absolute value indicates the remaining time to turn off the LED
+               of the Battery Monitoring Units. Writing this value offers two
+               different possibilities:
+               1- A positive integer determines a period in which the LED of the unit must remain continuously alight.
+               2- A negative integer determines a period in which the LED of the unit must stay blinking."
+       ::= { bmuEntry 10 }     
+       
+       cmuTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF CmuEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "Table monitoring current."
+       ::= { bms 27 }  
+    
+       cmuEntry OBJECT-TYPE
+       SYNTAX     CmuEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "Entry in CMU Table."
+       INDEX {cmuIndex }
+       ::= { cmuTable 1 }
+
+       CmuEntry ::= SEQUENCE {
+       cmuIndex   									 Unsigned32,
+       cmuAddress  									 INTEGER,
+       cmuVersion									 INTEGER,
+       cmuCurrent                                    INTEGER,     
+       cmuTemperature    							 INTEGER,
+       cmuNominalCurrentValue	                     INTEGER,
+       cmuActiveAlarms                               INTEGER,
+       cmuActiveLedState                             INTEGER,
+       cmuLedTimeOn                                  INTEGER
+       }  
+                
+	   cmuIndex OBJECT-TYPE
+       SYNTAX     Unsigned32
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "The output line identifier."
+       ::= { cmuEntry 1 }
+       
+       cmuAddress OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Current Monitoring Unit Adress."
+       ::= { cmuEntry 2 }
+       
+       cmuVersion OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Current Monitoring Unit Version."
+       ::= { cmuEntry 3 }
+       
+       cmuCurrent OBJECT-TYPE
+       SYNTAX     INTEGER   
+       UNITS "0,1 x AMPERE" 
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Measured current of the battery bank"
+       ::= { cmuEntry 4 }
+        
+       cmuTemperature OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS "0,1 x CELSIUS DEGREES" 
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Measured internal temperature of the battery bank."
+       ::= { cmuEntry 5 } 
+             
+       cmuNominalCurrentValue OBJECT-TYPE
+       SYNTAX     INTEGER  
+       UNITS "0,1 x AMPERE" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The nominal current value, used by the current meter to a value of 4 volts."
+       ::= { cmuEntry 6 }
+
+       
+       cmuActiveAlarms OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "Current Monitoring Alarms Mask.Contains encoded information that
+               indicates present alarms in the Current Monitoring. "
+       ::= { cmuEntry 7 }
+         
+       cmuActiveLedState OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The state of the LED in the Battery Management Unit:
+               
+               0 - LED is at Off-State
+               1 - LED is at Blinking-State
+               2 - LED is at Alight-State"
+               
+       ::= { cmuEntry 8 }
+       
+       cmuLedTimeOn OBJECT-TYPE
+       SYNTAX     INTEGER 
+       UNITS "MINUTES" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "When read the absolute value indicates the remaining time to turn off the LED
+               of the Battery Monitoring Units. Writing this value offers two
+               different possibilities:
+               1- A positive integer determines a period in which the LED of the unit must remain continuously alight.
+               2- A negative integer determines a period in which the LED of the unit must stay blinking."
+       ::= { cmuEntry 9 }
+       
+                  --Fim dos dados do grupo bms--
+                  
+                  --Início das traps do banco de baterias.
+                  bmsTraps OBJECT IDENTIFIER ::= { bms 28 }
+-- This group defines objects and traps, so that for each trap, simple
+-- get request on related objects (one or many) allow to confirm actual
+-- status of the trap.
+
+-- TRAPS NOTIFICATIONS
+
+bmsInconsistentVoltage NOTIFICATION-TYPE      
+		STATUS	current
+        DESCRIPTION
+                "This trap is sent each time a battery inside the bank presents an inconsistent voltage in comparisson to the other batteries."
+		 ::= {bmsTraps 1} 
+		 
+bmsInconsistentVoltageTrapRemoved NOTIFICATION-TYPE      
+		STATUS	current
+        DESCRIPTION
+      "This trap is sent each time an inconsistent voltage condition is removed from the system. "
+		 ::= {bmsTraps 2} 
+      
+bmsInconsistentTemperature NOTIFICATION-TYPE      
+		STATUS	current
+        DESCRIPTION
+       "This trap is sent each time a battery inside the bank presents an inconsistent temperature in comparisson to the other batteries."
+::= {bmsTraps 3}
+
+bmsInconsistentTemperatureTrapRemoved NOTIFICATION-TYPE      
+		STATUS	current
+        DESCRIPTION
+       "This trap is sent each time an inconsistent temperature condition is removed from the system."
+::= {bmsTraps 4}
+
+bmsOverVoltage NOTIFICATION-TYPE
+        STATUS	current
+        DESCRIPTION
+	"This trap is sent each time a batteries voltage is higher than a preset value defined by user."
+::= {bmsTraps 5}  
+
+bmsOverVoltageTrapRemoved NOTIFICATION-TYPE
+        STATUS	current
+        DESCRIPTION
+	"This trap is sent each time an over voltage condition is removed from the system."
+::= {bmsTraps 6}
+
+bmsOverTemperature NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+	"This trap is sent each time a batteries temperature is higher than a preset value defined by user."
+::= {bmsTraps 7} 
+
+bmsOverTemperatureTrapRemoved NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+	"This trap is sent each time an over temperature condition is removed from the system."
+::= {bmsTraps 8}
+
+bmsUnderVoltage NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+	"This trap is sent each time a batteries voltage is under a preset value defined by user."
+::= {bmsTraps 9} 
+
+bmsUnderVoltageTrapRemoved NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+	"This trap is sent each time an under voltage condition is removed from the system."
+::= {bmsTraps 10}
+
+bmsUnderTemperature NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+	"This trap is sent each time a batteries temperature is under a preset value defined by user."
+::= {bmsTraps 11}
+
+bmsUnderTemperatureTrapRemoved NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+	"This trap is sent each time an under temperature condition is removed from the system."
+::= {bmsTraps 12}
+
+bmsOverChargeCurrent NOTIFICATION-TYPE
+        STATUS	current
+        DESCRIPTION
+	"This trap is sent each time a batteries current (during charging) is higher than a preset value defined by user."
+::= {bmsTraps 13} 
+
+bmsOverChargeCurrentTrapRemoved NOTIFICATION-TYPE
+        STATUS	current
+        DESCRIPTION
+	"This trap is sent each time an over current (during charging) condition is removed from the system."
+::= {bmsTraps 14}
+
+bmsOverDischargeCurrent NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+	"This trap is sent each time a batteries current (during discharging) is higher than a preset value defined by user."
+::= {bmsTraps 15}
+
+bmsOverDischargeCurrentTrapRemoved NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+	"This trap is sent each time an over current (during discharging) condition is removed from the system."
+::= {bmsTraps 16}
+
+bmsOverInternalTemperature NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+	"This trap is sent each time a internal temperature is higher a preset value defined by user."
+::= {bmsTraps 17}
+
+bmsOverInternalTemperatureTrapRemoved NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+	"This trap is sent each time an over internal temperature condition is removed from the system."
+::= {bmsTraps 18}
+
+bmsUnderInternalTemperature NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+	"This trap is sent each time a internal temperature is under a preset value defined by user."
+::= {bmsTraps 19}
+
+bmsUnderInternalTemperatureTrapRemoved NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+	"This trap is sent each time an under internal temperature condition is removed from the system."
+::= {bmsTraps 20}
+
+bmsCommunicationFailure NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "This trap is sent each time a communication failure between batteries is detected."
+::= {bmsTraps 21}
+
+bmsCommunicationFailureTrapRemoved NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "This trap is sent each time a communication failure condition is removed from the system."
+::= {bmsTraps 22}
+   
+                  -- Fim das traps do banco de baterias.
+
+                                                            
+   upsEngetronObjects            OBJECT IDENTIFIER ::= { ups 1 }
+   --
+   -- UPS Status Group
+   --
+
+   upsStatus            OBJECT IDENTIFIER ::= { upsEngetronObjects 1 }
+
+   upsStatusCode OBJECT-TYPE
+       SYNTAX     INTEGER 
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The indication of the UPS global status, presenting the status
+               of the rectifier, inverter, bateries, fuses, static switch, bypass, 
+               and others."
+       ::= { upsStatus 1 }
+                                 
+   	upsCurrentDate OBJECT-TYPE
+       SYNTAX     DisplayString
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The current date registered in the UPS."
+       ::= { upsStatus 2 }      
+
+
+	upsCurrentTime OBJECT-TYPE
+       SYNTAX     DisplayString
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "The current time registered in the UPS."
+       ::= { upsStatus 3 }
+    
+    AlarmTrapCounter_SLMT  OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present number of traps sent. Exclusive use of Software Engetron (PowerSups Enterprise). SLMT-(Since Last Management Trap)"
+       ::= { upsStatus 4 }
+
+    ValueTrapCounter_SLMT  OBJECT-TYPE
+       SYNTAX     INTEGER                                
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present number of management traps sent. Eclusive use of Software Engetron (PowerSups Enterprise). SLMT-(Since Last Management Trap)"
+       ::= { upsStatus 5 }                                 
+                                 
+   --
+   -- The proprietary Alarm group.
+   --
+
+   upsEngetronAlarm       OBJECT IDENTIFIER ::= { upsEngetronObjects 2 }
+
+   --
+   -- The Alarm group.
+   --
+
+   upsEngetronAlarmsPresent OBJECT-TYPE
+       SYNTAX     Gauge32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present number of active alarm conditions."
+       ::= { upsEngetronAlarm 1 }  
+             
+   upsEngetronAlarmTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF UpsEngetronAlarmEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A list of alarm table entries.  The table contains
+               zero, one, or many rows at any moment, depending upon
+               the number of alarm conditions in effect.  The table
+               is initially empty at agent startup.  The agent
+               creates a row in the table each time a condition is
+               detected and deletes that row when that condition no
+               longer pertains.  The agent creates the first row with
+               upsEngetronAlarmId equal to 1, and increments the value of
+               upsEngetronAlarmId each time a new row is created, wrapping to
+               the first free value greater than or equal to 1 when
+               the maximum value of upsEngetronAlarmId would otherwise be
+               exceeded.  Consequently, after multiple operations,
+               the table may become sparse, e.g., containing entries
+               for rows 95, 100, 101, and 203 and the entries should
+               not be assumed to be in chronological order because
+               upsAlarmId might have wrapped.
+
+               Alarms are named by an AutonomousType (OBJECT
+               IDENTIFIER), upsEngetronAlarmDescr, to allow a single table to
+               reflect well known alarms plus alarms defined by a
+               particular implementation, i.e., as documented in the
+               private enterprise MIB definition for the device.  No
+               two rows will have the same value of upsEngetronAlarmDescr,
+               since alarms define conditions.  In order to meet this
+               requirement, care should be taken in the definition of
+               alarm conditions to insure that a system cannot enter
+               the same condition multiple times simultaneously.
+
+               The number of rows in the table at any given time is
+               reflected by the value of upsEngetronAlarmsPresent."
+       ::= { upsEngetronAlarm 2 }
+
+   upsEngetronAlarmEntry OBJECT-TYPE
+       SYNTAX     UpsEngetronAlarmEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "An entry containing information applicable to a
+               particular alarm."
+       INDEX { upsEngetronAlarmId }
+       ::= { upsEngetronAlarmTable 1 }
+
+   UpsEngetronAlarmEntry ::= SEQUENCE {
+       upsEngetronAlarmId          PositiveInteger,
+       upsEngetronAlarmDescr       AutonomousType,
+       upsEngetronAlarmTime        TimeStamp
+   }
+
+   upsEngetronAlarmId OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A unique identifier for an alarm condition.  This
+               value must remain constant."
+       ::= { upsEngetronAlarmEntry 1 }
+
+   upsEngetronAlarmDescr OBJECT-TYPE
+       SYNTAX     AutonomousType
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "A reference to an alarm description object.  The
+               object referenced should not be accessible, but rather
+               be used to provide a unique description of the alarm
+               condition."
+       ::= { upsEngetronAlarmEntry 2 }
+
+   upsEngetronAlarmTime OBJECT-TYPE
+       SYNTAX     TimeStamp
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The value of sysUpTime when the alarm condition was
+               detected.  If the alarm condition was detected at the
+               time of agent startup and presumably existed before
+               agent startup, the value of upsEngetronAlarmTime shall equal
+               0."
+       ::= { upsEngetronAlarmEntry 3 }
+
+   --
+   -- Well known alarm conditions.
+   --
+                                                                                                                                         
+   upsEngetronWellKnownAlarms    OBJECT IDENTIFIER ::= { upsEngetronAlarm 3 }
+
+   upsAlarmInputUnderFrequency OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Input under-frequency."
+       ::= { upsEngetronWellKnownAlarms  1 }
+
+   upsAlarmInputOverFrequency OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Input over-frequency."
+       ::= { upsEngetronWellKnownAlarms  2 }
+
+   upsAlarmInputOverVoltage OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Input over-voltage."
+       ::= { upsEngetronWellKnownAlarms  3 }
+
+   upsAlarmInputPhaseSeqErr OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Input phase-sequency error."
+       ::= { upsEngetronWellKnownAlarms  4 }
+       
+   upsAlarmOutputUnderVoltage OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Output under-voltage."
+       ::= { upsEngetronWellKnownAlarms  5 }
+   
+   upsAlarmOutputOverVoltage OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Output over-voltage."
+       ::= { upsEngetronWellKnownAlarms  6 }
+   
+   upsAlarmOutputShortCircuit OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Output short-circuit."
+       ::= { upsEngetronWellKnownAlarms  7 }
+   
+   upsAlarmOutputOverloadOver10 OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Output overload over 10%."
+       ::= { upsEngetronWellKnownAlarms  8 }
+   
+   upsAlarmOutputOverloadLessThan10 OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Output overload up to 10%."
+       ::= { upsEngetronWellKnownAlarms  9 }
+
+   upsAlarmBatteryUnderVoltage OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Battery under-voltage."
+       ::= { upsEngetronWellKnownAlarms 10 }
+   
+   upsAlarmBatteryOverVoltage OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Battery over-voltage."
+       ::= { upsEngetronWellKnownAlarms 11 }
+
+   upsAlarmInverterUnderTemperature OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Under-temperature in the Inverter."
+       ::= { upsEngetronWellKnownAlarms 12 }
+
+   upsAlarmInverterOverTemperature OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Over-temperature in the Inverter."
+       ::= { upsEngetronWellKnownAlarms 13 }
+   
+   upsAlarmRectifierSubTemperature OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Under-temperature in the Rectifier."
+       ::= { upsEngetronWellKnownAlarms 14 }
+   
+   upsAlarmRectifierOverTemperature OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Over-temperature in the Retifier."
+       ::= { upsEngetronWellKnownAlarms 15 }
+   
+   upsAlarmBypassUnderFrequency OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Bypass under-frequency."
+       ::= { upsEngetronWellKnownAlarms 16 }
+   
+   upsAlarmBypassOverFrequency OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Bypass over-frequency."
+       ::= { upsEngetronWellKnownAlarms 17 }
+   
+   upsAlarmBypassUnderVoltage OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Bypass under-voltage."
+       ::= { upsEngetronWellKnownAlarms 18 }
+   
+   upsAlarmBypassOverVoltage OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Bypass over-voltage."
+       ::= { upsEngetronWellKnownAlarms 19 }
+
+   upsAlarmBypassPhaseSeqErr OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Bypass phase-sequence error."
+       ::= { upsEngetronWellKnownAlarms  20 }      
+  
+   upsAlarmInverterHWFailure OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Inverter hardware failure."
+       ::= { upsEngetronWellKnownAlarms 21 }
+
+   upsAlarmRetifierHWFailure OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Rectifier hardware failure."
+       ::= { upsEngetronWellKnownAlarms 22 }
+       
+	upsAlarmUPSBatteryBad OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "One or more batteries have been determined to require
+               replacement."
+       ::= { upsEngetronWellKnownAlarms  23 }       
+               
+   upsAlarmUPSOnBattery OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The UPS is drawing power from the batteries."
+       ::= { upsEngetronWellKnownAlarms  24 }
+
+   upsAlarmUPSLowBattery OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The remaining battery run-time is less than or equal
+               to upsConfigLowBattTime."
+       ::= { upsEngetronWellKnownAlarms  25 }
+
+   upsAlarmUPSDepletedBattery OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The UPS will be unable to sustain the present load
+               when and if the utility power is lost."
+       ::= { upsEngetronWellKnownAlarms  26 }
+       
+	upsAlarmUPSStateOutputOff OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The output of the UPS is in the off state."
+   
+       ::= { upsEngetronWellKnownAlarms 27 }
+
+    upsAlarmUPSCommunicationsLost OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "A problem has been encountered in the communications
+               between the agent and the UPS."
+       ::= { upsEngetronWellKnownAlarms 28 }
+
+   upsAlarmUPSAwaitingPower OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The UPS output is off and the UPS is awaiting the
+               return of input power."
+       ::= { upsEngetronWellKnownAlarms 29 }
+
+   upsAlarmUPSShutdownImminent OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "The UPS will turn off power to the load in less than
+               5 seconds; this may be either a timed shutdown or a
+               low battery shutdown."
+       ::= { upsEngetronWellKnownAlarms 30 }
+    
+   upsAlarmVerifyRetPhaseNeutron OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Verify the rectifier phase-neutron conection."
+       ::= { upsEngetronWellKnownAlarms 31 }
+
+   upsAlarmAutoBypassActive OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Automatic bypass is active."
+       ::= { upsEngetronWellKnownAlarms 32 }  
+
+	upsAlarmOutputPhaseSeqErr OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Bypass phase-sequence error."
+       ::= { upsEngetronWellKnownAlarms  33 } 
+                   
+	upsAlarmFalhaComunicacaoRSInv OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Falha de comunicacao entre no-breaks em paralelo."
+       ::= { upsEngetronWellKnownAlarms 34 }              
+
+	upsAlarmAgendarMantPreventiva OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Alarme indica ao usuário que uma manutenção preventiva deve ser agendada."
+       ::= { upsEngetronWellKnownAlarms 35 }    
+       
+    upsAlarmMantPreventivaExpirada OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Alarme indica que a manutenção preventida expirou."
+       ::= { upsEngetronWellKnownAlarms 36 }    
+       
+	upsAlarmAgendarMantCorretiva OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Alarme indica que o cliente precisa agendar uma manutenção corretiva."
+       ::= { upsEngetronWellKnownAlarms 37 }           
+
+	upsEngetronTrapManagement OBJECT-IDENTITY
+       STATUS     current
+       DESCRIPTION
+               "Trap management quantities used by PowerSups Enterprise"
+       ::= { upsEngetronWellKnownAlarms 38 }                    
+	--
+   	-- The Output group.
+   	--
+
+   upsEngetronOutput             OBJECT IDENTIFIER ::= { upsEngetronObjects 3 }
+
+   upsEngetronOutputNumLines OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The number of output lines utilized in this device.
+               This variable indicates the number of rows in the
+               output table."
+       ::= { upsEngetronOutput 1 }
+
+   upsEngetronOutputTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF UpsEngetronOutputEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A list of output table entries.  The number of
+               entries is given by the value of upsOutputNumLines."
+       ::= { upsEngetronOutput 2 }
+
+   upsEngetronOutputEntry OBJECT-TYPE
+       SYNTAX     UpsEngetronOutputEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "An entry containing information applicable to a
+               particular output line."
+       INDEX { upsEngetronOutputLineIndex }
+       ::= { upsEngetronOutputTable 1 }
+
+   UpsEngetronOutputEntry ::= SEQUENCE {
+       upsEngetronOutputLineIndex   PositiveInteger,
+       upsEngetronOutputPowerFactor NonNegativeInteger,
+       upsEngetronOutputCrestFactor NonNegativeInteger,
+       upsEngetronOutputApparentPower NonNegativeInteger
+   }
+
+   upsEngetronOutputLineIndex OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "The output line identifier."
+       ::= { upsEngetronOutputEntry 1 }
+
+   upsEngetronOutputPowerFactor OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0,01 x Power Factor"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present output power factor."
+       ::= { upsEngetronOutputEntry 2 }
+
+   upsEngetronOutputCrestFactor OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0,01 x Crest Factor"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present output crest factor."
+       ::= { upsEngetronOutputEntry 3 }
+    
+    upsEngetronOutputApparentPower OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "VA" 
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+          "The present output apparent power."
+       
+       ::= { upsEngetronOutputEntry 4 }    
+	--
+   	-- The NetConfig group.
+   	--
+   	
+upsEngetronNetConfig       OBJECT IDENTIFIER ::= { upsEngetronObjects 4 }  
+
+	upsEngetronReadCommunity OBJECT-TYPE
+       SYNTAX     DisplayString
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "SNMP read community."
+       ::= { upsEngetronNetConfig 1 }
+             
+	upsEngetronWriteCommunity OBJECT-TYPE
+       SYNTAX     DisplayString
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "SNMP write community."
+       ::= { upsEngetronNetConfig 2 }
+
+	upsEngetronSNMPPort OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "SNMP port."
+       ::= { upsEngetronNetConfig 3 }
+             
+    upsEngetronTrapTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF UpsEngetronTrapEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A list of trap table entries.  The table contains
+               configuration sets for sending trap up to three 
+               different manager addresses. The table
+               is always set even at agent startup."
+       ::= { upsEngetronNetConfig 4 }
+
+   upsEngetronTrapEntry OBJECT-TYPE
+       SYNTAX     UpsEngetronTrapEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "An entry containing information applicable to a
+               particular trap manager."
+       INDEX { upsEngetronTrapIndex }
+       ::= { upsEngetronTrapTable 1 }
+
+       UpsEngetronTrapEntry ::= SEQUENCE {
+       upsEngetronTrapIndex   		   PositiveInteger,   
+--       upsEngetronTrapManager          DisplayString,
+	   upsEngetronTrapManager		   IpAddress,
+       upsEngetronTrapCommunity        DisplayString,
+       upsEngetronTrapPort			   INTEGER,
+       upsEngetronTrapUPSMIB		   INTEGER,
+       upsEngetronTrapENGETRONMIB	   INTEGER,
+       upsEngetronTrapMANAGEMENTMIB    INTEGER
+   }              
+   
+	upsEngetronTrapIndex OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "The trap configuration identifier."
+       ::= { upsEngetronTrapEntry 1 }   
+
+   upsEngetronTrapManager OBJECT-TYPE
+--       SYNTAX     DisplayString
+	   SYNTAX     IpAddress
+       MAX-ACCESS read-write
+       STATUS	  mandatory
+--       STATUS     current
+       DESCRIPTION
+               "A unique identifier for a trap manager.  This
+               value must remain constant."
+       ::= { upsEngetronTrapEntry 2 }
+
+   upsEngetronTrapCommunity OBJECT-TYPE
+       SYNTAX     DisplayString
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "SNMP trap community"
+       ::= { upsEngetronTrapEntry 3 }
+
+   upsEngetronTrapPort OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "SNMP trap port."
+       ::= { upsEngetronTrapEntry 4 }
+
+   upsEngetronTrapUPSMIB OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "If set to 1, defines that UPS-MIB traps will be sent; 0 defines that
+               UPS-MIB traps will not be notified."
+       ::= { upsEngetronTrapEntry 5 }
+
+   upsEngetronTrapENGETRONMIB OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "If set to 1, defines that ENGETRON-MIB traps will be sent; 0 defines that
+               ENGETRON-MIB traps will not be notified."
+       ::= { upsEngetronTrapEntry 6 }
+
+   upsEngetronTrapMANAGEMENTMIB OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+               "If set to 1, defines that MANAGEMENT-MIB traps will be sent; 0 defines that
+               MANAGEMENT-MIB traps will not be notified. Eclusive use of Software Engetron (PowerSups Enterprise)"
+       ::= { upsEngetronTrapEntry 7 }
+
+	--
+   	-- The Events group.
+   	--
+
+   upsEngetronEvents             OBJECT IDENTIFIER ::= { upsEngetronObjects 5 }   
+   
+   upsEngetronEventsFlag  OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION   "Event flag for correct operation with PowerSups Enterprise Software."
+       ::= { upsEngetronEvents 1 }   
+   
+   upsEngetronEventsTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF UpsEngetronEventsEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A list of events table entries.  The number of
+               entries is given by the value of upsEventsNumLines."
+       ::= { upsEngetronEvents 2 }
+
+   upsEngetronEventsEntry OBJECT-TYPE
+       SYNTAX     UpsEngetronEventsEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "An entry containing information applicable to a
+               particular event line."
+       INDEX { upsEngetronEventLineIndex }
+       ::= { upsEngetronEventsTable 1 }
+
+   UpsEngetronEventsEntry ::= SEQUENCE {
+       upsEngetronEventLineIndex   PositiveInteger, 
+       upsEngetronEventDescr DisplayString,--(SIZE(0..31)),
+       upsEngetronEventDate DisplayString,
+       upsEngetronEventTime DisplayString
+   }
+
+   upsEngetronEventLineIndex OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "The event identifier."
+       ::= { upsEngetronEventsEntry 1 }        
+       
+   upsEngetronEventDescr OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..31))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "A reference to an event description object.  The
+               object referenced should not be accessible, but rather
+               be used to provide a unique description of the event
+               condition."
+       ::= { upsEngetronEventsEntry 2 }
+       
+   upsEngetronEventDate OBJECT-TYPE
+       SYNTAX     DisplayString
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present event date of occurence."
+       ::= { upsEngetronEventsEntry 3 }
+
+   upsEngetronEventTime OBJECT-TYPE
+       SYNTAX     DisplayString
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present event time of occurence."
+       ::= { upsEngetronEventsEntry 4 }
+
+
+	--
+   	-- The Faults group.
+   	--
+
+   upsEngetronFaults             OBJECT IDENTIFIER ::= { upsEngetronObjects 6 }   
+   
+   upsEngetronFaultsFlag  OBJECT-TYPE
+       SYNTAX     INTEGER
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION   "Faults flag."
+       ::= { upsEngetronFaults 1 }   
+   
+   upsEngetronFaultsTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF UpsEngetronFaultsEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "A list of faults table entries.  The number of
+               entries is given by the value of upsFaultsNumLines."
+       ::= { upsEngetronFaults 2 }
+
+   upsEngetronFaultsEntry OBJECT-TYPE
+       SYNTAX     UpsEngetronFaultsEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "An entry containing information applicable to a
+               particular fault line."
+       INDEX { upsEngetronFaultLineIndex }
+       ::= { upsEngetronFaultsTable 1 }
+
+   UpsEngetronFaultsEntry ::= SEQUENCE {
+       upsEngetronFaultLineIndex   PositiveInteger, 
+	   upsEngetronFaultDuration DisplayString,-- (SIZE (0..31)),
+       upsEngetronFaultTime DisplayString,
+	   upsEngetronFaultDate DisplayString       
+   }
+
+   upsEngetronFaultLineIndex OBJECT-TYPE
+       SYNTAX     PositiveInteger
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+               "The fault identifier."
+       ::= { upsEngetronFaultsEntry 1 }        
+             
+	upsEngetronFaultDuration OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..31))
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "A reference to a fault description object.  The
+               object referenced should not be accessible, but rather
+               be used to provide a unique description of the fault
+               duration."
+       ::= { upsEngetronFaultsEntry 2 }             
+             
+   upsEngetronFaultDate OBJECT-TYPE
+       SYNTAX     DisplayString
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present fault date of occurence."
+       ::= { upsEngetronFaultsEntry 3 }
+       
+   upsEngetronFaultTime OBJECT-TYPE
+       SYNTAX     DisplayString
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "The present fault time of occurence."
+       ::= { upsEngetronFaultsEntry 4 }
+
+   upsEngetronTrapManagementConfig             OBJECT IDENTIFIER ::= { upsEngetronObjects 7 }
+    
+   upsEngetronTimeConfirmationTrapLimit OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "minutes"        
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+           "Time limit for sending ConfirmationTraps. Eclusive use of Software Engetron (PowerSups Enterprise)"
+       ::= { upsEngetronTrapManagementConfig 1 }
+   
+   upsEngetronBatteryVoltageLimit OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "percent" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+          "Limit of Battery Voltage variation  for sending ManagementTrap. Eclusive use of Software Engetron (PowerSups Enterprise)"
+       ::= { upsEngetronTrapManagementConfig 2 }
+--   
+--   upsEngetronBatteryCurrentLimit OBJECT-TYPE
+--       SYNTAX     INTEGER
+--       UNITS      "percent" 
+--       MAX-ACCESS read-write
+--       STATUS     current
+--      DESCRIPTION
+--          "Limit of Battery Current variation  for sending ManagementTrap. Eclusive use of Software Engetron (PowerSups Enterprise)"
+--       ::= { upsEngetronTrapManagementConfig 3 }
+   
+   upsEngetronBatteryTemperatureLimit OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "Celsius Degrees"
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+          "Limit of Battery Temperature variation  for sending ManagementTrap. Eclusive use of Software Engetron (PowerSups Enterprise)"
+       ::= { upsEngetronTrapManagementConfig 3 }
+   
+   upsEngetronInputVoltageLimit OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "percent" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+          "Limit of Input Voltage variation  for sending ManagementTrap. Eclusive use of Software Engetron (PowerSups Enterprise)"
+       ::= { upsEngetronTrapManagementConfig 4 }
+   
+   upsEngetronInputPowerLimit OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "percent"        
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+          "Limit of Input Power variation  for sending ManagementTrap. Eclusive use of Software Engetron (PowerSups Enterprise)"
+       ::= { upsEngetronTrapManagementConfig 5 }
+   
+   upsEngetronOutputVoltageLimit OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "percent" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+          "Limit of Output Voltage variation  for sending ManagementTrap. Eclusive use of Software Engetron (PowerSups Enterprise)"
+       ::= { upsEngetronTrapManagementConfig 6 }
+   
+   upsEngetronOutputPowerLimit OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "percent" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+          "Limit of Output Power variation  for sending ManagementTrap. Eclusive use of Software Engetron (PowerSups Enterprise)"
+       ::= { upsEngetronTrapManagementConfig 7 } 
+ 
+   upsEngetronOutputApparentPowerLimit OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "percent" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+          "Limit of Output Apparent Power variation  for sending ManagementTrap. Eclusive use of Software Engetron (PowerSups Enterprise)"
+       ::= { upsEngetronTrapManagementConfig 8 } 
+
+   upsEngetronBatteryChargePowerLimit OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "percent" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+          "Limit of Battery Charge Current variation  for sending ManagementTrap. Eclusive use of Software Engetron (PowerSups Enterprise)"
+       ::= { upsEngetronTrapManagementConfig 9 } 
+
+   upsEngetronMSBVoltageLimit OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "percent" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+          "Limit of MSB voltage variation  for sending ManagementTrap. Eclusive use of Software Engetron (PowerSups Enterprise)"
+       ::= { upsEngetronTrapManagementConfig 10 } 
+
+   upsEngetronMSBTemperatureLimit OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "Celsius Degrees" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+          "Limit of MSB temperature variation  for sending ManagementTrap. Eclusive use of Software Engetron (PowerSups Enterprise)"
+       ::= { upsEngetronTrapManagementConfig 11 } 
+
+   upsEngetronMSBCurrentLimit OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "percent" 
+       MAX-ACCESS read-write
+       STATUS     current
+       DESCRIPTION
+          "Limit of MSB Current variation  for sending ManagementTrap. Eclusive use of Software Engetron (PowerSups Enterprise)"
+       ::= { upsEngetronTrapManagementConfig 12 } 
+       
+   upsEngetronBattery             OBJECT IDENTIFIER ::= { upsEngetronObjects 8 }
+    
+   upsEngetronBatteryChargeCurrent OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "0,1 x Ampere"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+           "battery charging current"
+       ::= { upsEngetronBattery 1 }
+
+   upsEngetronBatteryDischargeCurrent OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "0,1 x Ampere"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+           "battery discharging current"
+       ::= { upsEngetronBattery 2 }
+
+   upsEngetronBatteryChargePower OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "0,1 x Watts"
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+           "battery charging power"
+       ::= { upsEngetronBattery 3 }    
+            
+--------------------------
+-- the upsEngetronTraps group --
+--------------------------
+upsEngetronTraps OBJECT IDENTIFIER ::= { ups 2 }
+-- This group defines objects and traps, so that for each trap, simple
+-- get request on related objects (one or many) allow to confirm actual
+-- status of the trap.
+
+-- TRAPS NOTIFICATIONS
+
+upsEngetronInputUnderFrequency NOTIFICATION-TYPE      
+		STATUS	current
+        DESCRIPTION
+                "Trap UPS input under frequency condition detected."
+::= {upsEngetronTraps 1}
+
+upsEngetronInputUnderFrequencyOK NOTIFICATION-TYPE
+        STATUS	current
+        DESCRIPTION
+                "Trap UPS input quit under frequency condition."
+::= {upsEngetronTraps 2}
+
+upsEngetronInputOverFrequency NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS input over frequency condition detected."
+::= {upsEngetronTraps 3}
+
+upsEngetronInputOverFrequencyOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS input quit over frequency condition."
+::= {upsEngetronTraps 4}
+
+upsEngetronInputOverVoltage NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS input over voltage condition detected."
+::= {upsEngetronTraps 5}
+
+upsEngetronInputOverVoltageOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS input quit over voltage condition."
+::= {upsEngetronTraps 6}
+
+upsEngetronInputPhaseSeqErr NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS input phase sequence error detected."
+::= {upsEngetronTraps 7}
+
+upsEngetronInputPhaseSeqErrOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS input quit phase sequence error condition."
+::= {upsEngetronTraps 8}
+
+upsEngetronOutputUnderVoltage NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS output under voltage condition detected."
+::= {upsEngetronTraps 9}
+
+upsEngetronOutputUnderVoltageOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS output quit under voltage condition."
+::= {upsEngetronTraps 10}
+
+upsEngetronOutputOverVoltage NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS output over voltage condition detected."
+::= {upsEngetronTraps 11}
+
+upsEngetronOutputOverVoltageOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS output quit over voltage condition."
+::= {upsEngetronTraps 12}
+
+upsEngetronOutputShortCircuit NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS output short-circuit detected."
+::= {upsEngetronTraps 13}
+
+upsEngetronOutputShortCircuitOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS output quit short-circuit condition."
+::= {upsEngetronTraps 14}
+
+upsEngetronOutputOverloadOver10 NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS output overload over 10% detected."
+::= {upsEngetronTraps 15}
+
+upsEngetronOutputOverloadOver10OK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS output quit overload over 10% condition."
+::= {upsEngetronTraps 16}
+
+upsEngetronOutputOverloadLessThan10 NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS output overload less than 10% detected."
+::= {upsEngetronTraps 17}
+      
+upsEngetronOutputOverloadLessThan10OK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS output quit overload less than 10% condition."
+::= {upsEngetronTraps 18}
+      
+upsEngetronBatteryUnderVoltage NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Battery under voltage condition detected."
+::= {upsEngetronTraps 19}
+      
+upsEngetronBatteryUnderVoltageOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Battery quit under voltage condition."
+::= {upsEngetronTraps 20}
+ 
+upsEngetronBatteryOverVoltage NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Battery over voltage condition detected."
+::= {upsEngetronTraps 21}
+     
+upsEngetronBatteryOverVoltageOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Battery quit over voltage condition."
+::= {upsEngetronTraps 22}
+     
+upsEngetronInverterUnderTemperature NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Inverter under temperature detected."
+::= {upsEngetronTraps 23}
+
+upsEngetronInverterUnderTemperatureOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Inverter quit undertemperature condition."
+::= {upsEngetronTraps 24}
+
+upsEngetronInverterOverTemperature NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Inverter over temperature detected."
+::= {upsEngetronTraps 25}
+
+upsEngetronInverterOverTemperatureOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Inverter quit overtemperature condition."
+::= {upsEngetronTraps 26}
+
+upsEngetronRectifierUnderTemperature NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Rectifier under temperature detected."
+::= {upsEngetronTraps 27}
+
+upsEngetronRectifierUnderTemperatureOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Rectifier quit undertemperature condition."
+::= {upsEngetronTraps 28}
+
+upsEngetronRectifierOverTemperature NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Rectifier over temperature detected."
+::= {upsEngetronTraps 29}
+
+upsEngetronRectifierOverTemperatureOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Rectifier quit overtemperature condition."
+::= {upsEngetronTraps 30}
+
+upsEngetronBypassUnderFrequency NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Bypass under frequency condition detected."
+::= {upsEngetronTraps 31}
+
+upsEngetronBypassUnderFrequencyOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Bypass quit under frequency condition."
+::= {upsEngetronTraps 32}
+
+upsEngetronBypassOverFrequency NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Bypass over frequency condition detected."
+::= {upsEngetronTraps 33}
+
+upsEngetronBypassOverFrequencyOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Bypass quit over frequency condition."
+::= {upsEngetronTraps 34}
+
+upsEngetronBypassUnderVoltage NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Bypass under voltage condition detected."
+::= {upsEngetronTraps 35}
+      
+upsEngetronBypassUnderVoltageOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Bypass quit under voltage condition."
+::= {upsEngetronTraps 36}
+      
+upsEngetronBypassOverVoltage NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Bypass over voltage condition detected."
+::= {upsEngetronTraps 37}
+
+upsEngetronBypassOverVoltageOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Bypass quit over voltage condition."
+::= {upsEngetronTraps 38}
+
+upsEngetronBypassPhaseSeqErr NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Bypass phase sequence error detected."
+::= {upsEngetronTraps 39}
+
+upsEngetronBypassPhaseSeqErrOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Bypass quit phase sequence error condition."
+::= {upsEngetronTraps 40}
+
+upsEngetronInverterHWFailure NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Inverter hardware failure condition detected."
+::= {upsEngetronTraps 41}
+
+upsEngetronInverterHWFailureOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Inverter quit hardware failure condition."
+::= {upsEngetronTraps 42}
+
+upsEngetronRectifierHWFailure NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Rectifier hardware failure condition detected."
+::= {upsEngetronTraps 43}
+
+upsEngetronRectifierHWFailureOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Rectifier quit hardware failure condition."
+::= {upsEngetronTraps 44}
+
+upsEngetronBatteryBad  NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap indicating that one or more batteries have been determined to require
+               replacement."
+::= {upsEngetronTraps 45}
+
+upsEngetronBatteryOK  NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS quit battery bad condition."
+::= {upsEngetronTraps 46}  
+
+upsEngetronOnBattery NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS on battery condition."
+::= {upsEngetronTraps 47}
+
+upsEngetronReturnFromBattery NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS return from on battery condition."
+::= {upsEngetronTraps 48}
+
+upsEngetronLowBattery NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS on low battery condition."
+::= {upsEngetronTraps 49}
+
+upsEngetronReturnFromLowBattery NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS quit low battery condition."
+::= {upsEngetronTraps 50}
+
+upsEngetronDepletedBattery NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS depleted battery condition."
+::= {upsEngetronTraps 51}
+
+upsEngetronReturnFromDepletedBattery NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS quit depleted battery condition."
+::= {upsEngetronTraps 52}
+
+upsEngetronOutputOff NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Output OFF."
+::= {upsEngetronTraps 53}
+
+upsEngetronOutputON NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Output ON."
+::= {upsEngetronTraps 54}
+
+upsEngetronCommunicationsLost NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS communication lost."
+::= {upsEngetronTraps 55}
+
+upsEngetronCommunicationsOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS communication re-established."
+::= {upsEngetronTraps 56}
+
+upsEngetronAwaitingPower NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS awaiting power condition."
+::= {upsEngetronTraps 57}
+
+upsEngetronReturnFromAwaitingPower NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS quit awaiting power condition."
+::= {upsEngetronTraps 58}
+
+upsEngetronShutdownImminent NOTIFICATION-TYPE
+        STATUS       current
+--		ENTERPRISE	engetron
+        DESCRIPTION
+                "Trap UPS shutdown imminent."
+::= {upsEngetronTraps 59}
+
+upsEngetronReturnFromShutdownImminent NOTIFICATION-TYPE
+        STATUS       current
+--		ENTERPRISE	engetron
+        DESCRIPTION
+                "Trap UPS quit shutdown imminent condition."
+::= {upsEngetronTraps 60}
+
+upsEngetronVerifyRetPhaseNeutron NOTIFICATION-TYPE
+        STATUS       current
+--		ENTERPRISE	engetron
+        DESCRIPTION
+                "Trap verify UPS rectifier phase-neutron connection."
+::= {upsEngetronTraps 61}
+
+upsEngetronReturnFromVerifyRetPhaseNeutron NOTIFICATION-TYPE
+        STATUS       current
+--		ENTERPRISE	engetron
+        DESCRIPTION
+                "Trap UPS quit verify rectifier phase-neutron connection condition."
+::= {upsEngetronTraps 62}
+
+upsEngetronBypassAutoActive NOTIFICATION-TYPE
+        STATUS       current
+--		ENTERPRISE	engetron
+        DESCRIPTION
+                "Trap automatic UPS bypass is active."
+::= {upsEngetronTraps 63}
+
+upsEngetronReturnFromBypassAutoActive NOTIFICATION-TYPE
+        STATUS       current
+--		ENTERPRISE	engetron
+        DESCRIPTION
+                "Trap automatic UPS bypass is not active."
+::= {upsEngetronTraps 64}
+                        
+upsEngetronOutputPhaseSeqErr NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS Output phase sequence error detected."
+::= {upsEngetronTraps 65}
+
+upsEngetronOutputPhaseSeqErrOK NOTIFICATION-TYPE
+        STATUS       current
+        DESCRIPTION
+                "Trap UPS quit Output phase sequence error condition."
+::= {upsEngetronTraps 66}
+
+upsEngetronCommunicationFailedRSInv NOTIFICATION-TYPE
+        STATUS       current
+--		ENTERPRISE	engetron
+        DESCRIPTION
+                "Trap communication failed between RS and Inv (paralel UPSs)."
+::= {upsEngetronTraps 67}
+
+upsEngetronReturnFromCommunicationFailedRSInv NOTIFICATION-TYPE
+        STATUS       current
+--		ENTERPRISE	engetron
+        DESCRIPTION
+                "Trap communication restablished between RS and Inv (paralel UPSs)."
+::= {upsEngetronTraps 68}
+                             
+upsEngetronAgendarMantPreventiva	NOTIFICATION-TYPE
+		STATUS 		current
+		DESCRIPTION
+				"Trap que indica a necessidade de agendamento de uma manutenção preventiva."
+::= {upsEngetronTraps 69}
+
+upsEngetronAgendarMantPreventivaOK	NOTIFICATION-TYPE
+		STATUS 		current
+		DESCRIPTION
+				"Trap indica que a manutenção preventiva foi agendada."
+::= {upsEngetronTraps 70}
+
+upsEngetronMantPreventivaExpirada	NOTIFICATION-TYPE
+		STATUS 		current
+		DESCRIPTION
+				"Trap indica que a manutenção preventiva expirou."
+::= {upsEngetronTraps 71} 
+
+upsEngetronMantPreventivaExpiradaOK	NOTIFICATION-TYPE
+		STATUS 		current
+		DESCRIPTION
+				"Trap indica que nova manutençao preventiva foi agendada."
+::= {upsEngetronTraps 72}   
+
+upsEngetronAgendarMantCorretiva	NOTIFICATION-TYPE
+		STATUS 		current
+		DESCRIPTION
+				"Trap indica a necessidade de agendamento de uma manutenção corretiva."
+::= {upsEngetronTraps 73} 
+
+upsEngetronAgendarMantCorretivaOK	NOTIFICATION-TYPE
+		STATUS 		current
+		DESCRIPTION
+				"Trap indica que a manutenção corretiva foi agendada."
+::= {upsEngetronTraps 74}
+
+upsEngetronTrapManagement	NOTIFICATION-TYPE
+		STATUS 		current
+		DESCRIPTION
+				"Trap management quantities. PowerSups updated with the magnitudes of the UPS changed. Eclusive use of Software Engetron (PowerSups Enterprise)"
+::= {upsEngetronTraps 97}  
+
+upsEngetronTrapConfirmation	NOTIFICATION-TYPE
+		STATUS 		current
+		DESCRIPTION
+				"Trap confirmation by PowerSups used to identify Agents that have lost communication. Eclusive use of Software Engetron (PowerSups Enterprise)"
+::= {upsEngetronTraps 98}  
+
+   END

@@ -1,0 +1,208 @@
+--Title:    LD1500.MIB
+--Version:  v2.0
+--Date:     08/26/08
+--Copyright @ 2008 RLE Technologies.  All rights reserved worldwide.
+--This MIB defines objects for the RLE LD1500 SNMP Agent.
+
+RLE-LD1500-MIB DEFINITIONS ::= BEGIN
+    IMPORTS
+    Integer32, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DisplayString
+        FROM RFC1213-MIB
+    OBJECT-TYPE
+        FROM RFC-1212
+    enterprises
+        FROM RFC1155-SMI
+    TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF;
+
+    rleLD1500MibV2ModIdentDefault MODULE-IDENTITY
+        LAST-UPDATED	    "200604281609Z"
+        ORGANIZATION	    "RLE Technologies"
+        CONTACT-INFO        "Rick Stelzer
+                            104 Racquette Dr
+                            Fort Collins, CO 80524
+                            rstelzer@rletech.com"
+        DESCRIPTION         "This is an automatically created MODULE-IDENTITY."
+
+        REVISION	    "200603281609Z"
+        DESCRIPTION         "LD1500 Mib V1."
+        ::= { rle 2270 }
+
+    PositiveInteger ::= TEXTUAL-CONVENTION
+        STATUS		    current
+        DESCRIPTION         ""
+        SYNTAX		    Integer32 (1..'ffffffff'h)
+
+
+
+    rle OBJECT IDENTIFIER ::= { enterprises 3184 }
+
+    products OBJECT IDENTIFIER ::= { rle 1 }
+
+    ld1500 OBJECT IDENTIFIER ::= { products 9 }
+
+    ld1500MIB OBJECT IDENTIFIER ::= { ld1500 1 }
+
+    ld1500Ident OBJECT IDENTIFIER ::= { ld1500MIB 1 }
+
+    ld1500IdentManufacturer OBJECT-TYPE
+        SYNTAX              DisplayString
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The Monitor Control Unit manufacturer."
+        ::= { ld1500Ident 1 }
+
+    ld1500IdentModel OBJECT-TYPE
+        SYNTAX              DisplayString
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The Monitor Control Unit Model designation."
+        ::= { ld1500Ident 2 }
+
+    ld1500IdentSoftwareVersion OBJECT-TYPE
+        SYNTAX              DisplayString
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The SNMP Agent software version."
+        ::= { ld1500Ident 3 }
+
+    ld1500IdentSpecific OBJECT-TYPE
+        SYNTAX              OBJECT IDENTIFIER
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "A reference to MIB definitions specific to the
+                            particular Monitor Unit being managed. This object
+                            is used to locate the product-specific MIB for
+                            this device.
+
+                            If this information is not present, its value
+                            should be the OBJECT IDENTIFIER { 0 0 }, which
+                            is a syntactically valid object identifier, and
+                            any conformant implementation of ASN.1 and BER
+                            must be able to generate and recognize this value."
+        ::= { ld1500Ident 4 }
+
+    ld1500Units OBJECT IDENTIFIER ::= { ld1500MIB 2 }
+
+    ld1500Unit OBJECT IDENTIFIER ::= { ld1500Units 1 }
+
+    ld1500UnitStatus OBJECT IDENTIFIER ::= { ld1500Unit 1 }
+
+    ld1500LeakStatus OBJECT-TYPE
+        SYNTAX              INTEGER {
+                                notInstalled(0),
+                                normal(1),
+                                alarmLeakPresent(2),
+                                alarmCableFault(3),
+                                alarmContamination(4),
+                                alarmCommunicationLoss(5)
+                            }
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The status of this leak detection unit"
+        ::= { ld1500UnitStatus 1 }
+
+    ld1500LeakReading OBJECT-TYPE
+        SYNTAX              Integer32 (-2147483648..2147483647)
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The leak detected reading for this unit. For the
+                            unit of measure is feet or meters. If the value
+                            is less than zero, no leak is present."
+        ::= { ld1500UnitStatus 2 }
+
+    ld1500CableLeakage OBJECT-TYPE
+        SYNTAX              Integer32 (0..1000)
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The amount of leakage current on the cable. The
+                            unit of measure is micro-amps."
+        ::= { ld1500UnitStatus 3 }
+
+    ld1500CableLength OBJECT-TYPE
+        SYNTAX              Integer32 (0..65535)
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The installed length of cable for this unit. The
+                            unit of measure is feet or meters."
+        ::= { ld1500UnitStatus 4 }
+
+    ld1500CableUom OBJECT-TYPE
+        SYNTAX              INTEGER {
+                                feet(0),
+                                meters(1)
+                            }
+        MAX-ACCESS          read-only
+        STATUS              current
+        DESCRIPTION         "The unit of measure for length readings of this
+                            unit."
+        ::= { ld1500UnitStatus 5 }
+
+    ld1500Traps OBJECT IDENTIFIER ::= { ld1500MIB 3 }
+
+    ld1500UnitTrap NOTIFICATION-TYPE
+        OBJECTS	{
+        		ld1500LeakStatus,
+        		ld1500LeakReading,
+        		ld1500CableUom
+        	}
+        STATUS		    current
+        DESCRIPTION         "The LD1500 Unit has reached an alarm state."
+        ::= { ld1500Traps 1 }
+
+    --
+    --The ld1500 Extension
+    --
+    ld1500ID OBJECT IDENTIFIER ::= { ld1500 2 }
+
+    rleLD1500MibV2ModIdentDefaultConformance
+        OBJECT IDENTIFIER ::= { rleLD1500MibV2ModIdentDefault 1 }
+
+    rleLD1500MibV2ModIdentDefaultGroups
+        OBJECT IDENTIFIER
+        ::= { rleLD1500MibV2ModIdentDefaultConformance 1 }
+
+    rleLD1500MibAllObjects OBJECT-GROUP
+        OBJECTS	{
+        		ld1500IdentManufacturer,
+        		ld1500IdentModel,
+        		ld1500IdentSoftwareVersion,
+        		ld1500IdentSpecific,
+        		ld1500LeakStatus,
+        		ld1500LeakReading,
+        		ld1500CableLeakage,
+        		ld1500CableLength,
+        		ld1500CableUom
+        	}
+        STATUS		    current
+        DESCRIPTION         "This automatically created object group contains
+                            all those objects that do not belong to any other
+                            OBJECT-GROUP"
+        ::= { rleLD1500MibV2ModIdentDefaultGroups 1 }
+
+    rleLD1500MibAllNotifications NOTIFICATION-GROUP
+        NOTIFICATIONS       {
+                                ld1500UnitTrap
+                            }
+        STATUS		    current
+        DESCRIPTION         "This automatically created notification group
+                            contains all notifications that do not belong
+                            to any other NOTIFICATION-GROUP"
+        ::= { rleLD1500MibV2ModIdentDefaultGroups 2 }
+
+
+    --    rleLD1500MibAllNotifications NOTIFICATION-GROUP
+    --        NOTIFICATIONS       {
+    --                           }
+    --        STATUS		    current
+    --        DESCRIPTION         "This automatically created notification group
+    --                            contains all notifications that do not belong
+    --                            to any other NOTIFICATION-GROUP"
+    --        ::= { rleLD1500MibV2ModIdentDefaultGroups 2 }
+
+END
+

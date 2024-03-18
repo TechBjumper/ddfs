@@ -1,0 +1,2382 @@
+-- BAY TECHNICAL ASSOCIATES (BAYTECH) MIB
+
+-- Copyright (c) Bay Technical Associates 2003.
+-- $Id: rs2.mib,v 1.3 2004/03/01 11:11:08 devel Exp $
+
+-- Title: BAYTECH MIB for RS2 devices
+
+-- *************************************************************************
+-- ************************************************************************
+-- Baytech-MIB { iso org(3) dod(6) internet(1) private(4)
+--    enterprises(1) baytech(4779) }
+--
+
+Baytech-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   enterprises, IpAddress, Gauge, TimeTicks     FROM RFC1155-SMI
+   DisplayString                                FROM RFC1213-MIB
+   OBJECT-TYPE                                  FROM RFC-1212
+   TRAP-TYPE                                    FROM RFC-1215;
+
+
+	baytech		OBJECT IDENTIFIER ::= { enterprises 4779 }
+	resseries	OBJECT IDENTIFIER ::= { baytech 4 }
+	res2		OBJECT IDENTIFIER ::= { resseries 1 }
+	res2p2		OBJECT IDENTIFIER ::= { resseries 2 }
+	rs2		OBJECT IDENTIFIER ::= { resseries 3 }
+	rs4		OBJECT IDENTIFIER ::= { resseries 4 }
+	rs2system	OBJECT IDENTIFIER ::= { rs2 1 }
+	rs2serial	OBJECT IDENTIFIER ::= { rs2 2 }
+	rs2power	OBJECT IDENTIFIER ::= { rs2 3 }
+
+
+	-- the rs2 system information
+
+	-- the rs2 serial information
+
+	-- the rs2 RPC information
+
+	rs2PowerCntrlNumber OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The number of attached RPCs."
+		::= { rs2power 1 }
+
+	rs2PowerCntrlTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF RS2PowerCntrlEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table of RPC information."
+		::= { rs2power 2 }
+
+	rs2PowerCntrlEntry OBJECT-TYPE
+		SYNTAX RS2PowerCntrlEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table entry of RPC information."
+		INDEX { rs2CntrlIndex }
+		::= { rs2PowerCntrlTable 1 }
+
+	RS2PowerCntrlEntry ::=
+		SEQUENCE {
+			rs2CntrlIndex				INTEGER,
+			rs2CntrlState				INTEGER,
+			rs2CntrlModelName			DisplayString,
+			rs2CntrlName				DisplayString,
+			rs2CntrlFirmwareVersion			DisplayString,
+			rs2CntrlNumberOfOutlets			INTEGER,
+			rs2CntrlNumberOfCurrentSensors		INTEGER,
+			rs2CntrlNumberOfVoltageSensors		INTEGER,
+			rs2CntrlNumberOfPowerSensors		INTEGER,
+			rs2CntrlNumberOfTemperatureSensors	INTEGER,
+			rs2CntrlNumberOfCircuitBreakers		INTEGER,
+			rs2CntrlTotalCurrent			INTEGER,
+			rs2CntrlMaxTotalCurrent			INTEGER,
+			rs2CntrlTotalPower			INTEGER
+		}
+
+	rs2CntrlIndex OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The index into the RPC information table."
+		::= { rs2PowerCntrlEntry 1 }
+
+	rs2CntrlState OBJECT-TYPE
+		SYNTAX INTEGER {
+			highCritical(1),
+			highWarning(2),
+			lowWarning(3),
+			lowCritical(4),
+			normal(5),
+			notPresent(6)
+			}
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The overall state relative to the thresholds." 
+		::= { rs2PowerCntrlEntry 2 }
+
+	rs2CntrlModelName OBJECT-TYPE
+		SYNTAX DisplayString
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The model name of this RPC."
+		::= { rs2PowerCntrlEntry 3 }
+
+	rs2CntrlName OBJECT-TYPE
+		SYNTAX DisplayString (SIZE (0..12))
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The name of this RPC."
+		::= { rs2PowerCntrlEntry 4 }
+
+	rs2CntrlFirmwareVersion OBJECT-TYPE
+		SYNTAX DisplayString
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The firmware version of this RPC."
+		::= { rs2PowerCntrlEntry 5 }
+
+	rs2CntrlNumberOfOutlets OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"Number of controllable outlets on this RPC."
+		::= { rs2PowerCntrlEntry 6 }
+
+	rs2CntrlNumberOfCurrentSensors OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The number of current sensors installed in this RPC."
+		::= { rs2PowerCntrlEntry 7 }
+
+	rs2CntrlNumberOfVoltageSensors OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The number of voltage sensors installed in this RPC."
+		::= { rs2PowerCntrlEntry 8 }
+
+	rs2CntrlNumberOfPowerSensors OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The number of power calculations for this RPC."
+		::= { rs2PowerCntrlEntry 9 }
+
+	rs2CntrlNumberOfTemperatureSensors OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The number of temperature sensors installed in this RPC."
+		::= { rs2PowerCntrlEntry 10 }
+
+	rs2CntrlNumberOfCircuitBreakers OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The number of circuit breakers installed in this RPC."
+		::= { rs2PowerCntrlEntry 11 }
+
+	rs2CntrlTotalCurrent OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The combined total current of all current sensors in this RPC."
+		::= { rs2PowerCntrlEntry 12 }
+
+	rs2CntrlMaxTotalCurrent OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The combined total maximum detected current of all current sensors in this RPC."
+		::= { rs2PowerCntrlEntry 13 }
+
+	rs2CntrlTotalPower OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The combined total power of all power sensors in this RPC."
+		::= { rs2PowerCntrlEntry 14 }
+
+	rs2OutletTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF RS2OutletEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table of controllable RPC outlets."
+		::= { rs2power 3 }
+
+	rs2OutletEntry OBJECT-TYPE
+		SYNTAX RS2OutletEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table entry of controllable RPC outlets."
+		INDEX { rs2OutletRPCIndex, rs2OutletIndex }
+		::= { rs2OutletTable 1 }
+
+	RS2OutletEntry ::=
+		SEQUENCE {
+			rs2OutletRPCIndex	INTEGER,
+			rs2OutletIndex		INTEGER,
+			rs2OutletState		INTEGER,
+			rs2OutletName		DisplayString
+		}
+
+	rs2OutletRPCIndex OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The index of the RPC."
+		::= { rs2OutletEntry 1 }
+
+	rs2OutletIndex OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The index of the outlet."
+		::= { rs2OutletEntry 2 }
+
+	rs2OutletState OBJECT-TYPE
+		SYNTAX INTEGER {
+			off(0),
+			on(1),
+			reboot(2),
+			lockon(3),
+			lockoff(4),
+			unlock(5),
+			unknown(6)
+		}
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+ 			"Getting this variable will return the state of the outlet;
+  			setting this variable will set the state of the outlet."
+		::= { rs2OutletEntry 3 }
+
+	rs2OutletName OBJECT-TYPE
+		SYNTAX DisplayString (SIZE (0..12))
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The name of the outlet."
+		::= { rs2OutletEntry 4 }
+
+	rs2AllOutletsTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF RS2AllOutletsEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table to control all RPC outlets."
+		::= { rs2power 4 }
+
+	rs2AllOutletsEntry OBJECT-TYPE
+		SYNTAX RS2AllOutletsEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table entry to control all RPC outlets."
+		INDEX { rs2AllOutletsRPCIndex }
+		::= { rs2AllOutletsTable 1 }
+
+	RS2AllOutletsEntry ::=
+		SEQUENCE {
+			rs2AllOutletsRPCIndex	INTEGER,
+			rs2AllOutletsState	INTEGER,
+			rs2AllOutletsStatus	DisplayString
+		}
+
+	rs2AllOutletsRPCIndex OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The index of the RPC."
+		::= { rs2AllOutletsEntry 1 }
+
+
+	rs2AllOutletsState OBJECT-TYPE
+		SYNTAX INTEGER {
+			off(0),
+			on(1),
+			reboot(2),
+			none(3)
+		}
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"Turns all outlets on, off or reboot."
+		::= { rs2AllOutletsEntry 2 }
+
+	rs2AllOutletsStatus OBJECT-TYPE
+		SYNTAX DisplayString
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"Reports status of outlets in a comma delimitated string (0 = off; 1 = on; 2 = reboot; 3 = locked on; 4 = locked off)."
+		::= { rs2AllOutletsEntry 3 }
+
+	rs2CurrentTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF RS2CurrentEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table of current values."
+		::= { rs2power 5 }
+
+	rs2CurrentEntry OBJECT-TYPE
+		SYNTAX RS2CurrentEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table entry of current values."
+		INDEX { rs2CurrentRPCIndex, rs2CurrentIndex }
+		::= { rs2CurrentTable 1 }
+
+	RS2CurrentEntry ::=
+		SEQUENCE {
+			rs2CurrentRPCIndex	INTEGER,
+			rs2CurrentIndex		INTEGER,
+			rs2CurrentValue		INTEGER,
+			rs2CurrentMaxValue	INTEGER,
+			rs2CurrentState		INTEGER,
+			rs2CurrentHighCriticl	INTEGER,
+			rs2CurrentHighWarning	INTEGER,
+			rs2CurrentLowWarning	INTEGER,
+			rs2CurrentLowCritical	INTEGER,
+			rs2CurrentRearm		INTEGER
+		}
+
+	rs2CurrentRPCIndex OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The index of the RPC."
+		::= { rs2CurrentEntry 1 }
+
+	rs2CurrentIndex OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The index of the current sensor."
+		::= { rs2CurrentEntry 2 }
+
+	rs2CurrentValue OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The current reading for this RPC sensor."
+		::= { rs2CurrentEntry 3 }
+
+	rs2CurrentMaxValue OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The maximum detected current reading for this RPC sensor."
+		::= { rs2CurrentEntry 4 }
+
+	rs2CurrentState OBJECT-TYPE
+		SYNTAX INTEGER {
+			highCritical(1),
+			highWarning(2),
+			lowWarning(3),
+			lowCritical(4),
+			normal(5),
+			notPresent(6)
+		}
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The current state relative to the thresholds."
+		::= { rs2CurrentEntry 5 }
+
+	rs2CurrentHighCritical OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The current high critical threshold."
+		::= { rs2CurrentEntry 6 }
+
+	rs2CurrentHighWarning OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The current high warning threshold."
+		::= { rs2CurrentEntry 7 }
+
+	rs2CurrentLowWarning OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The current low warning threshold."
+		::= { rs2CurrentEntry 8 }
+
+	rs2CurrentLowCritical OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The current low critical threshold."
+		::= { rs2CurrentEntry 9 }
+
+	rs2CurrentRearm OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The current rearm value."
+		::= { rs2CurrentEntry 10 }
+
+	rs2VoltageTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF RS2VoltageEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table of voltage values."
+		::= { rs2power 6 }
+
+	rs2VoltageEntry OBJECT-TYPE
+		SYNTAX RS2VoltageEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table entry of voltage values."
+		INDEX { rs2VoltageRPCIndex, rs2VoltageIndex }
+		::= { rs2VoltageTable 1 }
+
+	RS2VoltageEntry ::=
+		SEQUENCE {
+			rs2VoltageRPCIndex	INTEGER,
+			rs2VoltageIndex		INTEGER,
+			rs2VoltageValue		INTEGER,
+			rs2VoltageState		INTEGER,
+			rs2VoltageHighCritical	INTEGER,
+			rs2VoltageHighWarning	INTEGER,
+			rs2VoltageLowWarning	INTEGER,
+			rs2VoltageLowCritical	INTEGER,
+			rs2VoltageRearm		INTEGER
+		}
+
+	rs2VoltageRPCIndex OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The index of the RPC."
+		::= { rs2VoltageEntry 1 }
+
+	rs2VoltageIndex OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The index of the voltage sensor."
+		::= { rs2VoltageEntry 2 }
+
+	rs2VoltageValue OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The voltage reading for this RPC sensor."
+		::= { rs2VoltageEntry 3 }
+
+	rs2VoltageState OBJECT-TYPE
+		SYNTAX INTEGER {
+			highCritical(1),
+			highWarning(2),
+			lowWarning(3),
+			lowCritical(4),
+			normal(5),
+			notPresent(6)
+		}
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The voltage state relative to the thresholds."
+		::= { rs2VoltageEntry 4 }
+
+	rs2VoltageHighCritical OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The voltage high critical threshold."
+		::= { rs2VoltageEntry 5 }
+
+	rs2VoltageHighWarning OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The voltage high warning threshold."
+		::= { rs2VoltageEntry 6 }
+
+	rs2VoltageLowWarning OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The voltage low warning threshold."
+		::= { rs2VoltageEntry 7 }
+
+	rs2VoltageLowCritical OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The voltage low critical threshold."
+		::= { rs2VoltageEntry 8 }
+
+	rs2VoltageRearm OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The voltage rearm value."
+		::= { rs2VoltageEntry 9 }
+
+	rs2PowerTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF RS2PowerEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table of power values."
+		::= { rs2power 7 }
+
+	rs2PowerEntry OBJECT-TYPE
+		SYNTAX RS2PowerEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table entry of power values."
+		INDEX { rs2PowerRPCIndex, rs2PowerIndex }
+		::= { rs2PowerTable 1 }
+
+	RS2PowerEntry ::=
+		SEQUENCE {
+			rs2PowerRPCIndex	INTEGER,
+			rs2PowerIndex		INTEGER,
+			rs2PowerValue		INTEGER,
+			rs2PowerState		INTEGER,
+			rs2PowerHighCritical	INTEGER,
+			rs2PowerHighWarning	INTEGER,
+			rs2PowerLowWarning	INTEGER,
+			rs2PowerLowCritical	INTEGER,
+			rs2PowerRearm		INTEGER
+		}
+
+	rs2PowerRPCIndex OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The index of the RPC."
+		::= { rs2PowerEntry 1 }
+
+	rs2PowerIndex OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The index of the power sensor."
+		::= { rs2PowerEntry 2 }
+
+	rs2PowerValue OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The power reading for this RPC sensor."
+		::= { rs2PowerEntry 3 }
+
+	rs2PowerState OBJECT-TYPE
+		SYNTAX INTEGER {
+			highCritical(1),
+			highWarning(2),
+			lowWarning(3),
+			lowCritical(4),
+			normal(5),
+			notPresent(6)
+		}
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The power state relative to the thresholds."
+		::= { rs2PowerEntry 4 }
+
+	rs2PowerHighCritical OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The power high critical threshold."
+		::= { rs2PowerEntry 5 }
+
+	rs2PowerHighWarning OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The power high warning threshold."
+		::= { rs2PowerEntry 6 }
+
+	rs2PowerLowWarning OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The power low warning threshold."
+		::= { rs2PowerEntry 7 }
+
+	rs2PowerLowCritical OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The power low critical threshold."
+		::= { rs2PowerEntry 8 }
+
+	rs2PowerRearm OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The power rearm value."
+		::= { rs2PowerEntry 9 }
+
+	rs2TemperatureTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF RS2TemperatureEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table of temperature values."
+		::= { rs2power 8 }
+
+	rs2TemperatureEntry OBJECT-TYPE
+		SYNTAX RS2TemperatureEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table entry of temperature values."
+		INDEX { rs2TemperatureRPCIndex, rs2TemperatureIndex }
+		::= { rs2TemperatureTable 1 }
+
+	RS2TemperatureEntry ::=
+		SEQUENCE {
+			rs2TemperatureRPCIndex		INTEGER,
+			rs2TemperatureIndex		INTEGER,
+			rs2TemperatureValue		INTEGER,
+			rs2TemperatureState		INTEGER,
+			rs2TemperatureHighCritical	INTEGER,
+			rs2TemperatureHighWarning	INTEGER,
+			rs2TemperatureLowWarning	INTEGER,
+			rs2TemperatureLowCritical	INTEGER,
+			rs2TemperatureRearm		INTEGER
+		}
+
+	rs2TemperatureRPCIndex OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The index of the RPC."
+		::= { rs2TemperatureEntry 1 }
+
+	rs2TemperatureIndex OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The index of the temperature sensor."
+		::= { rs2TemperatureEntry 2 }
+
+	rs2TemperatureValue OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The temperature reading for this RPC sensor."
+		::= { rs2TemperatureEntry 3 }
+
+	rs2TemperatureState OBJECT-TYPE
+		SYNTAX INTEGER {
+			highCritical(1),
+			highWarning(2),
+			lowWarning(3),
+			lowCritical(4),
+			normal(5),
+			notPresent(6)
+		}
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The temperature state relative to the thresholds."
+		::= { rs2TemperatureEntry 4 }
+
+	rs2TemperatureHighCritical OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The temperature high critical threshold."
+		::= { rs2TemperatureEntry 5 }
+
+	rs2TemperatureHighWarning OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The temperature high warning threshold."
+		::= { rs2TemperatureEntry 6 }
+
+	rs2TemperatureLowWarning OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The temperature low warning threshold."
+		::= { rs2TemperatureEntry 7 }
+
+	rs2TemperatureLowCritical OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The temperature low critical threshold."
+		::= { rs2TemperatureEntry 8 }
+
+	rs2TemperatureRearm OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The temperature rearm value."
+		::= { rs2TemperatureEntry 9 }
+
+	rs2BreakersTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF RS2BreakersEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table of circuit breaker states."
+		::= { rs2power 9 }
+
+	rs2BreakersEntry OBJECT-TYPE
+		SYNTAX RS2BreakersEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table entry of circuit breaker states."
+		INDEX { rs2BreakersRPCIndex, rs2BreakersIndex }
+		::= { rs2BreakersTable 1 }
+
+	RS2BreakersEntry ::=
+		SEQUENCE {
+			rs2BreakersRPCIndex	INTEGER,
+			rs2BreakersIndex	INTEGER,
+			rs2BreakersState	INTEGER
+		}
+
+	rs2BreakersRPCIndex OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The index number of the RPC."
+		::= { rs2BreakersEntry 1 }
+
+	rs2BreakersIndex OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The index number of the circuit breaker."
+		::= { rs2BreakersEntry 2 }
+
+	rs2BreakersState OBJECT-TYPE
+		SYNTAX INTEGER {
+			off(0),
+			on(1),
+			notPresent(2)
+		}
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The circuit breaker state."
+		::= { rs2BreakersEntry 3 }
+
+
+	-- traps
+
+	rs2Port1PowerSensor1HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 1, power sensor 1, is in the high critical state." 
+		::= 501
+
+	rs2Port1PowerSensor1HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 1, power sensor 1, is in the high warning state." 
+		::= 502
+
+	rs2Port1PowerSensor1LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 1, power sensor 1, is in the low warning state." 
+		::= 503
+
+	rs2Port1PowerSensor1LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 1, power sensor 1, is in the low critical state." 
+		::= 504
+
+	rs2Port1PowerSensor1Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 1, power sensor 1, is in the normal state." 
+		::= 505
+
+	rs2Port1VoltageSensor1HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 1, voltage sensor 1, is in the high critical state." 
+		::= 506
+
+	rs2Port1VoltageSensor1HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 1, voltage sensor 1, is in the high warning state." 
+		::= 507
+
+	rs2Port1VoltageSensor1LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 1, voltage sensor 1, is in the low warning state." 
+		::= 508
+
+	rs2Port1VoltageSensor1LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 1, voltage sensor 1, is in the low critical state." 
+		::= 509
+
+	rs2Port1VoltageSensor1Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 1, voltage sensor 1, is in the normal state." 
+		::= 510
+
+	rs2Port1CurrentSensor1HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 1, current sensor 1, is in the high critical state." 
+		::= 511
+
+	rs2Port1CurrentSensor1HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 1, current sensor 1, is in the high warning state." 
+		::= 512
+
+	rs2Port1CurrentSensor1LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 1, current sensor 1, is in the low warning state." 
+		::= 513
+
+	rs2Port1CurrentSensor1LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 1, current sensor 1, is in the low critical state." 
+		::= 514
+
+	rs2Port1CurrentSensor1Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 1, current sensor 1, is in the normal state." 
+		::= 515
+
+	rs2Port1TemperatureSensor1HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 1, temperature sensor 1, is in the high critical state." 
+		::= 516
+
+	rs2Port1TemperatureSensor1HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 1, temperature sensor 1, is in the high warning state." 
+		::= 517
+
+	rs2Port1TemperatureSensor1LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 1, temperature sensor 1, is in the low warning state." 
+		::= 518
+
+	rs2Port1TemperatureSensor1LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 1, temperature sensor 1, is in the low critical state." 
+		::= 519
+
+	rs2Port1TemperatureSensor1Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 1, temperature sensor 1, is in the normal state." 
+		::= 520
+
+	rs2Port1PowerSensor2HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 1, power sensor 2, is in the high critical state." 
+		::= 521
+
+	rs2Port1PowerSensor2HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 1, power sensor 2, is in the high warning state." 
+		::= 522
+
+	rs2Port1PowerSensor2LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 1, power sensor 2, is in the low warning state." 
+		::= 523
+
+	rs2Port1PowerSensor2LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 1, power sensor 2, is in the low critical state." 
+		::= 524
+
+	rs2Port1PowerSensor2Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 1, power sensor 2, is in the normal state." 
+		::= 525
+
+	rs2Port1VoltageSensor2HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 1, voltage sensor 2, is in the high critical state." 
+		::= 526
+
+	rs2Port1VoltageSensor2HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 1, voltage sensor 2, is in the high warning state." 
+		::= 527
+
+	rs2Port1VoltageSensor2LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 1, voltage sensor 2, is in the low warning state." 
+		::= 528
+
+	rs2Port1VoltageSensor2LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 1, voltage sensor 2, is in the low critical state." 
+		::= 529
+
+	rs2Port1VoltageSensor2Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 1, voltage sensor 2, is in the normal state." 
+		::= 530
+
+	rs2Port1CurrentSensor2HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 1, current sensor 2, is in the high critical state." 
+		::= 531
+
+	rs2Port1CurrentSensor2HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 1, current sensor 2, is in the high warning state." 
+		::= 532
+
+	rs2Port1CurrentSensor2LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 1, current sensor 2, is in the low warning state." 
+		::= 533
+
+	rs2Port1CurrentSensor2LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 1, current sensor 2, is in the low critical state." 
+		::= 534
+
+	rs2Port1CurrentSensor2Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 1, current sensor 2, is in the normal state." 
+		::= 535
+
+	rs2Port1TemperatureSensor2HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 1, temperature sensor 2, is in the high critical state." 
+		::= 536
+
+	rs2Port1TemperatureSensor2HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 1, temperature sensor 2, is in the high warning state." 
+		::= 537
+
+	rs2Port1TemperatureSensor2LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 1, temperature sensor 2, is in the low warning state." 
+		::= 538
+
+	rs2Port1TemperatureSensor2LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 1, temperature sensor 2, is in the low critical state." 
+		::= 539
+
+	rs2Port1TemperatureSensor2Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 1, temperature sensor 2, is in the normal state." 
+		::= 540
+
+	rs2Port1PowerSensor3HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 1, power sensor 3, is in the high critical state." 
+		::= 541
+
+	rs2Port1PowerSensor3HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 1, power sensor 3, is in the high warning state." 
+		::= 542
+
+	rs2Port1PowerSensor3LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 1, power sensor 3, is in the low warning state." 
+		::= 543
+
+	rs2Port1PowerSensor3LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 1, power sensor 3, is in the low critical state." 
+		::= 544
+
+	rs2Port1PowerSensor3Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 1, power sensor 3, is in the normal state." 
+		::= 545
+
+	rs2Port1VoltageSensor3HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 1, voltage sensor 3, is in the high critical state." 
+		::= 546
+
+	rs2Port1VoltageSensor3HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 1, voltage sensor 3, is in the high warning state." 
+		::= 547
+
+	rs2Port1VoltageSensor3LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 1, voltage sensor 3, is in the low warning state." 
+		::= 548
+
+	rs2Port1VoltageSensor3LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 1, voltage sensor 3, is in the low critical state." 
+		::= 549
+
+	rs2Port1VoltageSensor3Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 1, voltage sensor 3, is in the normal state." 
+		::= 550
+
+	rs2Port1CurrentSensor3HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 1, current sensor 3, is in the high critical state." 
+		::= 551
+
+	rs2Port1CurrentSensor3HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 1, current sensor 3, is in the high warning state." 
+		::= 552
+
+	rs2Port1CurrentSensor3LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 1, current sensor 3, is in the low warning state." 
+		::= 553
+
+	rs2Port1CurrentSensor3LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 1, current sensor 3, is in the low critical state." 
+		::= 554
+
+	rs2Port1CurrentSensor3Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 1, current sensor 3, is in the normal state." 
+		::= 555
+
+	rs2Port1TemperatureSensor3HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 1, temperature sensor 3, is in the high critical state." 
+		::= 556
+
+	rs2Port1TemperatureSensor3HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 1, temperature sensor 3, is in the high warning state." 
+		::= 557
+
+	rs2Port1TemperatureSensor3LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 1, temperature sensor 3, is in the low warning state." 
+		::= 558
+
+	rs2Port1TemperatureSensor3LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 1, temperature sensor 3, is in the low critical state." 
+		::= 559
+
+	rs2Port1TemperatureSensor3Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 1, temperature sensor 3, is in the normal state." 
+		::= 560
+
+	rs2Port2PowerSensor1HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 2, power sensor 1, is in the high critical state." 
+		::= 561
+
+	rs2Port2PowerSensor1HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 2, power sensor 1, is in the high warning state." 
+		::= 562
+
+	rs2Port2PowerSensor1LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 2, power sensor 1, is in the low warning state." 
+		::= 563
+
+	rs2Port2PowerSensor1LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 2, power sensor 1, is in the low critical state." 
+		::= 564
+
+	rs2Port2PowerSensor1Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 2, power sensor 1, is in the normal state." 
+		::= 565
+
+	rs2Port2VoltageSensor1HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 2, voltage sensor 1, is in the high critical state." 
+		::= 566
+
+	rs2Port2VoltageSensor1HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 2, voltage sensor 1, is in the high warning state." 
+		::= 567
+
+	rs2Port2VoltageSensor1LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 2, voltage sensor 1, is in the low warning state." 
+		::= 568
+
+	rs2Port2VoltageSensor1LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 2, voltage sensor 1, is in the low critical state." 
+		::= 569
+
+	rs2Port2VoltageSensor1Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 2, voltage sensor 1, is in the normal state." 
+		::= 570
+
+	rs2Port2CurrentSensor1HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 2, current sensor 1, is in the high critical state." 
+		::= 571
+
+	rs2Port2CurrentSensor1HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 2, current sensor 1, is in the high warning state." 
+		::= 572
+
+	rs2Port2CurrentSensor1LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 2, current sensor 1, is in the low warning state." 
+		::= 573
+
+	rs2Port2CurrentSensor1LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 2, current sensor 1, is in the low critical state." 
+		::= 574
+
+	rs2Port2CurrentSensor1Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 2, current sensor 1, is in the normal state." 
+		::= 575
+
+	rs2Port2TemperatureSensor1HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 2, temperature sensor 1, is in the high critical state." 
+		::= 576
+
+	rs2Port2TemperatureSensor1HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 2, temperature sensor 1, is in the high warning state." 
+		::= 577
+
+	rs2Port2TemperatureSensor1LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 2, temperature sensor 1, is in the low warning state." 
+		::= 578
+
+	rs2Port2TemperatureSensor1LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 2, temperature sensor 1, is in the low critical state." 
+		::= 579
+
+	rs2Port2TemperatureSensor1Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 2, temperature sensor 1, is in the normal state." 
+		::= 580
+
+	rs2Port2PowerSensor2HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 2, power sensor 2, is in the high critical state." 
+		::= 581
+
+	rs2Port2PowerSensor2HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 2, power sensor 2, is in the high warning state." 
+		::= 582
+
+	rs2Port2PowerSensor2LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 2, power sensor 2, is in the low warning state." 
+		::= 583
+
+	rs2Port2PowerSensor2LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 2, power sensor 2, is in the low critical state." 
+		::= 584
+
+	rs2Port2PowerSensor2Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 2, power sensor 2, is in the normal state." 
+		::= 585
+
+	rs2Port2VoltageSensor2HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 2, voltage sensor 2, is in the high critical state." 
+		::= 586
+
+	rs2Port2VoltageSensor2HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 2, voltage sensor 2, is in the high warning state." 
+		::= 587
+
+	rs2Port2VoltageSensor2LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 2, voltage sensor 2, is in the low warning state." 
+		::= 588
+
+	rs2Port2VoltageSensor2LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 2, voltage sensor 2, is in the low critical state." 
+		::= 589
+
+	rs2Port2VoltageSensor2Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 2, voltage sensor 2, is in the normal state." 
+		::= 590
+
+	rs2Port2CurrentSensor2HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 2, current sensor 2, is in the high critical state." 
+		::= 591
+
+	rs2Port2CurrentSensor2HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 2, current sensor 2, is in the high warning state." 
+		::= 592
+
+	rs2Port2CurrentSensor2LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 2, current sensor 2, is in the low warning state." 
+		::= 593
+
+	rs2Port2CurrentSensor2LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 2, current sensor 2, is in the low critical state." 
+		::= 594
+
+	rs2Port2CurrentSensor2Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 2, current sensor 2, is in the normal state." 
+		::= 595
+
+	rs2Port2TemperatureSensor2HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 2, temperature sensor 2, is in the high critical state." 
+		::= 596
+
+	rs2Port2TemperatureSensor2HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 2, temperature sensor 2, is in the high warning state." 
+		::= 597
+
+	rs2Port2TemperatureSensor2LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 2, temperature sensor 2, is in the low warning state." 
+		::= 598
+
+	rs2Port2TemperatureSensor2LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 2, temperature sensor 2, is in the low critical state." 
+		::= 599
+
+	rs2Port2TemperatureSensor2Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 2, temperature sensor 2, is in the normal state." 
+		::= 600
+
+	rs2Port2PowerSensor3HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 2, power sensor 3, is in the high critical state." 
+		::= 601
+
+	rs2Port2PowerSensor3HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 2, power sensor 3, is in the high warning state." 
+		::= 602
+
+	rs2Port2PowerSensor3LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 2, power sensor 3, is in the low warning state." 
+		::= 603
+
+	rs2Port2PowerSensor3LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 2, power sensor 3, is in the low critical state." 
+		::= 604
+
+	rs2Port2PowerSensor3Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2PowerRPCIndex,
+			rs2PowerIndex,
+			rs2PowerValue,
+			rs2PowerState
+			}
+		DESCRIPTION
+			"Port 2, power sensor 3, is in the normal state." 
+		::= 605
+
+	rs2Port2VoltageSensor3HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 2, voltage sensor 3, is in the high critical state." 
+		::= 606
+
+	rs2Port2VoltageSensor3HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 2, voltage sensor 3, is in the high warning state." 
+		::= 607
+
+	rs2Port2VoltageSensor3LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 2, voltage sensor 3, is in the low warning state." 
+		::= 608
+
+	rs2Port2VoltageSensor3LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 2, voltage sensor 3, is in the low critical state." 
+		::= 609
+
+	rs2Port2VoltageSensor3Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2VoltageRPCIndex,
+			rs2VoltageIndex,
+			rs2VoltageValue,
+			rs2VoltageState
+			}
+		DESCRIPTION
+			"Port 2, voltage sensor 3, is in the normal state." 
+		::= 610
+
+	rs2Port2CurrentSensor3HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 2, current sensor 3, is in the high critical state." 
+		::= 611
+
+	rs2Port2CurrentSensor3HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 2, current sensor 3, is in the high warning state." 
+		::= 612
+
+	rs2Port2CurrentSensor3LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 2, current sensor 3, is in the low warning state." 
+		::= 613
+
+	rs2Port2CurrentSensor3LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 2, current sensor 3, is in the low critical state." 
+		::= 614
+
+	rs2Port2CurrentSensor3Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2CurrentRPCIndex,
+			rs2CurrentIndex,
+			rs2CurrentValue,
+			rs2CurrentState
+			}
+		DESCRIPTION
+			"Port 2, current sensor 3, is in the normal state." 
+		::= 615
+
+	rs2Port2TemperatureSensor3HighCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 2, temperature sensor 3, is in the high critical state." 
+		::= 616
+
+	rs2Port2TemperatureSensor3HighWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 2, temperature sensor 3, is in the high warning state." 
+		::= 617
+
+	rs2Port2TemperatureSensor3LowWarning TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 2, temperature sensor 3, is in the low warning state." 
+		::= 618
+
+	rs2Port2TemperatureSensor3LowCritical TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 2, temperature sensor 3, is in the low critical state." 
+		::= 619
+
+	rs2Port2TemperatureSensor3Normal TRAP-TYPE
+		ENTERPRISE rs2
+		VARIABLES {
+			sysDescr,
+			rs2TemperatureRPCIndex,
+			rs2TemperatureIndex,
+			rs2TemperatureValue,
+			rs2TemperatureState
+			}
+		DESCRIPTION
+			"Port 2, temperature sensor 3, is in the normal state." 
+		::= 620
+
+END

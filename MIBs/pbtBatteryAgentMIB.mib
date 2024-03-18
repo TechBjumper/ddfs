@@ -1,0 +1,461 @@
+-- ****************************************************************************
+-- *
+-- * Module Name:   BatteryAgentMIB
+-- *
+-- *
+-- * Description:   This MIB provides access to the battery information collected by
+-- *                the Phoenix Battery Monitoring products. The MIB supports an arbitrary 
+-- *                number of Strings and Jars (Batteries).
+-- *                Devices of this type are not presently supported by the HMS MIBs.
+-- *		    	This MIB is intended to be used in conjunction with the HMS 
+-- *                property, alarms, and common MIBs.   
+-- *
+-- * Created: 09/26/2005 by Mike Quelly, Phoenix Broadband Technologies. 
+-- * Revised: 12/16/2005 by Mike Quelly, Added additional objects.
+-- * Revised: 12/20/2005 by Mike Quelly, Added sensor firmware version.
+-- * Revised: 12/27/2005 by Mike Quelly, Relocated some objects.
+-- * Revised: 12/29/2005 by Mike Quelly, Minor cleanup. 	
+-- * Revised: 04/13/2006 by Mike Quelly, Added pbtBatStringCurrent, 
+-- *                                     and pbtBatStringConnectionAdmittance
+-- *									 Added Units where required.	
+-- * Revised: 05/09/2006 by Mike Quelly Added values 8 and 9 to pbtBatStringStatus,
+-- *                                    Corrected units in pbtBatStringVoltage description,
+-- *									Added value 6 to pbtBatBatterySensorStatus,
+-- *                                    Changed the resolution ofpbtBatteryVoltage to 0.01. 
+-- *	                                Changed from Battery to Cell Admittance.
+-- * Revised: 05/18/2006 by Mike Quelly Revised description for pbtBatStringCurrent and added
+-- *                                    range.
+-- * Revised: 12/27/2006 by Mike Quelly Added pbtBatLocation.
+-- * Revised: 01/25/2007 by Mike Quelly Added value 7 to pbtBatBatterySensorStatus.  
+-- * Revised: 01/29/2007 by Mike Quelly Changed the units of pbtBatMeasurementInterval from 
+-- *                                    seconds to hours.
+-- * Revised: 06/15/2007 by Mike Quely  Revised object descriptions.
+-- * Revised: 06/20/2007 by Mike Quelly Added StringStatus state 10.
+-- * Revised: 03/17/2008 by Mike Quelly Added pbtBatBatteryElectrolyteLevel. 
+-- * Revised: 07/22/2008 by Mike Quelly Changed Conductance to Admittance. 
+-- * Revised: 02/17/2009 by Mike Quelly Added pbtBatStringEqualizationControl. 
+-- *                                    Changed Battery to Jar where appropriate in Object
+-- *                                    names.  The OIDs were not changed. Other minor edits.
+-- ****************************************************************************
+
+PBT-BATTERYAGENT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+     OBJECT-TYPE     FROM RFC-1212
+     DisplayString,DateAndTime   FROM SNMPv2-TC
+     pbtBatteryAgent FROM PBT-ROOT-MIB
+     
+    ;
+
+pbtBatMeasurementInterval OBJECT-TYPE
+     SYNTAX INTEGER (0..32000)  
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+          "Time interval between autonomous admittance measurements, 
+          in hours. Default value is 8 hours."
+     ::= { pbtBatteryAgent 1 }
+
+pbtBatStrings OBJECT-TYPE
+     SYNTAX INTEGER ( 0..6 )
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "Number of battery strings connected to this device."
+     ::= { pbtBatteryAgent 2 }
+
+pbtBatStringTable OBJECT-TYPE
+     SYNTAX SEQUENCE OF PbtBatStringEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+          "Table containing information about each String." 
+     ::= { pbtBatteryAgent 3 }
+
+pbtBatJarTable OBJECT-TYPE
+     SYNTAX SEQUENCE OF PbtBatJarEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+          "Table containing information about each jar (battery)." 
+     ::= { pbtBatteryAgent 4 }
+
+pbtBatLocation OBJECT-TYPE
+     SYNTAX DisplayString (SIZE(32))
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+          	"String describing the location.
+    		This object is nonvolatile as specified in the HMS MIBs.
+	   		The default value of this object is 'Default Site Location'."
+     ::= { pbtBatteryAgent 5 } 
+
+
+
+pbtBatStringEntry OBJECT-TYPE
+     SYNTAX PbtBatStringEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+          "List of information about each String."
+     INDEX { pbtBatStringNumber }
+     ::= { pbtBatStringTable 1 }
+
+PbtBatStringEntry ::=
+     SEQUENCE
+     {
+          pbtBatStringNumber
+               INTEGER,
+
+          pbtBatStringJars
+               INTEGER,
+
+          pbtBatStringStatus
+          	   INTEGER,
+          
+          pbtBatStringControl
+          	   INTEGER,
+                   
+          pbtBatStringName
+               DisplayString,
+          
+          pbtBatStringVoltage
+           	   INTEGER,		     
+     	
+     	  pbtBatStringCurrent
+           	   INTEGER,		       	   
+     	
+     	  pbtBatStringConnectionAdmittance
+     	   	   INTEGER,		       
+     	  
+     	  pbtBatStringEqualizationControl
+     	       INTEGER	   
+     }
+
+pbtBatStringNumber OBJECT-TYPE
+     SYNTAX INTEGER ( 1..6 )
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+          "Index into the Table. Specifies the String number."
+     ::= { pbtBatStringEntry 1 }
+
+pbtBatStringJars OBJECT-TYPE
+     SYNTAX INTEGER ( 1..40 )
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "Number of Jars (batteries) in this string."
+     ::= { pbtBatStringEntry 2 }
+
+pbtBatStringStatus OBJECT-TYPE
+     SYNTAX INTEGER {normal(1),disabled(2),shorted(3),missingSensor(4),
+     		         tooManySensors(5),sensorFault(6),alarms(7),
+     		         initializing(8), sensorDisabled(9), stringDisconnected(10),
+     		         noSensorCom(11)}   
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+        "Status of this String."
+     ::= { pbtBatStringEntry 3 }
+                      
+pbtBatStringControl OBJECT-TYPE
+     SYNTAX INTEGER {enabled(1),disabled(2)}
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Control the String measurements.
+        This object is nonvolatile. The default value is 1."
+     ::= { pbtBatStringEntry 4 } 
+
+                      
+pbtBatStringName OBJECT-TYPE
+     SYNTAX DisplayString (SIZE(32))
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+          "String describing the battery string.
+	   This object is nonvolatile as specified in the HMS MIBs.
+	   The default value of this object is 'String n'."
+     ::= { pbtBatStringEntry 5 } 
+
+pbtBatStringVoltage OBJECT-TYPE
+     SYNTAX INTEGER 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+        "Total String Voltage.
+        Units  = 0.0 Volts DC
+     	This object must provide for alarm management capabilities 
+     	with a coresponding entry in the propertyTable of
+     	SCTE-HMS-PROPERTY-MIB (HMS026).
+     	An alarm shall be recorder as an entry in the currentAlarmTable
+     	of SCTE-HMS-PROPERTY-MIB (HMS026).
+     	A log record shall be added as an entry in the heCommonLogTable
+     	of SCTE-HMS-HE-COMMON-MIB."
+     ::= { pbtBatStringEntry 6 }
+
+pbtBatStringCurrent OBJECT-TYPE
+     SYNTAX INTEGER ( -1000..100 )
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "String Current. Positive charge, negative discharge.
+        Units = 0.1 Amps DC. 
+        This object is read-write so that the management system can 
+        provide the nominal current where it cannot be measured.
+     	This object must provide for alarm management capabilities 
+     	with a coresponding entry in the propertyTable of
+     	SCTE-HMS-PROPERTY-MIB (HMS026).
+     	An alarm shall be recorder as an entry in the currentAlarmTable
+     	of SCTE-HMS-PROPERTY-MIB (HMS026).
+     	A log record shall be added as an entry in the heCommonLogTable
+     	of SCTE-HMS-HE-COMMON-MIB."
+     ::= { pbtBatStringEntry 7 }
+
+pbtBatStringConnectionAdmittance OBJECT-TYPE
+     SYNTAX INTEGER 
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "Typical connductance of the connection between the sensor and
+        the battery.  Units = Mho."
+     ::= { pbtBatStringEntry 8 }
+                  
+pbtBatStringEqualizationControl OBJECT-TYPE
+     SYNTAX INTEGER	{enabled(1),disabled(2)} 
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "Enables or Disables battery equalization on this string. This
+        object is nonvolatile.  The default value is disabled(2)."
+     ::= { pbtBatStringEntry 9 }
+
+pbtBatJarEntry OBJECT-TYPE
+     SYNTAX PbtBatJarEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+          "List of information about each jar (battery)."
+     INDEX { pbtBatJarStringNumber, pbtBatJarNumber }
+     ::= { pbtBatJarTable 1 }
+
+PbtBatJarEntry ::=
+     SEQUENCE
+     {
+          pbtBatJarStringNumber
+	       	   INTEGER,  
+	
+          pbtBatJarNumber
+               INTEGER,
+
+          pbtBatJarSensorStatus
+          	   INTEGER,
+          	   
+          pbtBatJarSensorControl
+          	   INTEGER,
+          
+          pbtBatJarSensorLedControl
+               INTEGER,	   
+          
+          pbtBatJarName
+          	   DisplayString,
+          
+          pbtBatJarVoltage
+               INTEGER,
+
+          pbtBatJarTemperature
+               INTEGER,
+
+          pbtBatJarCellAdmittance
+               INTEGER,
+          
+          pbtBatJarAdmittanceTime
+          	   DateAndTime,
+          
+          pbtBatJarCellInitialAdmittance
+          	   INTEGER,
+          
+          pbtBatJarInitialAdmittanceTime
+          	   DateAndTime,
+          	             	   
+          pbtBatJarCellAdmittanceChange
+          	   INTEGER,	    	     
+          
+          pbtBatJarSensorVersion
+          	   INTEGER,	    	     
+
+          pbtBatJarElectrolyteLevel
+          	   INTEGER	    	     
+     }
+
+pbtBatJarStringNumber OBJECT-TYPE
+     SYNTAX INTEGER ( 1..6 )
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+          "Index into the Table. Specifies the String number."
+     ::= { pbtBatJarEntry 1 }
+
+
+pbtBatJarNumber OBJECT-TYPE
+     SYNTAX INTEGER ( 1..24 )
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+          "Index into the Table. Specifies the Jar (Battery) number."
+     ::= { pbtBatJarEntry 2 }
+
+pbtBatJarSensorStatus OBJECT-TYPE
+     SYNTAX INTEGER {normal(1),fault(2),measuring(3),sensorDisabled(4),
+                     stringDisabled(5),missing(6),measurementFailed(7)}
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "The present status of the sensor on this Jar."
+     ::= { pbtBatJarEntry 3 }
+
+pbtBatJarSensorControl OBJECT-TYPE
+     SYNTAX INTEGER {enable(1),measureNow(2),disable(3),resetAdmittance(4)}
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Control the admittance measurements.
+          1 = Autonoumous admittance measurements on this Jar at
+              the specified Interval.
+          2 = Measure admittance now (ASAP), reverts to 1 after the measurement.
+          3 = Admittance measurements are disabled.
+          4 = Set the Jar initial admittance values and time to the present 
+              admittance and time.
+          This object is nonvolatile. The default value is 1."
+
+     ::= { pbtBatJarEntry 4 } 
+                      
+pbtBatJarSensorLedControl OBJECT-TYPE
+     SYNTAX INTEGER {normal(1),ledGreen(2),ledRed(3),flashGreen(4),flashRed(5),greenRed(6)}
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+          "Sensor LED Control.
+          This object is nonvolatile. The default value is 1."
+     ::= { pbtBatJarEntry 5 }
+
+pbtBatJarName OBJECT-TYPE
+     SYNTAX DisplayString (SIZE(32))
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "String describing the Jar.
+	   This object is nonvolatile as specified in the HMS MIBs.
+	   The default value of this object is 'String n, Jar m' for 
+	   12 volt Jars and 'String n, Cell m' for 2 volt cells."
+     ::= { pbtBatJarEntry 6 } 
+
+pbtBatJarVoltage OBJECT-TYPE
+     SYNTAX INTEGER 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+        "Present jar voltage, Units = 0.01 Volts DC.
+        This object must provide for alarm management capabilities 
+     	with a coresponding entry in the propertyTable of
+     	SCTE-HMS-PROPERTY-MIB (HMS026).
+     	An alarm shall be recorder as an entry in the currentAlarmTable
+     	of SCTE-HMS-PROPERTY-MIB (HMS026).
+     	A log record shall be added as an entry in the heCommonLogTable
+     	of SCTE-HMS-HE-COMMON-MIB."  
+     ::= { pbtBatJarEntry 7 }
+
+pbtBatJarTemperature OBJECT-TYPE
+     SYNTAX INTEGER 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "Present jar Temperature in degrees C.
+        This object must provide for alarm management capabilities 
+     	with a coresponding entry in the propertyTable of
+     	SCTE-HMS-PROPERTY-MIB (HMS026).
+     	An alarm shall be recorder as an entry in the currentAlarmTable
+     	of SCTE-HMS-PROPERTY-MIB (HMS026).
+     	A log record shall be added as an entry in the heCommonLogTable
+     	of SCTE-HMS-HE-COMMON-MIB."  
+     ::= { pbtBatJarEntry 8 }
+
+pbtBatJarCellAdmittance OBJECT-TYPE
+     SYNTAX INTEGER 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "Present Cell Admittance,  in Siemens (mhos).
+          For a 2V Cell CellAdmittance = JarAdmittance.
+          For a 12V Jar CellAdmittance = 6 * JarAdmittance."  
+     ::= { pbtBatJarEntry 9 }
+
+pbtBatJarAdmittanceTime OBJECT-TYPE
+     SYNTAX DateAndTime 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "Time the admittance was measured."  
+     ::= { pbtBatJarEntry 10 }
+
+pbtBatJarCellInitialAdmittance OBJECT-TYPE
+     SYNTAX INTEGER 
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+          "Initial value of the cell admittance."  
+     ::= { pbtBatJarEntry 11 }
+
+pbtBatJarInitialAdmittanceTime OBJECT-TYPE
+     SYNTAX DateAndTime 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+          "Date and time the initial admittance was recorded 
+          for this jar."  
+     ::= { pbtBatJarEntry 12 }
+
+pbtBatJarCellAdmittanceChange OBJECT-TYPE
+     SYNTAX INTEGER 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+        "Change in cell admittance in percent.  
+        This object must provide for alarm management capabilities 
+     	with a coresponding entry in the propertyTable of
+     	SCTE-HMS-PROPERTY-MIB (HMS026).
+     	An alarm shall be recorder as an entry in the currentAlarmTable
+     	of SCTE-HMS-PROPERTY-MIB (HMS026).
+     	A log record shall be added as an entry in the heCommonLogTable
+     	of SCTE-HMS-HE-COMMON-MIB."  
+     ::= { pbtBatJarEntry 13 }
+
+pbtBatJarSensorVersion OBJECT-TYPE
+     SYNTAX INTEGER 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+        "Sensor Firmware Version.  
+        Encoded as 4 BCD digits in an integer.
+        example; 0x0110 = version 1.10 "  
+     ::= { pbtBatJarEntry 14 }
+
+pbtBatJarElectrolyteLevel OBJECT-TYPE
+     SYNTAX INTEGER {notAvailable(1),normal(2),low(3)} 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+        "If the electrolyte sensor is not supported by the Sensor
+        this object will report notAvailable. If the electrolyte level is
+        supported (Sensors with Model Numbers containing -ES) this
+        object will report normal or low.
+        This object must provide for alarm management capabilities 
+     	with a coresponding entry in the discreteTable of
+     	SCTE-HMS-PROPERTY-MIB (HMS026).
+     	An alarm shall be recorder as an entry in the currentAlarmTable
+     	of SCTE-HMS-PROPERTY-MIB (HMS026).
+     	A log record shall be added as an entry in the heCommonLogTable
+     	of SCTE-HMS-HE-COMMON-MIB."  
+     ::= { pbtBatJarEntry 15 }
+END

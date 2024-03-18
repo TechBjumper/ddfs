@@ -1,0 +1,1820 @@
+<?xml version="1.0"?>
+<APC_DDF
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+	ddfid="powerlogic_55xx"
+	ddfname="PowerLogic PM55xx"
+	ddfversion="6"
+	canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+	<!--
+		Device Type:		Power Meter
+		Manufacturer:		PowerLogic
+		Family: 				PM55xx/PM56xx/PM57xx
+		Models Tested:
+			PM5560
+
+		Walkfiles:
+			gatewayddf: /simulationResources/src/main/resources/modbus/registerMaps/powerlogic/powermeter/PM5560.xml
+
+		Network Interface:
+			Modbus RTU over RS-485
+
+		Reference Documents:
+			PowerLogicTM PM5500 / PM5600 / PM5700 series, User manual, HRB1684301-12, 2021-08
+			https://download.schneider-electric.com/files?p_enDocType=User+guide&amp;p_File_Name=HRB1684301-12.pdf&amp;p_Doc_Ref=HRB1684301
+
+			PowerLogic PM5560 PM5563 PM5580 V4.1.3 UTv2.5 Firmware Release, 2021-09-30
+			https://download.schneider-electric.com/files?p_enDocType=Firmware&amp;p_File_Name=PM5560_PM5563_PM5580_V4.1.3_UTv2.5_Release.zip&amp;p_Doc_Ref=PM5560_PM5563_PM5580_V4.1.3
+	-->
+
+	<device deviceid="powerlogic_5560">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<setProductData ruleid="typedata" field="type">Power Meter</setProductData>
+		<setProductData ruleid="vendordata" field="vendor">
+			<getOid>mfg_name</getOid>
+		</setProductData>
+		<setProductData ruleid="modeldata" field="model">
+			<getOid>meter_model</getOid>
+		</setProductData>
+		<setProductData ruleid="appversion" field="appversion">
+			<getOid>firmware_version</getOid>
+		</setProductData>
+		<setDefaultLabel ruleid="labeldata">
+			<getOid>meter_name</getOid> (<sysHostname/> - Modbus Server <commSetting field="slaveaddress"/>)
+		</setDefaultLabel>
+
+		<valueMap ruleid="int64_sensor_exists-vm">
+			<valueIn>9223372036854775808</valueIn><valueOut>[false]</valueOut><!-- 0x8000000000000000 -->
+			<valueIn>-9223372036854775808</valueIn><valueOut>[false]</valueOut><!-- 0x8000000000000000 -->
+			<valueIn>-1</valueIn><valueOut>[false]</valueOut><!-- 0xFFFFFFFFFFFFFFFF -->
+			<valueIn>*</valueIn><valueOut>[true]</valueOut>
+		</valueMap>
+
+		<!-- Meter Data (Basic) - 1s Metering (50/60 Cycles) -->
+
+		<numSensor ruleid="current_phase_a_Sensor">
+			<type>amperage</type>
+			<sensorId>CURRENT_PHASE_A</sensorId>
+			<value>
+				<getOid>r1_current_phase_a</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Current - Phase A</label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+		<numSensor ruleid="current_phase_b_Sensor">
+			<type>amperage</type>
+			<sensorId>CURRENT_PHASE_B</sensorId>
+			<value>
+				<getOid>r1_current_phase_b</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Current - Phase B</label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+		<numSensor ruleid="current_phase_c_Sensor">
+			<type>amperage</type>
+			<sensorId>CURRENT_PHASE_C</sensorId>
+			<value>
+				<getOid>r1_current_phase_c</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Current - Phase C</label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+		<numSensor ruleid="current_neutral_Sensor">
+			<type>amperage</type>
+			<sensorId>CURRENT_NEUTRAL</sensorId>
+			<value>
+				<getOid>r1_current_neutral</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Current - Neutral</label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+		<numSensor ruleid="current_g">
+			<type>amperage</type>
+			<sensorId>CURRENT_1</sensorId>
+			<value>
+				<mult>
+					<op>
+						<getOid>CURRENT_G</getOid>
+					</op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Current - Ground</label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+		<numSensor ruleid="current_avg_Sensor">
+			<type>amperage</type>
+			<sensorId>CURRENT_AVG</sensorId>
+			<value>
+				<getOid>r1_current_avg</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Current - Average</label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="current_unbalance_a_Sensor">
+			<type>num</type>
+			<units>percent</units>
+			<sensorId>CURRENT_UNBALANCE_A</sensorId>
+			<value>
+				<getOid>r1_current_unbalance_a</getOid>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Current Unbalance - Phase A</label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+		<numSensor ruleid="current_unbalance_b_Sensor">
+			<type>num</type>
+			<units>percent</units>
+			<sensorId>CURRENT_UNBALANCE_B</sensorId>
+			<value>
+				<getOid>r1_current_unbalance_b</getOid>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Current Unbalance - Phase B</label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+		<numSensor ruleid="current_unbalance_c_Sensor">
+			<type>num</type>
+			<units>percent</units>
+			<sensorId>CURRENT_UNBALANCE_C</sensorId>
+			<value>
+				<getOid>r1_current_unbalance_c</getOid>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Current Unbalance - Phase C</label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="voltage_ab_Sensor">
+			<type>voltage</type>
+			<sensorId>VOLTAGE_AB</sensorId>
+			<value>
+				<getOid>r1_voltage_ab</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Voltage A-B</label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+		<numSensor ruleid="voltage_bc_Sensor">
+			<type>voltage</type>
+			<sensorId>VOLTAGE_BC</sensorId>
+			<value>
+				<getOid>r1_voltage_bc</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Voltage B-C</label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+		<numSensor ruleid="voltage_ca_Sensor">
+			<type>voltage</type>
+			<sensorId>VOLTAGE_CA</sensorId>
+			<value>
+				<getOid>r1_voltage_ca</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Voltage C-A</label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+		<numSensor ruleid="average_l2l_voltage_Sensor">
+			<type>voltage</type>
+			<sensorId>AVERAGE_L2L_VOLTAGE</sensorId>
+			<value>
+				<getOid>r1_average_l2l_voltage</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Voltage L-L Average</label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+		<numSensor ruleid="voltage_an_Sensor">
+			<type>voltage</type>
+			<sensorId>VOLTAGE_AN</sensorId>
+			<value>
+				<getOid>r1_voltage_an</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Voltage A-N</label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+		<numSensor ruleid="voltage_bn_Sensor">
+			<type>voltage</type>
+			<sensorId>VOLTAGE_BN</sensorId>
+			<value>
+				<getOid>r1_voltage_bn</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Voltage B-N</label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+		<numSensor ruleid="voltage_cn_Sensor">
+			<type>voltage</type>
+			<sensorId>VOLTAGE_CN</sensorId>
+			<value>
+				<getOid>r1_voltage_cn</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Voltage C-N</label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+		<numSensor ruleid="average_l2n_voltage_Sensor">
+			<type>voltage</type>
+			<sensorId>AVERAGE_L2N_VOLTAGE</sensorId>
+			<value>
+				<getOid>r1_average_l2n_voltage</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Voltage L-N Average</label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="real_power_phase_a_Sensor">
+			<type>num/powerKW</type>
+			<sensorId>REAL_POWER_PHASE_A</sensorId>
+			<value>
+				<getOid>r1_real_power_phase_a</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Active Power - Phase A</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<numSensor ruleid="real_power_phase_b_Sensor">
+			<type>num/powerKW</type>
+			<sensorId>REAL_POWER_PHASE_B</sensorId>
+			<value>
+				<getOid>r1_real_power_phase_b</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Active Power - Phase B</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<numSensor ruleid="real_power_phase_c_Sensor">
+			<type>num/powerKW</type>
+			<sensorId>REAL_POWER_PHASE_C</sensorId>
+			<value>
+				<getOid>r1_real_power_phase_c</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Active Power - Phase C</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<numSensor ruleid="real_power_total_Sensor">
+			<type>num/powerKW</type>
+			<sensorId>REAL_POWER_TOTAL</sensorId>
+			<value>
+				<getOid>r1_real_power_total</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Active Power Total</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<numSensor ruleid="reactive_power_phase_a_Sensor">
+			<type>num/powerKVAR</type>
+			<sensorId>REACTIVE_POWER_PHASE_A</sensorId>
+			<value>
+				<getOid>r1_reactive_power_phase_a</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Reactive Power - Phase A</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<numSensor ruleid="reactive_power_phase_b_Sensor">
+			<type>num/powerKVAR</type>
+			<sensorId>REACTIVE_POWER_PHASE_B</sensorId>
+			<value>
+				<getOid>r1_reactive_power_phase_b</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Reactive Power - Phase B</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<numSensor ruleid="reactive_power_phase_c_Sensor">
+			<type>num/powerKVAR</type>
+			<sensorId>REACTIVE_POWER_PHASE_C</sensorId>
+			<value>
+				<getOid>r1_reactive_power_phase_c</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Reactive Power - Phase C</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<numSensor ruleid="total_reactive_power_Sensor">
+			<type>num/powerKVAR</type>
+			<sensorId>TOTAL_REACTIVE_POWER</sensorId>
+			<value>
+				<getOid>r1_total_reactive_power</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Reactive Power Total</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<numSensor ruleid="apparent_power_phase_a_Sensor">
+			<type>num/powerKVA</type>
+			<sensorId>APPARENT_POWER_PHASE_A</sensorId>
+			<value>
+				<getOid>r1_apparent_power_phase_a</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Apparent Power - Phase A</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<numSensor ruleid="apparent_power_phase_b_Sensor">
+			<type>num/powerKVA</type>
+			<sensorId>APPARENT_POWER_PHASE_B</sensorId>
+			<value>
+				<getOid>r1_apparent_power_phase_b</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Apparent Power - Phase B</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<numSensor ruleid="apparent_power_phase_c_Sensor">
+			<type>num/powerKVA</type>
+			<sensorId>APPARENT_POWER_PHASE_C</sensorId>
+			<value>
+				<getOid>r1_apparent_power_phase_c</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Apparent Power - Phase C</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<numSensor ruleid="total_apparent_power_Sensor">
+			<type>num/powerKVA</type>
+			<sensorId>TOTAL_APPARENT_POWER</sensorId>
+			<value>
+				<getOid>r1_total_apparent_power</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Apparent Power Total</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="power_factor_phase_a_Sensor">
+			<type>num/powerfactor</type>
+			<sensorId>POWER_FACTOR_PHASE_A</sensorId>
+			<value>
+				<if>
+					<op>
+						<ge>
+							<op>
+								<getOid>r1_power_factor_phase_a</getOid>
+							</op>
+							<op>0</op>
+						</ge>
+					</op>
+					<op>
+						<if>
+							<op>
+								<gt>
+									<op>
+										<getOid>r1_power_factor_phase_a</getOid>
+									</op>
+									<op>1</op>
+								</gt>
+							</op>
+							<op>
+								<sub>
+									<op>2</op>
+									<op>
+										<getOid>r1_power_factor_phase_a</getOid>
+									</op>
+								</sub>
+							</op>
+							<op>
+								<getOid>r1_power_factor_phase_a</getOid>
+							</op>
+						</if>
+					</op>
+					<op>
+						<if>
+							<op>
+								<lt>
+									<op>
+										<getOid>r1_power_factor_phase_a</getOid>
+									</op>
+									<op>-1</op>
+								</lt>
+							</op>
+							<op>
+								<sub>
+									<op>-2</op>
+									<op>
+										<getOid>r1_power_factor_phase_a</getOid>
+									</op>
+								</sub>
+							</op>
+							<op>
+								<getOid>r1_power_factor_phase_a</getOid>
+							</op>
+						</if>
+					</op>
+				</if>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Power Factor - Phase A</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="pf_lead_lag_phase_a_Sensor">
+			<type>state</type>
+			<sensorId>PF_LEAD_LAG_PHASE_A</sensorId>
+			<value>
+				<mapValue mapid="pf_lead_lag-vm">
+					<if>
+						<op>
+							<ge>
+								<op>
+									<getOid>r1_power_factor_phase_a</getOid>
+								</op>
+								<op>0</op>
+							</ge>
+						</op>
+						<op>
+							<if>
+								<op>
+									<gt>
+										<op>
+											<getOid>r1_power_factor_phase_a</getOid>
+										</op>
+										<op>1</op>
+									</gt>
+								</op>
+								<op>4</op>
+								<op>1</op>
+							</if>
+						</op>
+						<op>
+							<if>
+								<op>
+									<lt>
+										<op>
+											<getOid>r1_power_factor_phase_a</getOid>
+										</op>
+										<op>-1</op>
+									</lt>
+								</op>
+								<op>2</op>
+								<op>3</op>
+							</if>
+						</op>
+					</if>
+				</mapValue>
+			</value>
+			<label>Power Factor Lead/Lag - Phase A</label>
+			<enum>pf_lead_lag-em</enum>
+			<sensorSet>Power</sensorSet>
+		</stateSensor>
+		<numSensor ruleid="power_factor_phase_b_Sensor">
+			<type>num/powerfactor</type>
+			<sensorId>POWER_FACTOR_PHASE_B</sensorId>
+			<value>
+				<if>
+					<op>
+						<ge>
+							<op>
+								<getOid>r1_power_factor_phase_b</getOid>
+							</op>
+							<op>0</op>
+						</ge>
+					</op>
+					<op>
+						<if>
+							<op>
+								<gt>
+									<op>
+										<getOid>r1_power_factor_phase_b</getOid>
+									</op>
+									<op>1</op>
+								</gt>
+							</op>
+							<op>
+								<sub>
+									<op>2</op>
+									<op>
+										<getOid>r1_power_factor_phase_b</getOid>
+									</op>
+								</sub>
+							</op>
+							<op>
+								<getOid>r1_power_factor_phase_b</getOid>
+							</op>
+						</if>
+					</op>
+					<op>
+						<if>
+							<op>
+								<lt>
+									<op>
+										<getOid>r1_power_factor_phase_b</getOid>
+									</op>
+									<op>-1</op>
+								</lt>
+							</op>
+							<op>
+								<sub>
+									<op>-2</op>
+									<op>
+										<getOid>r1_power_factor_phase_b</getOid>
+									</op>
+								</sub>
+							</op>
+							<op>
+								<getOid>r1_power_factor_phase_b</getOid>
+							</op>
+						</if>
+					</op>
+				</if>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Power Factor - Phase B</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="pf_lead_lag_phase_b_Sensor">
+			<type>state</type>
+			<sensorId>PF_LEAD_LAG_PHASE_B</sensorId>
+			<value>
+				<mapValue mapid="pf_lead_lag-vm">
+					<if>
+						<op>
+							<ge>
+								<op>
+									<getOid>r1_power_factor_phase_b</getOid>
+								</op>
+								<op>0</op>
+							</ge>
+						</op>
+						<op>
+							<if>
+								<op>
+									<gt>
+										<op>
+											<getOid>r1_power_factor_phase_b</getOid>
+										</op>
+										<op>1</op>
+									</gt>
+								</op>
+								<op>4</op>
+								<op>1</op>
+							</if>
+						</op>
+						<op>
+							<if>
+								<op>
+									<lt>
+										<op>
+											<getOid>r1_power_factor_phase_b</getOid>
+										</op>
+										<op>-1</op>
+									</lt>
+								</op>
+								<op>2</op>
+								<op>3</op>
+							</if>
+						</op>
+					</if>
+				</mapValue>
+			</value>
+			<label>Power Factor Lead/Lag - Phase B</label>
+			<enum>pf_lead_lag-em</enum>
+			<sensorSet>Power</sensorSet>
+		</stateSensor>
+		<numSensor ruleid="power_factor_phase_c_Sensor">
+			<type>num/powerfactor</type>
+			<sensorId>POWER_FACTOR_PHASE_C</sensorId>
+			<value>
+				<if>
+					<op>
+						<ge>
+							<op>
+								<getOid>r1_power_factor_phase_c</getOid>
+							</op>
+							<op>0</op>
+						</ge>
+					</op>
+					<op>
+						<if>
+							<op>
+								<gt>
+									<op>
+										<getOid>r1_power_factor_phase_c</getOid>
+									</op>
+									<op>1</op>
+								</gt>
+							</op>
+							<op>
+								<sub>
+									<op>2</op>
+									<op>
+										<getOid>r1_power_factor_phase_c</getOid>
+									</op>
+								</sub>
+							</op>
+							<op>
+								<getOid>r1_power_factor_phase_c</getOid>
+							</op>
+						</if>
+					</op>
+					<op>
+						<if>
+							<op>
+								<lt>
+									<op>
+										<getOid>r1_power_factor_phase_c</getOid>
+									</op>
+									<op>-1</op>
+								</lt>
+							</op>
+							<op>
+								<sub>
+									<op>-2</op>
+									<op>
+										<getOid>r1_power_factor_phase_c</getOid>
+									</op>
+								</sub>
+							</op>
+							<op>
+								<getOid>r1_power_factor_phase_c</getOid>
+							</op>
+						</if>
+					</op>
+				</if>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Power Factor - Phase C</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="pf_lead_lag_phase_c_Sensor">
+			<type>state</type>
+			<sensorId>PF_LEAD_LAG_PHASE_C</sensorId>
+			<value>
+				<mapValue mapid="pf_lead_lag-vm">
+					<if>
+						<op>
+							<ge>
+								<op>
+									<getOid>r1_power_factor_phase_c</getOid>
+								</op>
+								<op>0</op>
+							</ge>
+						</op>
+						<op>
+							<if>
+								<op>
+									<gt>
+										<op>
+											<getOid>r1_power_factor_phase_c</getOid>
+										</op>
+										<op>1</op>
+									</gt>
+								</op>
+								<op>4</op>
+								<op>1</op>
+							</if>
+						</op>
+						<op>
+							<if>
+								<op>
+									<lt>
+										<op>
+											<getOid>r1_power_factor_phase_c</getOid>
+										</op>
+										<op>-1</op>
+									</lt>
+								</op>
+								<op>2</op>
+								<op>3</op>
+							</if>
+						</op>
+					</if>
+				</mapValue>
+			</value>
+			<label>Power Factor Lead/Lag - Phase C</label>
+			<enum>pf_lead_lag-em</enum>
+			<sensorSet>Power</sensorSet>
+		</stateSensor>
+		<numSensor ruleid="power_factor_total_Sensor">
+			<type>num/powerfactor</type>
+			<sensorId>POWER_FACTOR_TOTAL</sensorId>
+			<value>
+				<if>
+					<op>
+						<ge>
+							<op>
+								<getOid>r1_total_power_factor</getOid>
+							</op>
+							<op>0</op>
+						</ge>
+					</op>
+					<op>
+						<if>
+							<op>
+								<gt>
+									<op>
+										<getOid>r1_total_power_factor</getOid>
+									</op>
+									<op>1</op>
+								</gt>
+							</op>
+							<op>
+								<sub>
+									<op>2</op>
+									<op>
+										<getOid>r1_total_power_factor</getOid>
+									</op>
+								</sub>
+							</op>
+							<op>
+								<getOid>r1_total_power_factor</getOid>
+							</op>
+						</if>
+					</op>
+					<op>
+						<if>
+							<op>
+								<lt>
+									<op>
+										<getOid>r1_total_power_factor</getOid>
+									</op>
+									<op>-1</op>
+								</lt>
+							</op>
+							<op>
+								<sub>
+									<op>-2</op>
+									<op>
+										<getOid>r1_total_power_factor</getOid>
+									</op>
+								</sub>
+							</op>
+							<op>
+								<getOid>r1_total_power_factor</getOid>
+							</op>
+						</if>
+					</op>
+				</if>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Power Factor - Total</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="pf_lead_lag_total_Sensor">
+			<type>state</type>
+			<sensorId>PF_LEAD_LAG_TOTAL</sensorId>
+			<value>
+				<mapValue mapid="pf_lead_lag-vm">
+					<if>
+						<op>
+							<ge>
+								<op>
+									<getOid>r1_total_power_factor</getOid>
+								</op>
+								<op>0</op>
+							</ge>
+						</op>
+						<op>
+							<if>
+								<op>
+									<gt>
+										<op>
+											<getOid>r1_total_power_factor</getOid>
+										</op>
+										<op>1</op>
+									</gt>
+								</op>
+								<op>4</op>
+								<op>1</op>
+							</if>
+						</op>
+						<op>
+							<if>
+								<op>
+									<lt>
+										<op>
+											<getOid>r1_total_power_factor</getOid>
+										</op>
+										<op>-1</op>
+									</lt>
+								</op>
+								<op>2</op>
+								<op>3</op>
+							</if>
+						</op>
+					</if>
+				</mapValue>
+			</value>
+			<label>Power Factor Lead/Lag - Total</label>
+			<enum>pf_lead_lag-em</enum>
+			<sensorSet>Power</sensorSet>
+		</stateSensor>
+
+		<valueMap ruleid="pf_lead_lag-vm">
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>2</valueIn><valueOut>2</valueOut>
+			<valueIn>3</valueIn><valueOut>3</valueOut>
+			<valueIn>4</valueIn><valueOut>4</valueOut>
+			<valueIn>*</valueIn><valueOut>0</valueOut>
+		</valueMap>
+		<enumMap ruleid="pf_lead_lag-em">
+			<label>Unknown</label>
+			<label>PF Lagging, I Lagging</label>
+			<label>PF Leading, I Lagging</label>
+			<label>PF Lagging, I Leading</label>
+			<label>PF Leading, I Leading</label>
+		</enumMap>
+
+		<numSensor ruleid="frequency">
+			<type>frequency</type>
+			<sensorId>FREQUENCY</sensorId>
+			<value>
+				<getOid>r1_frequency</getOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Frequency</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+		<!-- Meter Data (Basic) - Energy -->
+
+		<numSensor ruleid="real_energy_delivered_into_load_Sensor">
+			<type>num/kwatthr</type>
+			<sensorId>REAL_ENERGY_DELIVERED_INTO_LOAD</sensorId>
+			<rowTest>
+				<mapValue mapid="powerlogic_5560/int64_sensor_exists-vm">
+					<formatNumber>
+						<getOid>r1_real_energy_delivered_into_load</getOid>
+					</formatNumber>
+				</mapValue>
+			</rowTest>
+			<value>
+				<mult>
+					<op>0.001</op> <!-- Wh to kWh -->
+					<op>
+						<getOid>r1_real_energy_delivered_into_load</getOid>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Active Energy Delivered (into Load)</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+		<numSensor ruleid="real_energy_received_out_of_load">
+			<type>num/kwatthr</type>
+			<sensorId>REAL_ENERGY_RECEIVED_OUT_OF_LOAD</sensorId>
+			<rowTest>
+				<mapValue mapid="powerlogic_5560/int64_sensor_exists-vm">
+					<formatNumber>
+						<getOid>r1_real_energy_received_out_of_load</getOid>
+					</formatNumber>
+				</mapValue>
+			</rowTest>
+			<value>
+				<mult>
+					<op>0.001</op> <!-- Wh to kWh -->
+					<op>
+						<getOid>r1_real_energy_received_out_of_load</getOid>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Active Energy Received (out of Load)</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="active_energy_delivered_+_received">
+			<type>num/kwatthr</type>
+			<sensorId>REAL_ENERGY_TOTAL</sensorId>
+			<value>
+				<mult>
+					<op>
+						<getOid>ACTIVE_ENERGY_TOTAL</getOid>
+					</op>
+					<op>0.001</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Active Energy (Delivered + Received)</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+		<numSensor ruleid="active_energy_delivered-_received">
+			<type>num/kwatthr</type>
+			<sensorId>REAL_ENERGY_NET</sensorId>
+			<value>
+				<mult>
+					<op>
+						<getOid>ACTIVE_ENERGY_NET</getOid>
+					</op>
+					<op>0.001</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Active Energy (Delivered - Received)</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="reactive_energy_delivered_Sensor">
+			<type>num/kVARhr</type>
+			<sensorId>REACTIVE_ENERGY_DELIVERED</sensorId>
+			<rowTest>
+				<mapValue mapid="powerlogic_5560/int64_sensor_exists-vm">
+					<formatNumber>
+						<getOid>r1_reactive_energy_delivered</getOid>
+					</formatNumber>
+				</mapValue>
+			</rowTest>
+			<value>
+				<mult>
+					<op>0.001</op> <!-- VARh to kVARh -->
+					<op>
+						<getOid>r1_reactive_energy_delivered</getOid>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Reactive Energy Delivered</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+		<numSensor ruleid="reactive_energy_received_Sensor">
+			<type>num/kVARhr</type>
+			<sensorId>REACTIVE_ENERGY_RECEIVED</sensorId>
+			<rowTest>
+				<mapValue mapid="powerlogic_5560/int64_sensor_exists-vm">
+					<formatNumber>
+						<getOid>r1_reactive_energy_received</getOid>
+					</formatNumber>
+				</mapValue>
+			</rowTest>
+			<value>
+				<mult>
+					<op>0.001</op> <!-- VARh to kVARh -->
+					<op>
+						<getOid>r1_reactive_energy_received</getOid>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Reactive Energy Received</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="reactive_energy_total">
+			<type>num/kVARhr</type>
+			<sensorId>REACTIVE_ENERGY_TOTAL</sensorId>
+			<value>
+				<mult>
+					<op>
+						<getOid>REACTIVE_ENERGY_TOTAL</getOid>
+					</op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Reactive Energy (Delivered + Received)</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+		<numSensor ruleid="reactive_energy_net">
+			<type>num/kVARhr</type>
+			<sensorId>REACTIVE_ENERGY_NET</sensorId>
+			<value>
+				<mult>
+					<op>
+						<getOid>REACTIVE_ENERGY_NET</getOid>
+					</op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Reactive Energy (Delivered - Received)</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+		<numSensor ruleid="apparent_energy_delivered">
+			<type>num/kVAhr</type>
+			<sensorId>APPARENT_ENERGY_DELIVERED</sensorId>
+			<value>
+				<mult>
+					<op>
+						<getOid>APPARENT_ENERGY_DELIVERED</getOid>
+					</op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Apparent Energy Delivered</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+		<numSensor ruleid="apparent_energy_received">
+			<type>num/kVAhr</type>
+			<sensorId>APPARENT_ENERGY_RECEIVED</sensorId>
+			<value>
+				<mult>
+					<op>
+						<getOid>APPARENT_ENERGY_RECEIVED</getOid>
+					</op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Apparent Energy Received</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+		<numSensor ruleid="apparent_energy_delivered_+_received_3244">
+			<type>num/kVAhr</type>
+			<sensorId>APPARENT_ENERGY_TOTAL</sensorId>
+			<value>
+				<mult>
+					<op>
+						<getOid>APPARENT_ENERGY_TOTAL</getOid>
+					</op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Apparent Energy (Delivered + Received)</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+		<numSensor ruleid="apparent_energy_delivered_-_received_3248">
+			<type>num/kVAhr</type>
+			<sensorId>_POWERMETER_KVAH_4</sensorId>
+			<value>
+				<mult>
+					<op>
+						<getOid>APPARENT_ENERGY_NET</getOid>
+					</op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Apparent Energy (Delivered - Received)</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+
+		<!-- Meter Data (Basic) - Demand -->
+
+		<numSensor ruleid="real_power_present_demand_Sensor">
+			<type>num/powerKW</type>
+			<sensorId>REAL_POWER_PRESENT_DEMAND</sensorId>
+			<value>
+				<getOid>r1_real_power_present_demand</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Active Power Present Demand</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<numSensor ruleid="real_power_demand_phase_a_Sensor">
+			<type>num/powerKW</type>
+			<sensorId>REAL_POWER_DEMAND_PHASE_A</sensorId>
+			<value>
+				<getOid>r1_real_power_demand_phase_a</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Active Power Demand - Phase A</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<numSensor ruleid="real_power_demand_phase_b_Sensor">
+			<type>num/powerKW</type>
+			<sensorId>REAL_POWER_DEMAND_PHASE_B</sensorId>
+			<value>
+				<getOid>r1_real_power_demand_phase_b</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Real Power Demand - Phase B</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		<numSensor ruleid="real_power_demand_phase_c_Sensor">
+			<type>num/powerKW</type>
+			<sensorId>REAL_POWER_DEMAND_PHASE_C</sensorId>
+			<value>
+				<getOid>r1_real_power_demand_phase_c</getOid>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Active Power Demand - Phase C</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+		<!-- Coils -->
+
+		<stateSensor ruleid="base_unit_digital_input_di1">
+			<type>state</type>
+			<sensorId>_BASE_UNIT_DIGITAL_INPUT_DI1</sensorId>
+			<value>
+				<mapValue mapid="off_on_vm">
+					<getOid>DI1_INPUT</getOid>
+				</mapValue>
+			</value>
+			<label>Base Unit - Digital Input DI1</label>
+			<enum>off_on_em</enum>
+			<sensorSet>Digital Input Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="base_unit_digital_input_di2">
+			<type>state</type>
+			<sensorId>_BASE_UNIT_DIGITAL_INPUT_DI2</sensorId>
+			<value>
+				<mapValue mapid="off_on_vm">
+					<getOid>DI2_INPUT</getOid>
+				</mapValue>
+			</value>
+			<label>Base Unit - Digital Input DI2</label>
+			<enum>off_on_em</enum>
+			<sensorSet>Digital Input Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="base_unit_digital_input_di3">
+			<type>state</type>
+			<sensorId>_BASE_UNIT_DIGITAL_INPUT_DI3</sensorId>
+			<value>
+				<mapValue mapid="off_on_vm">
+					<getOid>DI3_INPUT</getOid>
+				</mapValue>
+			</value>
+			<label>Base Unit - Digital Input DI3</label>
+			<enum>off_on_em</enum>
+			<sensorSet>Digital Input Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="base_unit_digital_input_di4">
+			<type>state</type>
+			<sensorId>_BASE_UNIT_DIGITAL_INPUT_DI4</sensorId>
+			<value>
+				<mapValue mapid="off_on_vm">
+					<getOid>DI4_INPUT</getOid>
+				</mapValue>
+			</value>
+			<label>Base Unit - Digital Input DI4</label>
+			<enum>off_on_em</enum>
+			<sensorSet>Digital Input Status</sensorSet>
+		</stateSensor>
+
+		<valueMap ruleid="off_on_vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>*</valueIn><valueOut>0</valueOut>
+		</valueMap>
+
+		<enumMap ruleid="off_on_em">
+			<label>Off</label>
+			<label>On</label>
+		</enumMap>
+	</device>
+
+	<protocol>
+		<modbus>
+			<type_definition type_name="swapped_uint32">
+        <type>uint_32</type>
+        <byte_order>1,0,3,2</byte_order>
+			</type_definition>
+
+			<value_ref_id valid="DI1_INPUT">
+				<function>1</function>
+				<start_addr>38415</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="DI2_INPUT">
+				<function>1</function>
+				<start_addr>38416</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="DI3_INPUT">
+				<function>1</function>
+				<start_addr>38417</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="DI4_INPUT">
+				<function>1</function>
+				<start_addr>38418</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+
+			<value_ref_id valid="meter_name">
+				<function>3</function>
+				<start_addr>29</start_addr>
+				<quantity>20</quantity>
+				<type>ascii</type>
+			</value_ref_id>
+			<value_ref_id valid="meter_model">
+				<function>3</function>
+				<start_addr>49</start_addr>
+				<quantity>20</quantity>
+				<type>ascii</type>
+			</value_ref_id>
+			<value_ref_id valid="mfg_name">
+				<function>3</function>
+				<start_addr>69</start_addr>
+				<quantity>20</quantity>
+				<type>ascii</type>
+			</value_ref_id>
+
+			<value_ref_id valid="firmware_version">
+				<function>3</function>
+				<start_addr>1636</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="power_system_config">
+				<function>3</function>
+				<start_addr>2015</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="r1_current_phase_a">
+				<function>3</function>
+				<start_addr>2999</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_current_phase_b">
+				<function>3</function>
+				<start_addr>3001</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_current_phase_c">
+				<function>3</function>
+				<start_addr>3003</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_current_neutral">
+				<function>3</function>
+				<start_addr>3005</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+
+			<value_ref_id valid="CURRENT_G">
+				<function>3</function>
+				<start_addr>3007</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+
+			<value_ref_id valid="r1_current_avg">
+				<function>3</function>
+				<start_addr>3009</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_current_unbalance_a">
+				<function>3</function>
+				<start_addr>3011</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_current_unbalance_b">
+				<function>3</function>
+				<start_addr>3013</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_current_unbalance_c">
+				<function>3</function>
+				<start_addr>3015</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+
+			<value_ref_id valid="r1_voltage_ab">
+				<function>3</function>
+				<start_addr>3019</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_voltage_bc">
+				<function>3</function>
+				<start_addr>3021</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_voltage_ca">
+				<function>3</function>
+				<start_addr>3023</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_average_l2l_voltage">
+				<function>3</function>
+				<start_addr>3025</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_voltage_an">
+				<function>3</function>
+				<start_addr>3027</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_voltage_bn">
+				<function>3</function>
+				<start_addr>3029</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_voltage_cn">
+				<function>3</function>
+				<start_addr>3031</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_average_l2n_voltage">
+				<function>3</function>
+				<start_addr>3035</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+
+			<value_ref_id valid="r1_real_power_phase_a">
+				<function>3</function>
+				<start_addr>3053</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_real_power_phase_b">
+				<function>3</function>
+				<start_addr>3055</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_real_power_phase_c">
+				<function>3</function>
+				<start_addr>3057</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_real_power_total">
+				<function>3</function>
+				<start_addr>3059</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_reactive_power_phase_a">
+				<function>3</function>
+				<start_addr>3061</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_reactive_power_phase_b">
+				<function>3</function>
+				<start_addr>3063</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_reactive_power_phase_c">
+				<function>3</function>
+				<start_addr>3065</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_total_reactive_power">
+				<function>3</function>
+				<start_addr>3067</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_apparent_power_phase_a">
+				<function>3</function>
+				<start_addr>3069</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_apparent_power_phase_b">
+				<function>3</function>
+				<start_addr>3071</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_apparent_power_phase_c">
+				<function>3</function>
+				<start_addr>3073</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_total_apparent_power">
+				<function>3</function>
+				<start_addr>3075</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+
+			<value_ref_id valid="r1_power_factor_phase_a">
+				<function>3</function>
+				<start_addr>3077</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_power_factor_phase_b">
+				<function>3</function>
+				<start_addr>3079</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_power_factor_phase_c">
+				<function>3</function>
+				<start_addr>3081</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_total_power_factor">
+				<function>3</function>
+				<start_addr>3083</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+
+			<value_ref_id valid="r1_frequency">
+				<function>3</function>
+				<start_addr>3109</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+
+			<value_ref_id valid="ACCUMULATED_ENERGY_RESET_DATETIME">
+				<function>3</function>
+				<start_addr>3199</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+
+			<value_ref_id valid="r1_real_energy_delivered_into_load">
+				<function>3</function>
+				<start_addr>3203</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_real_energy_received_out_of_load">
+				<function>3</function>
+				<start_addr>3207</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+
+			<value_ref_id valid="ACTIVE_ENERGY_TOTAL">
+				<function>3</function>
+				<start_addr>3211</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="ACTIVE_ENERGY_NET">
+				<function>3</function>
+				<start_addr>3215</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+
+			<value_ref_id valid="r1_reactive_energy_delivered">
+				<function>3</function>
+				<start_addr>3219</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_reactive_energy_received">
+				<function>3</function>
+				<start_addr>3223</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+
+			<value_ref_id valid="REACTIVE_ENERGY_TOTAL">
+				<function>3</function>
+				<start_addr>3227</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="REACTIVE_ENERGY_NET">
+				<function>3</function>
+				<start_addr>3231</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="APPARENT_ENERGY_DELIVERED">
+				<function>3</function>
+				<start_addr>3235</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="APPARENT_ENERGY_RECEIVED">
+				<function>3</function>
+				<start_addr>3239</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="APPARENT_ENERGY_TOTAL">
+				<function>3</function>
+				<start_addr>3243</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="APPARENT_ENERGY_NET">
+				<function>3</function>
+				<start_addr>3247</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+
+			<value_ref_id valid="r1_partial_real_energy_import">
+				<function>3</function>
+				<start_addr>3255</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_partial_reactive_energy_import">
+				<function>3</function>
+				<start_addr>3271</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+
+			<value_ref_id valid="r1_real_energy_delivered_phase_a">
+				<function>3</function>
+				<start_addr>3517</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_real_energy_delivered_phase_b">
+				<function>3</function>
+				<start_addr>3521</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_real_energy_delivered_phase_c">
+				<function>3</function>
+				<start_addr>3525</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_reactive_energy_delivered_phase_a">
+				<function>3</function>
+				<start_addr>3529</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_reactive_energy_delivered_phase_b">
+				<function>3</function>
+				<start_addr>3533</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_reactive_energy_delivered_phase_c">
+				<function>3</function>
+				<start_addr>3537</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+
+			<value_ref_id valid="r1_accumulated_input_count">
+				<function>3</function>
+				<start_addr>3557</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+
+			<value_ref_id valid="r1_real_power_present_demand">
+				<function>3</function>
+				<start_addr>3765</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_real_power_demand_phase_a">
+				<function>3</function>
+				<start_addr>3973</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_real_power_demand_phase_b">
+				<function>3</function>
+				<start_addr>4021</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="r1_real_power_demand_phase_c">
+				<function>3</function>
+				<start_addr>4069</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+
+			<value_ref_id valid="DI1_TYPE">
+				<function>3</function>
+				<start_addr>7272</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="DI1_CTRL_MODE">
+				<function>3</function>
+				<start_addr>7273</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="DI1_LABEL">
+				<function>3</function>
+				<start_addr>7274</start_addr>
+				<quantity>20</quantity>
+				<type>ascii</type>
+			</value_ref_id>
+			<value_ref_id valid="DI1_DEBOUNCE_TIME">
+				<function>3</function>
+				<start_addr>7294</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="DI2_TYPE">
+				<function>3</function>
+				<start_addr>7296</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="DI2_CTRL_MODE">
+				<function>3</function>
+				<start_addr>7297</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="DI2_LABEL">
+				<function>3</function>
+				<start_addr>7298</start_addr>
+				<quantity>20</quantity>
+				<type>ascii</type>
+			</value_ref_id>
+			<value_ref_id valid="DI2_DEBOUNCE_TIME">
+				<function>3</function>
+				<start_addr>7318</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="DI3_TYPE">
+				<function>3</function>
+				<start_addr>7320</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="DI3_CTRL_MODE">
+				<function>3</function>
+				<start_addr>7321</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="DI3_LABEL">
+				<function>3</function>
+				<start_addr>7322</start_addr>
+				<quantity>20</quantity>
+				<type>ascii</type>
+			</value_ref_id>
+			<value_ref_id valid="DI3_DEBOUNCE_TIME">
+				<function>3</function>
+				<start_addr>7342</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="DI4_TYPE">
+				<function>3</function>
+				<start_addr>7344</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="DI4_CTRL_MODE">
+				<function>3</function>
+				<start_addr>7345</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="DI4_LABEL">
+				<function>3</function>
+				<start_addr>7346</start_addr>
+				<quantity>20</quantity>
+				<type>ascii</type>
+			</value_ref_id>
+			<value_ref_id valid="DI4_DEBOUNCE_TIME">
+				<function>3</function>
+				<start_addr>7366</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="DI_STATUS">
+				<function>3</function>
+				<start_addr>8904</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="DI1_COUNT">
+				<function>3</function>
+				<start_addr>8914</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="DI1_ON_TIME">
+				<function>3</function>
+				<start_addr>8916</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="DI2_COUNT">
+				<function>3</function>
+				<start_addr>8918</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="DI2_ON_TIME">
+				<function>3</function>
+				<start_addr>8920</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="DI3_COUNT">
+				<function>3</function>
+				<start_addr>8922</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="DI3_ON_TIME">
+				<function>3</function>
+				<start_addr>8924</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="DI4_COUNT">
+				<function>3</function>
+				<start_addr>8926</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="DI4_ON_TIME">
+				<function>3</function>
+				<start_addr>8928</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+
+			<!-- R1 -->
+			<packet>
+				<function>3</function>
+				<start_addr>1636</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>2015</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>2999</start_addr>
+				<quantity>38</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>3053</start_addr>
+				<quantity>16</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>3077</start_addr>
+				<quantity>8</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>3203</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>3219</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>3517</start_addr>
+				<quantity>24</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>3765</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>3973</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>4021</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>4069</start_addr>
+				<quantity>2</quantity>
+			</packet>
+
+		</modbus>
+	</protocol>
+
+</APC_DDF>

@@ -1,0 +1,962 @@
+  -- ----------------------------------------------------------------------------
+--             UPS Ambient Signal Adaptor MIB
+--                    RELAYCARD-MIB
+--
+--      Copyright (c) 1999-2000 HUAWEI ELECTRIC TECH. CO., LTD, SHENZHEN.
+--      Copyright (c) 2000-2001 AVANSYS POWER CO., LTD., SHENZHEN.
+--      Copyright (c) 2001-2006 EMERSON NETWORK POWER CO., LTD.
+--      All rights reserved.
+--
+--      Created    by: Su Chunlei
+--      Created  date: 2006-05-17
+--      Modified Date: 
+-- ----------------------------------------------------------------------------
+
+RELAYCARD-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE
+        FROM RFC-1212
+
+    TRAP-TYPE
+        FROM RFC-1215
+
+    enterprises, IpAddress
+        FROM RFC1155-SMI;
+
+    DisplayString ::= OCTET STRING
+
+
+    -- ------------------------------------------------------------------------
+    -- the location of UPS group in ENP enterprise.
+    -- ------------------------------------------------------------------------ 
+    emersonNetworkPower     OBJECT IDENTIFIER ::= { enterprises 13400 }
+    products                OBJECT IDENTIFIER ::= { emersonNetworkPower 2 }
+    emersonUps              OBJECT IDENTIFIER ::= { products 1 }
+    relayCard             OBJECT IDENTIFIER ::= { products 6 }
+    
+    -- ------------------------------------------------------------------------
+    -- the main objects about UPS
+    -- ------------------------------------------------------------------------ 
+    upsAgent        OBJECT IDENTIFIER ::= { emersonUps 1 }
+    upsCommon       OBJECT IDENTIFIER ::= { emersonUps 2 }
+    upsSpecial      OBJECT IDENTIFIER ::= { relayCard 3 }
+    upsAlarm        OBJECT IDENTIFIER ::= { emersonUps 4 }
+
+    upsIdent        OBJECT IDENTIFIER ::= { upsCommon 1 }
+
+    -- ------------------------------------------------------------------------
+    -- the common objects about a  UPS
+    -- ------------------------------------------------------------------------ 
+    upsBaseIdent    OBJECT IDENTIFIER ::=  { upsIdent 1 }
+    upsSmartIdent   OBJECT IDENTIFIER ::=  { upsIdent 2 }
+
+    upsBaseAlaram   OBJECT IDENTIFIER ::=  { upsAlarm 1 }
+    upsSmartAlarm   OBJECT IDENTIFIER ::=  { upsAlarm 2 }
+
+    -- ------------------------------------------------------------------------
+    -- the detail objects about a special UPS
+    -- ------------------------------------------------------------------------ 
+    dryContactor    OBJECT IDENTIFIER ::=  { upsSpecial 9 }
+
+    dryBaseStatus   OBJECT IDENTIFIER ::=  { dryContactor 1 }
+    dryBaseInput    OBJECT IDENTIFIER ::=  { dryContactor 2 }
+    drySmartInput   OBJECT IDENTIFIER ::=  { dryContactor 3 }
+    dryBaseOutput   OBJECT IDENTIFIER ::=  { dryContactor 4 }
+
+    -- ------------------------------------------------------------------------
+    -- 1. upsAgent group
+    -- ------------------------------------------------------------------------ 
+   
+    agentRevision OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The software version of the agent."
+        ::= { upsAgent 1 }
+
+    agentManagersNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of managers that can manage the agent. "
+        ::= { upsAgent 2 }
+ 
+    agentManagersTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF AgentManagersEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of managers of the agent.  The number of
+            entries is given by the value of agentManagersNum."
+        ::= { upsAgent 3 }
+ 
+    agentManagersEntry OBJECT-TYPE
+        SYNTAX AgentManagersEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The managers of the agent."
+        INDEX  { managerIndex}
+        ::= { agentManagersTable 1 }
+ 
+    AgentManagersEntry ::=
+        SEQUENCE {
+            managerIndex
+                INTEGER,
+            managerAddr
+                IpAddress,
+            publicCommunityString
+                 DisplayString,
+            privateCommunityString
+                 DisplayString,
+            managerPrivilege
+                INTEGER,
+            acceptTrapLevel
+                INTEGER,
+            managerAccept
+                INTEGER
+        }
+ 
+    managerIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the managers entry."
+        ::= { agentManagersEntry 1 }
+    
+    managerAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The IP address of the manager."
+        ::= { agentManagersEntry 2 }
+
+    publicCommunityString OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "The public community name to use in the query request."
+        ::= { agentManagersEntry 3 }
+ 
+    privateCommunityString OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "The private community name to use int the control request."
+        ::= { agentManagersEntry 4 }
+ 
+    managerPrivilege OBJECT-TYPE
+        SYNTAX INTEGER {
+            forbidden(0),
+            query(1),
+            control(2),
+            administrator(3)
+       }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The privilege of the manager to access the agent.
+            setting forbidden(0) indicates the manager have no any privilege to access the agent,
+            setting query(1) indicates the manager can GET information from agent only,
+            setting control(2) indicates the manager can GET information from agent and 
+            send control command to the agent.
+            setting administrator(3) indicates the manager has all management privilege
+            including set or modify this managers table."
+       ::= { agentManagersEntry 5 }
+
+    acceptTrapLevel OBJECT-TYPE
+         SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3),
+            noTraps(4)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The severity threshold of traps to send to the manager.
+            traps are labeled in severity as informational(1), warning(2),
+            severe(3).  Only traps of equal or greater severity than
+            this value are sent to the manager. setting noTraps(4) indicates
+            agent do not send any traps to the manager."
+       ::= { agentManagersEntry 6 }
+
+    managerAccept OBJECT-TYPE
+        SYNTAX INTEGER   {
+            view(0),
+            new(1),
+            modify(2),
+            delete(3)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "An entry will be added if new(1), will be modified if modify(2), 
+           and will be removed if delete(3)."
+        ::= { agentManagersEntry 7 }
+
+    -- ------------------------------------------------------------------------
+    -- 2. upsCommon group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------
+    -- 2.1 upsIdent group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------ 
+    -- 2.1.1 the upsBaseIdent group
+    -- ------------------------------------------------------------------------ 
+
+    upsBaseIdentModel OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The UPS model name (e.g. 'iTrust2G UPS 6KVA')."
+        ::= { upsBaseIdent 1 }
+
+    upsBaseIdentUpsName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "An 8 byte ID string identifying the UPS.  This object
+             can be set by the administrator."
+        ::= { upsBaseIdent 2 }
+                
+    
+    -- ------------------------------------------------------------------------ 
+    -- 2.1.2 the upsSmartIdent group
+    -- ------------------------------------------------------------------------ 
+            
+    upsSmartIdentFirmwareRevision OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The firmware revision of the UPS system."
+        ::= { upsSmartIdent 1 }
+        
+    -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    -- IMPORTANT: iTrust2G UPS does NOT support manu-date and product-serial
+    --            to read these variables will get 'reserved'
+    upsSmartIdentDateOfManufacture OBJECT-TYPE
+        SYNTAX DisplayString
+       ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The date when the UPS was manufactured in yyyy/mm/dd format."
+        ::= { upsSmartIdent 2 }
+
+    upsSmartIdentUpsSerialNumber OBJECT-TYPE
+         SYNTAX DisplayString
+        ACCESS read-only
+         STATUS mandatory
+         DESCRIPTION
+            "An 8-character string identifying the serial number of
+              the UPS internal microprocessor.  This number is set at
+              the factory.  NOTE: This number does NOT correspond to
+             the serial number on the rear of the UPS."
+        ::= { upsSmartIdent 3 }
+    
+    upsSmartIdentUpsFactory OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The name of the factory that manufactured this UPS."
+        ::= { upsSmartIdent 4 }
+    
+    -- ------------------------------------------------------------------------
+    -- 3. upsSpecial group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------ 
+    -- 3.9. the dryContactor group
+    -- ------------------------------------------------------------------------ 
+    
+    -- ------------------------------------------------------------------------ 
+    -- 3.9.1 the dryBaseStatus group
+    -- ------------------------------------------------------------------------ 
+    dryBaseStatusCommunication OBJECT-TYPE
+        SYNTAX INTEGER {
+            unknown(1),
+            ok(2),
+            lostCommunication(3),
+            notEstablished(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The status of communication to the UPS Ambient Signal Adaptor. 
+            lostCommunication(3) indicates some errors occurred between the dry 
+            contactor card and agent. notEstablished(4) indicates agent can not
+            connect to UPS, maybe error on communication port or port settings
+            error."
+        ::= { dryBaseStatus 1 }
+    
+    -- ------------------------------------------------------------------------ 
+    -- 3.9.2 the dryBaseInput group
+    -- ------------------------------------------------------------------------ 
+    dryBaseInputStatus1 OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            open(2),
+            closed(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The current state of the input dry contactor 1. If the UPS is unable
+             to determine the state of the UPS this variable is set to unknown(1)."
+        ::= { dryBaseInput 1 }
+
+    dryBaseInputStatus2 OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            open(2),
+            closed(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The current state of the input dry contactor 2. If the UPS is unable
+             to determine the state of the UPS this variable is set to unknown(1)."
+        ::= { dryBaseInput 2 }
+
+    dryBaseInputStatus3 OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            open(2),
+            closed(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The current state of the input dry contactor 3. If the UPS is unable
+             to determine the state of the UPS this variable is set to unknown(1)."
+        ::= { dryBaseInput 3 }
+
+    dryBaseInputStatus4 OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            open(2),
+            closed(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The current state of the input dry contactor 4. If the UPS is unable
+             to determine the state of the UPS this variable is set to unknown(1)."
+        ::= { dryBaseInput 4 }
+
+    dryBaseInputStatus5 OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            open(2),
+            closed(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The current state of the input dry contactor 5. If the UPS is unable
+             to determine the state of the UPS this variable is set to unknown(1)."
+        ::= { dryBaseInput 5 }
+
+    dryBaseInputStatus6 OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            open(2),
+            closed(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The current state of the input dry contactor 6. If the UPS is unable
+             to determine the state of the UPS this variable is set to unknown(1)."
+        ::= { dryBaseInput 6 }
+
+    dryBaseInputStatus7 OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            open(2),
+            closed(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The current state of the input dry contactor 7. If the UPS is unable
+             to determine the state of the UPS this variable is set to unknown(1)."
+        ::= { dryBaseInput 7 }
+
+    dryBaseInputStatus8 OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            open(2),
+            closed(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The current state of the input dry contactor 8. If the UPS is unable
+             to determine the state of the UPS this variable is set to unknown(1)."
+        ::= { dryBaseInput 8 }
+    
+    -- ------------------------------------------------------------------------ 
+    -- 3.9.3 the drySmartInput group
+    -- ------------------------------------------------------------------------ 
+    drySmartInput1 OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The current input ambient parameter 1."
+        ::= { drySmartInput 1 }
+
+    drySmartInput2 OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The current input ambient parameter 2."
+        ::= { drySmartInput 2 }
+
+    drySmartInput3 OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The current input ambient parameter 3."
+        ::= { drySmartInput 3 }
+
+    drySmartInput4 OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The current input ambient parameter 4."
+        ::= { drySmartInput 4 }
+
+    drySmartInput5 OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The current input ambient parameter 5."
+        ::= { drySmartInput 5 }
+
+    drySmartInput6 OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The current input ambient parameter 6."
+        ::= { drySmartInput 6 }
+
+    drySmartInput7 OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The current input ambient parameter 7."
+        ::= { drySmartInput 7 }
+
+    drySmartInput8 OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The current input ambient parameter 8."
+        ::= { drySmartInput 8 }
+    
+    -- ------------------------------------------------------------------------ 
+    -- 3.9.4 the dryBaseOutput group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------
+    -- 4. the upsAlarm group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 4.1. the upsBaseAlaram group
+    -- ------------------------------------------------------------------------
+
+    -- no upsBaseAlaram variables
+
+    -- ------------------------------------------------------------------------
+    -- 4.2. the upsSmartAlarm group
+    -- ------------------------------------------------------------------------
+    upsSmartAlarmPresentNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The present number of active alarams."
+        ::= { upsSmartAlarm 1 }
+
+    upsSmartAlarmPresentTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UpsSmartAlarmPresentEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of current UPS alarms, The number of entries is given
+            by the value of upsSmartAlarmPresentNum."
+        ::= { upsSmartAlarm 2 }
+
+    upsSmartAlarmPresentEntry OBJECT-TYPE
+        SYNTAX UpsSmartAlarmPresentEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The present alarms list."
+        INDEX  { presentAlarmIndex}
+        ::= { upsSmartAlarmPresentTable 1 }
+
+    UpsSmartAlarmPresentEntry ::=
+        SEQUENCE {
+            presentAlarmIndex
+                INTEGER,
+            presentAlarmTime
+                DisplayString,
+            presentAlarmId
+                INTEGER,
+            presentAlarmName
+                DisplayString,
+            presentAlaramLevel
+                INTEGER
+        }
+
+    presentAlarmIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the present alaram entry."
+        ::= { upsSmartAlarmPresentEntry 1 }
+
+    presentAlarmTime OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The time of the alarm generated, format as yyyy/mm/dd hh:mm:ss."
+        ::= { upsSmartAlarmPresentEntry 2 }
+
+    presentAlarmId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm ID."
+       ::= { upsSmartAlarmPresentEntry 3 }
+
+    presentAlarmName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The name of the alarm."
+        ::= { upsSmartAlarmPresentEntry 4 }
+
+    presentAlaramLevel OBJECT-TYPE
+        SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm level."
+       ::= { upsSmartAlarmPresentEntry 5 }
+
+    -- historical alarms
+    upsSmartAlarmHistoryNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of historical alarms."
+        ::= { upsSmartAlarm 3 }
+
+    upsSmartAlarmHistoryTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UpsSmartAlarmHistoryEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of historical UPS alarms, The number of entries is given
+            by the value of upsSmartAlarmHistoryNum."
+        ::= { upsSmartAlarm 4 }
+
+    upsSmartAlarmHistoryEntry OBJECT-TYPE
+        SYNTAX UpsSmartAlarmHistoryEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The historical alarms list."
+        INDEX  { historyAlarmIndex}
+        ::= { upsSmartAlarmHistoryTable 1 }
+
+    UpsSmartAlarmHistoryEntry ::=
+        SEQUENCE {
+            historyAlarmIndex
+                INTEGER,
+            historyAlarmTime
+                DisplayString,
+            historyAlarmId
+                INTEGER,
+            historyAlarmName
+                DisplayString,
+            historyAlaramLevel
+                INTEGER
+        }
+
+    historyAlarmIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the historical alaram entry."
+        ::= { upsSmartAlarmHistoryEntry 1 }
+
+    historyAlarmTime OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The time of the alarm generated, format as yyyy/mm/dd hh:mm:ss."
+        ::= { upsSmartAlarmHistoryEntry 2 }
+
+    historyAlarmId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm ID."
+       ::= { upsSmartAlarmHistoryEntry 3 }
+
+    historyAlarmName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The name of the alarm."
+        ::= { upsSmartAlarmHistoryEntry 4 }
+
+    historyAlaramLevel OBJECT-TYPE
+        SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm level."
+       ::= { upsSmartAlarmHistoryEntry 5 }
+
+
+
+    -- ------------------------------------------------------------------------
+    -- Traps
+    -- ------------------------------------------------------------------------
+
+    --
+    -- trap args
+    --
+    trapArgsString OBJECT-TYPE
+        SYNTAX  DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "This OID allows the UPS Ambient Signal Adaptor traps to be sent 
+            with an octet string argument that may not be defined in the 
+            UPS Ambient Signal Adaptor MIB.
+
+             A get of this OID will return a NULL string."
+        ::= { upsAlarm 2002 }
+
+
+    communicationLost TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+             "SEVERE: Communication to the UPS Ambient Signal Adaptor has been lost.
+             Steps to reestablish communication are in progress."
+       --#TYPE "Communication to the UPS ambient signal adaptor failure"
+       --#SUMMARY "Communication to the UPS Ambient Signal Adaptor has been lost."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 1
+
+
+    communicationEstablished TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Communication to the UPS Ambient Signal Adaptor 
+            has been established."
+       --#TYPE "Communication to the UPS ambient signal adaptor established"
+       --#SUMMARY "Communication to the UPS Ambient Signal Adaptor has been established."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 2
+
+
+    inputDryContactor1Closed TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Dry Contactor 1 Closed. "
+       --#TYPE "Input Dry Contactor 1 Closed."
+       --#SUMMARY "Input Dry Contactor 1 Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 3
+
+    inputDryContactor1Open TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Dry Contactor 1 Open. "
+       --#TYPE "Input Dry Contactor 1 Open."
+       --#SUMMARY "Input Dry Contactor 1 Open."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 4
+
+    inputDryContactor2Closed TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Dry Contactor 2 Closed. "
+       --#TYPE "Input Dry Contactor 2 Closed."
+       --#SUMMARY "Input Dry Contactor 2 Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 5
+
+    inputDryContactor2Open TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Dry Contactor 2 Open. "
+       --#TYPE "Input Dry Contactor 2 Open."
+       --#SUMMARY "Input Dry Contactor 2 Open."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 6
+
+    inputDryContactor3Closed TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Dry Contactor 3 Closed. "
+       --#TYPE "Input Dry Contactor 3 Closed."
+       --#SUMMARY "Input Dry Contactor 3 Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 7
+
+    inputDryContactor3Open TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Dry Contactor 3 Open. "
+       --#TYPE "Input Dry Contactor 3 Open."
+       --#SUMMARY "Input Dry Contactor 3 Open."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 8
+
+    inputDryContactor4Closed TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Dry Contactor 4 Closed. "
+       --#TYPE "Input Dry Contactor 4 Closed."
+       --#SUMMARY "Input Dry Contactor 4 Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 9
+
+    inputDryContactor4Open TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Dry Contactor 4 Open. "
+       --#TYPE "Input Dry Contactor 4 Open."
+       --#SUMMARY "Input Dry Contactor 4 Open."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 10
+
+    inputDryContactor5Closed TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Dry Contactor 5 Closed. "
+       --#TYPE "Input Dry Contactor 5 Closed."
+       --#SUMMARY "Input Dry Contactor 5 Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 11
+
+    inputDryContactor5Open TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Dry Contactor 5 Open. "
+       --#TYPE "Input Dry Contactor 5 Open."
+       --#SUMMARY "Input Dry Contactor 5 Open."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 12
+
+    inputDryContactor6Closed TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Dry Contactor 6 Closed. "
+       --#TYPE "Input Dry Contactor 6 Closed."
+       --#SUMMARY "Input Dry Contactor 6 Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 13
+
+    inputDryContactor6Open TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Dry Contactor 6 Open. "
+       --#TYPE "Input Dry Contactor 6 Open."
+       --#SUMMARY "Input Dry Contactor 6 Open."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 14
+
+    inputDryContactor7Closed TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Dry Contactor 7 Closed. "
+       --#TYPE "Input Dry Contactor 7 Closed."
+       --#SUMMARY "Input Dry Contactor 7 Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 15
+
+    inputDryContactor7Open TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Dry Contactor 7 Open. "
+       --#TYPE "Input Dry Contactor 7 Open."
+       --#SUMMARY "Input Dry Contactor 7 Open."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 16
+
+    inputDryContactor8Closed TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Dry Contactor 8 Closed. "
+       --#TYPE "Input Dry Contactor 8 Closed."
+       --#SUMMARY "Input Dry Contactor 8 Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 17
+
+    inputDryContactor8Open TRAP-TYPE
+        ENTERPRISE relayCard
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Dry Contactor 8 Open. "
+       --#TYPE "Input Dry Contactor 8 Open."
+       --#SUMMARY "Input Dry Contactor 8 Open."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 18
+
+
+END -- end of RELAYCARD-MIB

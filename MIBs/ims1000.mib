@@ -1,0 +1,2111 @@
+--$Author: jreynolds $
+--$Date: 2008/03/20 18:57:30 $
+--$Log: ims1000.mib,v $
+--Revision 1.2  2008/03/20 18:57:30  jreynolds
+--Increased Camera Responses from 4 to 8
+--Changed ipHostMode type to INTEGER
+--Removed cmResponseIDs
+--Compiled OK with smicng
+--
+--Revision 1.1  2008/02/08 20:43:28  jreynolds
+--Changed lables from Mercury to IMS1000
+--
+--
+-- SENSAPHONE-MIB
+
+-- Copyright (c) Phonetics, Inc. 2006.
+-- Sensaphone is a Trademark of Phonetics, Inc.
+-- Title: SENSAPHONE TOP LEVEL MIB
+
+-- *************************************************************************
+-- ************************************************************************
+-- SENSAPHONE-MIB { iso org(3) dod(6) internet(1) private(4)
+--    enterprises(1) sensaphone(8338) }
+
+-- Uncomment the #condInclude's to compile with SMICng. 
+-- We must use the windows smicng and place the mibs and rfs in the same dir as
+-- smicng. Syntax: smicng k:\Mercury\src\mib\IMS1000.mib 
+
+--#condInclude "rfc1155.inc"
+--#condInclude "rfc1213.inc"
+--#condInclude "rfc1212.inc"
+--#condInclude "rfc1215.inc"
+
+SENSAPHONE-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   enterprises								            FROM RFC1155-SMI
+   DisplayString                          FROM RFC1213-MIB
+   OBJECT-TYPE                            FROM RFC-1212
+   TRAP-TYPE                              FROM RFC-1215;
+
+sensaphone          OBJECT IDENTIFIER ::=  { enterprises 8338 }
+products            OBJECT IDENTIFIER ::=  { sensaphone 1 }
+hardware            OBJECT IDENTIFIER ::=  { products 1 }
+--ims4000             OBJECT IDENTIFIER ::=  { hardware 1 }
+--imsLite             OBJECT IDENTIFIER ::=  { hardware 2 }
+ims1000             OBJECT IDENTIFIER ::=  { hardware 3 }
+--imsTrapArgs         OBJECT IDENTIFIER ::=  { hardware 100 }
+ims1000TrapArgs        OBJECT IDENTIFIER ::=  { hardware 101 }
+
+-- Units
+
+host                OBJECT IDENTIFIER ::=  { ims1000 1 }
+
+-- Sections
+
+hostNet			        OBJECT IDENTIFIER ::=  { host 1 }
+hostProfiles        OBJECT IDENTIFIER ::=  { host 2 }
+hostModem        		OBJECT IDENTIFIER ::=  { host 3 }
+hostDatalog        	OBJECT IDENTIFIER ::=  { host 4 }
+hostCameras					OBJECT IDENTIFIER ::=  { host 5 }
+hostIO	            OBJECT IDENTIFIER ::=  { host 6 }
+hostSystem					OBJECT IDENTIFIER ::=  { host 7 }
+hostVoiceIDs				OBJECT IDENTIFIER ::=  { host 8 }
+
+
+-- IO table
+
+ioTable	OBJECT-TYPE
+	SYNTAX	SEQUENCE OF	IoEntry
+	ACCESS	not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"A List of IO entries"
+	::= { hostIO	1 }
+
+ioEntry	OBJECT-TYPE
+	SYNTAX IoEntry
+	ACCESS not-accessible
+	STATUS	mandatory
+	DESCRIPTION
+		"A Io entry"
+	INDEX { ioIndex }
+	::= { ioTable 1 }
+
+IoEntry ::=
+	SEQUENCE {
+		ioIndex
+			INTEGER,
+		ioCalib
+			DisplayString,
+		ioCustomVoice
+			INTEGER,
+		ioDatalogNormInt
+			INTEGER,
+		ioDatalogExInt
+			INTEGER,
+		ioIPdependency
+			INTEGER,
+		ioIPhost
+			DisplayString,
+		ioIPhostMode
+			INTEGER,
+		ioIPport
+			INTEGER,
+		ioIPcustResp
+			DisplayString,
+		ioAlarmLow
+			DisplayString,
+		ioAlarmHigh
+			DisplayString,
+		ioTblLow
+			DisplayString,
+		ioTblHigh
+			DisplayString,
+		ioName
+			DisplayString,
+		ioRecTime
+			INTEGER,
+		ioResetTime
+			INTEGER,
+		ioType
+			DisplayString,
+		ioUnits
+			DisplayString,
+		ioUnitsType
+			INTEGER,
+		ioPointEnb
+			INTEGER,
+		ioAlarmEnb
+			INTEGER,
+		ioPulseCountEnb
+			INTEGER,
+		ioRuntimeEnb
+			INTEGER,
+		ioAlarmOnClear
+			INTEGER,
+		ioAutoCancel
+			INTEGER,
+		ioOutManualMode
+			INTEGER,
+		ioOutAutoMode
+			INTEGER,
+		ioOutModeParam
+			DisplayString,
+		ioOutList
+			DisplayString,
+		ioIndexID
+			INTEGER,
+		ioFrequency
+			INTEGER,
+		ioMin
+			DisplayString,
+		ioMax
+			DisplayString,
+		ioPulses
+			INTEGER,
+		ioRuntime
+			INTEGER,
+		ioLastResponse
+			DisplayString,
+		ioLastAlarm
+			DisplayString,
+		ioLastAck
+			DisplayString,
+		ioFlags
+			DisplayString,
+		ioValue
+			DisplayString,
+		ioValueStr
+			DisplayString,
+		ioStatus
+			INTEGER,
+		ioRange
+			INTEGER,
+		ioUnAck
+			INTEGER,
+		ioAbsMinVal
+			DisplayString,
+		ioAbsMaxVal
+			DisplayString,
+		ioTypeDesc
+			DisplayString,
+		ioDelPoint
+			INTEGER,
+		ioResetMin
+			INTEGER,
+		ioResetMax
+			INTEGER
+}
+
+ioIndex					OBJECT-TYPE
+	SYNTAX				INTEGER (1..64)
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION	"The index of the io entry 1..64"
+	::= { ioEntry 1 }
+
+ioCalib			OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Calibration offset"
+	::= { ioEntry 2 }
+
+ioCustomVoice	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"ID for custom voice message"
+	::= { ioEntry 3 }
+
+ioDatalogNormInt	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Datalog normal interval"
+	::= { ioEntry 4 }
+
+ioDatalogExInt	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Datalog except interval"
+	::= { ioEntry 5 }
+
+ioIPdependency		OBJECT-TYPE
+	SYNTAX				INTEGER
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION "Other IP that this one is dependent upon"
+	::= { ioEntry 6 }
+
+ioIPhost				OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION "The host name or numeric IP address"
+	::= { ioEntry 7 }
+
+ioIPhostMode		OBJECT-TYPE
+	SYNTAX				INTEGER
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION "The IP host mode"
+	::= { ioEntry 8 }
+
+ioIPport				OBJECT-TYPE
+	SYNTAX				INTEGER
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION "The IP port"
+	::= { ioEntry 9 }
+
+ioIPcustResp		OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Custom response for IP"
+	::= { ioEntry 10 }
+
+ioAlarmLow	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Alarm low limt"
+	::= { ioEntry 11 }
+
+ioAlarmHigh	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Alarm high limt"
+	::= { ioEntry 12 }
+
+ioTblLow		OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Table low limt"
+	::= { ioEntry 13 }
+
+ioTblHigh		OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Table high limt"
+	::= { ioEntry 14 }
+
+ioName					OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION	"Name for IO"
+	::= { ioEntry 15 }
+
+ioRecTime			OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Time in MS for an alarm to be recognized"
+	::= { ioEntry 16 }
+
+ioResetTime	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Reset time in MS"
+	::= { ioEntry 17 }
+
+ioType				OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-only
+	STATUS				mandatory
+	DESCRIPTION	"Type of io point"
+	::= { ioEntry 18 }
+
+ioUnits	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Units of measure"
+	::= { ioEntry 19 }
+
+ioUnitsType	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Units type"
+	::= { ioEntry 20 }
+
+ioPointEnb	OBJECT-TYPE
+	SYNTAX		INTEGER {	false(1),true(2) }
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"IO point Enabled"
+	::= { ioEntry 21 }
+
+ioAlarmEnb	OBJECT-TYPE
+	SYNTAX		INTEGER {	false(1),true(2) }
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"IO Alarm enabled"
+	::= { ioEntry 22 }
+
+ioPulseCountEnb	OBJECT-TYPE
+	SYNTAX		INTEGER { false(1),true(2) }
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"IO Pulse Count enabled"
+	::= { ioEntry 23 }
+
+ioRuntimeEnb	OBJECT-TYPE
+	SYNTAX		INTEGER { false(1),true(2) }
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"IO Runtime enabled"
+	::= { ioEntry 24 }
+
+ioAlarmOnClear	OBJECT-TYPE
+	SYNTAX		INTEGER { false(1),true(2) }
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Allow an alarm to occur when a condition goes back to normal"
+	::= { ioEntry 25 }
+
+ioAutoCancel	OBJECT-TYPE
+	SYNTAX		INTEGER { false(1),true(2) }
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Auto cancel enabled"
+	::= { ioEntry 26 }
+
+ioOutManualMode	OBJECT-TYPE
+	SYNTAX		INTEGER { none(1), off(2), on(3) }
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Output manual mode"
+	::= { ioEntry 27 }
+
+ioOutAutoMode	OBJECT-TYPE
+	SYNTAX		INTEGER { none(1), single(2), type(3), input(4),
+			 ip(5), all(6), custom(7) }
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Output auto mode"
+	::= { ioEntry 28 }
+
+ioOutModeParam	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Params used for auto mode"
+	::= { ioEntry 29 }
+
+ioOutList	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"Params used for auto mode"
+	::= { ioEntry 30 }
+
+ioIndexID		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"Ordering number for io point"
+	::= { ioEntry 31 }
+
+ioFrequency		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Sampling frequency in MS"
+	::= { ioEntry 32 }
+
+ioMin				OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"Min value reached"
+	::= { ioEntry 33 }
+
+ioMax	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"Max value reached"
+	::= { ioEntry 34}
+
+ioPulses		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Pulse count"
+	::= { ioEntry 35 }
+
+ioRuntime		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Runtime (seconds)"
+	::= { ioEntry 36 }
+
+ioLastResponse	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"Timestamp of the last response"
+	::= {  ioEntry 37 }
+
+ioLastAlarm	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"Timestamp of the last alarm"
+	::= {  ioEntry 38 }
+
+ioLastAck	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"Timestamp of the last alarm Ack"
+	::= { ioEntry 39 }
+
+ioFlags			OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"IO flags"
+	::= { ioEntry 40 }
+
+ioValue			OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"Real time value of this input"
+	::= { ioEntry 41 }
+
+ioValueStr	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"Real time value of this input"
+	::= { ioEntry 42 }
+
+ioStatus	OBJECT-TYPE
+	SYNTAX				INTEGER	{
+		ok(1),digitalAlarm(2),lowAlarm(3),highAlarm(4),
+		clearedAlarm(5),trouble(6)
+	}
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"IO status"
+	::= { ioEntry 43 }
+
+ioRange	OBJECT-TYPE
+	SYNTAX				INTEGER	{
+		ok(1),lowOpen(2),highClosed(3),notResponding(4),dependenct(5)
+	}
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"IO status"
+	::= { ioEntry 44 }
+
+
+ioUnAck	OBJECT-TYPE
+	SYNTAX				INTEGER	{
+		none(1),digital(2),low(3),high(4),cleared(5),trouble(6)
+	}
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"IO status"
+	::= { ioEntry 45 }
+
+ioAbsMinVal	OBJECT-TYPE
+	SYNTAX		DisplayString		
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"IO absolute min"
+	::= { ioEntry 46 }
+
+ioAbsMaxVal	OBJECT-TYPE
+	SYNTAX		DisplayString		
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"IO absolute max"
+	::= { ioEntry 47 }
+
+ioTypeDesc	OBJECT-TYPE
+	SYNTAX		DisplayString		
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"IO Type description"
+	::= { ioEntry 48 }
+
+ioDelPoint	OBJECT-TYPE
+	SYNTAX		INTEGER		
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Delete IO point"
+	::= { ioEntry 49 }
+
+ioResetMin	OBJECT-TYPE
+	SYNTAX		INTEGER		
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Reset IO min"
+	::= { ioEntry 50 }
+
+ioResetMax	OBJECT-TYPE
+	SYNTAX		INTEGER		
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"Reset IO max"
+	::= { ioEntry 51 }
+
+-- System
+
+sysFirmwareVersion OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-only
+	STATUS				mandatory
+	DESCRIPTION		"Software versions"
+	::= { hostSystem 1}
+
+sysName			OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Unit Name"
+	::= { hostSystem 2}
+
+sysDescription	OBJECT-TYPE
+	SYNTAX					DisplayString
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Unit Description"
+	::= { hostSystem 3}
+
+sysLocation			OBJECT-TYPE
+	SYNTAX					DisplayString
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Unit Location"
+	::= { hostSystem 4}
+
+sysTime					OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-only
+	STATUS				mandatory
+	DESCRIPTION		"System time"
+	::= { hostSystem 5 }
+
+sysTimeZone			OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Linux time zone"
+	::= { hostSystem 6 }
+
+sysTimeServer		OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Linux time server"
+	::= { hostSystem 7 }
+
+sysSystemVoiceID	OBJECT-TYPE
+	SYNTAX				INTEGER
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"The voice ID of the system"
+	::= { hostSystem 8 }
+
+
+-- Modem section
+
+modAlphaSpeed		OBJECT-TYPE
+	SYNTAX				INTEGER { ps300(1), ps1200(2), ps2400(3) }
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Alphnum pager speed"
+	::= { hostModem 1}
+
+
+modCheckForDialtone			OBJECT-TYPE
+	SYNTAX				INTEGER { false(1),true(2) }
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Check for Dialtone"
+	::= { hostModem 2}
+
+modDialoutAttempts			OBJECT-TYPE
+	SYNTAX				INTEGER (1..10)
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"PhoneAttempts"
+	::= { hostModem 3}
+
+modPhoneNumber	OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"PhoneAttempts"
+	::= { hostModem 4}
+
+modRingsToAns			OBJECT-TYPE
+	SYNTAX				INTEGER
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Rings to answer"
+	::= { hostModem 5}
+
+modModemInstalled			OBJECT-TYPE
+	SYNTAX				INTEGER { notInstalled(1), installed(2) }
+	ACCESS				read-only
+	STATUS				mandatory
+	DESCRIPTION		"Rings to answer"
+	::= { hostModem 6}
+
+modListenInTime			OBJECT-TYPE
+	SYNTAX				INTEGER
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Listen In Time in secs"
+	::= { hostModem 7}
+
+modVoiceReps		OBJECT-TYPE
+	SYNTAX				INTEGER
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Voice Repititions"
+	::= { hostModem 8}
+
+modCallDelay	OBJECT-TYPE
+	SYNTAX				INTEGER
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Time in secs before first dialout"
+	::= { hostModem 9}
+
+modInterCallTime	OBJECT-TYPE
+	SYNTAX				INTEGER
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Time in secs between dialouts"
+	::= { hostModem 10}
+
+--	Voice table
+
+voiTable	OBJECT-TYPE
+	SYNTAX  SEQUENCE OF VoiEntry
+	ACCESS  not-accessible
+	STATUS  mandatory
+  DESCRIPTION	"A list of VoiceID entries"
+  ::= { hostVoiceIDs 1 }
+
+voiEntry OBJECT-TYPE
+	SYNTAX  VoiEntry
+	ACCESS  not-accessible
+	STATUS  mandatory
+	DESCRIPTION	"A Voice entry"
+	INDEX   {voiIndex }
+	::= { voiTable 1 }
+
+VoiEntry ::=
+	SEQUENCE {
+		voiIndex
+			INTEGER,
+		voiDescription
+			DisplayString,
+		voiFilename
+			DisplayString,
+		voiCreationDate
+			DisplayString,
+		voiNumericCode
+			INTEGER
+}
+
+voiIndex OBJECT-TYPE
+	SYNTAX  INTEGER(1..64)
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION	"The index of the VoiceID (1..64)"
+	::= { voiEntry 1 }
+
+voiDescription	OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Description of Voice ID"
+	::= { voiEntry	2}
+
+voiFilename			OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Voice filename"
+	::= { voiEntry	 3}
+
+voiCreationDate	OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Voice filename creation date"
+	::= { voiEntry	4}
+
+voiNumericCode	OBJECT-TYPE
+	SYNTAX				INTEGER
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Message's numeric code"
+	::= { voiEntry	5}
+
+
+-- Profile table
+
+proTable	OBJECT-TYPE
+	SYNTAX  SEQUENCE OF ProEntry
+	ACCESS  not-accessible
+	STATUS  mandatory
+  DESCRIPTION	"A list of Profile entries"
+  ::= { hostProfiles 1 }
+
+proEntry OBJECT-TYPE
+	SYNTAX  ProEntry
+	ACCESS  not-accessible
+	STATUS  mandatory
+	DESCRIPTION	"A Profile entry"
+	INDEX   {proIndex }
+	::= { proTable 1 }
+
+ProEntry ::=
+	SEQUENCE {
+		proIndex
+			INTEGER,
+		proAccessLevel
+			INTEGER,
+		proCompany
+			DisplayString,
+		proDepartment
+			DisplayString,
+		proEnabled
+			INTEGER,
+		proName
+			DisplayString,
+		proUsername
+			DisplayString,
+		proPassword
+			DisplayString,
+		proTitle
+			DisplayString,
+		proVoicecode
+			DisplayString,
+		proCon1Name
+			DisplayString,
+		proCon1Dest
+			DisplayString,
+		proCon1Type
+			INTEGER,
+		proCon1Enable
+			INTEGER,
+		proCon2Name
+			DisplayString,
+		proCon2Dest
+			DisplayString,
+		proCon2Type
+			INTEGER,
+		proCon2Enable
+			INTEGER,
+		proCon3Name
+			DisplayString,
+		proCon3Dest
+			DisplayString,
+		proCon3Type
+			INTEGER,
+		proCon3Enable
+			INTEGER,
+		proCon4Name
+			DisplayString,
+		proCon4Dest
+			DisplayString,
+		proCon4Type
+			INTEGER,
+		proCon4Enable
+			INTEGER
+	}
+
+proIndex OBJECT-TYPE
+	SYNTAX  INTEGER(1..16)
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION	"The index of the Profile (1..16)"
+	::= { proEntry 1 }
+
+
+proAccessLevel	OBJECT-TYPE
+	SYNTAX				INTEGER
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Access Level"
+	::= { proEntry 2}
+
+proCompany			OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Company"
+	::= { proEntry 3}
+
+proDepartment		OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Department"
+	::= { proEntry 4}
+
+proEnabled 			OBJECT-TYPE
+	SYNTAX				INTEGER { false(1), true(2) } 
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Enabled"
+	::= { proEntry 5}
+
+proName					OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Name"
+	::= { proEntry 6}
+
+proUsername			OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Username"
+	::= { proEntry 7}
+
+proPassword			OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Password"
+	::= { proEntry 8}
+
+proTitle				OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Title"
+	::= { proEntry 9}
+
+proVoicecode		OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Ack code"
+	::= { proEntry 10}
+
+proCon1Name	OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Name"
+	::= { proEntry 11}
+
+proCon1Dest	OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Destination"
+	::= { proEntry 12}
+
+proCon1Type	OBJECT-TYPE
+	SYNTAX				INTEGER	{	email(1),snmp(2),voice(3),
+				numPage(4),alNumPage(5),fax(6) }
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Type"
+	::= { proEntry 13}
+
+proCon1Enable	OBJECT-TYPE
+	SYNTAX				INTEGER	{	false(1), true(2) }
+	ACCESS				read-only
+	STATUS				mandatory
+	DESCRIPTION		"Enable"
+	::= { proEntry 14}
+
+
+proCon2Name	OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Name"
+	::= { proEntry 15}
+
+proCon2Dest	OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Destination"
+	::= { proEntry 16}
+
+proCon2Type	OBJECT-TYPE
+	SYNTAX				INTEGER	{	email(1),snmp(2),voice(3),
+					numPage(4),alNumPage(5),fax(6) }
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Type"
+	::= { proEntry 17}
+
+proCon2Enable	OBJECT-TYPE
+	SYNTAX				INTEGER	{	false(1), true(2) }
+	ACCESS				read-only
+	STATUS				mandatory
+	DESCRIPTION		"Enable"
+	::= { proEntry 18}
+
+proCon3Name	OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Name"
+	::= { proEntry 19}
+
+proCon3Dest	OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Destination"
+	::= { proEntry 20}
+
+proCon3Type	OBJECT-TYPE
+	SYNTAX				INTEGER	{	email(1),snmp(2),voice(3),
+									numPage(4),alNumPage(5),fax(6) }
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Type"
+	::= { proEntry 21}
+
+proCon3Enable	OBJECT-TYPE
+	SYNTAX				INTEGER	{	false(1), true(2) }
+	ACCESS				read-only
+	STATUS				mandatory
+	DESCRIPTION		"Enable"
+	::= { proEntry 22}
+
+proCon4Name	OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Name"
+	::= { proEntry 23}
+
+proCon4Dest	OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Destination"
+	::= { proEntry 24}
+
+proCon4Type	OBJECT-TYPE
+	SYNTAX				INTEGER	{	email(1),snmp(2),voice(3),
+									numPage(4),alNumPage(5),fax(6) }
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Type"
+	::= { proEntry 25}
+
+proCon4Enable	OBJECT-TYPE
+	SYNTAX				INTEGER	{	false(1), true(2) }
+	ACCESS				read-only
+	STATUS				mandatory
+	DESCRIPTION		"Enable"
+	::= { proEntry 26}
+
+
+--	Camera table
+
+cmTable	OBJECT-TYPE
+	SYNTAX  SEQUENCE OF CmEntry
+	ACCESS  not-accessible
+	STATUS  mandatory
+  DESCRIPTION	"A list of Cameras"
+  ::= { hostCameras 1 }
+
+cmEntry OBJECT-TYPE
+	SYNTAX  CmEntry
+	ACCESS  not-accessible
+	STATUS  mandatory
+	DESCRIPTION	"A Camera entry"
+	INDEX   {cmIndex }
+	::= { cmTable 1 }
+
+CmEntry ::=
+	SEQUENCE {
+		cmIndex
+			INTEGER,
+		cmType
+			INTEGER,
+		cmPort
+			INTEGER,
+		cmUsername
+			DisplayString,
+		cmPassword
+			DisplayString,
+		cmSecurity
+			INTEGER,
+		cmName
+			DisplayString,
+		cmHost
+			DisplayString,
+		cmUsed
+			INTEGER,
+		cmSnapshotURL
+			DisplayString,
+		cmLiveURL
+			DisplayString,
+		cmIndexID
+			INTEGER,
+		cmResp1ProfID
+			INTEGER,
+		cmResp1ConID
+			INTEGER,
+		cmResp1ioID
+			INTEGER,
+		cmResp1Total
+			INTEGER,
+		cmResp1Interval
+			INTEGER,
+		cmResp1PerEmail
+			INTEGER,
+		cmResp1IndexID
+			INTEGER,
+		cmResp1Delete
+			INTEGER,
+		cmResp1Add
+			INTEGER,
+		cmResp2ProfID
+			INTEGER,
+		cmResp2ConID
+			INTEGER,
+		cmResp2ioID
+			INTEGER,
+		cmResp2Total
+			INTEGER,
+		cmResp2Interval
+			INTEGER,
+		cmResp2PerEmail
+			INTEGER,
+		cmResp2IndexID
+			INTEGER,
+		cmResp2Delete
+			INTEGER,
+		cmResp2Add
+			INTEGER,
+		cmResp3ProfID
+			INTEGER,
+		cmResp3ConID
+			INTEGER,
+		cmResp3ioID
+			INTEGER,
+		cmResp3Total
+			INTEGER,
+		cmResp3Interval
+			INTEGER,
+		cmResp3PerEmail
+			INTEGER,
+		cmResp3IndexID
+			INTEGER,
+		cmResp3Delete
+			INTEGER,
+		cmResp3Add
+			INTEGER,
+		cmResp4ProfID
+			INTEGER,
+		cmResp4ConID
+			INTEGER,
+		cmResp4ioID
+			INTEGER,
+		cmResp4Total
+			INTEGER,
+		cmResp4Interval
+			INTEGER,
+		cmResp4PerEmail
+			INTEGER,
+		cmResp4IndexID
+			INTEGER,
+		cmResp4Delete
+			INTEGER,
+		cmResp4Add
+			INTEGER,
+		cmResp5ProfID
+			INTEGER,
+		cmResp5ConID
+			INTEGER,
+		cmResp5ioID
+			INTEGER,
+		cmResp5Total
+			INTEGER,
+		cmResp5Interval
+			INTEGER,
+		cmResp5PerEmail
+			INTEGER,
+		cmResp5IndexID
+			INTEGER,
+		cmResp5Delete
+			INTEGER,
+		cmResp5Add
+			INTEGER,
+		cmResp6ProfID
+			INTEGER,
+		cmResp6ConID
+			INTEGER,
+		cmResp6ioID
+			INTEGER,
+		cmResp6Total
+			INTEGER,
+		cmResp6Interval
+			INTEGER,
+		cmResp6PerEmail
+			INTEGER,
+		cmResp6IndexID
+			INTEGER,
+		cmResp6Delete
+			INTEGER,
+		cmResp6Add
+			INTEGER,
+		cmResp7ProfID
+			INTEGER,
+		cmResp7ConID
+			INTEGER,
+		cmResp7ioID
+			INTEGER,
+		cmResp7Total
+			INTEGER,
+		cmResp7Interval
+			INTEGER,
+		cmResp7PerEmail
+			INTEGER,
+		cmResp7IndexID
+			INTEGER,
+		cmResp7Delete
+			INTEGER,
+		cmResp7Add
+			INTEGER,
+		cmResp8ProfID
+			INTEGER,
+		cmResp8ConID
+			INTEGER,
+		cmResp8ioID
+			INTEGER,
+		cmResp8Total
+			INTEGER,
+		cmResp8Interval
+			INTEGER,
+		cmResp8PerEmail
+			INTEGER,
+		cmResp8IndexID
+			INTEGER,
+		cmResp8Delete
+			INTEGER,
+		cmResp8Add
+			INTEGER
+}
+
+cmIndex OBJECT-TYPE
+	SYNTAX  INTEGER(1..16)
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION	"The index of the Cameras (1..16)"
+	::= { cmEntry 1 }
+
+cmType						OBJECT-TYPE
+	SYNTAX					INTEGER { none(1),axis206(2),panasonic(3),
+										dlinkDCS900(4),axis2100(5),custom(6) }
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera type"
+	::= { cmEntry 2 }
+
+cmPort						OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera port"
+	::= { cmEntry 3 }
+
+cmUsername				OBJECT-TYPE
+	SYNTAX					DisplayString
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Username"
+	::= { cmEntry 4 }
+
+cmPassword				OBJECT-TYPE
+	SYNTAX					DisplayString
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Password"
+	::= { cmEntry 5 }
+
+cmSecurity				OBJECT-TYPE
+	SYNTAX					INTEGER { false(1), true(2) }
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera security enabled"
+	::= { cmEntry 6 }
+
+cmName						OBJECT-TYPE
+	SYNTAX					DisplayString
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera name"
+	::= { cmEntry 7 }
+
+cmHost						OBJECT-TYPE
+	SYNTAX					DisplayString
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera host address"
+	::= { cmEntry 8 }
+
+cmUsed						OBJECT-TYPE
+	SYNTAX					INTEGER { false(1), true(2) }
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera is being used"
+	::= { cmEntry 9 }
+
+cmSnapshotURL			OBJECT-TYPE
+	SYNTAX					DisplayString
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera Snapshot URL"
+	::= { cmEntry 10 }
+
+cmLiveURL					OBJECT-TYPE
+	SYNTAX					DisplayString
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera live URL"
+	::= { cmEntry 11 }
+
+cmIndexID					OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-only
+	STATUS					mandatory
+	DESCRIPTION			"Camera index ID"
+	::= { cmEntry 12 }
+
+cmResp1ProfID			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response1 profile ID"
+	::= { cmEntry 13 }
+
+cmResp1ConID			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response1 contact ID"
+	::= { cmEntry 14 }
+
+cmResp1ioID				OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response1 IO ID"
+	::= { cmEntry 15 }
+
+cmResp1Total			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response1 snapshot totals"
+	::= { cmEntry 16 }
+
+cmResp1Interval		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response1 snapshot interval"
+	::= { cmEntry 17 }
+
+cmResp1PerEmail		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response1 snapshots per email"
+	::= { cmEntry 18 }
+
+cmResp1IndexID		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response1 index ID"
+	::= { cmEntry 19 }
+
+
+cmResp1Delete			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response1 delete snapshot"
+	::= { cmEntry 20 }
+
+cmResp1Add				OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response1 add snapshot"
+	::= { cmEntry 21 }
+
+cmResp2ProfID			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response2 profile ID"
+	::= { cmEntry 22 }
+
+cmResp2ConID			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response2 contact ID"
+	::= { cmEntry 23 }
+
+cmResp2ioID				OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response2 IO ID"
+	::= { cmEntry 24 }
+
+cmResp2Total			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response2 snapshot totals"
+	::= { cmEntry 25 }
+
+cmResp2Interval		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response2 snapshot interval"
+	::= { cmEntry 26 }
+
+cmResp2PerEmail		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response2 snapshots per email"
+	::= { cmEntry 27 }
+
+cmResp2IndexID		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response2 index ID"
+	::= { cmEntry 28 }
+
+cmResp2Delete			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response2 delete snapshot"
+	::= { cmEntry 29 }
+
+cmResp2Add				OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response2 add snapshot"
+	::= { cmEntry 30 }
+
+cmResp3ProfID			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response3 profile ID"
+	::= { cmEntry 31 }
+
+cmResp3ConID			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response3 contact ID"
+	::= { cmEntry 32 }
+
+cmResp3ioID				OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response3 IO ID"
+	::= { cmEntry 33 }
+
+cmResp3Total			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response3 snapshot totals"
+	::= { cmEntry 34 }
+
+cmResp3Interval		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response3 snapshot interval"
+	::= { cmEntry 35 }
+
+cmResp3PerEmail		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response3 snapshots per email"
+	::= { cmEntry 36 }
+
+cmResp3IndexID		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response3 index ID"
+	::= { cmEntry 37 }
+
+cmResp3Delete			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response3 delete snapshot"
+	::= { cmEntry 38 }
+
+cmResp3Add				OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response3 add snapshot"
+	::= { cmEntry 39 }
+
+cmResp4ProfID			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 profile ID"
+	::= { cmEntry 40 }
+
+cmResp4ConID			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 contact ID"
+	::= { cmEntry 41 }
+
+cmResp4ioID				OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 IO ID"
+	::= { cmEntry 42 }
+
+cmResp4Total			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 snapshot totals"
+	::= { cmEntry 43 }
+
+cmResp4Interval		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 snapshot interval"
+	::= { cmEntry 44 }
+
+cmResp4PerEmail		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 snapshots per email"
+	::= { cmEntry 45 }
+
+cmResp4IndexID		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 index ID"
+	::= { cmEntry 46 }
+
+cmResp4Delete			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 delete snapshot"
+	::= { cmEntry 47 }
+
+cmResp4Add				OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 add snapshot"
+	::= { cmEntry 48 }
+
+cmResp5ProfID			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 profile ID"
+	::= { cmEntry 49 }
+
+cmResp5ConID			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 contact ID"
+	::= { cmEntry 50 }
+
+cmResp5ioID				OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 IO ID"
+	::= { cmEntry 51 }
+
+cmResp5Total			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 snapshot totals"
+	::= { cmEntry 52 }
+
+cmResp5Interval		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 snapshot interval"
+	::= { cmEntry 53 }
+
+cmResp5PerEmail		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 snapshots per email"
+	::= { cmEntry 54 }
+
+cmResp5IndexID		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 index ID"
+	::= { cmEntry 55 }
+
+cmResp5Delete			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 delete snapshot"
+	::= { cmEntry 56 }
+
+cmResp5Add				OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 add snapshot"
+	::= { cmEntry 57 }
+
+cmResp6ProfID			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 profile ID"
+	::= { cmEntry 58 }
+
+cmResp6ConID			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 contact ID"
+	::= { cmEntry 59 }
+
+cmResp6ioID				OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 IO ID"
+	::= { cmEntry 60 }
+
+cmResp6Total			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 snapshot totals"
+	::= { cmEntry 61 }
+
+cmResp6Interval		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 snapshot interval"
+	::= { cmEntry 62 }
+
+cmResp6PerEmail		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 snapshots per email"
+	::= { cmEntry 63 }
+
+cmResp6IndexID		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 index ID"
+	::= { cmEntry 64 }
+
+cmResp6Delete			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 delete snapshot"
+	::= { cmEntry 65 }
+
+cmResp6Add				OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 add snapshot"
+	::= { cmEntry 66 }
+
+cmResp7ProfID			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 profile ID"
+	::= { cmEntry 67 }
+
+cmResp7ConID			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 contact ID"
+	::= { cmEntry 68 }
+
+cmResp7ioID				OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 IO ID"
+	::= { cmEntry 69 }
+
+cmResp7Total			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 snapshot totals"
+	::= { cmEntry 70 }
+
+cmResp7Interval		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 snapshot interval"
+	::= { cmEntry 71 }
+
+cmResp7PerEmail		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 snapshots per email"
+	::= { cmEntry 72 }
+
+cmResp7IndexID		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 index ID"
+	::= { cmEntry 73 }
+
+cmResp7Delete			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 delete snapshot"
+	::= { cmEntry 74 }
+
+cmResp7Add				OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 add snapshot"
+	::= { cmEntry 75 }
+
+cmResp8ProfID			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 profile ID"
+	::= { cmEntry 76 }
+
+cmResp8ConID			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 contact ID"
+	::= { cmEntry 77 }
+
+cmResp8ioID				OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 IO ID"
+	::= { cmEntry 78 }
+
+cmResp8Total			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 snapshot totals"
+	::= { cmEntry 79 }
+
+cmResp8Interval		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 snapshot interval"
+	::= { cmEntry 80 }
+
+cmResp8PerEmail		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 snapshots per email"
+	::= { cmEntry 81 }
+
+cmResp8IndexID		OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 index ID"
+	::= { cmEntry 82 }
+
+cmResp8Delete			OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 delete snapshot"
+	::= { cmEntry 83 }
+
+cmResp8Add				OBJECT-TYPE
+	SYNTAX					INTEGER
+	ACCESS					read-write
+	STATUS					mandatory
+	DESCRIPTION			"Camera response4 add snapshot"
+	::= { cmEntry 84 }
+
+
+-- Datalog
+
+dlgRecsUsed			OBJECT-TYPE
+	SYNTAX				INTEGER
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Records used"
+	::= { hostDatalog 1 }
+
+-- Network
+
+netDNS					OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-only
+	STATUS				mandatory
+	DESCRIPTION		"Network domain server"
+	::= { hostNet 1}
+
+netWebFTPhtml		OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Web FTP html file"
+	::= { hostNet 2 }
+
+netWebFTPusername		OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Web FTP username"
+	::= { hostNet 3 }
+
+netWebFTPpassword		OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Web FTP password"
+	::= { hostNet 4 }
+
+netWebFTPsecurity		OBJECT-TYPE
+	SYNTAX				INTEGER { false(1) , true(2) }
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Web FTP security enabled"
+	::= { hostNet 5 }
+
+netWebFTPfolder		OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Web FTP folder"
+	::= { hostNet 6 }
+
+netWebFTPHost		OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Web FTP host"
+	::= { hostNet 7 }
+
+netWebFTPtime		OBJECT-TYPE
+	SYNTAX				INTEGER
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Web FTP time"
+	::= { hostNet 8 }
+
+netWebFTP				OBJECT-TYPE
+	SYNTAX				INTEGER
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Web FTP enabled"
+	::= { hostNet 9 }
+
+netWebFTPwmlfile		OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Web FTP wml file"
+	::= { hostNet 10 }
+
+netGateway	OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-only
+	STATUS				mandatory
+	DESCRIPTION		"Network gateway"
+	::= { hostNet 11 }
+
+netIP					OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-only
+	STATUS				mandatory
+	DESCRIPTION		"Unit IP addr"
+	::= { hostNet 12}
+
+netNetMask			OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-only
+	STATUS				mandatory
+	DESCRIPTION		"Network IP mask"
+	::= { hostNet 13}
+
+netSMTPUsername			OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"SMTP AUTH username"
+	::= { hostNet 14}
+
+netSMTPpassword			OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"SMTP AUTH password"
+	::= { hostNet 15}
+
+netSMTPsecurity	OBJECT-TYPE
+	SYNTAX				INTEGER { false(1) , true(2) }
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"SMTP AUTH enabled"
+	::= { hostNet 16}
+
+netSMTPmailReturn		OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"SMTP return address"
+	::= { hostNet 17}
+
+netSMTPserver			OBJECT-TYPE
+	SYNTAX				DisplayString
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"SMTP server"
+	::= { hostNet 18}
+
+netSNMPagent		OBJECT-TYPE
+	SYNTAX				INTEGER { false(1) , true(2) }
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Enable SNMP agent"
+	::= { hostNet 19}
+
+netDHCP					OBJECT-TYPE
+	SYNTAX				INTEGER { false(1) , true(2) }
+	ACCESS				read-only
+	STATUS				mandatory
+	DESCRIPTION		"Enable DHCP"
+	::= { hostNet 20}
+
+netWebRefresh		OBJECT-TYPE
+	SYNTAX				INTEGER
+	ACCESS				read-write
+	STATUS				mandatory
+	DESCRIPTION		"Web Refresh in secs"
+	::= { hostNet 21}
+
+
+
+-- Trap stuff
+
+ims1000-trap-unit OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION "This OID defines the Unit name. A get of this OID will return a NULL string"
+	::= { ims1000TrapArgs 1 }
+
+ims1000-trap-chan OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION "This OID defines the Channel name.  A get of this OID will return a NULL string"
+	::= { ims1000TrapArgs 2 }
+
+ims1000-trap-env-type OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION "This OID defines the type of an env input.  A get of this OID will return a NULL string"
+	::= { ims1000TrapArgs 3 }
+
+ims1000-trap-value OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION "This OID defines the value of an env input.  A get of this OID will return a NULL string"
+	::= { ims1000TrapArgs 4 }
+
+ims1000-trap-status OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION "This OID defines the Alarm status.  A get of this OID will return a NULL string"
+	::= { ims1000TrapArgs 5 }
+
+ims1000-trap-time OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION "This OID defines the time of the Alarm.  A get of this OID will return a NULL string"
+	::= { ims1000TrapArgs 6 }
+
+
+environment-alarm-trap-major TRAP-TYPE
+	ENTERPRISE sensaphone
+	VARIABLES { ims1000-trap-time,ims1000-trap-unit,ims1000-trap-chan,ims1000-trap-env-type,ims1000-trap-value,ims1000-trap-status }
+	DESCRIPTION "Description of environmental input alarm"
+   --#TYPE "MERCURY Environmental Alarm"
+   --#SUMMARY "An Env input is out of range at $1 in Unit: $2, Channel: $3, Type: $4, Value: $5, Status: $6"
+   --#SEVERITY MAJOR
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL 
+	::= 1
+
+environment-alarm-trap-minor TRAP-TYPE
+	ENTERPRISE sensaphone
+	VARIABLES { ims1000-trap-time,ims1000-trap-unit,ims1000-trap-chan,ims1000-trap-env-type,ims1000-trap-value,ims1000-trap-status }
+	DESCRIPTION "Description of environmental input alarm"
+   --#TYPE "MERCURY Environmental Alarm"
+   --#SUMMARY "An Env input is out of range at $1 in Unit: $2, Channel: $3, Type: $4, Value: $5, Status: $6"
+   --#SEVERITY MINOR
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL 
+	::= 2
+
+environment-alarm-trap-normal TRAP-TYPE
+	ENTERPRISE sensaphone
+	VARIABLES { ims1000-trap-time,ims1000-trap-unit,ims1000-trap-chan,ims1000-trap-env-type,ims1000-trap-value }
+	DESCRIPTION "Description of environmental input alarm"
+   --#TYPE "MERCURY Environmental Alarm"
+   --#SUMMARY "An Env has returned to normal at $1 in Unit: $2, Channel: $3 Type: $4, Value: $5"
+   --#SEVERITY NORMAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL 
+	::= 3
+
+ip-alarm-trap-major TRAP-TYPE
+	ENTERPRISE sensaphone
+	VARIABLES { ims1000-trap-time,ims1000-trap-unit,ims1000-trap-chan,ims1000-trap-status }
+	DESCRIPTION "Description of IP alarm"
+   --#TYPE "MERCURY IP Alarm"
+   --#SUMMARY "An IP is not responding at $1 in Unit: $2, Channel: $3, Status: $4"
+   --#SEVERITY MAJOR
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL 
+	::= 4
+
+ip-alarm-trap-minor TRAP-TYPE
+	ENTERPRISE sensaphone
+	VARIABLES { ims1000-trap-time,ims1000-trap-unit,ims1000-trap-chan,ims1000-trap-status }
+	DESCRIPTION "Description of IP alarm"
+   --#TYPE "MERCURY IP Alarm"
+   --#SUMMARY "An IP is not responding at $1 in Unit: $2, Channel: $3, Status: $4"
+   --#SEVERITY MINOR
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL 
+	::= 5
+
+ip-alarm-trap-normal TRAP-TYPE
+	ENTERPRISE sensaphone
+	VARIABLES { ims1000-trap-time,ims1000-trap-unit,ims1000-trap-chan }
+	DESCRIPTION "Description of IP alarm"
+   --#TYPE "MERCURY IP Alarm"
+   --#SUMMARY "An IP has returned to normal at $1 in Unit: $2, Channel: $3"
+   --#SEVERITY NORMAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL 
+	::= 6
+
+
+diagnostic-alarm-trap-sensor TRAP-TYPE
+	ENTERPRISE sensaphone
+	VARIABLES { ims1000-trap-time,ims1000-trap-unit,ims1000-trap-chan }
+  DESCRIPTION "Description of diagnostic alarm"
+   --#TYPE "MERCURY Diagnostic Alarm"
+   --#SUMMARY "Sensor disruption at $1 in Unit: $2, Channel: $3"
+   --#SEVERITY MAJOR
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL 
+	::= 7
+
+
+diagnostic-alarm-trap-nodialtone TRAP-TYPE
+	ENTERPRISE sensaphone
+	VARIABLES { ims1000-trap-time,ims1000-trap-unit }
+  DESCRIPTION "Description of diagnostic alarm"
+   --#TYPE "MERCURY Diagnostic Alarm"
+   --#SUMMARY "No dialtone at $1 in Unit: $2"
+   --#SEVERITY MAJOR
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL 
+	::= 8
+
+END
+

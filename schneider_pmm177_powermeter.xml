@@ -1,0 +1,983 @@
+<?xml version="1.0"?>
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+  ddfid="schneider_pmm177_powermeter" ddfname="Schneider Electric PMM-177 Power Meter" ddfversion="1" canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+	
+	<device deviceid="pmm177_powermeter">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+	
+		<setProductData ruleid="vendordata" field="vendor">Schneider Electric</setProductData>
+		<setProductData ruleid="typedata" field="type">Power Meter</setProductData>
+		<setProductData ruleid="modeldata" field="model">PMM-177</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+        <setProductData ruleid="outputcountata" field="outputphasecount">3</setProductData>
+        <setProductData ruleid="inputcountdata" field="inputphasecount">3</setProductData>
+
+
+		<valueMap ruleid="zerobased2onebased-vm">
+			<valueIn>0</valueIn><valueOut>1</valueOut>
+			<valueIn>1</valueIn><valueOut>2</valueOut>
+			<valueIn>2</valueIn><valueOut>3</valueOut>
+			<valueIn>*</valueIn><valueOut>*</valueOut>
+		</valueMap>
+
+		<valueMap ruleid="letter_phase-vm">
+			<valueIn>0</valueIn><valueOut>A</valueOut>
+			<valueIn>1</valueIn><valueOut>B</valueOut>
+			<valueIn>2</valueIn><valueOut>C</valueOut>
+			<valueIn>*</valueIn><valueOut>*</valueOut>
+		</valueMap>
+
+		<valueMap ruleid="linetoline_phase-vm">
+			<valueIn>0</valueIn><valueOut>A-B</valueOut>
+			<valueIn>1</valueIn><valueOut>B-C</valueOut>
+			<valueIn>2</valueIn><valueOut>C-A</valueOut>
+			<valueIn>*</valueIn><valueOut>*</valueOut>
+		</valueMap>
+
+		<valueMap ruleid="linetoneutral_phase-vm">
+			<valueIn>0</valueIn><valueOut>A-N</valueOut>
+			<valueIn>1</valueIn><valueOut>B-N</valueOut>
+			<valueIn>2</valueIn><valueOut>C-N</valueOut>
+			<valueIn>*</valueIn><valueOut>*</valueOut>
+		</valueMap>
+
+        <valueMap ruleid="delete_null_sensor">
+            <valueIn>-32768</valueIn><valueOut>[false]</valueOut>
+            <valueIn>32768</valueIn><valueOut>[false]</valueOut>
+            <valueIn>*</valueIn><valueOut>[true]</valueOut>
+        </valueMap>
+
+ 
+		<numSensor ruleid="input_current_ph" index="register420000-420002">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getRowOid default="32768">register420000-420002</getRowOid>
+                </mapValue>
+            </rowTest>
+			<type>amperage</type>
+			<sensorId>CURRENT_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<getRowOid>register420000-420002</getRowOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Input Current Phase <mapValue mapid="letter_phase-vm"><rowNumber/></mapValue> </label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+ 
+		<numSensor ruleid="input_current_neutral">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420003</getOid>
+                </mapValue>
+            </rowTest>
+			<type>amperage</type>
+			<sensorId>INPUT_CURRENT_4</sensorId>
+			<value>
+				<getOid>register420003</getOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Input Current Phase N </label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="current_3phase_avg">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420005</getOid>
+                </mapValue>
+            </rowTest>
+			<type>amperage</type>
+			<sensorId>AVERAGE_CURRENT_1</sensorId>
+			<value>
+				<getOid>register420005</getOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Current 3-Phase Average</label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="voltage_ll_ph" index="register420020-420022">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getRowOid default="32768">register420020-420022</getRowOid>
+                </mapValue>
+            </rowTest>
+			<type>voltage</type>
+			<sensorId>VOLTAGE_LL_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<getRowOid>register420020-420022</getRowOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Voltage L-L - <mapValue mapid="linetoline_phase-vm"><rowNumber/></mapValue> </label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+ 
+		<numSensor ruleid="voltage_ll_avg">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420023</getOid>
+                </mapValue>
+            </rowTest>
+			<type>voltage</type>
+			<sensorId>AVERAGE_VOLTAGE_LL_1</sensorId>
+			<value>
+				<getOid>register420023</getOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Voltage L-L - Average </label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="voltage_ln_ph" index="register420024-420026">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getRowOid default="32768">register420024-420026</getRowOid>
+                </mapValue>
+            </rowTest>
+			<type>voltage</type>
+			<sensorId>VOLTAGE_LN_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<getRowOid>register420024-420026</getRowOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Voltage L-N - <mapValue mapid="linetoneutral_phase-vm"><rowNumber/></mapValue> </label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="voltage_nr">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420027</getOid>
+                </mapValue>
+            </rowTest>
+			<type>voltage</type>
+			<sensorId>VOLTAGE_NR</sensorId>
+			<value>
+				<getOid>register420027</getOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Voltage N-R</label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="voltage_ln_avg">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420028</getOid>
+                </mapValue>
+            </rowTest>
+			<type>voltage</type>
+			<sensorId>AVERAGE_VOLTAGE_LN_1</sensorId>
+			<value>
+				<getOid>register420028</getOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Voltage L-N - Average </label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="real_power_ph" index="register420040-420042">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getRowOid default="32768">register420040-420042</getRowOid>
+                </mapValue>
+            </rowTest>
+			<type>num/powerKW</type>
+			<sensorId>POWER_KW_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<getRowOid>register420040-420042</getRowOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Real Power - Phase <mapValue mapid="letter_phase-vm"><rowNumber/></mapValue> </label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="real_power_total">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420043</getOid>
+                </mapValue>
+            </rowTest>
+			<type>num/powerKW</type>
+			<sensorId>TOTAL_POWER_KW_1</sensorId>
+			<value>
+				<getOid>register420043</getOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Real Power - Total</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="reactive_power_ph" index="register420044-420046">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getRowOid default="32768">register420044-420046</getRowOid>
+                </mapValue>
+            </rowTest>
+			<type>num/powerKVAR</type>
+			<sensorId>POWER_KVAR_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<getRowOid>register420044-420046</getRowOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Reactive Power - Phase <mapValue mapid="letter_phase-vm"><rowNumber/></mapValue> </label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="reactive_power_total">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420047</getOid>
+                </mapValue>
+            </rowTest>
+			<type>num/powerKVAR</type>
+			<sensorId>TOTAL_POWER_KVAR_1</sensorId>
+			<value>
+				<getOid>register420047</getOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Reactive Power - Total</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="apparent_power_ph" index="register420048-420050">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getRowOid default="32768">register420048-420050</getRowOid>
+                </mapValue>
+            </rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>POWER_KVA_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<getRowOid>register420048-420050</getRowOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Apparent Power - Phase <mapValue mapid="letter_phase-vm"><rowNumber/></mapValue> </label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="apparent_power_total">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420051</getOid>
+                </mapValue>
+            </rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>TOTAL_POWER_KVA_1</sensorId>
+			<value>
+				<getOid>register420051</getOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Apparent Power - Total</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="true_powerfactor_ph" index="register420060-420062">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getRowOid default="32768">register420060-420062</getRowOid>
+                </mapValue>
+            </rowTest>
+			<type>num/powerfactor</type>
+			<sensorId>POWER_FACTOR_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+                <mult>
+                    <op><getRowOid>register420060-420062</getRowOid></op>
+                    <op>0.001</op>
+                </mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>True Power Factor - Phase <mapValue mapid="letter_phase-vm"><rowNumber/></mapValue> </label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="true_powerfactor_total">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420063</getOid>
+                </mapValue>
+            </rowTest>
+			<type>num/powerfactor</type>
+			<sensorId>TOTAL_POWER_FACTOR_1</sensorId>
+			<value>
+                <mult>
+                    <op><getOid>register420063</getOid></op>
+                    <op>0.001</op>
+                </mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>True Power Factor - Total</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+        <!-- Frequency scaling is based on System Rated Frequency (register420298).  If the SRF is 400 Hz
+                then the scaling is 0.1.  If the SRF is 50/60 Hz then the scaling is 0.01.  We will make the 
+                assumption that if the SRF is not 400 Hz it is 50/60 Hz.                -->
+		<numSensor ruleid="frequency">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420080</getOid>
+                </mapValue>
+            </rowTest>
+			<type>frequency</type>
+			<sensorId>FREQUENCY_1</sensorId>
+			<value>
+                <if>
+                    <op><eq><op><getOid>register420298</getOid></op><op>400</op></eq></op>
+                    <op><mult><op><getOid>register420080</getOid></op><op>0.1</op></mult></op>
+                    <op><mult><op><getOid>register420080</getOid></op><op>0.01</op></mult></op>
+                </if>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Frequency</label>
+			<sensorSet>Frequency</sensorSet>
+		</numSensor>
+
+        <!-- Diplaying the SRF for debugging purposes.  -->
+		<numSensor ruleid="system_rated_frequency">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420298</getOid>
+                </mapValue>
+            </rowTest>
+			<type>frequency</type>
+			<sensorId>SRF_FREQUENCY_1</sensorId>
+			<value>
+                <getOid>register420298</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>System Rated Frequency</label>
+			<sensorSet>Frequency</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="thd_current_ph" index="register420100-420102">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getRowOid default="32768">register420100-420102</getRowOid>
+                </mapValue>
+            </rowTest>
+			<type>pctofcapacity</type>
+			<sensorId>CURRENT_THD_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+                <mult>
+                    <op><getRowOid>register420100-420102</getRowOid></op>
+                    <op>0.1</op>
+                </mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>THD Current - Phase <mapValue mapid="letter_phase-vm"><rowNumber/></mapValue> </label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="thd_current_neutral">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420103</getOid>
+                </mapValue>
+            </rowTest>
+			<type>pctofcapacity</type>
+			<sensorId>CURRENT_THD_4</sensorId>
+			<value>
+                <mult>
+                    <op><getOid>register420103</getOid></op>
+                    <op>0.1</op>
+                </mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>THD Current - Phase N</label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="thd_voltage_ln_ph" index="register420107-420109">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getRowOid default="32768">register420107-420109</getRowOid>
+                </mapValue>
+            </rowTest>
+			<type>pctofcapacity</type>
+			<sensorId>VOLTAGE_LN_THD_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+                <mult>
+                    <op><getRowOid>register420107-420109</getRowOid></op>
+                    <op>0.1</op>
+                </mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>THD Voltage L-N - Phase <mapValue mapid="linetoneutral_phase-vm"><rowNumber/></mapValue> </label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="thd_voltage_ll_ph" index="register420111-420113">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getRowOid default="32768">register420111-420113</getRowOid>
+                </mapValue>
+            </rowTest>
+			<type>pctofcapacity</type>
+			<sensorId>VOLTAGE_LL_THD_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+                <mult>
+                    <op><getRowOid>register420111-420113</getRowOid></op>
+                    <op>0.1</op>
+                </mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>THD Voltage L-L - Phase <mapValue mapid="linetoline_phase-vm"><rowNumber/></mapValue> </label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="active_energy_rec">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420120</getOid>
+                </mapValue>
+            </rowTest>
+			<type>num/kwatthr</type>
+			<sensorId>TOTAL_ENERGY_REC_KWH_1</sensorId>
+			<value>
+                <mult>
+                    <op><getOid>register420120</getOid></op>
+                    <op>0.001</op>
+                </mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Active Electric Energy - Received</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="reactive_energy_rec">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420124</getOid>
+                </mapValue>
+            </rowTest>
+			<type>num/kVARhr</type>
+			<sensorId>TOTAL_ENERGY_REC_KVARH_1</sensorId>
+			<value>
+                <mult>
+                    <op><getOid>register420124</getOid></op>
+                    <op>0.001</op>
+                </mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Reactive Electric Energy - Received</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="active_energy_del">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420128</getOid>
+                </mapValue>
+            </rowTest>
+			<type>num/kwatthr</type>
+			<sensorId>TOTAL_ENERGY_DEL_KWH_1</sensorId>
+			<value>
+                <mult>
+                    <op><getOid>register420128</getOid></op>
+                    <op>0.001</op>
+                </mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Active Electric Energy - Delivered</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="reactive_energy_del">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420132</getOid>
+                </mapValue>
+            </rowTest>
+			<type>num/kVARhr</type>
+			<sensorId>TOTAL_ENERGY_DEL_KVARH_1</sensorId>
+			<value>
+                <mult>
+                    <op><getOid>register420132</getOid></op>
+                    <op>0.001</op>
+                </mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Reactive Electric Energy - Delivered</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="active_energy_total">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420136</getOid>
+                </mapValue>
+            </rowTest>
+			<type>num/kwatthr</type>
+			<sensorId>TOTAL_ENERGY_KWH_1</sensorId>
+			<value>
+                <mult>
+                    <op><getOid>register420136</getOid></op>
+                    <op>0.001</op>
+                </mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Active Electric Energy - Total</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="reactive_energy_total">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420140</getOid>
+                </mapValue>
+            </rowTest>
+			<type>num/kVARhr</type>
+			<sensorId>TOTAL_ENERGY_KVARH_1</sensorId>
+			<value>
+                <mult>
+                    <op><getOid>register420140</getOid></op>
+                    <op>0.001</op>
+                </mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Reactive Electric Energy - Total</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="apparent_energy_total">
+            <rowTest>
+                <mapValue mapid="delete_null_sensor">
+                    <getOid default="32768">register420144</getOid>
+                </mapValue>
+            </rowTest>
+			<type>num/kVAhr</type>
+			<sensorId>TOTAL_ENERGY_KVAH_1</sensorId>
+			<value>
+                <mult>
+                    <op><getOid>register420144</getOid></op>
+                    <op>0.001</op>
+                </mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Apparent Electric Energy - Total</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+
+	</device>
+	
+	<protocol>
+		<modbus>	
+			<table_ref_id indexid="register420000-420002">
+				<entry num="0">register420000</entry>
+				<entry num="1">register420001</entry>
+				<entry num="2">register420002</entry>
+			</table_ref_id>
+			<value_ref_id valid="register420000">
+				<function>3</function>
+				<start_addr>19999</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420001">
+				<function>3</function>
+				<start_addr>20000</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420002">
+				<function>3</function>
+				<start_addr>20001</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420003">
+				<function>3</function>
+				<start_addr>20002</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="register420005">
+				<function>3</function>
+				<start_addr>20004</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="register420020-420022">
+				<entry num="0">register420020</entry>
+				<entry num="1">register420021</entry>
+				<entry num="2">register420022</entry>
+			</table_ref_id>
+			<value_ref_id valid="register420020">
+				<function>3</function>
+				<start_addr>20019</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420021">
+				<function>3</function>
+				<start_addr>20020</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420022">
+				<function>3</function>
+				<start_addr>20021</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420023">
+				<function>3</function>
+				<start_addr>20022</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<table_ref_id indexid="register420024-420026">
+				<entry num="0">register420024</entry>
+				<entry num="1">register420025</entry>
+				<entry num="2">register420026</entry>
+			</table_ref_id>
+			<value_ref_id valid="register420024">
+				<function>3</function>
+				<start_addr>20023</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420025">
+				<function>3</function>
+				<start_addr>20024</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420026">
+				<function>3</function>
+				<start_addr>20025</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420027">
+				<function>3</function>
+				<start_addr>20026</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420028">
+				<function>3</function>
+				<start_addr>20027</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="register420040-420042">
+				<entry num="0">register420040</entry>
+				<entry num="1">register420041</entry>
+				<entry num="2">register420042</entry>
+			</table_ref_id>
+			<value_ref_id valid="register420040">
+				<function>3</function>
+				<start_addr>20039</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420041">
+				<function>3</function>
+				<start_addr>20040</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420042">
+				<function>3</function>
+				<start_addr>20041</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420043">
+				<function>3</function>
+				<start_addr>20042</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<table_ref_id indexid="register420044-420046">
+				<entry num="0">register420044</entry>
+				<entry num="1">register420045</entry>
+				<entry num="2">register420046</entry>
+			</table_ref_id>
+			<value_ref_id valid="register420044">
+				<function>3</function>
+				<start_addr>20043</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420045">
+				<function>3</function>
+				<start_addr>20044</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420046">
+				<function>3</function>
+				<start_addr>20045</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420047">
+				<function>3</function>
+				<start_addr>20046</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<table_ref_id indexid="register420048-420050">
+				<entry num="0">register420048</entry>
+				<entry num="1">register420049</entry>
+				<entry num="2">register420050</entry>
+			</table_ref_id>
+			<value_ref_id valid="register420048">
+				<function>3</function>
+				<start_addr>20047</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420049">
+				<function>3</function>
+				<start_addr>20048</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420050">
+				<function>3</function>
+				<start_addr>20049</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420051">
+				<function>3</function>
+				<start_addr>20050</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="register420060-420062">
+				<entry num="0">register420060</entry>
+				<entry num="1">register420061</entry>
+				<entry num="2">register420062</entry>
+			</table_ref_id>
+			<value_ref_id valid="register420060">
+				<function>3</function>
+				<start_addr>20059</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420061">
+				<function>3</function>
+				<start_addr>20060</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420062">
+				<function>3</function>
+				<start_addr>20061</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420063">
+				<function>3</function>
+				<start_addr>20062</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="register420080">
+				<function>3</function>
+				<start_addr>20079</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="register420100-420102">
+				<entry num="0">register420100</entry>
+				<entry num="1">register420101</entry>
+				<entry num="2">register420102</entry>
+			</table_ref_id>
+			<value_ref_id valid="register420100">
+				<function>3</function>
+				<start_addr>20099</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420101">
+				<function>3</function>
+				<start_addr>20100</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420102">
+				<function>3</function>
+				<start_addr>20101</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420103">
+				<function>3</function>
+				<start_addr>20102</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="register420107-420109">
+				<entry num="0">register420107</entry>
+				<entry num="1">register420108</entry>
+				<entry num="2">register420109</entry>
+			</table_ref_id>
+			<value_ref_id valid="register420107">
+				<function>3</function>
+				<start_addr>20106</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420108">
+				<function>3</function>
+				<start_addr>20107</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420109">
+				<function>3</function>
+				<start_addr>20108</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="register420111-420113">
+				<entry num="0">register420111</entry>
+				<entry num="1">register420112</entry>
+				<entry num="2">register420113</entry>
+			</table_ref_id>
+			<value_ref_id valid="register420111">
+				<function>3</function>
+				<start_addr>20110</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420112">
+				<function>3</function>
+				<start_addr>20111</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register420113">
+				<function>3</function>
+				<start_addr>20112</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="register420120">
+				<function>3</function>
+				<start_addr>20119</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="register420124">
+				<function>3</function>
+				<start_addr>20123</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="register420128">
+				<function>3</function>
+				<start_addr>20127</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="register420132">
+				<function>3</function>
+				<start_addr>20131</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="register420136">
+				<function>3</function>
+				<start_addr>20135</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="register420140">
+				<function>3</function>
+				<start_addr>20139</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+			<value_ref_id valid="register420144">
+				<function>3</function>
+				<start_addr>20143</start_addr>
+				<quantity>4</quantity>
+				<type>int_64</type>
+			</value_ref_id>
+
+			<value_ref_id valid="register420298">
+				<function>3</function>
+				<start_addr>20297</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+
+			<packet>
+				<function>3</function>
+				<start_addr>19999</start_addr>
+				<quantity>4</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>20004</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>20019</start_addr>
+				<quantity>9</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>20039</start_addr>
+				<quantity>12</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>20059</start_addr>
+				<quantity>4</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>20079</start_addr>
+				<quantity>1</quantity>
+			</packet>
+
+			<packet>
+				<function>3</function>
+				<start_addr>20099</start_addr>
+				<quantity>4</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>20106</start_addr>
+				<quantity>3</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>20110</start_addr>
+				<quantity>3</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>20119</start_addr>
+				<quantity>28</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>20297</start_addr>
+				<quantity>1</quantity>
+			</packet>
+
+        </modbus>
+	</protocol>
+</APC_DDF>		

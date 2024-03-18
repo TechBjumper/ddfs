@@ -1,0 +1,3925 @@
+Com-Server-Intern-MIB DEFINITIONS ::= BEGIN
+
+-- 
+-- Revison: 1.02
+-- 
+-- Dieses Dokument beschreibt die Management Information Base des Com-Servers mit der
+-- die aktuelle Konfiguration gelesen und geschrieben   werden kann (analog zur
+-- Konfiguration via Telnetport 1111). Zur vollständigen Erläuterung aller Variablen
+-- sollte zusätzlich das jeweilige Com-Server-Handbuch hinzugezogen werden.
+--
+-- WICHTIG:
+-- Die Variablen des Zweiges .wut.wtComServer.wtComServerIntern.wtConfiguration der
+-- Com-Server-MIB sind nur beschreibbar, wenn vorher die Variable 
+-- "wtComServer.wtComServerIntern.wtConfiguration.wtSystem.wtConfigMode" mit dem Wert 2
+-- beschrieben wurde. Danach können die entsprechenden Variablen geändert werden. Um die
+-- Änderungen im Com-Server abzuspeichern, muß die Variable "...wtConfigMode" mit dem 
+-- Wert 3 beschrieben werden. Hat die Variable "...wtConfigMode" den Wert 1, sind alle
+-- Variablen nur lesbar.
+-- Weiterhin können diese Variablen nicht geschrieben werden, wenn zeitgleich eine 
+-- Verbindung zum Telnet-Port 1111 des Com-Servers geöffnet ist.
+--
+-- Die Variablen des Zweiges .wut.wtComServer.wtComServerIntern.wtDigitalEaDriver 
+-- hingegen können immer gelesen und geschrieben werden.
+
+    IMPORTS
+
+    OBJECT-TYPE                                        FROM RFC-1212
+    TRAP-TYPE                                          FROM RFC-1215
+    DisplayString, PhysAddress                         FROM RFC1213-MIB
+    enterprises, TimeTicks, IpAddress, NetworkAddress  FROM RFC1155-SMI;
+
+ 
+--    IpAddress ::=
+--        [APPLICATION 0]
+--            IMPLICIT OCTET STRING (SIZE (4))
+--    Counter ::=
+--        [APPLICATION 1]
+--            IMPLICIT INTEGER (0..4294967295)
+--    Gauge ::=
+--        [APPLICATION 2]
+--            IMPLICIT INTEGER (0..4294967295)
+--    TimeTicks ::=
+--        [APPLICATION 3]
+--            IMPLICIT INTEGER (0..4294967295)
+
+
+--    DisplayString ::= OCTET STRING
+--    PhysAddress   ::= OCTET STRING
+
+--    internet         OBJECT IDENTIFIER ::= { iso org(3) dod(6) 1 }
+--    privat           OBJECT IDENTIFIER ::= { internet 4 }
+--    enterprises      OBJECT IDENTIFIER ::= { privat 1 }
+
+
+
+--  Wiesemann & Theis Com-Server MIB
+
+    wut                OBJECT IDENTIFIER ::= { enterprises 5040 }
+    wtComServer        OBJECT IDENTIFIER ::= { wut 1 }
+    wtComServerIntern  OBJECT IDENTIFIER ::= { wtComServer 1 }
+    wtWebio            OBJECT IDENTIFIER ::= { wtComServer 2 }
+
+
+--  comServer-Intern Tree
+
+    wtConfiguration    OBJECT IDENTIFIER ::= { wtComServerIntern 1 }
+    wtDeaDriver        OBJECT IDENTIFIER ::= { wtComServerIntern 2 }
+
+
+--  wtConfiguration Tree
+
+    wtSystem           OBJECT IDENTIFIER ::= { wtConfiguration 1 }
+    wtNetSetup         OBJECT IDENTIFIER ::= { wtConfiguration 2 }
+    wtSeriPortSetup    OBJECT IDENTIFIER ::= { wtConfiguration 3 }
+    wtDeaPortSetup     OBJECT IDENTIFIER ::= { wtConfiguration 4 }
+
+--  wtWebio Tree
+
+    wtWebioAn8         OBJECT IDENTIFIER ::= { wtWebio 1 }
+    wtWebioAn2         OBJECT IDENTIFIER ::= { wtWebio 2 }
+    
+--  wtWebioAn8 Tree
+
+    wtWebioAn8Temp      OBJECT IDENTIFIER ::= { wtWebioAn8 1 }
+    wtWebioAn8SessCntrl OBJECT IDENTIFIER ::= { wtWebioAn8 2 }
+    wtWebioAn8Config    OBJECT IDENTIFIER ::= { wtWebioAn8 3 }
+    
+--  wtWebioAn8Config Tree
+
+    wtWebioAn8Device    OBJECT IDENTIFIER ::= { wtWebioAn8Config 1 }
+    wtWebioAn8Ports     OBJECT IDENTIFIER ::= { wtWebioAn8Config 2 }	
+    wtWebioAn8Manufact  OBJECT IDENTIFIER ::= { wtWebioAn8Config 3 }	
+
+
+--  wtWebioAn8Device Tree
+
+    wtWebioAn8Network		OBJECT IDENTIFIER ::= { wtWebioAn8Device 1 }
+    wtWebioAn8Text		OBJECT IDENTIFIER ::= { wtWebioAn8Device 2 }	
+    wtWebioAn8TimeDate 		OBJECT IDENTIFIER ::= { wtWebioAn8Device 3 }
+    wtWebioAn8MailAdmin		OBJECT IDENTIFIER ::= { wtWebioAn8Device 4 }	
+    wtWebioAn8Alarm		OBJECT IDENTIFIER ::= { wtWebioAn8Device 5 }
+    wtWebioAn8Datalogger	OBJECT IDENTIFIER ::= { wtWebioAn8Device 6 }	
+    wtWebioAn8Protocol		OBJECT IDENTIFIER ::= { wtWebioAn8Device 7 }
+    wtWebioAn8Enable		OBJECT IDENTIFIER ::= { wtWebioAn8Device 8 }	
+
+--  wtWebioAn8TimeDate Tree
+
+    wtWebioAn8TimeZone		OBJECT IDENTIFIER ::= { wtWebioAn8TimeDate 1 }
+    wtWebioAn8TimeServer	OBJECT IDENTIFIER ::= { wtWebioAn8TimeDate 2 }	
+    wtWebioAn8DeviceClock	OBJECT IDENTIFIER ::= { wtWebioAn8TimeDate 3 }
+
+--  wtWebioAn8Protocol Group
+    wtWebioAn8PrtclUDP		OBJECT IDENTIFIER ::= { wtWebioAn8Protocol 1 }
+
+
+--  wtWebioAn2 Tree
+
+    wtWebioAn2Temp      OBJECT IDENTIFIER ::= { wtWebioAn2 1 }
+    wtWebioAn2SessCntrl OBJECT IDENTIFIER ::= { wtWebioAn2 2 }
+    wtWebioAn2Config    OBJECT IDENTIFIER ::= { wtWebioAn2 3 }
+    
+--  wtWebioAn2Config Tree
+
+    wtWebioAn2Device    OBJECT IDENTIFIER ::= { wtWebioAn2Config 1 }
+    wtWebioAn2Ports     OBJECT IDENTIFIER ::= { wtWebioAn2Config 2 }	
+    wtWebioAn2Manufact  OBJECT IDENTIFIER ::= { wtWebioAn2Config 3 }	
+
+
+--  wtWebioAn2Device Tree
+
+    wtWebioAn2Network		OBJECT IDENTIFIER ::= { wtWebioAn2Device 1 }
+    wtWebioAn2Text		OBJECT IDENTIFIER ::= { wtWebioAn2Device 2 }	
+    wtWebioAn2TimeDate 		OBJECT IDENTIFIER ::= { wtWebioAn2Device 3 }
+    wtWebioAn2MailAdmin		OBJECT IDENTIFIER ::= { wtWebioAn2Device 4 }	
+    wtWebioAn2Alarm		OBJECT IDENTIFIER ::= { wtWebioAn2Device 5 }
+    wtWebioAn2Datalogger	OBJECT IDENTIFIER ::= { wtWebioAn2Device 6 }	
+    wtWebioAn2Protocol		OBJECT IDENTIFIER ::= { wtWebioAn2Device 7 }
+    wtWebioAn2Enable		OBJECT IDENTIFIER ::= { wtWebioAn2Device 8 }	
+
+--  wtWebioAn2TimeDate Tree
+
+    wtWebioAn2TimeZone		OBJECT IDENTIFIER ::= { wtWebioAn2TimeDate 1 }
+    wtWebioAn2TimeServer	OBJECT IDENTIFIER ::= { wtWebioAn2TimeDate 2 }	
+    wtWebioAn2DeviceClock	OBJECT IDENTIFIER ::= { wtWebioAn2TimeDate 3 }
+
+--  wtWebioAn2Protocol Group
+    wtWebioAn2PrtclUDP		OBJECT IDENTIFIER ::= { wtWebioAn2Protocol 1 }
+
+
+--  wtSystem Group
+
+
+wtCableType OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtCoax(1),
+        wtTwistedPair(2),
+        wtAui(3)
+    }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Zeigt den verwendeten Ethernet-Anschluß des Com-Servers an."
+    ::= { wtSystem 1 }
+
+wtMacAddress OBJECT-TYPE
+    SYNTAX PhysAddress
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Zeigt die Ethernet-Adresse des Com-Servers an."
+    ::= { wtSystem 2 }
+
+wtSwDate OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Zeigt das Erstellungsdatum 'Monat/Jahr' der Firmware an."
+    ::= { wtSystem 3 }
+
+wtSwRev OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Zeigt die Revision-Nummer der Firmware an."
+    ::= { wtSystem 4 }
+
+wtDevType OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Zeigt den Com-Server-Typ an."
+    ::= { wtSystem 5 }
+
+wtMibRev OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Zeigt die Revision-Nummer der Wiesemann & Theis MIB an."
+    ::= { wtSystem 6 }
+
+wtRunTime OBJECT-TYPE
+    SYNTAX TimeTicks
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Zeigt die Zeit seit dem letzten Restart des Com-Servers in 1/100 Sekunden an."
+    ::= { wtSystem 7 }
+
+wtPhysPorts OBJECT-TYPE
+    SYNTAX INTEGER (1..4)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Zeigt die Gesamtanzahl der im Com-Server vorhandenen Schnittstellen 
+        (RS232-Port, Digital E/A-Port, ...) an."
+    ::= { wtSystem 8 }
+
+wtConfigMode OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtConfigModeOff(1),
+        wtConfigModeOn(2),
+        wtSaveConfig(3)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Das Beschreiben dieses Eintrages erlaubt das Ändern (wtConfigModeOn) und 
+        Abspeichern (wtSaveConfig) aller anderen Einträge in der Managment 
+        Information Base des Com-Servers. Ist der Wert des Eintrages 1 (wtConfigModeOff),
+        können alle anderen Einträge nur gelesen werden."
+    ::= { wtSystem 16 }
+
+wtPassword OBJECT-TYPE
+    SYNTAX DisplayString (SIZE (8))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "8-stelliges Passwort des Com-Servers zum eingeschränkten Zugriff auf das
+        Konfigurationsmenü des Com-Servers (Telnet-Port 1111). Verwendet werden
+        dürfen die Ziffern '0' bis '9' und die Buchstaben 'a' bis 'f' (Z.B: 'abcdef12')."
+    ::= { wtSystem 17 }
+
+
+
+-- wtNetSetup Group
+
+
+wtIpAddress OBJECT-TYPE
+    SYNTAX NetworkAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des Com-Servers."
+    ::= { wtNetSetup 1 }
+
+wtSubnetMask OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Subnet Mask des Com-Servers."
+    ::= { wtNetSetup 2 }
+
+wtGateway OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des Gateways zum Herstellen von Verbindungen in andere Netzwerke."
+    ::= { wtNetSetup 3 }
+
+wtMtu OBJECT-TYPE
+    SYNTAX INTEGER (512..1024)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Maximum Transfer Unit des Com-Servers (maximale Länge eines Datagrams, 
+        welches der Com-Server senden bzw. empfangen kann."
+    ::= { wtNetSetup 4 }
+
+wtBootpClient OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtBootpClientOff(1),
+        wtBootpClientOn(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Aktiviert und Deaktiviert das Senden eines BOOTP-Requests nach dem 
+        Restart des Com-Servers"
+    ::= { wtNetSetup 5 }
+
+
+
+
+
+-- wtSeriPortSetup Group
+
+
+wtSerialPorts OBJECT-TYPE
+    SYNTAX INTEGER (1..4)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Anzahl der seriellen Ports des Com-Servers"
+    ::= { wtSeriPortSetup 1 }
+
+
+-- Interface Table
+
+wtSeriInterfaceTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtSeriInterfaceEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste der Interfacenummern aller seriellen Ports."
+    ::= { wtSeriPortSetup 2 }
+
+wtSeriInterfaceEntry OBJECT-TYPE
+    SYNTAX WtSeriInterfaceEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Interfacenummer."
+    INDEX  { wtSeriInterfaceNo }
+    ::= { wtSeriInterfaceTable 1 }
+
+WtSeriInterfaceEntry ::= SEQUENCE {
+    wtSeriInterfaceNo INTEGER (1..4)
+}
+
+wtSeriInterfaceNo OBJECT-TYPE
+    SYNTAX INTEGER (1..4)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Interfacenummer des seriellen Ports."
+    ::= { wtSeriInterfaceEntry 1 }
+
+
+-- UART Table
+
+wtSeriUartTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtSeriUartEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste der UART-Konfigurationen relevant zur Interfacenummer des
+        seriellen Ports."
+    ::= { wtSeriPortSetup 3 }
+
+wtSeriUartEntry OBJECT-TYPE
+    SYNTAX WtSeriUartEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "UART-Parameter des seriellen Ports."
+    INDEX  { wtSeriInterfaceNo }
+    ::= { wtSeriUartTable 1 }
+
+WtSeriUartEntry ::= SEQUENCE {
+    wtBaudrate    INTEGER,
+    wtParity      INTEGER,
+    wtDatabits    INTEGER,
+    wtStopbits    INTEGER,
+    wtHsLines     OCTET STRING,
+    wtHsFunctions OCTET STRING,
+    wtFifo        INTEGER
+}
+
+wtBaudrate OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtBaudrate-57600(1),
+        wtBaudrate-38400(2),
+        wtBaudrate-19200(3),
+        wtBaudrate-14400(4),
+        wtBaudrate-9600(5),
+        wtBaudrate-4800(6),
+        wtBaudrate-2400(7),
+        wtBaudrate-1200(8),
+        wtBaudrate-600(9),
+        wtBaudrate-300(10)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Baudrate"
+    ::= { wtSeriUartEntry 1 }
+
+wtParity OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtNoParity(1),
+        wtOddParity(2),
+        wtEvenParity(3)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Parity"
+    ::= { wtSeriUartEntry 2 }
+
+wtDatabits OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtDataBits-8(1),
+        wtDataBits-7(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Anzahl der Databits"
+    ::= { wtSeriUartEntry 3 }
+
+wtStopbits OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtStopBits-1(1),
+        wtStopBits-2(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Anzahl der Stopbits"
+    ::= { wtSeriUartEntry 4 }
+
+wtHsLines OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Diese zwei Octets werden bitweise interpretiert und beschreiben einzelne 
+        Werte zur Konfiguration des Handshakeverfahrens. Bit 0 entspricht dem LSB.
+
+        Octet  Bit Name            Beschreibung
+        -----  --- ------------    ------------------------
+        1      0,1,6,7             not used
+               2   inxfilter       1: enable xon/xoff filter while receiving
+               3   outxfilter      1: enable xon/xoff filter while sending
+               4   rts-default     1: while RTS is not used, RTS is active
+               5   dtr-default     1: while DTR is not used, DTR is active
+        2      0   rts-disable     1: RTS will not change at LOCK/UNLOCK
+               1   dtr-disable     1: DTR will not change at LOCK/UNLOCK
+               2   outx            1: enable software handshake while sending
+               3   inx             1: enable software handshake while receiving
+               4   outx-cts        1: enable hardware handshake on CTS
+               5   outx-dsr        1: enable hardware handshake on DSR
+               6   inx-dtr         1: enable hardware handshake on DTR
+               7   inx-rts         1: enable hardware handshake on RTS
+        Standardeinstellungen:
+        OCTET 1  OCTET 2  Funktion
+        -------  -------  -------------
+        30h      03h      No Handshake
+        00h      91h      Hardware Handshake
+        3Ch      0Fh      Software Handshake (Send/Receive Filter ON)"
+    ::= { wtSeriUartEntry 5 }
+
+wtHsFunctions OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieses Octet wird bitweise interpretiert und beschreibt Funktionen, die den 
+        Handshakeleitungen zugeordnet werden können. Bit 0 entspricht dem LSB.
+
+        Octet  Bit Name            Beschreibung
+        -----  --- ------------    ------------------------
+        1      0   cts-connect     1: connect/disconnect with CTS (HIGH/LOW)
+               1   dsr-connect     1: connect/disconnect with DSR (HIGH/LOW)
+               2   cts-accept      1: accept connection only by CTS=HIGH
+               3   dsr-accept      1: accept connection only by DSR=HIGH
+               4-7                 not used"
+    ::= { wtSeriUartEntry 6 }
+
+wtFifo OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtFifo-1(1),
+        wtFifo-4(2),
+        wtFifo-8(3),
+        wtFifo-14(4),
+        wtFifo-disable(5)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Receive Fifo Trigger Level"
+    ::= { wtSeriUartEntry 7 }
+
+
+-- Serial Port Table
+
+wtSeriPortTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtSeriPortEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste der generellen Porteinträge relevant zur Interfacenummer der
+        seriellen Ports."
+    ::= { wtSeriPortSetup 4 }
+
+wtSeriPortEntry OBJECT-TYPE
+    SYNTAX WtSeriPortEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Porteinträge des seriellen Ports."
+    INDEX  { wtSeriInterfaceNo }
+    ::= { wtSeriPortTable 1 }
+
+WtSeriPortEntry ::= SEQUENCE {
+    wtSeriLocalPort   INTEGER (1..65535),
+    wtSeriPortMode    INTEGER,
+    wtSeriNetPckDelay INTEGER,
+    wtSeriFlushBuf    INTEGER,
+    wtSeriTelnetEcho  INTEGER
+}           
+
+
+wtSeriLocalPort OBJECT-TYPE
+    SYNTAX INTEGER (1..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Lokale TCP-/UDP-Portnummer des Com-Server-Ports. Portnummer, auf der der 
+        Com-Server eine TCP-Verbindung akzeptiert oder die er im TCP-Client-Mode 
+        oder im UDP-Mode als Local Port verwendet."
+    ::= { wtSeriPortEntry 1 }
+
+wtSeriPortMode OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtSeriServerMode(1),
+        wtSeriTcpClient(2),
+        wtSeriTelnetClient(3),
+        wtSeriFtpClient(4),
+        wtSeriBox2BoxMaster(5),
+        wtSeriUdpMode(6),
+        wtSeriMultiportProtokoll(7),
+        wtSeriBox2BoxSlave(8),
+        wtSeriSlipMode(9),
+        wtSeriIpBusSlave(10),
+        wtSeriIpBusMaster(11)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieser Parameter legt die Betriebsart des Com-Server-Ports fest. In 
+        Abhängigkeit der eingestellten Betriebsart ist die entsprechende Liste
+        der relevanten Parameter verfügbar. Wurde z.B. die Betriebsart Udp-Mode
+        (wtSeriPortMode = 6) konfiguriert, ist nur die Liste wtSeriUdpClientTable 
+        verfügbar. Im Server Mode (wtSeriPortMode = 1) ist keine Liste der 
+        Portmode-Konfigurationen verfügbar."
+    ::= { wtSeriPortEntry 2 }
+
+
+wtSeriNetPckDelay OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieser Wert gibt die Mindestwartezeit in 10ms-Ticks des Com-Servers nach 
+        Eingang serieller Daten an. Nach Ablauf dieser Zeit packt er die Daten in 
+        ein Netzwerkpaket und sendet sie an den jeweiligen Kommunikationspartner. 
+        Mit der Default-Einstellung 0 wird versucht, die Daten schnellstmöglich zu 
+        vermitteln. Die damit erzielte hohe zeitliche Transparenz bringt allerdings 
+        den Nachteil einer höheren Anzahl von Netzwerkpaketen mit sich.
+        Erfolgt die serielle Übertragung in vorhersehbaren Blockgrößen, kann mit 
+        einer Anpassung dieses Wertes die Netzlast optimiert werden. Zusätzlich 
+        ergibt  sich der Vorteil, daß die seriellen Blöcke innerhalb eines 
+        Netzwerkpaketes übertragen werden und somit den Empfänger bündig erreichen. 
+        Siehe dazu auch das Com-Server-Handbuch."
+    ::= { wtSeriPortEntry 10 }
+
+wtSeriFlushBuf OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtSeriFlushBufOff(1),
+        wtSeriFlushBufOn(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Ist dieser Schalter aktiv (2), wird mit jedem neuen Verbindungsaufbau der 
+        serielle Puffer gelöscht; eventuelle Restdaten, die nicht vermittelt werden 
+        konnten (z.B. Handshake Stop des seriellen Endgeräts), gehen damit verloren. 
+        Schließen Sie an den Com-Server aber ein Endgerät an, das z.B. programmbedingt 
+        ein längeres Handshake Stop verlangt, können Sie das Löschen des Puffers 
+        verhindern, indem Sie den Schalter deaktivieren (1). So können netzwerkseitig 
+        mehrere Verbindungen nacheinander aufgebaut werden und die Daten werden im 
+        Puffer gesammelt bis sie vermittelt werden."
+    ::= { wtSeriPortEntry 11 }
+
+wtSeriTelnetEcho OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtSeriTelnetEchoOff(1),
+        wtSeriTelnetEchoOn(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Beim Öffnen einer Telnet-Verbindung wird netzwerkseitig zwischen den
+        Teilnehmern verhandelt, wer das Echo der vom Client gesendeten Zeichen
+        erzeugt. Entweder generiert die Client-Anwendung ein lokales Echo, oder
+        der Telnet-Server erzeugt ein Remote-Echo, indem er alle empfangenen
+        Zeichen sofort wieder zurücksendet. Die Telnet-Echo-Option am Com-Server
+        ist wie folgt definiert:
+        Telnet-Echo = aktiv (2)
+        Der Com-Server handelt mit der Client-Anwendung ein Remote-Echo aus und
+        das lokale Echo wird abgeschaltet. In diesem Fall muß das seriell am
+        Com-Server angeschlossene Gerät das Echo erzeugen.
+        Telnet Echo = deaktiv (1)
+        Der Com-Server teilt der Client-Anwendung beim Verbindungsaufbau mit, daß
+        er kein Echo erzeugt, was dort zur Aktivierung des lokalen Echos führt.
+        Am Telnet-Client muß das lokale Echo ggf. manuell eingeschaltet werden."
+    ::= { wtSeriPortEntry 12 }
+
+
+-- Listen der Port-Mode-Konfigurationen
+-- Diese Listen enthalten nur Einträge der in dem entsprechenden Mode konfigurierten
+-- seriellen Ports.
+
+-- TCP-Client-Mode
+--
+-- Diese Liste enthält Einträge für alle seriellen Ports, deren Port-Mode (Variable:
+-- ".wtConfiguration(1).wtSeriPortSetup(3).wtSeriPortTable(4).wtSeriPortEntry(1)
+--  .wtSeriPortMode(2)" den Wert wtSeriTcpClient(2) hat.
+
+wtSeriTcpClientTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtSeriTcpClientEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste aller seriellen Ports im TCP-Client-Mode relevant zu ihrer
+        Interfacenummer."
+    ::= { wtSeriPortSetup 5 }
+
+wtSeriTcpClientEntry OBJECT-TYPE
+    SYNTAX WtSeriTcpClientEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Parameter des TCP-Client-Mode"
+    INDEX  { wtSeriInterfaceNo }
+    ::= { wtSeriTcpClientTable 1 }
+
+WtSeriTcpClientEntry ::= SEQUENCE {
+    wtSeriTcpServerPort      INTEGER,
+    wtSeriTcpServerIp        IpAddress,
+    wtSeriTcpInactTimeout    INTEGER,
+    wtSeriTcpConnectTimeout  INTEGER,
+    wtSeriTcpDisconnectChar  OCTET STRING (SIZE (1)),
+    wtSeriTcpDispString1     OCTET STRING (SIZE (2)),
+    wtSeriTcpDispString2     OCTET STRING (SIZE (2)),
+    wtSeriTcpCAddress        INTEGER,
+    wtSeriTcpResponseMode    INTEGER
+}
+
+wtSeriTcpServerPort OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Portnummer, die die Anwendung (TCP-Serverprozeß) auf dem Rechner adressiert."
+    ::= { wtSeriTcpClientEntry 1 }
+
+wtSeriTcpServerIp OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des Rechners, auf dem die Anwendung (TCP-Serverprozeß) aktiv ist."
+    ::= { wtSeriTcpClientEntry 2 }
+
+wtSeriTcpInactTimeout OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Verbindungstimeout in Sekunden. Werden in dem festgelegten Zeitraum keine
+        Daten ausgetauscht, beendet der Com-Server die Verbindung zum Server. Der
+        Wert 0 deaktiviert den Timer."
+    ::= { wtSeriTcpClientEntry 3 }
+
+wtSeriTcpConnectTimeout OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Verbindungstimeout in Sekunden. Dieser Wert ist nur zusammen mit einem
+        aktivierten Inactivity Timeout wirksam. Nach Ablauf des Inactivity Timeout
+        versucht der Com-Server eventuell noch vorhandene, nicht übertragene Nutzdaten
+        für die Dauer des Connection Timeout zu vermitteln. Erhält er in dieser Zeit
+        keine Rückmeldung vom TCP-Server, läßt das auf ein 'Hängen' schließen.
+        Die Daten werden dann verworfen und die Verbindung zurückgesetzt. Um
+        unbeabsichtigten Datenverlust zu vermeiden, wählen Sie den Wert entsprechend 
+        groß. Der Wert 0 deaktiviert das Timeout."
+    ::= { wtSeriTcpClientEntry 4 }
+
+wtSeriTcpDisconnectChar OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Empfängt der Com-Server an der seriellen Schnittstelle das hier eingestellte
+        Zeichen, wird die Verbindung zum TCP-Server beendet. Das Zeichen selbst wird
+        nicht an den TCP-Server übertragen. Der Wert 0 deaktiviert den Modus."
+    ::= { wtSeriTcpClientEntry 5 }
+
+wtSeriTcpDispString1 OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Diese Parameter erlauben das kompakte Versenden serieller Daten ins Netzwerk;
+        der serielle Datenstrom wird dabei nicht beliebig zerrissen, sondern serielle 
+        Pakete können in ihrem ursprünglichen Zusammenhang auch über das Netzwerk als 
+        ein Paket übertragen werden.
+        Tragen Sie in wtSeriTcpDispString1 und/oder wtSeriTcpDispString2 jeweils zwei
+        Zeichen ein, auf die der serielle Datenstrom untersucht werden soll. Erst wenn
+        einer der beiden Strings gefunden wurde, werden die Daten von der seriellen 
+        Schnittstelle in Netzwerkpakete gepackt. Soll nur nach einem Zeichen gesucht 
+        werden, muß wtSeriTcpDispString2 auf 0 gesetzt werden. Wenn Sie z.B. 
+        wtSeriTcpDispString1 auf 3100h und wtSeriTcpDispString2 auf 0 konfigurieren,
+        wird nur nach dem Zeichen '1' gesucht. Beide Dispatch Strings = 0 deaktivieren
+        den Modus.
+        WICHTIG: Diese Zeichen werden zum TCP-Server übertragen!"
+    ::= { wtSeriTcpClientEntry 6 }
+
+wtSeriTcpDispString2 OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Siehe DESCRIPTION von wtSeriTcpDispString1."
+    ::= { wtSeriTcpClientEntry 7 }
+
+wtSeriTcpCAddress OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtSeriTcpCAddressOff(1),
+        wtSeriTcpCAddressOn(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Durch Aktivierung dieses Schalters wird der TCP-Client-Mode zu wechselnden 
+        TCP-Servern aktiviert. Die Adresse des TCP-Servers muß nicht fest konfiguriert
+        werden, sondern wird als ASCII-String vor den Nutzdaten an der seriellen 
+        Schnittstelle übermittelt. Der String für die Adressierung wird dabei nicht
+        übertragen.
+        Für das Format des Strings gibt es zwei Möglichkeiten:
+        1. Die Parameter 'wtSeriTcpServerPort' und 'wtSeriTcpServerIp' sind gleich Null.
+           Format: C IP-Adresse, Portnummer<CR> (z.B. 'C172.16.231.101,4800<CR>')
+        2. Der Parameter 'wtSeriTcpServerPort' enhält den Default Port (z.B. 4800),
+           'wtSeriTcpServerIP' enthält die ersten drei Bytes der IP-Adresse 
+           (z.B. 172.16.231.0)
+           Format: C4.Byte IP-Adresse (z.B. 'C101<CR>')
+        Der String darf keine Leerzeichen enthalten!"
+    ::= { wtSeriTcpClientEntry 8 }
+
+wtSeriTcpResponseMode OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtSeriTcpRespModeOff(1),
+        wtSeriTcpRespModeOn(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Im Response Mode wird die Applikation im seriellen Endgerät durch die Ausgabe 
+        spezieller Zeichen über den netzwerkseitigen Verbindungszustand des Com-Servers 
+        informiert. Diese Funktion ist ausschließlich in der Betriebsart TCP-Client 
+        verfügbar.
+        Folgende Meldungen werden an der seriellen Schnittstelle ausgegeben:
+        C (connected):
+           Der Verbindungsaufbau war erfolgreich. Es besteht eine TCP-Verbindung zum Server.
+        N (not connected):
+           Der Verbindungsaufbau war nicht erfolgreich. Der TCP-Server antwortet nicht.
+        D (disconnected):
+           Die Verbindungsanfrage wurde vom TCP-Server zurückgewiesen, oder eine zuvor 
+           bestehende Verbindung wurde regulär vom TCP-Server oder Com-Server beendet.
+        Ixxx.xxx.xxx.xxx (invoked by...): 
+           Eine Client-Anwendung auf der angegebenen Station hat eine TCP-Verbindung 
+           zum Com-Server erfolgreich aufgebaut (z.B. I172.20.20.1)."
+    ::= { wtSeriTcpClientEntry 10 }
+
+
+-- UDP-Mode
+--
+-- Diese Liste enthält Einträge für alle seriellen Ports, deren Port-Mode (Variable:
+-- ".wtConfiguration(1).wtSeriPortSetup(3).wtSeriPortTable(4).wtSeriPortEntry(1)
+--  .wtSeriPortMode(2)" den Wert wtSeriUdpMode(6) hat.
+
+wtSeriUdpClientTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtSeriUdpClientEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste aller seriellen Ports im UDP-Mode relevant zu ihrer Interfacenummer"
+    ::= { wtSeriPortSetup 6 }
+
+wtSeriUdpClientEntry OBJECT-TYPE
+    SYNTAX WtSeriUdpClientEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Parameter des UDP-Mode"
+    INDEX  { wtSeriInterfaceNo }
+    ::= { wtSeriUdpClientTable 1 }
+
+WtSeriUdpClientEntry ::= SEQUENCE {
+    wtSeriUdpServerPort      INTEGER,
+    wtSeriUdpServerIp        IpAddress,
+    wtSeriUdpDispString1     OCTET STRING (SIZE (2)),
+    wtSeriUdpDispString2     OCTET STRING (SIZE (2)),
+    wtSeriUdpSeriProtocol    INTEGER,
+    wtSeriUdpSeriCoding      INTEGER,
+    wtSeriUdpCAddress        INTEGER,
+    wtSeriUdpWrCAddress      INTEGER,
+    wtSeriUdpDisconnectChar  OCTET STRING (SIZE (1))
+}
+
+wtSeriUdpServerPort OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Portnummer, die die Anwendung (UDP-Serverprozeß) auf dem Rechner adressiert."
+    ::= { wtSeriUdpClientEntry 1 }
+
+wtSeriUdpServerIp OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des Rechners, auf dem die Anwendung (UDP-Serverprozeß) aktiv ist."
+    ::= { wtSeriUdpClientEntry 2 }
+
+wtSeriUdpDispString1 OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Diese Parameter erlauben das kompakte Versenden serieller Daten ins Netzwerk; der
+        serielle Datenstrom wird dabei nicht beliebig zerrissen, sondern serielle Pakete
+        können in ihrem ursprünglichen Zusammenhang auch über das Netzwerk als ein Paket
+        übertragen werden.
+        Tragen Sie in wtSeriUdpDispString1 und/oder wtSeriUdpDispString2 jeweils zwei 
+        Zeichen ein, auf die der serielle Datenstrom untersucht werden soll. Erst wenn
+        einer der beiden Strings gefunden wurde, werden die Daten von der seriellen Schnitt-
+        stelle in Netzwerkpakete gepackt. Soll nur nach einem Zeichen gesucht werden, muß
+        wtSeriUdpDispString2 auf 0 gesetzt werden. Wenn Sie z.B. wtSeriUdpDispString1 auf
+        3100h und wtSeriUdpDispString2 auf 0 konfigurieren, wird nur nach dem Zeichen '1'
+        gesucht. Beide Dispatch Strings = 0 deaktivieren den Modus.
+        WICHTIG: Diese Zeichen werden zum UDP-Server übertragen!"
+    ::= { wtSeriUdpClientEntry 3 }
+
+wtSeriUdpDispString2 OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Siehe DESCRIPTION von wtSeriUdpDispString1."
+    ::= { wtSeriUdpClientEntry 4 }
+
+wtSeriUdpSeriProtocol OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtSeriUdpProtocolOff(1),
+        wtSeriUdpProtocolOn(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Der hier aktivierbare Protokoll-Modus wurde durch das 'Serial Socket Interface' 
+        ersetzt (Mode: Multiport Protocol). Aus Gründen der Abwärtskompatibilität sind
+        die Funktionen noch verfügbar, für Neuentwicklungen sollte jedoch das 'Serial 
+        Socket Interface' eingesetzt werden."
+    ::= { wtSeriUdpClientEntry 5 }
+
+wtSeriUdpSeriCoding OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtSeriUdpSeriCodingOff(1),
+        wtSeriUdpSeriCodingOn(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Siehe DESCRIPTION von wtSeriUdpSeriProtocol."
+    ::= { wtSeriUdpClientEntry 6 }
+
+wtSeriUdpCAddress OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtSeriUdpCAddressOff(1),
+        wtSeriUdpCAddressOn(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Durch Einschalten dieser Option aktivieren Sie die Betriebsart UDP-Client
+        mit wechselnden UDP-Servern. Die Adresse des UDP-Servers muß nicht fest  
+        konfiguriert werden, sondern wird als ASCII-String vor den Nutzdaten an 
+        der seriellen Schnittstelle übermittelt. Der String für die Adressierung 
+        wird dabei nicht übertragen.
+        Für das Format des Strings gibt es zwei Möglichkeiten:
+        1. Die Parameter wtSeriUdpServerPort und wtSeriUdpServerIp sind gleich Null.
+           Format: C IP-Adresse, Portnummer<CR> (z.B. 'C172.16.231.101,4800<CR>')
+        2. Der Parameter wtSeriUdpServerPort enhält den Default Port (z.B. 4800), 
+           wtSeriUdpServerIp enthält die ersten drei Bytes der IP-Adresse 
+           (z.B. 172.16.231.0)
+           Format: C4.Byte IP-Adresse (z.B. 'C101<CR>')
+        Der String darf keine Leerzeichen enthalten!"
+    ::= { wtSeriUdpClientEntry 7 }
+
+wtSeriUdpWrCAddress OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtSeriUdpWrCAddressOff(1),
+        wtSeriUdpWrCAddressOn(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Stellen Sie diesen Schalter auf aktiv (2), um vor der Ausgabe der Daten 
+        eines UDP-Datagramms auf die serielle Schnittstelle die Adresse des 
+        Absenders im ASCII-Format auszugeben. Der String enthält immer 22 Zeichen.
+        Format: C IP-Adresse, Portnummer (z.B. 'C172.016.231.101,04800')"
+    ::= { wtSeriUdpClientEntry 8 }
+
+wtSeriUdpDisconnectChar OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieser Parameter wird nur ausgewertet, wenn die Variable wtSeriUdpCAddress
+        aktiviert ist. Empfängt der Com-Server-Port an der seriellen Schnittstelle
+        das hier konfigurierte Zeichen, löscht er die zuletzt seriell empfangene
+        UDP-Serveradresse. Das Zeichen selbst wird nicht übertragen. Der Wert 0
+        deaktiviert den Modus."
+    ::= { wtSeriUdpClientEntry 9 }
+
+
+-- Telnet-Client-Mode
+--
+-- Diese Liste enthält Einträge für alle seriellen Ports, deren Port-Mode (Variable:
+-- ".wtConfiguration(1).wtSeriPortSetup(3).wtSeriPortTable(4).wtSeriPortEntry(1)
+--  .wtSeriPortMode(2)" den Wert wtSeriTelnetClient(3) hat.
+
+wtSeriTelnetClientTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtSeriTelnetClientEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste aller seriellen Ports im Telnet-Client-Mode relevant zu ihrer 
+        Interfacenummer"
+    ::= { wtSeriPortSetup 7 }
+
+wtSeriTelnetClientEntry OBJECT-TYPE
+    SYNTAX WtSeriTelnetClientEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Parameter des Telnet-Client-Mode"
+    INDEX  { wtSeriInterfaceNo }
+    ::= { wtSeriTelnetClientTable 1 }
+
+WtSeriTelnetClientEntry ::= SEQUENCE {
+    wtSeriTelnetServerPort     INTEGER,
+    wtSeriTelnetServerIp       IpAddress,
+    wtSeriTelnetInactTimeout   INTEGER,
+    wtSeriTelnetDisconnectChar OCTET STRING (SIZE (1)),
+    wtSeriTelnetChangeLineout  INTEGER
+}
+
+wtSeriTelnetServerPort OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Portnummer, die den Telnet-Server adressiert (Standard Telnet-Port: 23)."
+    ::= { wtSeriTelnetClientEntry 1 }
+
+wtSeriTelnetServerIp OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des Rechners, auf dem der Telnet-Server aktiv ist."
+    ::= { wtSeriTelnetClientEntry 2 }
+
+wtSeriTelnetInactTimeout OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Zeitspanne in Sekunden nach deren Ablauf der Com-Server-Port die Verbindung 
+        schließt. Der Timer wird bei aktiver Netzwerkverbindung zurückgesetzt, wenn Daten 
+        ausgetauscht werden. Werden dagegen während der angegebenen Zeitspanne keine
+        Daten übertragen, beendet der Com-Server-Port die Verbindung zum Telnet-Server."
+    ::= { wtSeriTelnetClientEntry 3 }
+
+wtSeriTelnetDisconnectChar OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Empfängt der Com-Server-Port das hier konfigurierte Zeichen an der seriellen 
+        Schnittstelle, beendet der Com-Server-Port die Verbindung zum Telnet-Server. 
+        Wichtig ist, daß dieser Wert nicht innerhalb einer Telnet-Sitzung verwendet 
+        werden darf, weil dies zum vorzeitigen Abbruch führen würde. Das Zeichen 
+        selbst wird nicht übertragen."
+    ::= { wtSeriTelnetClientEntry 4 }
+
+wtSeriTelnetChangeLineout OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtSeriTelnetChangeLineoutOff(1),
+        wtSeriTelnetChangeLineoutOn(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Ist dieser Schalter aktiviert, wird an das seriell empfangene Zeichen 0DH 
+        ein 00H angehängt: Über das Netzwerk wird also 0DH 00H übertragen. Diese 
+        Option muß u.U. bei der Übertragung binärer Daten aktiviert werden."
+    ::= { wtSeriTelnetClientEntry 5 }
+
+
+-- FTP-Client-Mode
+--
+-- Diese Liste enthält Einträge für alle seriellen Ports, deren Port-Mode (Variable:
+-- ".wtConfiguration(1).wtSeriPortSetup(3).wtSeriPortTable(4).wtSeriPortEntry(1)
+--  .wtSeriPortMode(2)" den Wert wtSeriFtpClient(4) hat.
+
+wtSeriFtpClientTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtSeriFtpClientEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste aller seriellen Ports im Ftp-Client-Mode relevant zu ihrer Interfacenummer"
+    ::= { wtSeriPortSetup 8 }
+
+wtSeriFtpClientEntry OBJECT-TYPE
+    SYNTAX WtSeriFtpClientEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Parameter des FTP-Client-Mode"
+    INDEX  { wtSeriInterfaceNo }
+    ::= { wtSeriFtpClientTable 1 }
+
+WtSeriFtpClientEntry ::= SEQUENCE {
+    wtSeriFtpServerPort      INTEGER,
+    wtSeriFtpServerIp        IpAddress,
+    wtSeriFtpAutoFtp         INTEGER,
+    wtSeriFtpLoginString     OCTET STRING,
+    wtSeriFtpInactTimeout    INTEGER,
+    wtSeriFtpConnectTimeout  INTEGER,
+    wtSeriFtpProtocolChar    OCTET STRING (SIZE (1))
+}    
+
+wtSeriFtpServerPort OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Portnummer, die den FTP-Server adressiert (Standard FTP-Port: 21)."
+    ::= { wtSeriFtpClientEntry 1 }
+
+wtSeriFtpServerIp OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des Rechners, auf dem der FTP-Server aktiv ist."
+    ::= { wtSeriFtpClientEntry 2 }
+
+wtSeriFtpAutoFtp OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtSeriAutoFtpOff(1),
+        wtSeriAutoFtpOn(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Setzen Sie diesen Schalter auf 2, um den automatischen FTP-Client zu aktivieren.
+        Diese Betriebsart empfiehlt sich dort, wo immer wieder der gleiche Befehl 
+        ausgeführt werden soll. Die FTP-Befehle werden im Com-Server gespeichert. 
+        Dieser öffnet eine Verbindung zum FTP-Server, wenn er an der seriellen 
+        Schnittstelle Daten empfängt. Er sendet das Login und führt den konfigurierten
+        Dateibefehl aus. Danach wird die Verbindung wieder geschlossen. Konfigurieren
+        Sie den Befehl im folgenden Parameter wtSeriFtpLoginString.
+        Setzen Sie diesen Schalter auf 1, um den FTP-Client mit seriellem Protokoll 
+        zu aktivieren. Lesen Sie dazu das Kapitel 'Die Betriebsart FTP-Client' 
+        im entsprechenden Handbuch des Com-Servers."
+    ::= { wtSeriFtpClientEntry 3 }
+
+wtSeriFtpLoginString OBJECT-TYPE
+    SYNTAX OCTET STRING
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Befehlsfolge für das FTP-Login im Mode 'Automatischer FTP-Client'.
+        Die Befehle des FTP-Clients:
+        TYPE A oder I   Aktivierung des ASCII- oder Binär-Mode
+        STOR Datei      speichert alle seriell empfangenen Daten in Datei
+        APPE Datei      speichert alle seriell empfangenen Daten ans Dateiende von Datei
+        RETR Datei      gibt Datei an den seriellen Port aus
+        DELE Datei      löscht Datei
+        LIST Directory  gibt den Verzeichnisinhalt an der seriellen Schnittstelle aus
+        RESET           löst einen Softwarereset des Com-Servers aus. Dieser Befehl darf
+                        nur verwendet werden, wenn keine Verbindung zum FTP-Server aktiv
+                        ist.
+        Das Format der Befehlsfolge:
+        1. login<lf>
+           password<lf>
+           TYPE I oder TYPE A<lf>
+           STOR, RETR, APPE oder LIST remote file/dir<lf>
+           ProtocolChar<lf>
+
+        3. login<lf>                        2. RESET<lf>                
+           password<lf>                        ProtocolChar<lf>
+           DELE remote file/dir <lf>
+           ProtocolChar<lf>
+
+        Das Zeichen 'ProtocolChar' wird in der Variable wtSeriFtpProtocolChar konfiguriert.
+        Bsp.: egon<lf>happy<lf>TYPE A<lf>RETR /etc/hosts<lf><Ctrl C>
+        Für weiterführende Erläuterungen lesen Sie bitte das Kapitel 'Die Betriebsart 
+        FTP-Client' im entsprechenden Handbuch des Com-Servers."
+    ::= { wtSeriFtpClientEntry 4 }
+
+wtSeriFtpInactTimeout OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Konfigurieren Sie für die Befehle STOR und APPE(nd) ein Timeout in Sekunden 
+        zum Abbruch der Verbindung. Werden während der hier eingestellten Zeit keine 
+        seriellen Daten empfangen, schließt der FTP-Client die Verbindung zum FTP-Server."
+    ::= { wtSeriFtpClientEntry 5 }
+
+wtSeriFtpConnectTimeout OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Verbindungstimeout in Sekunden. Dieser Wert ist nur zusammen mit einem 
+        aktivierten Inactivity Timeout wirksam. Nach Ablauf des Inactivity Timeout 
+        versucht der Com-Server eventuell noch vorhandene, nicht übertragene 
+        Nutzdaten für die Dauer des Connection Timeout zu vermitteln. Erhält er 
+        in dieser Zeit keine Rückmeldung vom FTP-Server, läßt das auf ein 'Hängen' 
+        schließen. Die Daten werden dann verworfen und die Verbindung zurückgesetzt.
+        Um unbeabsichtigten Datenverlust zu vermeiden, wählen Sie den Wert 
+        entsprechend groß. Der Wert 0 deaktiviert das Timeout." 
+    ::= { wtSeriFtpClientEntry 6 }
+
+wtSeriFtpProtocolChar OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Empfängt der Com-Server-Port das hier konfigurierte Zeichen an der seriellen 
+        Schnittstelle, beendet der Com-Server-Port die Verbindung zum FTP-Server. 
+        Das Zeichen selbst wird nicht übertragen.
+        Ferner dient es als Endezeichen des Login-Strings (Variable wtSeriFtpLoginString)."
+    ::= { wtSeriFtpClientEntry 7 }
+
+
+-- Serial Multiport Protocol
+--
+-- Diese Liste enthält Einträge für alle seriellen Ports, deren Port-Mode (Variable:
+-- ".wtConfiguration(1).wtSeriPortSetup(3).wtSeriPortTable(4).wtSeriPortEntry(1)
+--  .wtSeriPortMode(2)" den Wert wtSeriMultiportProtokoll(7) hat.
+
+wtSeriMultiPortPrtTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtSeriMultiPortPrtEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste aller seriellen Ports im Multiport-Protocol-Mode relevant zu ihrer
+        Interfacenummer"
+    ::= { wtSeriPortSetup 9 }
+
+wtSeriMultiPortPrtEntry OBJECT-TYPE
+    SYNTAX WtSeriMultiPortPrtEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Parameter des Multiport-Protocol-Mode"
+    INDEX  { wtSeriInterfaceNo }
+    ::= { wtSeriMultiPortPrtTable 1 }
+
+WtSeriMultiPortPrtEntry ::= SEQUENCE {
+    wtSeriPrtSeriProtocol    INTEGER,
+    wtSeriPrtSeriCoding      INTEGER,
+    wtSeriPrtProtocolChar    OCTET STRING (SIZE (1))
+}
+
+wtSeriPrtSeriProtocol OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtSeriPrtSeriProtocolOff(1),
+        wtSeriPrtSeriProtocolOn(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieser Schalter aktiviert/deaktiviert das Serial Socket Interface. 
+        Die ausführliche Protokoll-Dokumentation steht auf unseren Webseiten 
+        (http://www.wut.de) als Download zur Verfügung."
+    ::= { wtSeriMultiPortPrtEntry 1 }
+
+wtSeriPrtSeriCoding OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtSeriPrtSeriCodingOff(1),
+        wtSeriPrtSeriCodingOn(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieser Schalter aktiviert das Zeichendopplungsverfahren. Es gewährleistet 
+        eine sichere Paketrahmenerkennung bei der Übertragung binärer Daten, ohne 
+        Zeichen ausschließen zu müssen."
+    ::= { wtSeriMultiPortPrtEntry 2 }
+
+wtSeriPrtProtocolChar OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (1))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Wird das Zeichendopplungsverfahren nicht verwendet, konfigurieren Sie 
+        hier ein Paketrahmenzeichen. Dieses Zeichen darf im Datenstrom nicht 
+        verwendet werden."
+    ::= { wtSeriMultiPortPrtEntry 3 }
+
+
+-- Box-to-Box-Master-Mode
+--
+-- Diese Liste enthält Einträge für alle seriellen Ports, deren Port-Mode (Variable:
+-- ".wtConfiguration(1).wtSeriPortSetup(3).wtSeriPortTable(4).wtSeriPortEntry(1)
+--  .wtSeriPortMode(2)" den Wert wtSeriBox2BoxMaster(5) hat.
+
+wtSeriB2bMasterTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtSeriB2bMasterEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste aller seriellen Ports im Box-to-Box-Master-Mode relevant zu ihrer 
+        Interfacenummer"
+    ::= { wtSeriPortSetup 10 }
+
+wtSeriB2bMasterEntry OBJECT-TYPE
+    SYNTAX WtSeriB2bMasterEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Parameter des Box-to-Box-Master-Mode."
+    INDEX  { wtSeriInterfaceNo }
+    ::= { wtSeriB2bMasterTable 1 }
+
+WtSeriB2bMasterEntry ::= SEQUENCE {
+    wtSeriB2bMaster-SlavePort       INTEGER,
+    wtSeriB2bMaster-SlaveIp         IpAddress,
+    wtSeriB2bMaster-DispString1     OCTET STRING (SIZE (2)),
+    wtSeriB2bMaster-DispString2     OCTET STRING (SIZE (2))
+}
+
+wtSeriB2bMaster-SlavePort OBJECT-TYPE
+    SYNTAX INTEGER (1..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Portnummer des seriellen Com-Server-Slave-Ports."
+    ::= { wtSeriB2bMasterEntry 1 }
+
+wtSeriB2bMaster-SlaveIp OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des Com-Servers, in dem sich der Slave-Port befindet."
+    ::= { wtSeriB2bMasterEntry 2 }
+
+wtSeriB2bMaster-DispString1 OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieser Modus erlaubt das kompakte Versenden serieller Daten ins Netzwerk; 
+        der serielle Datenstrom wird dabei nicht beliebig zerrissen, sondern serielle 
+        Pakete können in ihrem ursprünglichen Zusammenhang auch über das Netzwerk 
+        als ein Paket übertragen werden.
+        Tragen Sie in wtSeriB2bMaster-DispString1 und/oder wtSeriB2bMaster-DispString2
+        jeweils zwei Zeichen ein, auf die der serielle Datenstrom untersucht werden soll.
+        Erst wenn einer der beiden Strings gefunden wurde, werden die Daten von der 
+        seriellen Schnittstelle in Netzwerkpakete gepackt. Soll nur nach einem 
+        Zeichen gesucht werden, muß wtSeriB2bMaster-DispString2 auf 0 gesetzt werden. Wenn 
+        Sie z.B. wtSeriB2bMaster-DispString1 auf 3100h und wtSeriB2bMaster-DispString2
+        auf 0 konfigurieren, wird nur nach dem Zeichen '1' gesucht. Beide Dispatch Strings
+        = 0 deaktivieren den Modus.
+        WICHTIG: Diese Zeichen werden mit aufs Netzwerk übertragen!" 
+    ::= { wtSeriB2bMasterEntry 3 }
+
+wtSeriB2bMaster-DispString2 OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Siehe DESCRIPTION von wtSeriB2bMaster-DispString1."
+    ::= { wtSeriB2bMasterEntry 4 }
+
+-- Box-to-Box-Slave-Mode
+--
+-- Diese Liste enthält Einträge für alle seriellen Ports, deren Port-Mode (Variable:
+-- ".wtConfiguration(1).wtSeriPortSetup(3).wtSeriPortTable(4).wtSeriPortEntry(1)
+--  .wtSeriPortMode(2)" den Wert wtSeriBox2BoxSlave(8) hat.
+
+wtSeriB2bSlaveTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtSeriB2bSlaveEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste aller seriellen Ports im Box-to-Box-Slave-Mode relevant zu ihrer 
+        Interfacenummer"
+    ::= { wtSeriPortSetup 11 }
+
+wtSeriB2bSlaveEntry OBJECT-TYPE
+    SYNTAX WtSeriB2bSlaveEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Parameter des Box-to-Box-Slave-Mode."
+    INDEX  { wtSeriInterfaceNo }
+    ::= { wtSeriB2bSlaveTable 1 }
+
+WtSeriB2bSlaveEntry ::= SEQUENCE {
+    wtSeriB2bSlave-MasterPort       INTEGER,
+    wtSeriB2bSlave-MasterIp         IpAddress,
+    wtSeriB2bSlave-DispString1     OCTET STRING (SIZE (2)),
+    wtSeriB2bSlave-DispString2     OCTET STRING (SIZE (2))
+}
+
+wtSeriB2bSlave-MasterPort OBJECT-TYPE
+    SYNTAX INTEGER (1..65535)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Portnummer des seriellen Com-Server-Master-Ports."
+    ::= { wtSeriB2bSlaveEntry 1 }
+
+wtSeriB2bSlave-MasterIp OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des Com-Servers, in dem sich der Master-Port befindet."
+    ::= { wtSeriB2bSlaveEntry 2 }
+
+wtSeriB2bSlave-DispString1 OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieser Modus erlaubt das kompakte Versenden serieller Daten ins Netzwerk; 
+        der serielle Datenstrom wird dabei nicht beliebig zerrissen, sondern serielle 
+        Pakete können in ihrem ursprünglichen Zusammenhang auch über das Netzwerk 
+        als ein Paket übertragen werden.
+        Tragen Sie in wtSeriB2bSlave-DispString1 und/oder wtSeriB2bSlave-DispString2
+        jeweils zwei Zeichen ein, auf die der serielle Datenstrom untersucht werden soll.
+        Erst wenn einer der beiden Strings gefunden wurde, werden die Daten von der 
+        seriellen Schnittstelle in Netzwerkpakete gepackt. Soll nur nach einem 
+        Zeichen gesucht werden, muß wtSeriB2bSlave-DispString2 auf 0 gesetzt werden. Wenn 
+        Sie z.B. wtSeriB2bSlave-DispString1 auf 3100h und wtSeriB2bSlave-DispString2 auf
+        0 konfigurieren, wird nur nach dem Zeichen '1' gesucht. Beide Dispatch Strings = 0 
+        deaktivieren den Modus.
+        WICHTIG: Diese Zeichen werden mit aufs Netzwerk übertragen!" 
+    ::= { wtSeriB2bSlaveEntry 3 }
+
+wtSeriB2bSlave-DispString2 OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Siehe DESCRIPTION von wtSeriB2bSlave-DispString1."
+    ::= { wtSeriB2bSlaveEntry 4 }
+
+-- IP-Bus-Mode
+--
+-- Diese Liste enthält Einträge für alle seriellen Ports, deren Port-Mode (Variable:
+-- ".wtConfiguration(1).wtSeriPortSetup(3).wtSeriPortTable(4).wtSeriPortEntry(1)
+--  .wtSeriPortMode(2)" den Wert wtSeriIpBusMaster(10) oder wtSeriIpBusSlave(11) hat.
+
+wtSeriIpBusTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtSeriIpBusEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste aller seriellen Ports im IP-Bus-Mode relevant zu ihrer Interfacenummer"
+    ::= { wtSeriPortSetup 12 }
+
+wtSeriIpBusEntry OBJECT-TYPE
+    SYNTAX WtSeriIpBusEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Parameter des IP-Bus-Mode."
+    INDEX  { wtSeriInterfaceNo }
+    ::= { wtSeriIpBusTable 1 }
+
+WtSeriIpBusEntry ::= SEQUENCE {
+    wtSeriBusSlave-MasterIp IpAddress,
+    wtSeriBusMaster-SubnetIp IpAddress
+}
+
+wtSeriBusSlave-MasterIp OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Einstellung an mit Slaves verbundenen Com-Server-Ports: Stellen Sie 
+        hier die vollständige IP-Adresse des Com-Servers mit dem Master-Port ein."
+    ::= { wtSeriIpBusEntry 1 }
+
+wtSeriBusMaster-SubnetIp OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Einstellung am mit dem Master verbundenen Com-Server-Port: Geben Sie hier 
+        die Netzwerkadresse des Subnets ein, in dem sich Master und Slaves befinden. 
+        Es genügt, einen Wert ungleich Null einzutragen (z.B. 1.0.0.0), der Com-Server 
+        berechnet die Subnet-IP-Adresse selbständig aus der eigenen IP-Nummer und der 
+        Subnet-Maske (binäre UND-Verknüpfung) und trägt sie ein."
+    ::= { wtSeriIpBusEntry 2 }
+
+
+-- SLIP Mode
+--
+-- Diese Liste enthält Einträge für alle seriellen Ports, deren Port-Mode (Variable:
+-- ".wtConfiguration(1).wtSeriPortSetup(3).wtSeriPortTable(4).wtSeriPortEntry(1)
+--  .wtSeriPortMode(2)" den Wert wtSeriSlipMode(9) hat.
+
+wtSeriSlipTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtSeriSlipEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste aller Ports im SLIP-Mode relevant zu ihrer Interfacenummer"
+    ::= { wtSeriPortSetup 13 }
+
+wtSeriSlipEntry OBJECT-TYPE
+    SYNTAX WtSeriSlipEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Parameter des SLIP-Mode."
+    INDEX  { wtSeriInterfaceNo }
+    ::= { wtSeriSlipTable 1 }
+
+WtSeriSlipEntry ::= SEQUENCE {
+    wtSeriSlipNetAddress IpAddress,
+    wtSeriSlipNetRouting INTEGER
+}
+
+wtSeriSlipNetAddress OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Tragen Sie hier die Netzwerkadresse des seriell angeschlossenen Subnets ein, 
+        zu dem mittels SLIP geroutet werden soll."
+    ::= { wtSeriSlipEntry 1 }
+
+wtSeriSlipNetRouting OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtSeriSlipNetRoutingOff(1),
+        wtSeriSlipNetRoutingOn(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Hat dieser Parameter den Wert 2, arbeitet der Com-Server als Router für das 
+        unter wtSeriSlipNetAddress angegebene Subnet. Hat der Parameter den Wert 1, ist der 
+        Com-Server transparent, d.h. alle Pakete, die an die IP-Adresse des 
+        Com-Servers gerichtet sind, werden als SLIP-Pakete an die serielle Schnittstelle
+        weitergegeben. Dabei wird die Ziel-IP-Adresse (IP-Adresse des Com-Servers) 
+        durch den Parameter wtSeriSlipNetAddress ersetzt. Dies ermöglicht das Vergeben 
+        einzelner IP-Adressen an die angeschlossenen SLIP-Rechner (=wtSeriSlipNetAddress), 
+        ohne pro Anschluß ein eigenes Subnet vergeben zu müssen." 
+    ::= { wtSeriSlipEntry 2 }
+
+
+
+
+
+
+--
+-- Ab hier folgen Parameter und Traps, die nur in PC-104 Com-Servern zur Verfügung stehen!
+--
+-- wtDeaPortSetup Group
+
+
+wtDeaPorts OBJECT-TYPE
+    SYNTAX INTEGER (1..4)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Anzahl der Digital E/A-Ports des Com-Servers"
+    ::= { wtDeaPortSetup 1 }
+
+-- Digital E/A Interface Table
+
+wtDeaInterfaceTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtDeaInterfaceEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste der Interfacenummern aller Digital E/A-Ports."
+    ::= { wtDeaPortSetup 2 }
+
+wtDeaInterfaceEntry OBJECT-TYPE
+    SYNTAX WtDeaInterfaceEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Interfacenummer"
+    INDEX  { wtDeaInterfaceNo }
+    ::= { wtDeaInterfaceTable 1 }
+
+WtDeaInterfaceEntry ::= SEQUENCE {
+    wtDeaInterfaceNo INTEGER (1..4)
+}
+
+wtDeaInterfaceNo OBJECT-TYPE
+    SYNTAX INTEGER (1..4)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Interfacenummer des Digital E/A-Ports."
+    ::= { wtDeaInterfaceEntry 1 }
+
+
+
+-- Dea Port Table
+
+wtDeaPortTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtDeaPortEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste der generellen Porteinträge relevant zur Interfacenummer der
+        Digital E/A-Ports."
+    ::= { wtDeaPortSetup 3 }
+
+wtDeaPortEntry OBJECT-TYPE
+    SYNTAX WtDeaPortEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Porteinträge des Digital E/A-Ports."
+    INDEX  { wtDeaInterfaceNo }
+    ::= { wtDeaPortTable 1 }
+
+WtDeaPortEntry ::= SEQUENCE {
+    wtDeaLocalPort   INTEGER (49152..65535),
+    wtDeaPortMode    INTEGER,
+    wtDeaDrvWatchdog INTEGER
+}           
+
+wtDeaLocalPort OBJECT-TYPE
+    SYNTAX INTEGER (49152..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Lokale TCP-/UDP-Portnummer des Com-Server-Ports. Portnummer, auf der der 
+        Com-Server eine TCP-Verbindung akzeptiert oder die er im TCP-Client-Mode 
+        oder im UDP-Mode als Local Port verwendet."
+    ::= { wtDeaPortEntry 1}
+
+wtDeaPortMode OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtDeaServerMode(1),
+        wtDeaTcpClient(2),
+        wtDeaBox2BoxMaster(3),
+        wtDeaUdpMode(4),
+        wtDeaSnmpAgent(5),
+        wtDeaBox2BoxSlave(6)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieser Parameter legt die Betriebsart des Com-Server-Ports fest. In 
+        Abhängigkeit der eingestellten Betriebsart ist die entsprechende Liste
+        der relevanten Parameter verfügbar. Wurde z.B. die Betriebsart Udp-Mode
+        (wtDeaPortMode = 4) konfiguriert, ist nur die Liste wtDeaUdpClientTable
+        verfügbar. Im Server Mode (wtDeaPortMode = 1) ist keine Liste der Portmode-
+        Konfigurationen verfügbar."
+    ::= { wtDeaPortEntry 2}
+
+wtDeaDrvWatchdog OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieser Parameter ermöglicht die Kontrolle aller Instanzen, die zwischen
+        dem Kartentreiber im Com-Server und der Anwendung auf dem Rechner aktiv 
+        sind inklusive dieser selbst (z.B. TCP/IP-Stack im Rechner, Netzwerkkarte, 
+        Netzwerk, ..). Fällt eine dieser Instanzen aus, d.h. die Kommunikation 
+        zwischen Anwendung und Kartentreiber ist nicht mehr gewährleistet, schaltet 
+        der Kartentreiber nach dem Ablauf des Driver Watchdogs (in 100ms-Ticks) 
+        alle Ausgänge aus. Der Wert 0 deaktiviert den Modus. 
+        WICHTIG: Wird dieser Parameter aktiviert, muß die Anwendung den 
+        Kartentreiber regelmäßig pollen durch Senden einer E/A-Struktur. Der Wert 
+        der Variable wtDeaDrvWatchdog sollte ein Vielfaches der Pollrate sein. 
+        Die Überwachung ist immer aktiv. Wird eine TCP-Verbindung geschlossen, ohne 
+        die Ausgänge zu deaktivieren, erfolgt dies nach Ablauf des Driver Watchdogs."
+    ::= { wtDeaPortEntry 3}
+
+
+
+-- TCP-Client-Mode
+--
+-- Diese Liste enthält Einträge für alle Digital E/A-Ports, deren Port-Mode (Variable:
+-- ".wtConfiguration(1).wtDeaPortSetup(3).wtDeaPortTable(4).wtDeaPortEntry(1)
+--  .wtDeaPortMode(2)" den Wert wtDeaTcpClient(2) hat.
+
+wtDeaTcpClientTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtDeaTcpClientEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste aller Digital E/A-Ports im TCP-Client-Mode relevant zu ihrer 
+        Interfacenummer"
+    ::= { wtDeaPortSetup 4 }
+
+wtDeaTcpClientEntry OBJECT-TYPE
+    SYNTAX WtDeaTcpClientEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Parameter des TCP-Client-Mode"
+    INDEX  { wtDeaInterfaceNo }
+    ::= { wtDeaTcpClientTable 1 }
+
+WtDeaTcpClientEntry ::= SEQUENCE {
+    wtDeaTcpServerPort      INTEGER,
+    wtDeaTcpServerIp        IpAddress,
+    wtDeaTcpInactTimeout    INTEGER,
+    wtDeaTcpConnectTimeout  INTEGER,
+    wtDeaTcpInputMask       OCTET STRING (SIZE (2))
+}
+
+wtDeaTcpServerPort OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Portnummer, die die Anwendung (TCP-Serverprozeß) auf dem Rechner adressiert."
+    ::= { wtDeaTcpClientEntry 1 }
+
+wtDeaTcpServerIp OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des Rechners, auf dem die Anwendung (TCP-Serverprozeß) aktiv ist."
+    ::= { wtDeaTcpClientEntry 2 }
+
+wtDeaTcpInactTimeout OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Verbindungstimeout in Sekunden. Werden in dem festgelegten Zeitraum keine  
+        Daten ausgetauscht, beendet der Com-Server die Verbindung zum TCP-Server.
+        Der Wert 0 deaktiviert den Timer."
+    ::= { wtDeaTcpClientEntry 3 }
+
+wtDeaTcpConnectTimeout OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Verbindungstimeout in Sekunden. Dieser Wert ist nur zusammen mit einem 
+        aktivierten Inactivity Timeout wirksam. Nach Ablauf des Inactivity Timeout 
+        versucht der Com-Server eventuell noch vorhandene, nicht übertragene 
+        Nutzdaten für die Dauer des Connection Timeout zu vermitteln. Erhält er 
+        in dieser Zeit keine Rückmeldung vom TCP-Server, läßt das auf ein 'Hängen' 
+        schließen. Die Daten werden dann verworfen und die Verbindung zurückgesetzt.
+        Um unbeabsichtigten Datenverlust zu vermeiden, wählen Sie den Wert 
+        entsprechend groß. Der Wert 0 deaktiviert das Timeout." 
+    ::= { wtDeaTcpClientEntry 4 }
+
+wtDeaTcpInputMask OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Hier werden die Eingänge konfiguriert, die vom Kartentreiber gepollt 
+        werden. Tritt an einem oder mehreren Eingängen eine Pegeländerung auf, 
+        wird die TCP-Verbindung zur Anwendung (TCP-Server) aufgebaut und die 
+        E/A-Struktur 'Write Register' gesendet.
+        Die OCTETS werden bitweise interpretiert, jedes Bit entspricht einem 
+        Eingang. Bit 0 entspricht dem LSB.
+        OCTET 1, Bit 0-3: Digitale Eingänge 8-11
+                 Bit 4-7: unused
+        OCTET 2, Bit 0-7: Digitale Eingänge 0-7"
+    ::= { wtDeaTcpClientEntry 5 }
+
+
+-- UDP-Mode
+--
+-- Diese Liste enthält Einträge für alle Digital E/A-Ports, deren Port-Mode (Variable:
+-- ".wtConfiguration(1).wtDeaPortSetup(3).wtDeaPortTable(4).wtDeaPortEntry(1)
+--  .wtDeaPortMode(2)" den Wert wtDeaUdpMode(4) hat.
+
+wtDeaUdpClientTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtDeaUdpClientEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste aller Digital E/A-Ports im UDP-Mode relevant zu ihrer Interfacenummer"
+    ::= { wtDeaPortSetup 5 }
+
+wtDeaUdpClientEntry OBJECT-TYPE
+    SYNTAX WtDeaUdpClientEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+            "Parameter des UDP-Mode"
+    INDEX  { wtDeaInterfaceNo }
+    ::= { wtDeaUdpClientTable 1 }
+
+WtDeaUdpClientEntry ::= SEQUENCE {
+    wtDeaUdpServerPort      INTEGER,
+    wtDeaUdpServerIp        IpAddress,
+    wtDeaUdpPacketProtocol  INTEGER,
+    wtDeaUdpInputMask       OCTET STRING (SIZE (2)),
+    wtDeaUdpSendInterval    INTEGER
+}
+
+wtDeaUdpServerPort OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Portnummer, die die Anwendung (UDP-Serverprozeß) auf dem Rechner adressiert."
+    ::= { wtDeaUdpClientEntry 1 }
+
+wtDeaUdpServerIp OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des Rechners, auf dem die Anwendung (UDP-Serverprozeß) aktiv ist."
+    ::= { wtDeaUdpClientEntry 2 }
+
+wtDeaUdpPacketProtocol OBJECT-TYPE
+    SYNTAX INTEGER {
+        wtDeaUdpPacketProtocolOff(1),
+        wtDeaUdpPacketProtocolOn(2)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieser Schalter aktiviert (2) oder deaktiviert (1) das Kontrollverfahren 
+        der Paketreihenfolge im UDP-Mode (siehe dazu das Handbuch E/A Com-Server."
+    ::= { wtDeaUdpClientEntry 3 }
+
+wtDeaUdpInputMask OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Hier werden die Eingänge konfiguriert, die vom Kartentreiber gepollt werden. 
+        Tritt an einem oder mehreren Eingängen eine Pegeländerung auf, wird die TCP-
+        Verbindung zur Anwendung (TCP-Server) aufgebaut und die E/A-Struktur 'Write 
+        Register' gesendet. Die OCTETS werden bitweise interpretiert, jedes Bit 
+        entspricht einem Eingang.
+        Bit 0 entspricht dem LSB.
+        OCTET 1, Bit 0-3: Digitale Eingänge 8-11
+                 Bit 4-7: unused
+        OCTET 2, Bit 0-7: Digitale Eingänge 0-7"
+    ::= { wtDeaUdpClientEntry 4 }
+
+wtDeaUdpSendInterval OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Konfigurierbares Intervall mit einer Basis von 100ms, in dem der Kartentreiber 
+        die E/A-Struktur 'Write Register' mit dem Inhalt des Eingangsregisters an die 
+        konfigurierte Anwendung (UDP-Server) sendet. Der Wert 0 deaktiviert den Modus."
+    ::= { wtDeaUdpClientEntry 5 }
+
+
+
+-- SNMP-Agent-Mode
+--
+-- Diese Liste enthält Einträge für alle Digital E/A-Ports, deren Port-Mode (Variable:
+-- ".wtConfiguration(1).wtDeaPortSetup(3).wtDeaPortTable(4).wtDeaPortEntry(1)
+--  .wtDeaPortMode(2)" den Wert wtDeaSnmpAgent(5) hat.
+
+wtDeaSnmpAgentTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtDeaSnmpAgentEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste aller Digital E/A-Ports im Snmp-Agent-Mode relevant zu ihrer 
+        Interfacenummer"
+    ::= { wtDeaPortSetup 6 }
+
+wtDeaSnmpAgentEntry OBJECT-TYPE
+    SYNTAX WtDeaSnmpAgentEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+            "Parameter des Snmp-Agent-Mode"
+    INDEX  { wtDeaInterfaceNo }
+    ::= { wtDeaSnmpAgentTable 1 }
+
+WtDeaSnmpAgentEntry ::= SEQUENCE {
+    wtDeaSnmpManagerIp    IpAddress,
+    wtDeaSnmpInputMask    OCTET STRING (SIZE (2)),
+    wtDeaSnmpSendInterval INTEGER
+}
+
+wtDeaSnmpManagerIp OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des Rechners, auf dem sich der SNMP-Manager befindet, an den 
+        der Com-Server SNMP-Traps senden soll."
+    ::= { wtDeaSnmpAgentEntry 1 }
+
+wtDeaSnmpInputMask OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Hier werden die Eingänge konfiguriert, die vom Kartentreiber gepollt werden. 
+        Tritt an einem oder mehreren Eingängen eine Pegeländerung auf, wird ein SNMP-
+        Trap mit der Variable dDrvInputRegister (siehe TRAP-DEFINITIONS) an den 
+        konfigurierten SNMP-Manager gesendet.
+        Die OCTETS werden bitweise interpretiert, jedes Bit entspricht einem Eingang.
+        Bit 0 entspricht dem LSB.
+        OCTET 1, Bit 0-3: Digitale Eingänge 8-11
+                 Bit 4-7: unused
+        OCTET 2, Bit 0-7: Digitale Eingänge 0-7"
+    ::= { wtDeaSnmpAgentEntry 2 }
+
+wtDeaSnmpSendInterval OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Konfigurierbares Intervall mit einer Basis von 100ms, in dem der 
+        Kartentreiber das Eingangs-Register liest und einen SNMP-Trap mit der Variable 
+        dDrvInputRegister (siehe TRAP-DEFINITIONS) an den konfigurierten SNMP-
+        Manager sendet. Der Wert 0 deaktiviert den Modus."
+    ::= { wtDeaSnmpAgentEntry 3 }
+
+
+-- Box-to-Box-Master-Mode
+--
+-- Diese Liste enthält Einträge für alle Digital E/A-Ports, deren Port-Mode (Variable:
+-- ".wtConfiguration(1).wtDeaPortSetup(3).wtDeaPortTable(4).wtDeaPortEntry(1)
+--  .wtDeaPortMode(2)" den Wert wtDeaBox2BoxMaster(3) hat.
+
+wtDeaB2bMasterTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtDeaB2bMasterEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste aller Digital E/A-Ports im Box-to-Box-Master-Mode relevant zu ihrer
+        Interfacenummer"
+    ::= { wtDeaPortSetup 7 }
+
+wtDeaB2bMasterEntry OBJECT-TYPE
+    SYNTAX WtDeaB2bMasterEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Parameter des Box-to-Box-Master-Mode"
+    INDEX  { wtDeaInterfaceNo }
+    ::= { wtDeaB2bMasterTable 1 }
+
+WtDeaB2bMasterEntry ::= SEQUENCE {
+    wtDeaB2bMaster-SlavePort       INTEGER,
+    wtDeaB2bMaster-SlaveIp         IpAddress,
+    wtDeaB2bMaster-InputMask       OCTET STRING (SIZE (2)),
+    wtDeaB2bMaster-SendInterval    INTEGER
+}
+
+wtDeaB2bMaster-SlavePort OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Portnummer des digital E/A Com-Server-Slave-Ports."
+    ::= { wtDeaB2bMasterEntry 1 }
+
+wtDeaB2bMaster-SlaveIp OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des E/A-Com-Servers, in dem sich der Slave-Port befindet."
+    ::= { wtDeaB2bMasterEntry 2 }
+
+wtDeaB2bMaster-InputMask OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Hier werden die Eingänge konfiguriert, die vom Kartentreiber gepollt werden. 
+        Tritt an einem oder mehreren Eingängen eine Pegeländerung auf, wird das 
+        gesamte Eingangsregister per Netzwerk übertragen und im Ausgangsregister des 
+        anderen Com-Server E/A-Ports abgebildet.
+        Die OCTETS werden bitweise interpretiert, jedes Bit entspricht einem Eingang.
+        Bit 0 entspricht dem LSB.
+        OCTET 1, Bit 0-3: Digitale Eingänge 8-11
+                 Bit 4-7: unused
+        OCTET 2, Bit 0-7: Digitale Eingänge 0-7"
+    ::= { wtDeaB2bMasterEntry 3 }
+
+wtDeaB2bMaster-SendInterval OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Konfigurierbares Intervall mit einer Basis von 100ms, in dem der Kartentreiber 
+        das Eingangs-Register auf das Ausgangs-Register des anderen E/A-Ports abbildet. 
+        Der Wert 0 deaktiviert den Modus."
+    ::= { wtDeaB2bMasterEntry 4 }
+
+
+-- Box-to-Box-Slave-Mode
+--
+-- Diese Liste enthält Einträge für alle Digital E/A-Ports, deren Port-Mode (Variable:
+-- ".wtConfiguration(1).wtDeaPortSetup(3).wtDeaPortTable(4).wtDeaPortEntry(1)
+--  .wtDeaPortMode(2)" den Wert wtDeaBox2BoxSlave(6) hat.
+
+wtDeaB2bSlaveTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtDeaB2bSlaveEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste aller Digital E/A-Ports im Box-to-Box-Slave-Mode relevant zu ihrer
+        Interfacenummer"
+    ::= { wtDeaPortSetup 8 }
+
+wtDeaB2bSlaveEntry OBJECT-TYPE
+    SYNTAX WtDeaB2bSlaveEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Parameter des Box-to-Box-Slave-Mode"
+    INDEX  { wtDeaInterfaceNo }
+    ::= { wtDeaB2bSlaveTable 1 }
+
+WtDeaB2bSlaveEntry ::= SEQUENCE {
+    wtDeaB2bSlave-MasterPort       INTEGER,
+    wtDeaB2bSlave-MasterIp         IpAddress,
+    wtDeaB2bSlave-InputMask       OCTET STRING (SIZE (2)),
+    wtDeaB2bSlave-SendInterval    INTEGER
+}
+
+wtDeaB2bSlave-MasterPort OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Portnummer des digital E/A Com-Server-Master-Ports."
+    ::= { wtDeaB2bSlaveEntry 1 }
+
+wtDeaB2bSlave-MasterIp OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des E/A-Com-Servers, in dem sich der Master-Port befindet."
+    ::= { wtDeaB2bSlaveEntry 2 }
+
+wtDeaB2bSlave-InputMask OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Hier werden die Eingänge konfiguriert, die vom Kartentreiber gepollt werden. 
+        Tritt an einem oder mehreren Eingängen eine Pegeländerung auf, wird das 
+        gesamte Eingangsregister per Netzwerk übertragen und im Ausgangsregister des 
+        anderen Com-Server E/A-Ports abgebildet.
+        Die OCTETS werden bitweise interpretiert, jedes Bit entspricht einem Eingang.
+        Bit 0 entspricht dem LSB.
+        OCTET 1, Bit 0-3: Digitale Eingänge 8-11
+                 Bit 4-7: unused
+        OCTET 2, Bit 0-7: Digitale Eingänge 0-7"
+    ::= { wtDeaB2bSlaveEntry 3 }
+
+wtDeaB2bSlave-SendInterval OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Konfigurierbares Intervall mit einer Basis von 100ms, in dem der Kartentreiber 
+        das Eingangs-Register auf das Ausgangs-Register des anderen E/A-Ports abbildet. 
+        Der Wert 0 deaktiviert den Modus."
+    ::= { wtDeaB2bSlaveEntry 4 }
+
+
+
+--
+-- DigitalEa-Driver Group
+--
+-- Die folgenden Variablen sind nur verfügbar wenn der entsprechende E/A-Port des 
+-- Com-Servers für die Betriebsart SNMP-Agent konfiguriert wurde (wtDeaPortMode = 5)
+-- 
+-- Dea Port Table
+--
+
+wtDeaDrvTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtDeaDrvEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste aller Funktionen zum Managen der Digital E/A-Ports relevant zu 
+        ihrer Interfacenummer."
+    ::= { wtDeaDriver 1 }
+
+wtDeaDrvEntry OBJECT-TYPE
+    SYNTAX WtDeaDrvEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Funktionen zum Managen eines Digital E/A-Ports."
+    INDEX  { wtDeaDrvInterfaceNo }
+    ::= { wtDeaDrvTable 1 }
+
+WtDeaDrvEntry ::= SEQUENCE {
+    wtDeaDrvInterfaceNo   INTEGER (1..4),
+    wtDeaDrvInputRegister   OCTET STRING (SIZE (2)),
+    wtDeaDrvOutputRegister  OCTET STRING (SIZE (2)),
+    wtDeaDrvSetBit          OCTET STRING (SIZE (4)),
+    wtDeaDrvTrapInputMask   OCTET STRING (SIZE (2)),
+    wtDeaDrvTrapInterval    INTEGER (0..65535)
+}           
+
+wtDeaDrvInterfaceNo OBJECT-TYPE
+    SYNTAX INTEGER (1..4)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Interfacenummere des Digital E/A-Ports."
+    ::= { wtDeaDrvEntry 1 }
+
+wtDeaDrvInputRegister OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Mit dieser Variable können die Eingänge des Digital E/A-Ports gelesen werden.
+        Die OCTETS werden bitweise interpretiert, jedes Bit entspricht einem Eingang.
+        Bit 0 entspricht dem LSB.
+        OCTET 1, Bit 0-3: Digitale Eingänge 8-11
+                 Bit 4-7: unused
+        OCTET 2, Bit 0-7: Digitale Eingänge 0-7"
+    ::= { wtDeaDrvEntry 2 }
+
+wtDeaDrvOutputRegister OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Mit dieser Variablen können die Ausgänge des Digital E/A-Ports gelesen und 
+        geschrieben werden. Die OCTETS werden bitweise interpretiert, jedes Bit 
+        entspricht einem Ausgang. Bit 0 entspricht dem LSB.
+        OCTET 1, Bit 0-3: Digitale Ausgänge 8-11
+                 Bit 4-7: unused
+        OCTET 2, Bit 0-7: Digitale Ausgänge 0-7"
+    ::= { wtDeaDrvEntry 3 }
+
+wtDeaDrvSetBit OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (4))
+    ACCESS read-write				-- write-only
+    STATUS mandatory
+    DESCRIPTION
+        "Diese Variable ermöglicht das Setzen einzelner digitaler Ausgänge. Die OCTETS 
+        werden bitweise interpretiert, jedes Bit entspricht einem Ausgang. Bit 0 
+        entspricht dem LSB.
+        Die ersten zwei OCTETS beinhalten die Maske, die festlegt, welche der Ausgänge 
+        gesetzt werden sollen (entsprechendes Bit = 1) und welche Ausgänge unverändert 
+        bleiben sollen (entsprechendes Bit = 0):
+        OCTET 1, Bit 0-3: Maske für die digitalen Ausgänge 8-11
+                 Bit 4-7: unused
+        OCTET 2, Bit 0-7: Maske für die digitalen Ausgänge 0-7
+        Die OCTETS 3 und 4 enthalten den Pegel (1=HIGH, 0=LOW) den die zu ändernden 
+        Ausgänge annehmen sollen:
+        OCTET 3, Bit 0-3: Pegel der digitalen Ausgänge 8-11
+                 Bit 4-7: unused
+        OCTET 4, Bit 0-7: Pegel der digitalen Ausgänge 0-7"
+    ::= { wtDeaDrvEntry 4 }
+
+wtDeaDrvTrapInputMask OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (2))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Hier werden die Eingänge konfiguriert, die vom Kartentreiber gepollt werden. 
+        Tritt an einem oder mehreren Eingängen eine Pegeländerung auf, wird ein SNMP-Trap 
+        mit der Variable wtDeaDrvInputRegister (siehe TRAP-DEFINITIONS) an den konfi-
+        gurierten SNMP-Manager gesendet.
+        Die OCTETS werden bitweise interpretiert, jedes Bit entspricht einem Eingang.
+        Bit 0 entspricht dem LSB.
+        OCTET 1, Bit 4-7: unused
+                 Bit 0-3: Digitale Eingänge 8-11
+        OCTET 2, Bit 0-7: Digitale Eingänge 0-7
+        Diese Einstellung ist nach einem Com-Server-Restart nicht mehr gültig. Soll 
+        die Einstellung permanent sein, konfigurieren Sie die Variable wtDeaSnmpInputMask
+        in der Liste wtDeaSnmpAgentTable."
+    ::= { wtDeaDrvEntry 5 }
+
+wtDeaDrvTrapInterval OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Konfigurierbares Intervall mit einer Basis von 100ms, in dem der Kartentreiber 
+        das Eingangs-Register liest und einen SNMP-Trap mit der Variable InputRegister
+        (siehe TRAP-DEFINITIONS) an den konfigurierten Snmp-Manager sendet.
+        Diese Einstellung ist nach einem Com-Server-Restart nicht mehr gültig. Soll 
+        die Einstellung permanent sein, konfigurieren Sie die Variable wtDeaSnmpSendInterval 
+        in der Liste wtDeaSnmpAgentTable."
+    ::= { wtDeaDrvEntry 6 }
+
+
+
+-- TRAP DEFINITIONS
+
+-- Dieser SNMP-Trap wird gesendet, wenn die Variable 
+-- .wtDeaDriver.wtDeaDrvTable.wtDeaDrvEntry.wtDeaDrvTrapInputMask oder die Variable
+-- .wtConfiguration.wtDeaPortSetup.wtDeaSnmpAgentTable.wtDeaSnmpAgentEntry
+-- .wtDeaSnmpInputMask einen Inhalt ungleich 0 hat.
+
+deaInputChangedAlert TRAP-TYPE
+    ENTERPRISE  wtDeaDrvEntry
+    VARIABLES   { wtDeaDrvInputRegister }
+    DESCRIPTION
+        "Dieser SNMP-Trap wird generiert, wenn sich der Pegel eines Eingangs des
+        Digital E/A-Ports geändert hat."
+    ::= 1
+
+-- Dieser SNMP-Trap wird gesendet, wenn die Variable 
+-- .wtDeaDriver.wtDeaDrvTable.wtDeaDrvEntry.wtDeaDrvTrapInterval oder die Variable
+-- .wtConfiguration.wtDeaPortSetup.wtDeaSnmpAgentTable.wtDeaSnmpAgentEntry
+-- .wtDeaSnmpSendInterval einen Inhalt ungleich 0 hat.
+
+deaIntervalExpiredAlert TRAP-TYPE
+    ENTERPRISE  wtDeaDrvEntry
+    VARIABLES   { wtDeaDrvInputRegister }
+    DESCRIPTION
+        "Dieser SNMP-Trap wird in dem in der Variable wtDeaDrvTrapInterval oder der 
+        Variable wtDeaSnmpSendInterval konfigurierten Interval generiert."
+    ::= 2
+
+--
+
+
+
+-- Webio Bereich
+-- Alle Anfragen werden vom ComServer Modul an die Webio Plattform weitergeleitet
+
+
+
+
+-- wtWebioAn8Temp Group
+
+
+wtWebioAn8Sensors OBJECT-TYPE
+    SYNTAX INTEGER (1..8)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Anzahl der Temperatursensoren"
+    ::= { wtWebioAn8Temp 1 }
+
+-- Interface Table
+
+wtWebioAn8SensorTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtWebioAn8SensorEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste der Sensoren."
+    ::= { wtWebioAn8Temp 2 }
+
+wtWebioAn8SensorEntry OBJECT-TYPE
+    SYNTAX WtWebioAn8SensorEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Nummern der Temperatursensoren."
+    INDEX  { wtWebioAn8SensorNo }
+    ::= { wtWebioAn8SensorTable 1 }
+
+WtWebioAn8SensorEntry ::= SEQUENCE {
+    wtWebioAn8SensorNo INTEGER (1..8)
+}
+
+wtWebioAn8SensorNo OBJECT-TYPE
+    SYNTAX INTEGER (1..8)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Nummer des Temperatursensors."
+    ::= { wtWebioAn8SensorEntry 1 }
+
+
+-- wtWebioAn8TempValue Table
+
+wtWebioAn8TempValueTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtWebioAn8TempValueEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste Temperaturwerte korrespondiernd zu den Kanalnummern."
+    ::= { wtWebioAn8Temp 3 }
+
+wtWebioAn8TempValueEntry OBJECT-TYPE
+    SYNTAX WtWebioAn8TempValueEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Temperaturen der Sensoren."
+    INDEX  { wtWebioAn8SensorNo }
+    ::= { wtWebioAn8TempValueTable 1 }
+
+WtWebioAn8TempValueEntry ::= SEQUENCE{
+    wtWebioAn8TempValue OCTET STRING (SIZE (5))
+}
+
+wtWebioAn8TempValue OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (5))
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Temperaturwert des Sensors"
+    ::= { wtWebioAn8TempValueEntry 1 }
+
+-- wtWebioAn8SessCntrl Group
+
+
+wtWebioAn8SessCntrlPassword OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Durch Eintrag diese Passworts wird eine Session eröffnet, die durch Schreiben einer 1 
+        in wtWebioAn8SessCntrlLogout beendet wird. Gelesen liefert diese Variable einen String der
+        Länge Null."
+    ::= { wtWebioAn8SessCntrl 1 }
+
+wtWebioAn8SessCntrlConfigMode OBJECT-TYPE
+    SYNTAX INTEGER {
+    wtWebioAn8SessCntrl-NoSession(0),
+    wtWebioAn8SessCntrl-Session(1)
+    }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Wenn sich das Gerät im SNMP-Konfigurationsmodus befindet, wird der Wert
+        1 zurückgeliefert, ansonsten 0. Ist der ausgelesene Wert 0
+        obwohl das Passwort geschrieben wurde, befindet sich das Gerät bereits
+        im Configmodus und die Variablen können nur gelesen werden."
+    ::= { wtWebioAn8SessCntrl 2 }
+
+wtWebioAn8SessCntrlLogout OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Wenn sich das Gerät im Konfigurationsmodus befindet und die Session wurde
+        von diesem SNMP Manager eröffnet, kann durch Schreiben einer 1 in diese 
+        Variable die Session beendet werden und alle Parameter werden gespeichert.
+        Durch Schreiben einer 2 werden alle Eingaben wieder verworfen.
+        Gelesen liefert diese Variable den Wert 0."
+    ::= { wtWebioAn8SessCntrl 3 }
+
+wtWebioAn8SessCntrlAdminPassword OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieses Passwort schützt den Zugang der Variablen mit Administratorrechten. Es kann nur vom
+        Administrator verändert werden. Wurde kein Passwort vergeben so ist public das gültige Passwort.
+        Gelesen liefert diese Variable einen Null-Pointer."
+    ::= { wtWebioAn8SessCntrl 4 }
+
+wtWebioAn8SessCntrlConfigPassword OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieses Passwort schützt den Zugang der Variablen mit Configuratorrechten. Es kann vom
+        Administrator und vom Configurator verändert werden. Wurde kein Passwort vergeben so ist 
+        public das gültige Passwort.Gelesen liefert diese Variable einen Null-Pointer."
+    ::= { wtWebioAn8SessCntrl 5 }
+    
+
+-- wtWebioAn8Network Group
+
+
+wtWebioAn8IpAddress OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des Webio's"
+    ::= { wtWebioAn8Network 1 }
+
+wtWebioAn8SubnetMask OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Subnetmask des Webio's"
+    ::= { wtWebioAn8Network 2 }
+
+wtWebioAn8Gateway OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Gateway des Webio's"
+    ::= { wtWebioAn8Network 3 }
+
+wtWebioAn8DnsServer1 OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des 1. DNS Servers in ASCII"
+    ::= { wtWebioAn8Network 4 }
+
+wtWebioAn8DnsServer2 OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des 2. DNS Servers in ASCII"
+    ::= { wtWebioAn8Network 5 }
+
+-- wtWebioAn8Text Group
+
+
+wtWebioAn8DeviceName OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Name des Webio's, der userdefinierbar ist."
+    ::= { wtWebioAn8Text 1 }
+
+wtWebioAn8DeviceText OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Beschreibung des Webio's, die userdefinierbar ist."
+    ::= { wtWebioAn8Text 2 }
+
+-- wtWebioAn8TimeZone Group
+
+
+wtWebioAn8TzName OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Name der Zeitzone (Winterzeit)."
+    ::= { wtWebioAn8TimeZone 1 }
+
+wtWebioAn8TzOffsetHrs OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Offset Stunden der Zeitzone (Winterzeit) in Bezug auf UTC."
+    ::= { wtWebioAn8TimeZone 2 }
+
+wtWebioAn8TzOffsetMin OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Offset Minuten der Zeitzone (Winterzeit) in Bezug auf UTC."
+    ::= { wtWebioAn8TimeZone 3 }
+
+wtWebioAn8StTzName OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Name der Zeitzone (Sommerzeit)."
+    ::= { wtWebioAn8TimeZone 4 }
+
+wtWebioAn8StTzOffsetHrs OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Offset Stunden der Zeitzone (Sommerzeit) in Bezug auf UTC."
+    ::= { wtWebioAn8TimeZone 5 }
+
+wtWebioAn8StTzOffsetMin OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Offset Minuten der Zeitzone (Sommerzeit) in Bezug auf UTC."
+    ::= { wtWebioAn8TimeZone 6 }
+    
+wtWebioAn8StTzStartMonth OBJECT-TYPE
+    SYNTAX INTEGER {
+    	wtWebioAn8StartMonth-January(1),
+    	wtWebioAn8StartMonth-February(2),
+    	wtWebioAn8StartMonth-March(3),
+    	wtWebioAn8StartMonth-April(4),
+    	wtWebioAn8StartMonth-May(5),
+    	wtWebioAn8StartMonth-June(6),
+    	wtWebioAn8StartMonth-July(7),
+    	wtWebioAn8StartMonth-August(8),
+    	wtWebioAn8StartMonth-September(9),
+    	wtWebioAn8StartMonth-October(10),
+    	wtWebioAn8StartMonth-November(11),
+    	wtWebioAn8StartMonth-December(12)
+    	}
+    	
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Monat, in dem von Winterzeit auf Sommerzeit umgestellt wird."
+    ::= { wtWebioAn8TimeZone 7 }
+
+wtWebioAn8StTzStartMode OBJECT-TYPE
+    SYNTAX INTEGER {
+    	wtWebioAn8StartMode-first(1),
+    	wtWebioAn8StartMode-second(2),
+    	wtWebioAn8StartMode-third(3),
+    	wtWebioAn8StartMode-fourth(4),
+    	wtWebioAn8StartMode-last(5)
+    	}
+    	
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Modus des Wochentages, bei dem von Winterzeit auf Sommerzeit umgestellt wird."
+    ::= { wtWebioAn8TimeZone 8 }
+
+wtWebioAn8StTzStartWday OBJECT-TYPE
+    SYNTAX INTEGER {
+    	wtWebioAn8StartWday-Sunday(1),
+    	wtWebioAn8StartWday-Monday(2),
+    	wtWebioAn8StartWday-Tuesday(3),
+    	wtWebioAn8StartWday-Thursday(4),
+    	wtWebioAn8StartWday-Wednesday(5),
+    	wtWebioAn8StartWday-Friday(6),
+    	wtWebioAn8StartWday-Saturday(7)
+    	}
+    	
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Wochentag, bei dem von Winterzeit auf Sommerzeit umgestellt wird"
+    ::= { wtWebioAn8TimeZone 9 }
+    
+wtWebioAn8StTzStartHrs OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Stunde, in der die Zeitzone von Winter auf Sommerzeit in Bezug auf UTC
+        umgestellt wird."
+    ::= { wtWebioAn8TimeZone 10 }
+
+wtWebioAn8StTzStartMin OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Minute, in der die Zeitzone von Winter auf Sommerzeit in Bezug auf UTC
+        umgestellt wird."
+    ::= { wtWebioAn8TimeZone 11 }
+ 
+wtWebioAn8StTzStopMonth OBJECT-TYPE
+    SYNTAX INTEGER {
+    	wtWebioAn8StopMonth-January(1),
+    	wtWebioAn8StopMonth-February(2),
+    	wtWebioAn8StopMonth-March(3),
+    	wtWebioAn8StopMonth-April(4),
+    	wtWebioAn8StopMonth-May(5),
+    	wtWebioAn8StopMonth-June(6),
+    	wtWebioAn8StopMonth-July(7),
+    	wtWebioAn8StopMonth-August(8),
+    	wtWebioAn8StopMonth-September(9),
+    	wtWebioAn8StopMonth-October(10),
+    	wtWebioAn8StopMonth-November(11),
+    	wtWebioAn8StopMonth-December(12)
+    	}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Monat, bei dem von Sommerzeit auf Winterzeit umgestellt wird."
+   ::= { wtWebioAn8TimeZone 12 }
+
+wtWebioAn8StTzStopMode OBJECT-TYPE
+    SYNTAX INTEGER {
+    	wtWebioAn8StopMode-first(1),
+    	wtWebioAn8StopMode-second(2),
+    	wtWebioAn8StopMode-third(3),
+    	wtWebioAn8StopMode-fourth(4),
+    	wtWebioAn8StopMode-last(5)
+    	}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Modus des Wochentages, bei dem von Sommerzeit auf Winterzeit umgestellt wird."
+    ::= { wtWebioAn8TimeZone 13 }
+
+wtWebioAn8StTzStopWday OBJECT-TYPE
+    SYNTAX INTEGER {
+    	wtWebioAn8StopWday-Sunday(1),
+    	wtWebioAn8StopWday-Monday(2),
+    	wtWebioAn8StopWday-Tuesday(3),
+    	wtWebioAn8StopWday-Thursday(4),
+    	wtWebioAn8StopWday-Wednesday(5),
+    	wtWebioAn8StopWday-Friday(6),
+    	wtWebioAn8StopWday-Saturday(7)
+    	}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Wochentage, bei dem von Sommerzeit auf Winterzeit umgestellt wird."
+    ::= { wtWebioAn8TimeZone 14 }
+    
+wtWebioAn8StTzStopHrs OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Stunde, in der die Zeitzone von Sommer auf Winterzeit in Bezug auf UTC
+        umgestellt wird."
+    ::= { wtWebioAn8TimeZone 15 }
+
+wtWebioAn8StTzStopMin OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Minute, in der die Zeitzone von Sommer auf Winterzeit in Bezug auf UTC
+        umgestellt wird."
+    ::= { wtWebioAn8TimeZone 16 }
+
+-- wtWebioAn8TimeServer Group
+
+
+wtWebioAn8TimeServer1 OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse oder Name des 1. Time Servers in ASCII"
+    ::= { wtWebioAn8TimeServer 1 }
+
+wtWebioAn8TimeServer2 OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse oder Name des 2. Time Servers in ASCII"
+    ::= { wtWebioAn8TimeServer 2 }
+    
+-- wtWebioAn8DeviceClock Group
+
+
+wtWebioAn8ClockHrs OBJECT-TYPE
+    SYNTAX INTEGER (0..23)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Uhrzeit Stunde, unter Berücksichtigung der Zeitzoneneinstellungen."
+    ::= { wtWebioAn8DeviceClock 1 }
+
+wtWebioAn8ClockMin OBJECT-TYPE
+    SYNTAX INTEGER (0..59)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Uhrzeit Minute, unter Berücksichtigung der Zeitzoneneinstellungen."
+    ::= { wtWebioAn8DeviceClock 2 }
+
+wtWebioAn8ClockDay OBJECT-TYPE
+    SYNTAX INTEGER (1..31)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Datum: Tag des Monats, unter Berücksichtigung der Zeitzoneneinstellungen."
+    ::= { wtWebioAn8DeviceClock 3 }
+
+wtWebioAn8ClockMonth OBJECT-TYPE
+   SYNTAX INTEGER {
+    	wtWebioAn8ClockMonth-January(1),
+    	wtWebioAn8ClockMonth-February(2),
+    	wtWebioAn8ClockMonth-March(3),
+    	wtWebioAn8ClockMonth-April(4),
+    	wtWebioAn8ClockMonth-May(5),
+    	wtWebioAn8ClockMonth-June(6),
+    	wtWebioAn8ClockMonth-July(7),
+    	wtWebioAn8ClockMonth-August(8),
+    	wtWebioAn8ClockMonth-September(9),
+    	wtWebioAn8ClockMonth-October(10),
+    	wtWebioAn8ClockMonth-November(11),
+    	wtWebioAn8ClockMonth-December(12)
+    	}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Datum: Monat, unter Berücksichtigung der Zeitzoneneinstellungen."
+    ::= { wtWebioAn8DeviceClock 4 }
+
+wtWebioAn8ClockYear OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Datum: Jahr, unter Berücksichtigung der Zeitzoneneinstellungen."
+    ::= { wtWebioAn8DeviceClock 5 }
+    
+-- wtWebioAn8MailAdmin Group
+
+
+wtWebioAn8MailAdName OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Gerätename für die Mail-Administration."
+    ::= { wtWebioAn8MailAdmin 1 }
+    
+wtWebioAn8MailReply OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Reply-Adresse für den Mailserver."
+    ::= { wtWebioAn8MailAdmin 2 }
+    
+wtWebioAn8MailServer OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Name oder Ip-Adresse des Mailservers."
+    ::= { wtWebioAn8MailAdmin 3 }
+    
+
+-- wtWebioAn8Alarm Group
+
+
+wtWebioAn8AlarmCount OBJECT-TYPE
+    SYNTAX INTEGER (1..8)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Anzahl der unabhängigen Alarme."
+    ::= { wtWebioAn8Alarm 1 }
+    
+-- Alarm Interface Table
+
+wtWebioAn8AlarmIfTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtWebioAn8AlarmIfEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste der Alarmindizes."
+    ::= { wtWebioAn8Alarm 2 }
+
+wtWebioAn8AlarmIfEntry OBJECT-TYPE
+    SYNTAX WtWebioAn8AlarmIfEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Nummern der Alarme."
+    INDEX  { wtWebioAn8AlarmNo }
+    ::= { wtWebioAn8AlarmIfTable 1 }
+
+WtWebioAn8AlarmIfEntry ::= SEQUENCE {
+    wtWebioAn8AlarmNo INTEGER (1..8)
+}
+
+wtWebioAn8AlarmNo OBJECT-TYPE
+    SYNTAX INTEGER (1..8)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Nummer des Alarms."
+    ::= { wtWebioAn8AlarmIfEntry 1 }
+
+-- Alarm Table
+
+wtWebioAn8AlarmTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtWebioAn8AlarmEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste der Einstellungen abhängig von der Alarmnummer."
+    ::= { wtWebioAn8Alarm 3 }
+
+wtWebioAn8AlarmEntry OBJECT-TYPE
+    SYNTAX WtWebioAn8AlarmEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm-Parameter der einzelnen Alarme."
+    INDEX  { wtWebioAn8AlarmNo }
+    ::= { wtWebioAn8AlarmTable 1 }
+
+WtWebioAn8AlarmEntry ::= SEQUENCE {
+    wtWebioAn8AlarmTrigger	OCTET STRING,
+    wtWebioAn8AlarmMin		OCTET STRING,
+    wtWebioAn8AlarmMax		OCTET STRING,
+    wtWebioAn8AlarmInterval	OCTET STRING,
+    wtWebioAn8AlarmEnable	OCTET STRING,
+    wtWebioAn8AlarmEMailAddr	OCTET STRING,
+    wtWebioAn8AlarmMailSubject	OCTET STRING,
+    wtWebioAn8AlarmMailText	OCTET STRING,
+    wtWebioAn8AlarmManagerIP	OCTET STRING,
+    wtWebioAn8AlarmTrapText	OCTET STRING
+}
+
+wtWebioAn8AlarmTrigger OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(4))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Binär kodierte Triggerbedingungen:
+        Octet 1: ungenutzt
+        Octet 2: ungenutzt
+        Octet 3:
+        	Bit 0: Timer
+        Octet 4:
+        	Bit 0: Sensor 1
+        	Bit 1: Sensor 2
+        	Bit 2: Sensor 3
+        	Bit 3: Sensor 4
+        	Bit 4: Sensor 5
+        	Bit 5: Sensor 6
+        	Bit 6: Sensor 7
+        	Bit 7: Sensor 8"
+    ::= { wtWebioAn8AlarmEntry 1 }
+
+wtWebioAn8AlarmMin OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Minimum Temperatur in Grad mit maximal 2 Nachkommastellen."
+    ::= { wtWebioAn8AlarmEntry 2 }
+
+wtWebioAn8AlarmMax OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Maximum Temperatur in Grad mit maximal 2 Nachkommastellen."
+    ::= { wtWebioAn8AlarmEntry 3 }
+
+wtWebioAn8AlarmInterval OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Sendeintervall von Alarmmeldungen."
+    ::= { wtWebioAn8AlarmEntry 4 }
+
+wtWebioAn8AlarmEnable OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(4))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Binär kodierte Alarmfreischasltung:
+        Octet 1: ungenutzt
+        Octet 2: ungenutzt
+        Octet 3: ungenutzt
+        Octet 4:
+		Bit 0:	Mail Enable
+        	Bit 1:	SNMP Trap enable"
+    ::= { wtWebioAn8AlarmEntry 5 }
+
+wtWebioAn8AlarmEMailAddr OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "E-Mail Adresse, an die die Alarmmail gesendet werden soll."
+    ::= { wtWebioAn8AlarmEntry 6 }
+
+wtWebioAn8AlarmMailSubject OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Betreffzeile der Alarmmail."
+    ::= { wtWebioAn8AlarmEntry 7 }
+
+wtWebioAn8AlarmMailText OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Text der Alarmmail: <Tn> liefert die aktuelle Temperatur; n = 1..8.
+        <Z> liefert die aktuelle Zeit."
+    ::= { wtWebioAn8AlarmEntry 8 }
+
+wtWebioAn8AlarmManagerIP OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Name oder IP-Adresse des SNMP-Managers, der den Trap entgegen nimmt."
+    ::= { wtWebioAn8AlarmEntry 9 }
+
+wtWebioAn8AlarmTrapText OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieser Text wird im Trapbody gesendet."
+    ::= { wtWebioAn8AlarmEntry 10 }
+
+-- wtWebioAn8Datalogger Group
+
+
+wtWebioAn8LoggerTimebase OBJECT-TYPE
+    SYNTAX INTEGER {
+    wtWebioAn8Datalogger-1Min(1),
+    wtWebioAn8Datalogger-5Min(2),
+    wtWebioAn8Datalogger-15Min(3),
+    wtWebioAn8Datalogger-60Min(4)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Zeitbasis des Dataloggers"
+    ::= { wtWebioAn8Datalogger 1 }
+
+wtWebioAn8LoggerSensorSel OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(4))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Binär kodierte Triggerbedingungen:
+        Octet 1: ungenutzt
+        Octet 2: ungenutzt
+        Octet 3: ungenutzt
+        Octet 4:
+        	Bit 0: Sensor 1
+        	Bit 1: Sensor 2
+        	Bit 2: Sensor 3
+        	Bit 3: Sensor 4
+        	Bit 4: Sensor 5
+        	Bit 5: Sensor 6
+        	Bit 6: Sensor 7
+        	Bit 7: Sensor 8"
+    ::= { wtWebioAn8Datalogger 2 }
+
+-- wtWebioAn8Protocol Group
+
+
+wtWebioAn8PrtclUdpPort OBJECT-TYPE
+    SYNTAX INTEGER (1..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Udp Port, an den die Udp-Anfragen GET Single gesendet werden können"
+    ::= { wtWebioAn8PrtclUDP 1 }
+
+
+-- wtWebioAn8Enable Group
+
+
+wtWebioAn8Enables OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(4))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Binär kodierte Triggerbedingungen:
+        Octet 1: ungenutzt
+        Octet 2: ungenutzt
+        Octet 3: ungenutzt
+        Octet 4:
+	        Bit 0: Update enable
+	        Bit 1: Mail enable
+	        Bit 2: Snmp enable
+	        Bit 3: UDP enable
+	        Bit 4: Get Singel Header enable
+	        Bit 5: Apply Timezone
+	        Bit 6: Apply Summertime
+	        Bit 7: Apply TimeServer"
+    ::= { wtWebioAn8Enable 1 }
+
+-- wtWebioAn8Ports Group
+
+
+-- Table
+
+wtWebioAn8PortTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtWebioAn8PortEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste der Einstellungen abhängig von der Alarmnummer."
+    ::= { wtWebioAn8Ports 1 }
+
+wtWebioAn8PortEntry OBJECT-TYPE
+    SYNTAX WtWebioAn8PortEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm-Parameter der einzelnen Alarme."
+    INDEX  { wtWebioAn8SensorNo }
+    ::= { wtWebioAn8PortTable 1 }
+
+WtWebioAn8PortEntry ::= SEQUENCE {
+    wtWebioAn8PortName		OCTET STRING,
+    wtWebioAn8PortText		OCTET STRING
+}
+
+wtWebioAn8PortName OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Name des Sensors."
+    ::= { wtWebioAn8PortEntry 1 }
+
+wtWebioAn8PortText OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Beschreibung des Sensors."
+    ::= { wtWebioAn8PortEntry 2 }
+
+
+-- wtWebioAn8Manufact Group
+
+
+wtWebioAn8MfName OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Hersteller Firmenname"
+    ::= { wtWebioAn8Manufact 1 }
+
+wtWebioAn8MfAddr OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Adresse des Herstellers."
+    ::= { wtWebioAn8Manufact 2 }
+
+wtWebioAn8MfHotline OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Hotline des Herstellers."
+    ::= { wtWebioAn8Manufact 3 }
+
+wtWebioAn8MfInternet OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Internet-Adresse des Herstellers."
+    ::= { wtWebioAn8Manufact 4 }
+
+wtWebioAn8MfDeviceTyp OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Gerätebezeichnung (Typ) des Herstellers."
+    ::= { wtWebioAn8Manufact 5 }
+
+wtWebioAn8MfOrderNo OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Bestellnummer des Gerätes des Herstellers."
+    ::= { wtWebioAn8Manufact 6 }
+
+
+
+-- TRAP DEFINITIONS
+
+-- Diese SNMP-Traps werden gesendet, wenn die Alarmtriggerbedingungen zutreffen 
+
+wtWebioAn8Alert1 TRAP-TYPE
+    ENTERPRISE  wtWebioAn8
+    VARIABLES   { wtWebioAn8AlarmTrapText }
+    DESCRIPTION
+        "Dieser SNMP-Trap wird generiert, wenn der Alarm 1 ausgelöst wurde,
+        das SNMP-Trap-Enable gesetzt ist und
+        SNMP in Enable freigegeben ist."
+    ::= 11
+
+wtWebioAn8Alert2 TRAP-TYPE
+    ENTERPRISE  wtWebioAn8
+    VARIABLES   { wtWebioAn8AlarmTrapText }
+    DESCRIPTION
+        "Dieser SNMP-Trap wird generiert, wenn der Alarm 2 ausgelöst wurde,
+        das SNMP-Trap-Enable gesetzt ist und
+        SNMP in Enable freigegeben ist."
+    ::= 12
+
+wtWebioAn8Alert3 TRAP-TYPE
+    ENTERPRISE  wtWebioAn8
+    VARIABLES   { wtWebioAn8AlarmTrapText }
+    DESCRIPTION
+        "Dieser SNMP-Trap wird generiert, wenn der Alarm 3 ausgelöst wurde,
+        das SNMP-Trap-Enable gesetzt ist und
+        SNMP in Enable freigegeben ist."
+    ::= 13
+
+wtWebioAn8Alert4 TRAP-TYPE
+    ENTERPRISE  wtWebioAn8
+    VARIABLES   { wtWebioAn8AlarmTrapText }
+    DESCRIPTION
+        "Dieser SNMP-Trap wird generiert, wenn der Alarm 4 ausgelöst wurde,
+        das SNMP-Trap-Enable gesetzt ist und
+        SNMP in Enable freigegeben ist."
+    ::= 14
+
+wtWebioAn8Alert5 TRAP-TYPE
+    ENTERPRISE  wtWebioAn8
+    VARIABLES   { wtWebioAn8AlarmTrapText }
+    DESCRIPTION
+        "Dieser SNMP-Trap wird generiert, wenn der Alarm 5 ausgelöst wurde,
+        das SNMP-Trap-Enable gesetzt ist und
+        SNMP in Enable freigegeben ist."
+    ::= 15
+
+wtWebioAn8Alert6 TRAP-TYPE
+    ENTERPRISE  wtWebioAn8
+    VARIABLES   { wtWebioAn8AlarmTrapText }
+    DESCRIPTION
+        "Dieser SNMP-Trap wird generiert, wenn der Alarm 6 ausgelöst wurde,
+        das SNMP-Trap-Enable gesetzt ist und
+        SNMP in Enable freigegeben ist."
+    ::= 16
+
+wtWebioAn8Alert7 TRAP-TYPE
+    ENTERPRISE  wtWebioAn8
+    VARIABLES   { wtWebioAn8AlarmTrapText }
+    DESCRIPTION
+        "Dieser SNMP-Trap wird generiert, wenn der Alarm 7 ausgelöst wurde,
+        das SNMP-Trap-Enable gesetzt ist und
+        SNMP in Enable freigegeben ist."
+    ::= 17
+
+wtWebioAn8Alert8 TRAP-TYPE
+    ENTERPRISE  wtWebioAn8
+    VARIABLES   { wtWebioAn8AlarmTrapText }
+    DESCRIPTION
+        "Dieser SNMP-Trap wird generiert, wenn der Alarm 8 ausgelöst wurde,
+        das SNMP-Trap-Enable gesetzt ist und
+        SNMP in Enable freigegeben ist."
+    ::= 18
+
+
+
+
+
+
+-- wtWebioAn2Temp Group
+
+
+wtWebioAn2Sensors OBJECT-TYPE
+    SYNTAX INTEGER (1..2)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Anzahl der Temperatursensoren"
+    ::= { wtWebioAn2Temp 1 }
+
+-- Interface Table
+
+wtWebioAn2SensorTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtWebioAn2SensorEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste der Sensoren."
+    ::= { wtWebioAn2Temp 2 }
+
+wtWebioAn2SensorEntry OBJECT-TYPE
+    SYNTAX WtWebioAn2SensorEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Nummern der Temperatursensoren."
+    INDEX  { wtWebioAn2SensorNo }
+    ::= { wtWebioAn2SensorTable 1 }
+
+WtWebioAn2SensorEntry ::= SEQUENCE {
+    wtWebioAn2SensorNo INTEGER (1..2)
+}
+
+wtWebioAn2SensorNo OBJECT-TYPE
+    SYNTAX INTEGER (1..2)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Nummer des Temperatursensors."
+    ::= { wtWebioAn2SensorEntry 1 }
+
+
+-- wtWebioAn2TempValue Table
+
+wtWebioAn2TempValueTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtWebioAn2TempValueEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste Temperaturwerte korrespondiernd zu den Kanalnummern."
+    ::= { wtWebioAn2Temp 3 }
+
+wtWebioAn2TempValueEntry OBJECT-TYPE
+    SYNTAX WtWebioAn2TempValueEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Temperaturen der Sensoren."
+    INDEX  { wtWebioAn2SensorNo }
+    ::= { wtWebioAn2TempValueTable 1 }
+
+WtWebioAn2TempValueEntry ::= SEQUENCE{
+    wtWebioAn2TempValue OCTET STRING (SIZE (5))
+}
+
+wtWebioAn2TempValue OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE (5))
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Temperaturwert des Sensors"
+    ::= { wtWebioAn2TempValueEntry 1 }
+
+-- wtWebioAn2SessCntrl Group
+
+
+wtWebioAn2SessCntrlPassword OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Durch Eintrag diese Passworts wird eine Session eröffnet, die durch Schreiben einer 1 
+        in wtWebioAn2SessCntrlLogout beendet wird. Gelesen liefert diese Variable einen String der
+        Länge Null."
+    ::= { wtWebioAn2SessCntrl 1 }
+
+wtWebioAn2SessCntrlConfigMode OBJECT-TYPE
+    SYNTAX INTEGER {
+    wtWebioAn2SessCntrl-NoSession(0),
+    wtWebioAn2SessCntrl-Session(1)
+    }
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Wenn sich das Gerät im SNMP-Konfigurationsmodus befindet, wird der Wert
+        1 zurückgeliefert, ansonsten 0. Ist der ausgelesene Wert 0
+        obwohl das Passwort geschrieben wurde, befindet sich das Gerät bereits
+        im Configmodus und die Variablen können nur gelesen werden."
+    ::= { wtWebioAn2SessCntrl 2 }
+
+wtWebioAn2SessCntrlLogout OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Wenn sich das Gerät im Konfigurationsmodus befindet und die Session wurde
+        von diesem SNMP Manager eröffnet, kann durch Schreiben einer 1 in diese 
+        Variable die Session beendet werden und alle Parameter werden gespeichert.
+        Durch Schreiben einer 2 werden alle Eingaben wieder verworfen.
+        Gelesen liefert diese Variable den Wert 0."
+    ::= { wtWebioAn2SessCntrl 3 }
+
+wtWebioAn2SessCntrlAdminPassword OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieses Passwort schützt den Zugang der Variablen mit Administratorrechten. Es kann nur vom
+        Administrator verändert werden. Wurde kein Passwort vergeben so ist public das gültige Passwort.
+        Gelesen liefert diese Variable einen Null-Pointer."
+    ::= { wtWebioAn2SessCntrl 4 }
+
+wtWebioAn2SessCntrlConfigPassword OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieses Passwort schützt den Zugang der Variablen mit Configuratorrechten. Es kann vom
+        Administrator und vom Configurator verändert werden. Wurde kein Passwort vergeben so ist 
+        public das gültige Passwort.Gelesen liefert diese Variable einen Null-Pointer."
+    ::= { wtWebioAn2SessCntrl 5 }
+    
+
+-- wtWebioAn2Network Group
+
+
+wtWebioAn2IpAddress OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des Webio's"
+    ::= { wtWebioAn2Network 1 }
+
+wtWebioAn2SubnetMask OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Subnetmask des Webio's"
+    ::= { wtWebioAn2Network 2 }
+
+wtWebioAn2Gateway OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Gateway des Webio's"
+    ::= { wtWebioAn2Network 3 }
+
+wtWebioAn2DnsServer1 OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des 1. DNS Servers in ASCII"
+    ::= { wtWebioAn2Network 4 }
+
+wtWebioAn2DnsServer2 OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse des 2. DNS Servers in ASCII"
+    ::= { wtWebioAn2Network 5 }
+
+-- wtWebioAn2Text Group
+
+
+wtWebioAn2DeviceName OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Name des Webio's, der userdefinierbar ist."
+    ::= { wtWebioAn2Text 1 }
+
+wtWebioAn2DeviceText OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Beschreibung des Webio's, die userdefinierbar ist."
+    ::= { wtWebioAn2Text 2 }
+
+-- wtWebioAn2TimeZone Group
+
+
+wtWebioAn2TzName OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Name der Zeitzone (Winterzeit)."
+    ::= { wtWebioAn2TimeZone 1 }
+
+wtWebioAn2TzOffsetHrs OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Offset Stunden der Zeitzone (Winterzeit) in Bezug auf UTC."
+    ::= { wtWebioAn2TimeZone 2 }
+
+wtWebioAn2TzOffsetMin OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Offset Minuten der Zeitzone (Winterzeit) in Bezug auf UTC."
+    ::= { wtWebioAn2TimeZone 3 }
+
+wtWebioAn2StTzName OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Name der Zeitzone (Sommerzeit)."
+    ::= { wtWebioAn2TimeZone 4 }
+
+wtWebioAn2StTzOffsetHrs OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Offset Stunden der Zeitzone (Sommerzeit) in Bezug auf UTC."
+    ::= { wtWebioAn2TimeZone 5 }
+
+wtWebioAn2StTzOffsetMin OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Offset Minuten der Zeitzone (Sommerzeit) in Bezug auf UTC."
+    ::= { wtWebioAn2TimeZone 6 }
+    
+wtWebioAn2StTzStartMonth OBJECT-TYPE
+    SYNTAX INTEGER {
+    	wtWebioAn2StartMonth-January(1),
+    	wtWebioAn2StartMonth-February(2),
+    	wtWebioAn2StartMonth-March(3),
+    	wtWebioAn2StartMonth-April(4),
+    	wtWebioAn2StartMonth-May(5),
+    	wtWebioAn2StartMonth-June(6),
+    	wtWebioAn2StartMonth-July(7),
+    	wtWebioAn2StartMonth-August(8),
+    	wtWebioAn2StartMonth-September(9),
+    	wtWebioAn2StartMonth-October(10),
+    	wtWebioAn2StartMonth-November(11),
+    	wtWebioAn2StartMonth-December(12)
+    	}
+    	
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Monat, in dem von Winterzeit auf Sommerzeit umgestellt wird."
+    ::= { wtWebioAn2TimeZone 7 }
+
+wtWebioAn2StTzStartMode OBJECT-TYPE
+    SYNTAX INTEGER {
+    	wtWebioAn2StartMode-first(1),
+    	wtWebioAn2StartMode-second(2),
+    	wtWebioAn2StartMode-third(3),
+    	wtWebioAn2StartMode-fourth(4),
+    	wtWebioAn2StartMode-last(5)
+    	}
+    	
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Modus des Wochentages, bei dem von Winterzeit auf Sommerzeit umgestellt wird."
+    ::= { wtWebioAn2TimeZone 8 }
+
+wtWebioAn2StTzStartWday OBJECT-TYPE
+    SYNTAX INTEGER {
+    	wtWebioAn2StartWday-Sunday(1),
+    	wtWebioAn2StartWday-Monday(2),
+    	wtWebioAn2StartWday-Tuesday(3),
+    	wtWebioAn2StartWday-Thursday(4),
+    	wtWebioAn2StartWday-Wednesday(5),
+    	wtWebioAn2StartWday-Friday(6),
+    	wtWebioAn2StartWday-Saturday(7)
+    	}
+    	
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Wochentag, bei dem von Winterzeit auf Sommerzeit umgestellt wird"
+    ::= { wtWebioAn2TimeZone 9 }
+    
+wtWebioAn2StTzStartHrs OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Stunde, in der die Zeitzone von Winter auf Sommerzeit in Bezug auf UTC
+        umgestellt wird."
+    ::= { wtWebioAn2TimeZone 10 }
+
+wtWebioAn2StTzStartMin OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Minute, in der die Zeitzone von Winter auf Sommerzeit in Bezug auf UTC
+        umgestellt wird."
+    ::= { wtWebioAn2TimeZone 11 }
+ 
+wtWebioAn2StTzStopMonth OBJECT-TYPE
+    SYNTAX INTEGER {
+    	wtWebioAn2StopMonth-January(1),
+    	wtWebioAn2StopMonth-February(2),
+    	wtWebioAn2StopMonth-March(3),
+    	wtWebioAn2StopMonth-April(4),
+    	wtWebioAn2StopMonth-May(5),
+    	wtWebioAn2StopMonth-June(6),
+    	wtWebioAn2StopMonth-July(7),
+    	wtWebioAn2StopMonth-August(8),
+    	wtWebioAn2StopMonth-September(9),
+    	wtWebioAn2StopMonth-October(10),
+    	wtWebioAn2StopMonth-November(11),
+    	wtWebioAn2StopMonth-December(12)
+    	}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Monat, bei dem von Sommerzeit auf Winterzeit umgestellt wird."
+   ::= { wtWebioAn2TimeZone 12 }
+
+wtWebioAn2StTzStopMode OBJECT-TYPE
+    SYNTAX INTEGER {
+    	wtWebioAn2StopMode-first(1),
+    	wtWebioAn2StopMode-second(2),
+    	wtWebioAn2StopMode-third(3),
+    	wtWebioAn2StopMode-fourth(4),
+    	wtWebioAn2StopMode-last(5)
+    	}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Modus des Wochentages, bei dem von Sommerzeit auf Winterzeit umgestellt wird."
+    ::= { wtWebioAn2TimeZone 13 }
+
+wtWebioAn2StTzStopWday OBJECT-TYPE
+    SYNTAX INTEGER {
+    	wtWebioAn2StopWday-Sunday(1),
+    	wtWebioAn2StopWday-Monday(2),
+    	wtWebioAn2StopWday-Tuesday(3),
+    	wtWebioAn2StopWday-Thursday(4),
+    	wtWebioAn2StopWday-Wednesday(5),
+    	wtWebioAn2StopWday-Friday(6),
+    	wtWebioAn2StopWday-Saturday(7)
+    	}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Wochentage, bei dem von Sommerzeit auf Winterzeit umgestellt wird."
+    ::= { wtWebioAn2TimeZone 14 }
+    
+wtWebioAn2StTzStopHrs OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Stunde, in der die Zeitzone von Sommer auf Winterzeit in Bezug auf UTC
+        umgestellt wird."
+    ::= { wtWebioAn2TimeZone 15 }
+
+wtWebioAn2StTzStopMin OBJECT-TYPE
+    SYNTAX INTEGER 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Minute, in der die Zeitzone von Sommer auf Winterzeit in Bezug auf UTC
+        umgestellt wird."
+    ::= { wtWebioAn2TimeZone 16 }
+
+-- wtWebioAn2TimeServer Group
+
+
+wtWebioAn2TimeServer1 OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse oder Name des 1. Time Servers in ASCII"
+    ::= { wtWebioAn2TimeServer 1 }
+
+wtWebioAn2TimeServer2 OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "IP-Adresse oder Name des 2. Time Servers in ASCII"
+    ::= { wtWebioAn2TimeServer 2 }
+    
+-- wtWebioAn2DeviceClock Group
+
+
+wtWebioAn2ClockHrs OBJECT-TYPE
+    SYNTAX INTEGER (0..23)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Uhrzeit Stunde, unter Berücksichtigung der Zeitzoneneinstellungen."
+    ::= { wtWebioAn2DeviceClock 1 }
+
+wtWebioAn2ClockMin OBJECT-TYPE
+    SYNTAX INTEGER (0..59)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Uhrzeit Minute, unter Berücksichtigung der Zeitzoneneinstellungen."
+    ::= { wtWebioAn2DeviceClock 2 }
+
+wtWebioAn2ClockDay OBJECT-TYPE
+    SYNTAX INTEGER (1..31)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Datum: Tag des Monats, unter Berücksichtigung der Zeitzoneneinstellungen."
+    ::= { wtWebioAn2DeviceClock 3 }
+
+wtWebioAn2ClockMonth OBJECT-TYPE
+   SYNTAX INTEGER {
+    	wtWebioAn2ClockMonth-January(1),
+    	wtWebioAn2ClockMonth-February(2),
+    	wtWebioAn2ClockMonth-March(3),
+    	wtWebioAn2ClockMonth-April(4),
+    	wtWebioAn2ClockMonth-May(5),
+    	wtWebioAn2ClockMonth-June(6),
+    	wtWebioAn2ClockMonth-July(7),
+    	wtWebioAn2ClockMonth-August(8),
+    	wtWebioAn2ClockMonth-September(9),
+    	wtWebioAn2ClockMonth-October(10),
+    	wtWebioAn2ClockMonth-November(11),
+    	wtWebioAn2ClockMonth-December(12)
+    	}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Datum: Monat, unter Berücksichtigung der Zeitzoneneinstellungen."
+    ::= { wtWebioAn2DeviceClock 4 }
+
+wtWebioAn2ClockYear OBJECT-TYPE
+    SYNTAX INTEGER (0..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Datum: Jahr, unter Berücksichtigung der Zeitzoneneinstellungen."
+    ::= { wtWebioAn2DeviceClock 5 }
+    
+-- wtWebioAn2MailAdmin Group
+
+
+wtWebioAn2MailAdName OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Gerätename für die Mail-Administration."
+    ::= { wtWebioAn2MailAdmin 1 }
+    
+wtWebioAn2MailReply OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Reply-Adresse für den Mailserver."
+    ::= { wtWebioAn2MailAdmin 2 }
+    
+wtWebioAn2MailServer OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Name oder Ip-Adresse des Mailservers."
+    ::= { wtWebioAn2MailAdmin 3 }
+    
+
+-- wtWebioAn2Alarm Group
+
+
+wtWebioAn2AlarmCount OBJECT-TYPE
+    SYNTAX INTEGER (1..2)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Anzahl der unabhängigen Alarme."
+    ::= { wtWebioAn2Alarm 1 }
+    
+-- Alarm Interface Table
+
+wtWebioAn2AlarmIfTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtWebioAn2AlarmIfEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste der Alarmindizes."
+    ::= { wtWebioAn2Alarm 2 }
+
+wtWebioAn2AlarmIfEntry OBJECT-TYPE
+    SYNTAX WtWebioAn2AlarmIfEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Nummern der Alarme."
+    INDEX  { wtWebioAn2AlarmNo }
+    ::= { wtWebioAn2AlarmIfTable 1 }
+
+WtWebioAn2AlarmIfEntry ::= SEQUENCE {
+    wtWebioAn2AlarmNo INTEGER (1..2)
+}
+
+wtWebioAn2AlarmNo OBJECT-TYPE
+    SYNTAX INTEGER (1..2)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Nummer des Alarms."
+    ::= { wtWebioAn2AlarmIfEntry 1 }
+
+-- Alarm Table
+
+wtWebioAn2AlarmTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtWebioAn2AlarmEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste der Einstellungen abhängig von der Alarmnummer."
+    ::= { wtWebioAn2Alarm 3 }
+
+wtWebioAn2AlarmEntry OBJECT-TYPE
+    SYNTAX WtWebioAn2AlarmEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm-Parameter der einzelnen Alarme."
+    INDEX  { wtWebioAn2AlarmNo }
+    ::= { wtWebioAn2AlarmTable 1 }
+
+WtWebioAn2AlarmEntry ::= SEQUENCE {
+    wtWebioAn2AlarmTrigger	OCTET STRING,
+    wtWebioAn2AlarmMin		OCTET STRING,
+    wtWebioAn2AlarmMax		OCTET STRING,
+    wtWebioAn2AlarmInterval	OCTET STRING,
+    wtWebioAn2AlarmEnable	OCTET STRING,
+    wtWebioAn2AlarmEMailAddr	OCTET STRING,
+    wtWebioAn2AlarmMailSubject	OCTET STRING,
+    wtWebioAn2AlarmMailText	OCTET STRING,
+    wtWebioAn2AlarmManagerIP	OCTET STRING,
+    wtWebioAn2AlarmTrapText	OCTET STRING
+}
+
+wtWebioAn2AlarmTrigger OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(4))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Binär kodierte Triggerbedingungen:
+        Octet 1: ungenutzt
+        Octet 2: ungenutzt
+        Octet 3: ungenutzt
+        Octet 4:
+	        Bit 0: Sensor 1
+	        Bit 1: Sensor 2
+	        Bit 2: Timer"
+    ::= { wtWebioAn2AlarmEntry 1 }
+
+wtWebioAn2AlarmMin OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Minimum Temperatur in Grad mit maximal 2 Nachkommastellen."
+    ::= { wtWebioAn2AlarmEntry 2 }
+
+wtWebioAn2AlarmMax OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Maximum Temperatur in Grad mit maximal 2 Nachkommastellen."
+    ::= { wtWebioAn2AlarmEntry 3 }
+
+wtWebioAn2AlarmInterval OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Sendeintervall von Alarmmeldungen."
+    ::= { wtWebioAn2AlarmEntry 4 }
+
+wtWebioAn2AlarmEnable OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(4))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Binär kodierte Alarmfreischasltung:
+        Octet 1: ungenutzt
+        Octet 2: ungenutzt
+        Octet 3: ungenutzt
+        Octet 4:
+		Bit 0:	Mail Enable
+        	Bit 1:	SNMP Trap enable"
+    ::= { wtWebioAn2AlarmEntry 5 }
+
+wtWebioAn2AlarmEMailAddr OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "E-Mail Adresse, an die die Alarmmail gesendet werden soll."
+    ::= { wtWebioAn2AlarmEntry 6 }
+
+wtWebioAn2AlarmMailSubject OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Betreffzeile der Alarmmail."
+    ::= { wtWebioAn2AlarmEntry 7 }
+
+wtWebioAn2AlarmMailText OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Text der Alarmmail: <Tn> liefert die aktuelle Temperatur; n = 1..2.
+        <Z> liefert die aktuelle Zeit."
+    ::= { wtWebioAn2AlarmEntry 8 }
+
+wtWebioAn2AlarmManagerIP OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Name oder IP-Adresse des SNMP-Managers, der den Trap entgegen nimmt."
+    ::= { wtWebioAn2AlarmEntry 9 }
+
+wtWebioAn2AlarmTrapText OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Dieser Text wird im Trapbody gesendet."
+    ::= { wtWebioAn2AlarmEntry 10 }
+
+-- wtWebioAn2Datalogger Group
+
+
+wtWebioAn2LoggerTimebase OBJECT-TYPE
+    SYNTAX INTEGER {
+    wtWebioAn2Datalogger-1Min(1),
+    wtWebioAn2Datalogger-5Min(2),
+    wtWebioAn2Datalogger-15Min(3),
+    wtWebioAn2Datalogger-60Min(4)
+    }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Zeitbasis des Dataloggers"
+    ::= { wtWebioAn2Datalogger 1 }
+
+wtWebioAn2LoggerSensorSel OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(4))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Binär kodierte Triggerbedingungen:
+        Octet 1: ungenutzt
+        Octet 2: ungenutzt
+        Octet 3: ungenutzt
+        Octet 4:
+		Bit 0: Sensor 1
+        	Bit 1: Sensor 2"
+    ::= { wtWebioAn2Datalogger 2 }
+
+-- wtWebioAn2Protocol Group
+
+
+wtWebioAn2PrtclUdpPort OBJECT-TYPE
+    SYNTAX INTEGER (1..65535)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Udp Port, an den die Udp-Anfragen GET Single gesendet werden können"
+    ::= { wtWebioAn2PrtclUDP 1 }
+
+
+-- wtWebioAn2Enable Group
+
+
+wtWebioAn2Enables OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(4))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Binär kodierte Triggerbedingungen:
+        Bit 1: Update enable
+        Bit 2: Mail enable
+        Bit 3: Snmp enable
+        Bit 4: UDP enable
+        Bit 5: Get Singel Header enable
+        Bit 6: Apply Timezone
+        Bit 7: Apply Summertime
+        Bit 8: Apply TimeServer"
+    ::= { wtWebioAn2Enable 1 }
+
+-- wtWebioAn2Ports Group
+
+
+-- Table
+
+wtWebioAn2PortTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF WtWebioAn2PortEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Liste der Einstellungen abhängig von der Alarmnummer."
+    ::= { wtWebioAn2Ports 1 }
+
+wtWebioAn2PortEntry OBJECT-TYPE
+    SYNTAX WtWebioAn2PortEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Alarm-Parameter der einzelnen Alarme."
+    INDEX  { wtWebioAn2SensorNo }
+    ::= { wtWebioAn2PortTable 1 }
+
+WtWebioAn2PortEntry ::= SEQUENCE {
+    wtWebioAn2PortName		OCTET STRING,
+    wtWebioAn2PortText		OCTET STRING
+}
+
+wtWebioAn2PortName OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Name des Sensors."
+    ::= { wtWebioAn2PortEntry 1 }
+
+wtWebioAn2PortText OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Beschreibung des Sensors."
+    ::= { wtWebioAn2PortEntry 2 }
+
+
+-- wtWebioAn2Manufact Group
+
+
+wtWebioAn2MfName OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Hersteller Firmenname"
+    ::= { wtWebioAn2Manufact 1 }
+
+wtWebioAn2MfAddr OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Adresse des Herstellers."
+    ::= { wtWebioAn2Manufact 2 }
+
+wtWebioAn2MfHotline OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Hotline des Herstellers."
+    ::= { wtWebioAn2Manufact 3 }
+
+wtWebioAn2MfInternet OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Internet-Adresse des Herstellers."
+    ::= { wtWebioAn2Manufact 4 }
+
+wtWebioAn2MfDeviceTyp OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Gerätebezeichnung (Typ) des Herstellers."
+    ::= { wtWebioAn2Manufact 5 }
+
+wtWebioAn2MfOrderNo OBJECT-TYPE
+    SYNTAX OCTET STRING 
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Bestellnummer des Gerätes des Herstellers."
+    ::= { wtWebioAn2Manufact 6 }
+
+-- TRAP DEFINITIONS
+
+-- Diese SNMP-Traps werden gesendet, wenn die Alarmtriggerbedingungen zutreffen 
+
+wtWebioAn2Alert1 TRAP-TYPE
+    ENTERPRISE  wtWebioAn2
+    VARIABLES   { wtWebioAn2AlarmTrapText }
+    DESCRIPTION
+        "Dieser SNMP-Trap wird generiert, wenn der Alarm 1 ausgelöst wurde,
+        das SNMP-Trap-Enable gesetzt ist und
+        SNMP in Enable freigegeben ist."
+    ::= 21
+
+wtWebioAn2Alert2 TRAP-TYPE
+    ENTERPRISE  wtWebioAn2
+    VARIABLES   { wtWebioAn2AlarmTrapText }
+    DESCRIPTION
+        "Dieser SNMP-Trap wird generiert, wenn der Alarm 2 ausgelöst wurde,
+        das SNMP-Trap-Enable gesetzt ist und
+        SNMP in Enable freigegeben ist."
+    ::= 22
+
+
+
+
+
+END

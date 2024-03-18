@@ -1,0 +1,720 @@
+-- ==================================================================
+-- Copyright (C) 2002 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- 
+-- Description: HUAWEI Lan Switch Interface Management MIB
+-- Reference:
+-- Version: V1.8
+-- History:
+--      V1.0 (1) Created by Zhangshilin, 2001.06.29
+--           (2) Revised by Qizhenglin, 2002.01.08
+--      V1.1 2004/7/20 Add PortList and VlanIndex define
+--      V1.2 2004/8/05 Add hwifEthernetIsolate and hwIsolateGroupMax
+--                     by Chenshixing 
+--      V1.3 2004/9/08 add fabric value to hwifVLANType object and
+--                     change the DESCRIPTION by chenshixing
+--           2004/9/08 1.change the DESCRIPTION and the range of
+--                       SYNTAX  INTEGER  from (5..100) to (1..100) 
+--                       in hwifMcastControl object by wangyingxia
+--                     2.add the hwifPpsMcastControl object 
+--                       by wangyingxia
+--                     3.change the status  in hwLswVlanMngObject
+--                       to current by gaolong
+--      V1.4 2004-10-12 updated by gaolong
+--           Import TEXTUAL-CONVENTION, OBJECT-IDENTITY, Unsigned32.
+--           Relocate hwLswL2InfMib MODULE-IDENTITY clause.
+--           Change SYNTAX clause type of VlanIndex from INTEGER to Unsigned32.
+--           Change MAX-ACCESS clause vlaue of hwifClearStat and hwifEthernetTest
+--           from write-only to read-write.
+--           Change value of hwifAggregateModel, hwdot1qVlanType, hwVlanInterfaceFrameType 
+--           and hwifEthernetMdi from underscores to hyphens.
+--           Change value of hwifMacAddrLearnMode, beginning with lowercase.
+--     V1.5 2004-11-15
+--           Add the object hwdot1qVlanBcastSuppressionPPS by lihaijun 
+--           Adjust the format of the description of hwdot1qVlanBroadcastSuppression 
+--     V1.6 2004-12-2
+--           Add the object hwGlobalBroadcastMaxPps by zhanggang
+--           Add the object hwGlobalBroadcastMaxRatio by zhanggang
+--           Add hwifVlanVPNStatus and hwBpduTunnelStatus by caiqiang
+--           Add hwVlanInterfaceIpMethod by wangchao
+--    V1.7  2005-01-22
+--           Remove the content of hwLswVlan from this mib to A3COM-HUAWEI-LswVLAN-MIB
+--           Remove SnmpAdminString
+--    V1.8  2005-2-2
+--           Add the object hwifPpsBcastDisValControl by zhangjianwei
+-- ==================================================================
+-- ==================================================================
+-- 
+-- Varibles and types be imported
+--
+-- ==================================================================
+A3COM-HUAWEI-LswINF-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+
+    RowStatus, TruthValue, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32, IpAddress, TimeTicks, OBJECT-IDENTITY, Unsigned32
+        FROM SNMPv2-SMI
+
+    ifEntry, ifIndex
+        FROM RFC1213-MIB
+
+    lswCommon
+        FROM A3COM-HUAWEI-OID-MIB;
+
+    hwLswL2InfMib MODULE-IDENTITY
+            LAST-UPDATED "200106290000Z"
+            ORGANIZATION ""
+            CONTACT-INFO
+            ""
+            DESCRIPTION
+            ""
+            REVISION "200106290000Z"
+            DESCRIPTION
+            ""
+            ::= { lswCommon 5 }
+
+
+-- =============================================================
+-- Textual Conventions
+-- =============================================================
+
+PortList ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "Each octet within this value specifies a set of eight
+        ports, with the first octet specifying ports 1 through
+        8, the second octet specifying ports 9 through 16, etc.
+        Within each octet, the most significant bit represents
+        the lowest numbered port, and the least significant bit
+        represents the highest numbered port.  Thus, each port
+        of the bridge is represented by a single bit within the
+        value of this object.  If that bit has a value of '1'
+        then that port is included in the set of ports; the port
+        is not included if its bit has a value of '0'."
+    SYNTAX      OCTET STRING
+           
+        
+VlanIndex ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION
+        "A value used to index per-VLAN tables: values of 0 and
+        4095 are not permitted; if the value is between 1 and
+        4094 inclusive, it represents an IEEE 802.1Q VLAN-ID with
+        global scope within a given bridged domain (see VlanId
+        textual convention).  If the value is greater than 4095
+        then it represents a VLAN with scope local to the
+        particular agent, i.e. one without a global VLAN-ID
+        assigned to it. Such VLANs are outside the scope of
+        IEEE 802.1Q but it is convenient to be able to manage them
+        in the same way using this MIB."
+    SYNTAX      Unsigned32 (0..4294967295)
+
+    InterfaceIndex ::= TEXTUAL-CONVENTION
+       DISPLAY-HINT "d"
+       STATUS       current
+       DESCRIPTION
+               "A unique value, greater than zero, for each interface or
+               interface sub-layer in the managed system.  It is
+               recommended that values are assigned contiguously starting
+               from 1.  The value for each interface sub-layer must remain
+               constant at least from one re-initialization of the entity's
+               network management system to the next re-initialization."
+       SYNTAX       Integer32
+
+
+
+-- ==================================================================
+--
+-- ======================= definition begin =========================
+--
+-- ==================================================================
+    hwLswExtInterface OBJECT IDENTIFIER ::= { lswCommon 1 }
+
+    hwifXXTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwIfXXEntry
+        MAX-ACCESS not-accessible
+        STATUS   current
+        DESCRIPTION " Extended Huawei private interface information table  "
+        ::= { hwLswExtInterface  1 }
+
+
+    hwifXXEntry  OBJECT-TYPE
+        SYNTAX HwIfXXEntry
+        MAX-ACCESS not-accessible
+        STATUS   current
+        DESCRIPTION " Entries of extended Huawei private interface information table   "
+         AUGMENTS    { ifEntry }
+        ::= { hwifXXTable 1}
+
+    HwIfXXEntry ::=
+    SEQUENCE {
+        hwifUnBoundPort     TruthValue  ,
+        hwifISPhyPort       TruthValue  ,
+        hwifAggregatePort   TruthValue  ,
+        hwifMirrorPort      TruthValue  ,
+        hwifVLANType        INTEGER     ,
+        hwifMcastControl    INTEGER     ,
+        hwifFlowControl     TruthValue  ,
+        hwifSrcMacControl   TruthValue  ,
+        hwifClearStat       INTEGER,
+        hwifXXBasePortIndex INTEGER,
+        hwifXXDevPortIndex  INTEGER,
+        hwifPpsMcastControl  Integer32,
+        hwifPpsBcastDisValControl INTEGER 
+        }
+
+
+
+    hwifUnBoundPort  OBJECT-TYPE
+        SYNTAX  TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " Whether it is the unbound port (true indicates that the port is the main port of the aggregation or the port does not participate in the aggregation)
+             "
+        ::= { hwifXXEntry 1 }
+
+
+    hwifISPhyPort  OBJECT-TYPE
+        SYNTAX  TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Whether it is a physical interface "
+        ::= { hwifXXEntry 2 }
+
+
+    hwifAggregatePort OBJECT-TYPE
+        SYNTAX  TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Whether it is the aggregated port (if the port participates in the aggregation, this value is true.) "
+        ::= { hwifXXEntry 3 }
+
+
+    hwifMirrorPort  OBJECT-TYPE
+        SYNTAX  TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " Whether it is the mirror port "
+        ::= { hwifXXEntry 4 }
+
+
+    hwifVLANType  OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+        vLANTrunk  (1) ,
+        access   (2) ,
+        hybrid    (3) ,
+        fabric   (4)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " port vlan types: vLANTrunk  (1), access(2), hybrid(3) and fabric(4) . hybrid (3) port can carry multiple VLANs. when the product   
+       supports XRN characteristic, fabric(4) means the port is fabric port."
+        ::= { hwifXXEntry 5 }
+
+
+    hwifMcastControl OBJECT-TYPE
+        SYNTAX  INTEGER (1..100)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION "  Broadcast storm suppression with the step length of 1, ranging from 1 to 100%,but in some products  the step is 5,ranging from 5 to 100%"
+        ::= { hwifXXEntry 6 }
+
+    hwifFlowControl  OBJECT-TYPE
+        SYNTAX  TruthValue
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " Flow control status "
+        ::= { hwifXXEntry 7 }
+
+
+    hwifSrcMacControl OBJECT-TYPE
+        SYNTAX  TruthValue
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Whether to filter by source MAC address "
+        ::= { hwifXXEntry 8 }
+
+
+    hwifClearStat  OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+            clear(1)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " Clear all port statistics. Read operation not supported. "
+        ::= { hwifXXEntry 9 }
+
+    hwifXXBasePortIndex OBJECT-TYPE
+        SYNTAX  INTEGER(1..65535)        
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Index number of the port. Portindex 1 is the largest port number on the equipment."
+        ::= { hwifXXEntry 10 }
+
+    hwifXXDevPortIndex OBJECT-TYPE
+        SYNTAX  INTEGER        
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Octet slot of the port + 2-octet subslot + 2-octet port index number"
+        ::= { hwifXXEntry 11 }
+        
+   hwifPpsMcastControl OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " the broadcast suppression with pps(packet per second) type, the max value is determined by the port type and product"
+        ::= { hwifXXEntry 12 }
+        
+   hwifPpsBcastDisValControl OBJECT-TYPE
+        SYNTAX  INTEGER
+        { 
+          enable(1),
+          disable(2)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " Control the port's pps(packet per second) broadcast suppression. When the port is enabled, its pps
+                      broadcast suppression value is the global disperse value, and when disabled, it doesn't suppress broadcast"
+        ::= { hwifXXEntry 13 }              
+
+
+    hwifAggregateTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwIfAggregateEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " Port aggregation information table  "
+        ::= { hwLswExtInterface  2 }
+
+
+    hwifAggregateEntry  OBJECT-TYPE
+        SYNTAX HwIfAggregateEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " Port aggregation information table  "
+        INDEX   { hwifAggregatePortIndex }
+        ::= { hwifAggregateTable 1}
+
+    HwIfAggregateEntry  ::=
+    SEQUENCE {
+        hwifAggregatePortIndex      InterfaceIndex  ,
+        hwifAggregatePortName       OCTET STRING    ,
+        hwifAggregatePortListPorts  PortList    ,
+        hwifAggregateModel      INTEGER ,
+        hwifAggregateOperStatus     RowStatus
+        }
+
+
+
+    hwifAggregatePortIndex  OBJECT-TYPE
+        SYNTAX  InterfaceIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Index number of the main aggregated port "
+        ::= { hwifAggregateEntry 1 }
+
+
+    hwifAggregatePortName  OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..40))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " Aggregation group name "
+        ::= { hwifAggregateEntry 2 }
+
+
+    hwifAggregatePortListPorts OBJECT-TYPE
+        SYNTAX  PortList
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION   "portlist of a aggregating."
+        ::= { hwifAggregateEntry 3 }
+
+
+    hwifAggregateModel  OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+        ingress     (1),
+        both      (2),
+        round-robin     (3)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " Load sharing mode for the port aggregation: Ingress(1), Ingress+egress(2) and Round-robin(3) "
+        ::= { hwifAggregateEntry 4 }
+
+
+    hwifAggregateOperStatus  OBJECT-TYPE
+        SYNTAX  RowStatus
+        MAX-ACCESS read-create
+        STATUS current
+        DESCRIPTION " Current operation status of the row "
+        ::= { hwifAggregateEntry 5 }
+
+-- ==================================================================
+    hwifHybridPortTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwifHybridPortEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " Hybrid-port configuration table  "
+        ::= { hwLswExtInterface  3 }
+
+
+    hwifHybridPortEntry  OBJECT-TYPE
+        SYNTAX HwifHybridPortEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " Hybrid-port configuration table   "
+        INDEX   { hwifHybridPortIndex }
+        ::= { hwifHybridPortTable 1}
+
+    HwifHybridPortEntry  ::=
+    SEQUENCE {
+        hwifHybridPortIndex            INTEGER,
+        hwifHybridTaggedVlanListLow    OCTET STRING,
+        hwifHybridTaggedVlanListHigh   OCTET STRING,
+        hwifHybridUnTaggedVlanListLow  OCTET STRING,
+        hwifHybridUnTaggedVlanListHigh OCTET STRING
+        }
+
+
+
+    hwifHybridPortIndex  OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Index number of Hybrid-port  "
+        ::= { hwifHybridPortEntry 1 }
+
+
+    hwifHybridTaggedVlanListLow  OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..256))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " The lowest possible value of the tagged vlan list on the Hybrid-port  "
+        ::= { hwifHybridPortEntry 2 }
+
+
+    hwifHybridTaggedVlanListHigh OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..256))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION   " The highest possible value of the tagged vlan list on the Hybrid-port "
+        ::= { hwifHybridPortEntry 3 }
+
+
+    hwifHybridUnTaggedVlanListLow  OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..256))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " The lowest possible value of the untagged vlan list on the Hybrid-port "
+        ::= { hwifHybridPortEntry 4 }
+
+
+    hwifHybridUnTaggedVlanListHigh OBJECT-TYPE
+        SYNTAX  OCTET STRING (SIZE(0..256))
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION   " The highest possible value of the untagged vlan list on the Hybrid-port "
+        ::= { hwifHybridPortEntry 5 }
+        
+        
+-- ========================l2========================================
+    hwLswL2InfMibObject OBJECT IDENTIFIER ::= {  hwLswL2InfMib 1  }
+
+    hwSlotPortMax  OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION "Max ports of the slots"
+        ::= { hwLswL2InfMibObject  1 }
+
+    hwSwitchPortMax  OBJECT-TYPE
+        SYNTAX  INTEGER
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION "Max ports that this switch include"
+        ::= { hwLswL2InfMibObject  2 }
+
+    hwifVLANTrunkStatusTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwIfVLANTrunkStatusEntry
+        MAX-ACCESS not-accessible STATUS   current
+        DESCRIPTION " Gvrp attributes on the VlanTrunk port  "
+        ::= { hwLswL2InfMibObject  3 }
+
+    hwifVLANTrunkStatusEntry  OBJECT-TYPE
+        SYNTAX HwIfVLANTrunkStatusEntry
+        MAX-ACCESS not-accessible STATUS   current
+        DESCRIPTION " Gvrp attributes on the VlanTrunk port  "
+        INDEX   { hwifVLANTrunkIndex }
+        ::= { hwifVLANTrunkStatusTable 1}
+
+    HwIfVLANTrunkStatusEntry    ::=
+    SEQUENCE {
+        hwifVLANTrunkIndex      InterfaceIndex  ,
+        hwifVLANTrunkGvrpRegistration   INTEGER ,
+        hwifVLANTrunkPassListLow    OCTET STRING    ,
+        hwifVLANTrunkPassListHigh   OCTET STRING    ,
+        hwifVLANTrunkAllowListLow   OCTET STRING    ,
+        hwifVLANTrunkAllowListHigh  OCTET STRING
+        }
+
+
+
+    hwifVLANTrunkIndex  OBJECT-TYPE
+        SYNTAX  InterfaceIndex
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Index number of the VLANTrunk interface  "
+        ::= { hwifVLANTrunkStatusEntry 1 }
+
+
+    hwifVLANTrunkGvrpRegistration OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+        normal  (1),
+        fixed   (2),
+        forbidden   (3)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            " GVRP registration information 
+            Normal:(1)this is the default configuration. Allow create, register and unregister vlans dynamiclly at this port.
+            Fixed: (2)allow create and register vlan manually at this port.And prevent from unregistering vlans or registering known vlans of this port at another trunk port.
+            Forbidden:(3)Unregister all vlans but vlan 1, forbid to create or register any other vlans at this port."
+        ::= { hwifVLANTrunkStatusEntry 2 }
+
+
+    hwifVLANTrunkPassListLow OBJECT-TYPE
+        SYNTAX  OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " VLANs actually carried by the VLAN port. The lowest number of VLANs: 2048 (1 to 2048), and the length is 256. "
+        ::= { hwifVLANTrunkStatusEntry 4 }
+
+    hwifVLANTrunkPassListHigh OBJECT-TYPE
+        SYNTAX  OCTET STRING
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+            " VLANs actually carried by the VLAN port. The highest number of VLANs: 2046(2049 to 4094), and the length is 256. "
+        ::= { hwifVLANTrunkStatusEntry 5 }
+
+    hwifVLANTrunkAllowListLow OBJECT-TYPE
+        SYNTAX  OCTET STRING
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            " VLANs allowed by the VLAN port. The lowest number of VLANs: 2048 (1 to 2048), and the length is 256. "
+        ::= { hwifVLANTrunkStatusEntry 6 }
+
+    hwifVLANTrunkAllowListHigh OBJECT-TYPE
+        SYNTAX  OCTET STRING
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+            " VLANs allowed by the VLAN port. The highest number of VLANs: 2046 (2049 to 4094), and the length is 256.  "
+        ::= { hwifVLANTrunkStatusEntry 7 }
+
+
+
+
+    hwethernetTable  OBJECT-TYPE
+        SYNTAX SEQUENCE OF HwEthernetEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION " Ethernet port attribute table  "
+        ::= { hwLswL2InfMibObject  4 }
+
+
+    hwethernetEntry  OBJECT-TYPE
+        SYNTAX HwEthernetEntry
+        MAX-ACCESS not-accessible
+        STATUS current
+        DESCRIPTION "  Entries of Ethernet port attribute table "
+         AUGMENTS    { ifEntry }
+        ::= { hwethernetTable 1}
+
+    HwEthernetEntry ::=
+    SEQUENCE {
+        hwifEthernetDuplex  INTEGER ,
+        hwifEthernetMTU     INTEGER ,
+        hwifEthernetSpeed   INTEGER ,
+        hwifEthernetMdi     INTEGER ,
+        hwMaxMacLearn       INTEGER ,
+        hwifMacAddressLearn INTEGER,
+        hwifEthernetTest    INTEGER,
+        hwifMacAddrLearnMode INTEGER,
+        hwifEthernetFlowInterval  INTEGER,
+        hwifEthernetIsolate OCTET STRING,
+        hwifVlanVPNStatus   INTEGER
+        }
+
+    hwifEthernetDuplex OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+        full    (1),
+        half    (2),
+        auto    (3)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " Ethernet interface mode "
+        ::= { hwethernetEntry 3 }
+
+
+    hwifEthernetMTU  OBJECT-TYPE
+        SYNTAX  INTEGER  (0..9216)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " MTU on the Ethernet interface  "
+        ::= { hwethernetEntry 4 }
+
+
+    hwifEthernetSpeed OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+        auto    (0),
+        s10M    (10),
+        s100M   (100),
+        s1000M  (1000),
+        s10000M (10000)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " Ethernet interface speed "
+        ::= { hwethernetEntry 5 }
+
+    hwifEthernetMdi OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+        mdi-ii   (1),
+        mdi-x   (2),
+        mdi-auto   (3)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " Type of the line connected to the port: MDI-II (straight-through cable): 1  MDI-X (crossover cable): 2  MDI-AUTO (auto-sensing): 3 "
+        ::= { hwethernetEntry 7 }
+    hwMaxMacLearn OBJECT-TYPE
+        SYNTAX  INTEGER(0..65535)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " The maximum number of MAC addresses that the port can learn "
+        ::= { hwethernetEntry 8 }
+
+    hwifMacAddressLearn OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+            enabled(1),
+            disabled(2)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Stauus indicates if the interface is
+        allowed to learn mac address. eanbled(1) means the
+        interface can learn mac address, otherwise disabled(2)
+        can be setted. "
+        ::= { hwethernetEntry 9 }
+
+    hwifEthernetTest OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+            test(1)
+        }
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION " Test this interface. The actual testing will be different
+          according to products. Read operation not supported. "
+        ::= { hwethernetEntry 10 }
+
+    hwifMacAddrLearnMode OBJECT-TYPE
+        SYNTAX  INTEGER
+        {
+            iVL(1),
+            sVL(2)
+        }
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION " Status indicates mac address learn mode of the interface.
+        IVL(1) means independent VLAN learning.SVL means shared VLAN learning."
+        ::= { hwethernetEntry 11 }
+
+    hwifEthernetFlowInterval OBJECT-TYPE
+        SYNTAX  INTEGER (5..300)
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION
+        "
+        Set flow interval of the ethernet.
+        The NMS should set value to integer which is a multiple of 5.
+        "
+        ::= { hwethernetEntry 12 }
+        
+    hwifEthernetIsolate  OBJECT-TYPE
+        SYNTAX  OCTET STRING 
+        MAX-ACCESS read-write
+        STATUS current
+        DESCRIPTION 
+        "isolate group means that all ports in the same isolate group can not send and receive packets each other.
+        Each octet within this value specifies a set of eight isolate groups, 
+        with the first octet specifying isolate groups 1 through 8,  the second 
+        octet specifying isolate groups 9 through 16, etc. Within each octet, the leftmost bit is the first bit.
+        the first bit represents the lowest numbered isolate group, and the last bit
+        represents the highest numbered isolate group. one port can belong to more than one isolate group.
+        Thus, each isolate group is represented by a single bit within the value of this object. 
+        If that bit has a value of '1', then that isolate group includes this port; the port is not included if its bit has a value of '0'.
+        for example ,when the first octet is '10000100' means that the port is included in the isolate group 1
+        and isolate group 6."
+        ::= { hwethernetEntry 13 }
+    
+    hwifVlanVPNStatus OBJECT-TYPE 
+        SYNTAX  INTEGER  
+        {
+             enabled(1),
+             disabled(2)  
+        }  
+        MAX-ACCESS read-write 
+        STATUS current
+        DESCRIPTION "Vlan VPN enable status. "   
+        ::= { hwethernetEntry 14 } 
+                
+    hwIsolateGroupMax  OBJECT-TYPE
+        SYNTAX  Integer32
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION "Max isolate group that this device support, the value is zero it means that
+                    the device does not support isolate group."
+        ::= { hwLswL2InfMibObject  5 }    
+
+   hwGlobalBroadcastMaxPps   OBJECT-TYPE
+       SYNTAX INTEGER   (0..14881000)
+       MAX-ACCESS read-write
+       STATUS  current
+       DESCRIPTION " The global max packets per second. When it is set, the value of BroadcastMaxPps 
+                     in all ports will be changed to that setting. "
+       ::= { hwLswL2InfMibObject 6 }
+
+  hwGlobalBroadcastMaxRatio OBJECT-TYPE
+      SYNTAX INTEGER (0..100)
+      MAX-ACCESS read-write
+      STATUS  current
+      DESCRIPTION " The global max-ratio of broadcast from 0 to 100 percent. When it is set, the value 
+                    of BroadcastMaxRatio in all ports will be changed to that setting. "
+      ::= { hwLswL2InfMibObject 7  } 
+      
+    hwBpduTunnelStatus  OBJECT-TYPE 
+       SYNTAX  INTEGER 
+       {
+            enabled(1), 
+            disabled(2)
+       }
+       MAX-ACCESS read-write 
+       STATUS current
+       DESCRIPTION " Bpdu tunnel enable status." 
+        ::= { hwLswL2InfMibObject  8 } 
+END

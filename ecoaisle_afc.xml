@@ -1,0 +1,149 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="apc_ddf_1_6.xsl"?>
+<APC_DDF
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+	ddfid="ecoaisle_afc"
+	ddfname="EcoAisle Active Flow Controller"
+	ddfversion="1"
+	canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+	<device deviceid="ecoaisle_afc">
+		<setProductData ruleid="vendordata" field="vendor">Schneider Electric</setProductData>
+		<setProductData ruleid="modeldata" field="model">EcoAisle Active Flow Controller</setProductData>
+		<setProductData ruleid="typedata" field="type">Environmental Monitor</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<numSensor ruleid="differential-pressure">
+			<type>airdiffpressure</type>
+			<sensorId>DIFFERENTIAL_PRESSURE</sensorId>
+			<value>
+				<mult>
+				<op><getOid>DIFFERENTIAL_PRESSURE</getOid></op>
+				<op>0.001</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Differential Pressure</label>
+			<sensorSet>Status</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="door-contact-state">
+			<type>state</type>
+			<sensorId>DOOR_CONTACT_STATE</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>DOOR_CONTACT_STATE</getOid>
+				</mapValue>
+			</value>
+			<label>Door Contact State</label>
+			<enum>doorContactState-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="pressure-sensor-health">
+			<type>state</type>
+			<sensorId>PRESSURE_SENSOR_HEALTH</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>PRESSURE_SENSOR_HEALTH</getOid>
+				</mapValue>
+			</value>
+			<label>Pressure Sensor Health</label>
+			<enum>pressureSensorHealth-em</enum>
+			<sensorSet>Status</sensorSet>
+		</stateSensor>
+		<alarmFlags ruleid="pressure-sensor-health">
+			<value><getOid>PRESSURE_SENSOR_HEALTH</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Pressure Sensor Failed</activeText>
+					<inactiveText>Pressure Sensor OK</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>System</category>
+				<description>
+					<activeText>A Pressure Sensor failure has been detected.</activeText>
+					<inactiveText>The Pressure Sensor is OK.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<stateSensor ruleid="lamp-test">
+			<type>state</type>
+			<sensorId>LAMP_TEST</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>LAMP_TEST</getOid>
+				</mapValue>
+			</value>
+			<label>Lamp Test</label>
+			<enum>enable-em</enum>
+			<sensorSet>Configuration</sensorSet>
+		</stateSensor>
+		<numSensor ruleid="altitude">
+			<type>num</type>
+			<units>meters</units>
+			<sensorId>ALTITUDE</sensorId>
+			<value>
+				<mult>
+				<op><getOid>ALTITUDE</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Altitude</label>
+			<sensorSet>Configuration</sensorSet>
+		</numSensor>
+		<valueMap ruleid="binaryDefaultZero-vm">
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>*</valueIn><valueOut>0</valueOut>
+		</valueMap>
+		<enumMap ruleid="doorContactState-em">
+			<label>All Doors Closed</label>
+			<label>At Least One Door Open</label>
+		</enumMap>
+		<enumMap ruleid="pressureSensorHealth-em">
+			<label>OK</label>
+			<label>Sensor Failed</label>
+		</enumMap>
+		<enumMap ruleid="enable-em">
+			<label>Disabled</label>
+			<label>Enabled</label>
+		</enumMap>
+
+	</device>
+	<protocol>
+		<modbus>
+			<value_ref_id valid="DIFFERENTIAL_PRESSURE">
+				<function>3</function>
+				<start_addr>0</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="DOOR_CONTACT_STATE">
+				<function>3</function>
+				<start_addr>1</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="PRESSURE_SENSOR_HEALTH">
+				<function>3</function>
+				<start_addr>2</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="LAMP_TEST">
+				<function>3</function>
+				<start_addr>3</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="ALTITUDE">
+				<function>3</function>
+				<start_addr>4</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+		</modbus>
+	</protocol>
+</APC_DDF>

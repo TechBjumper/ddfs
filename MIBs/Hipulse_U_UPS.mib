@@ -1,0 +1,4185 @@
+  -- ----------------------------------------------------------------------------
+--                    Hipulse U_UPS MIB
+--                    Hipulse-U-UPS-MIB
+--
+--      Copyright (c) 1999-2000 HUAWEI ELECTRIC TECH. CO., LTD, SHENZHEN.
+--      Copyright (c) 2000-2001 AVANSYS POWER CO., LTD., SHENZHEN.
+--      Copyright (c) 2001-2006 EMERSON NETWORK POWER CO., LTD.
+--      All rights reserved.
+--
+--      Created    by: Zheng_chunhua
+--      Created  date: 2006-07-11
+--      Modified Date: 
+--
+-- ----------------------------------------------------------------------------
+
+Hipulse-U-UPS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE
+        FROM RFC-1212
+
+    TRAP-TYPE
+        FROM RFC-1215
+
+    enterprises, IpAddress
+        FROM RFC1155-SMI;
+
+    DisplayString ::= OCTET STRING
+
+
+    -- ------------------------------------------------------------------------
+    -- the location of UPS group in ENP enterprise.
+    -- ------------------------------------------------------------------------ 
+    emersonNetworkPower     OBJECT IDENTIFIER ::= { enterprises 13400 }
+    products                OBJECT IDENTIFIER ::= { emersonNetworkPower 2 }    
+    emersonUps              OBJECT IDENTIFIER ::= { products 1 }
+    hipulse_U_Ups           OBJECT IDENTIFIER ::= { products 7 }
+    
+    -- ------------------------------------------------------------------------
+    -- the main objects about UPS
+    -- ------------------------------------------------------------------------ 
+    upsAgent        OBJECT IDENTIFIER ::= { emersonUps 1 }
+    upsCommon       OBJECT IDENTIFIER ::= { emersonUps 2 }
+    upsSpecial      OBJECT IDENTIFIER ::= { hipulse_U_Ups 3 }
+    upsAlarm        OBJECT IDENTIFIER ::= { emersonUps 4 }
+
+    upsIdent        OBJECT IDENTIFIER ::= { upsCommon 1 }
+    
+    -- ------------------------------------------------------------------------
+    -- the common objects about a  UPS
+    -- ------------------------------------------------------------------------ 
+    upsBaseIdent    OBJECT IDENTIFIER ::=  { upsIdent 1 }
+    upsSmartIdent   OBJECT IDENTIFIER ::=  { upsIdent 2 }
+
+    upsBaseAlaram   OBJECT IDENTIFIER ::=  { upsAlarm 1 }
+    upsSmartAlarm   OBJECT IDENTIFIER ::=  { upsAlarm 2 }
+
+    -- ------------------------------------------------------------------------
+    -- the detail objects about a special UPS
+    -- ------------------------------------------------------------------------ 
+    upsBattery      OBJECT IDENTIFIER ::=  { upsSpecial 2 }
+    upsInput        OBJECT IDENTIFIER ::=  { upsSpecial 3 }
+    upsOutput       OBJECT IDENTIFIER ::=  { upsSpecial 4 }
+    upsStatus       OBJECT IDENTIFIER ::=  { upsSpecial 5 }
+    upsTest         OBJECT IDENTIFIER ::=  { upsSpecial 6 }
+    upsControl      OBJECT IDENTIFIER ::=  { upsSpecial 7 }
+    upsConfig       OBJECT IDENTIFIER ::=  { upsSpecial 8 }
+    
+    upsBaseBattery  OBJECT IDENTIFIER ::=  { upsBattery 1 }
+    upsSmartBattery OBJECT IDENTIFIER ::=  { upsBattery 2 }
+    
+    upsBaseInput    OBJECT IDENTIFIER ::=  { upsInput 1 }
+    upsSmartInput   OBJECT IDENTIFIER ::=  { upsInput 2 }
+    upsSmartBypass  OBJECT IDENTIFIER ::=  { upsInput 3 }
+    
+    upsBaseOutput   OBJECT IDENTIFIER ::=  { upsOutput 1 }
+    upsSmartOutput  OBJECT IDENTIFIER ::=  { upsOutput 2 }
+
+    upsBaseStatus   OBJECT IDENTIFIER ::=  { upsStatus 1 }
+    upsSmartStatus  OBJECT IDENTIFIER ::=  { upsStatus 2 }
+    
+    upsBaseControl  OBJECT IDENTIFIER ::=  { upsControl 1 }
+    upsSmartControl OBJECT IDENTIFIER ::=  { upsControl 2 }
+    
+    upsBaseTest     OBJECT IDENTIFIER ::=  { upsTest 1 }
+    upsSmartTest    OBJECT IDENTIFIER ::=  { upsTest 2 }
+    
+    upsBaseConfig   OBJECT IDENTIFIER ::=  { upsConfig 1 }
+    upsSmartConfig  OBJECT IDENTIFIER ::=  { upsConfig 2 }
+    upsPlanConfig   OBJECT IDENTIFIER ::=  { upsConfig 3 }
+
+    -- ------------------------------------------------------------------------
+    -- 1. upsAgent group
+    -- ------------------------------------------------------------------------ 
+   
+    agentRevision OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The software version of the agent."
+        ::= { upsAgent 1 }
+
+    agentManagersNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of managers that can manage the agent. "
+        ::= { upsAgent 2 }
+ 
+    agentManagersTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF AgentManagersEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of managers of the agent.  The number of
+            entries is given by the value of agentManagersNum."
+        ::= { upsAgent 3 }
+ 
+    agentManagersEntry OBJECT-TYPE
+        SYNTAX AgentManagersEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The managers of the agent."
+        INDEX  { managerIndex}
+        ::= { agentManagersTable 1 }
+ 
+    AgentManagersEntry ::=
+        SEQUENCE {
+            managerIndex
+                INTEGER,
+            managerAddr
+                IpAddress,
+            publicCommunityString
+                 DisplayString,
+            privateCommunityString
+                 DisplayString,
+            managerPrivilege
+                INTEGER,
+            acceptTrapLevel
+                INTEGER,
+            managerAccept
+                INTEGER
+        }
+ 
+    managerIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the managers entry."
+        ::= { agentManagersEntry 1 }
+    
+    managerAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The IP address of the manager."
+        ::= { agentManagersEntry 2 }
+
+    publicCommunityString OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "The public community name to use in the query request."
+        ::= { agentManagersEntry 3 }
+ 
+    privateCommunityString OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "The private community name to use int the control request."
+        ::= { agentManagersEntry 4 }
+ 
+    managerPrivilege OBJECT-TYPE
+        SYNTAX INTEGER {
+            forbidden(0),
+            query(1),
+            control(2),
+            administrator(3)
+       }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The privilege of the manager to access the agent.
+            setting forbidden(0) indicates the manager have no any privilege to access the agent,
+            setting query(1) indicates the manager can GET information from agent only,
+            setting control(2) indicates the manager can GET information from agent and 
+            send control command to the agent.
+            setting administrator(3) indicates the manager has all management privilege
+            including set or modify this managers table."
+       ::= { agentManagersEntry 5 }
+
+    acceptTrapLevel OBJECT-TYPE
+         SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3),
+            noTraps(4)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The severity threshold of traps to send to the manager.
+            traps are labeled in severity as informational(1), warning(2),
+            severe(3).  Only traps of equal or greater severity than
+            this value are sent to the manager. setting noTraps(4) indicates
+            agent do not send any traps to the manager."
+       ::= { agentManagersEntry 6 }
+
+    managerAccept OBJECT-TYPE
+        SYNTAX INTEGER   {
+            view(0),
+            new(1),
+            modify(2),
+            delete(3)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "An entry will be added if new(1), will be modified if modify(2), 
+           and will be removed if delete(3)."
+        ::= { agentManagersEntry 7 }
+
+    -- ------------------------------------------------------------------------
+    -- 2. upsCommon group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------
+    -- 2.1 upsIdent group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------ 
+    -- 2.1.1 the upsBaseIdent group
+    -- ------------------------------------------------------------------------ 
+
+    upsBaseIdentModel OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The UPS model name (e.g. 'Hipulse_U UPS 200KVA')."
+        ::= { upsBaseIdent 1 }
+
+    upsBaseIdentUpsName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "An 8 byte ID string identifying the UPS.  This object
+             can be set by the administrator."
+        ::= { upsBaseIdent 2 }
+                
+    
+    -- ------------------------------------------------------------------------ 
+    -- 2.1.2 the upsSmartIdent group
+    -- ------------------------------------------------------------------------ 
+            
+    upsSmartIdentFirmwareRevision OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The firmware revision of the UPS system."
+        ::= { upsSmartIdent 1 }
+        
+    -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    -- IMPORTANT: Liebert NXa UPS does NOT support manu-date and product-serial
+    --            to read these variables will get 'reserved'
+    upsSmartIdentDateOfManufacture OBJECT-TYPE
+        SYNTAX DisplayString
+       ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The date when the UPS was manufactured in yyyy/mm/dd format."
+        ::= { upsSmartIdent 2 }
+
+    upsSmartIdentUpsSerialNumber OBJECT-TYPE
+         SYNTAX DisplayString
+        ACCESS read-only
+         STATUS mandatory
+         DESCRIPTION
+            "An 8-character string identifying the serial number of
+              the UPS internal microprocessor.  This number is set at
+              the factory.  NOTE: This number does NOT correspond to
+             the serial number on the rear of the UPS."
+        ::= { upsSmartIdent 3 }
+    
+    upsSmartIdentUpsFactory OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The name of the factory that manufactured this UPS."
+        ::= { upsSmartIdent 4 }
+    
+    -- ------------------------------------------------------------------------
+    -- 3. upsSpecial group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------
+    -- 3.2. the upsBattery group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.2.1 the upsBaseBattery group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.2.2 the upsSmartBattery group
+    ------------------------------------------------------------------------
+    upsSmartBatteryVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartBattery 1 }
+
+    upsSmartBatteryCurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Current of the UPS system in 1/10 A."
+        ::= { upsSmartBattery 2 }
+
+    upsSmartBatteryRemainsTime OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Remains Time of the UPS system in 1/10 min."
+        ::= { upsSmartBattery 3 }
+
+    upsSmartBatteryTemperature OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Temperature of the UPS system in 1/10 °C."
+        ::= { upsSmartBattery 4 }
+
+    upsSmartRoomTemperature OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Room Temperature of the UPS system in 1/10 °C."
+        ::= { upsSmartBattery 5 }
+
+    upsSmartBatteryAgingRate OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Aging Rate of the UPS system in 1/10 °C."
+        ::= { upsSmartBattery 6 }
+
+
+    -- ------------------------------------------------------------------------
+    -- 3.3. the upsInout group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.3.1 the upsBaseInput group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.3.2 the upsSmartInput group
+    -- ------------------------------------------------------------------------
+    upsSmartInputLineABVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Line AB Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartInput 1 }
+
+    upsSmartInputLineBCVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Line BC Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartInput 2 }
+
+    upsSmartInputLineCAVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Line CA Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartInput 3 }
+
+    upsSmartInputPhaseACurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Phase A Current of the UPS system in 1/10 A."
+        ::= { upsSmartInput 4 }
+
+    upsSmartInputPhaseBCurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Phase B Current of the UPS system in 1/10 A."
+        ::= { upsSmartInput 5 }
+
+    upsSmartInputPhaseCCurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Phase C Current of the UPS system in 1/10 A."
+        ::= { upsSmartInput 6 }
+
+    upsSmartInputFrequency OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Frequency of the UPS system in 1/10 Hz."
+        ::= { upsSmartInput 7 }
+
+    upsSmartInputPowerFactor OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Power Factor of the UPS system in 1/100."
+        ::= { upsSmartInput 8 }
+
+    -- ------------------------------------------------------------------------
+    -- 3.3.3. the upsSmartBypass group
+    -- ------------------------------------------------------------------------
+    upsSmartBypassPhaseAVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Phase A Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartBypass 1 }
+
+    upsSmartBypassPhaseBVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Phase B Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartBypass 2 }
+
+    upsSmartBypassPhaseCVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Phase C Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartBypass 3 }
+
+    upsSmartBypassFrequency OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Frequency of the UPS system in 1/10 Hz."
+        ::= { upsSmartBypass 4 }
+
+    -- ------------------------------------------------------------------------
+    -- 3.4. the upsOutput group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.4.1 the upsBaseOutput group
+    -- ------------------------------------------------------------------------
+    -- ------------------------------------------------------------------------
+    -- 3.4.2 the upsSmartOutput group
+    ------------------------------------------------------------------------
+    upsSmartOutputPhaseAVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase A Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartOutput 1 }
+
+    upsSmartOutputPhaseBVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase B Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartOutput 2 }
+
+    upsSmartOutputPhaseCVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase C Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartOutput 3 }
+
+    upsSmartOutputPhaseACurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase A Current of the UPS system in 1/10 A."
+        ::= { upsSmartOutput 4 }
+
+    upsSmartOutputPhaseBCurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase B Current of the UPS system in 1/10 A."
+        ::= { upsSmartOutput 5 }
+
+    upsSmartOutputPhaseCCurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase C Current of the UPS system in 1/10 A."
+        ::= { upsSmartOutput 6 }
+
+    upsSmartOutputFrequency OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Frequency of the UPS system in 1/10 Hz."
+        ::= { upsSmartOutput 7 }
+
+    upsSmartOutputPhaseAPowerFactor OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase A Power Factor of the UPS system in 1/100."
+        ::= { upsSmartOutput 8 }
+
+    upsSmartOutputPhaseBPowerFactor OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase B Power Factor of the UPS system in 1/100."
+        ::= { upsSmartOutput 9 }
+
+    upsSmartOutputPhaseCPowerFactor OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase C Power Factor of the UPS system in 1/100."
+        ::= { upsSmartOutput 10 }
+
+    upsSmartLocalOutputPhaseAPowerkW OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Local Output Phase A Power(kW) of the UPS system in 1/10 kW."
+        ::= { upsSmartOutput 11 }
+
+    upsSmartLocalOutputPhaseBPowerkW OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Local Output Phase B Power(kW) of the UPS system in 1/10 kW."
+        ::= { upsSmartOutput 12 }
+
+    upsSmartLocalOutputPhaseCPowerkW OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Local Output Phase C Power(kW) of the UPS system in 1/10 kW."
+        ::= { upsSmartOutput 13 }
+
+    upsSmartLocalOutputPhaseAAppPowerkVA OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Local Output Phase A Power(kVA) of the UPS system in 1/10 kVA."
+        ::= { upsSmartOutput 14 }
+
+    upsSmartLocalOutputPhaseBAppPowerkVA OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Local Output Phase B Power(kVA) of the UPS system in 1/10 kVA."
+        ::= { upsSmartOutput 15 }
+
+    upsSmartLocalOutputPhaseCAppPowerkVA OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Local Output Phase C Power(kVA) of the UPS system in 1/10 kVA."
+        ::= { upsSmartOutput 16 }
+
+    upsSmartLocalOutputPhaseAReactivePowerkVAR OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Local Output Phase A Reactive Power(kVAR) of the UPS system in 1/10 kVAR."
+        ::= { upsSmartOutput 17 }
+
+    upsSmartLocalOutputPhaseBReactivePowerkVAR OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Local Output Phase B Reactive Power(kVAR) of the UPS system in 1/10 kVAR."
+        ::= { upsSmartOutput 18 }
+
+    upsSmartLocalOutputPhaseCReactivePowerkVAR OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Local Output Phase C Reactive Power(kVAR) of the UPS system in 1/10 kVAR."
+        ::= { upsSmartOutput 19 }
+
+    upsSmartSysOutputPhaseAPowerkW OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Sys Output Phase A Power(kW) of the UPS system in 1/10 kW."
+        ::= { upsSmartOutput 20 }
+
+    upsSmartSysOutputPhaseBPowerkW OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Sys Output Phase B Power(kW) of the UPS system in 1/10 kW."
+        ::= { upsSmartOutput 21 }
+
+    upsSmartSysOutputPhaseCPowerkW OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Sys Output Phase C Power(kW) of the UPS system in 1/10 kW."
+        ::= { upsSmartOutput 22 }
+
+    upsSmartSysOutputPhaseAAppPowerkVA OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Sys Output Phase A Power(kVA) of the UPS system in 1/10 kVA."
+        ::= { upsSmartOutput 23 }
+
+    upsSmartSysOutputPhaseBAppPowerkVA OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Sys Output Phase B Power(kVA) of the UPS system in 1/10 kVA."
+        ::= { upsSmartOutput 24 }
+
+    upsSmartSysOutputPhaseCAppPowerkVA OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Sys Output Phase C Power(kVA) of the UPS system in 1/10 kVA."
+        ::= { upsSmartOutput 25 }
+
+    upsSmartSysOutputPhaseAReactivePowerkVAR OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Sys Output Phase A Reactive Power(kVAR) of the UPS system in 1/10 kVAR."
+        ::= { upsSmartOutput 26 }
+
+    upsSmartSysOutputPhaseBReactivePowerkVAR OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Sys Output Phase B Reactive Power(kVAR) of the UPS system in 1/10 kVAR."
+        ::= { upsSmartOutput 27 }
+
+    upsSmartSysOutputPhaseCReactivePowerkVAR OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Sys Output Phase C Reactive Power(kVAR) of the UPS system in 1/10 kVAR."
+        ::= { upsSmartOutput 28 }
+
+    upsSmartOutputPhaseALoad OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase A Load of the UPS system in 1/1000."
+        ::= { upsSmartOutput 29 }
+
+    upsSmartOutputPhaseBLoad OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase B Load of the UPS system in 1/1000."
+        ::= { upsSmartOutput 30 }
+
+    upsSmartOutputPhaseCLoad OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase C Load of the UPS system in 1/1000."
+        ::= { upsSmartOutput 31 }
+
+    upsSmartOutputPhaseACrestFactor OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase A Crest Factor of the UPS system in 1/10."
+        ::= { upsSmartOutput 32 }
+
+    upsSmartOutputPhaseBCrestFactor OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase B Crest Factor of the UPS system in 1/10."
+        ::= { upsSmartOutput 33 }
+
+    upsSmartOutputPhaseCCrestFactor OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase C Crest Factor of the UPS system in 1/10."
+        ::= { upsSmartOutput 34 }
+
+    -- ---------------------------------------------------------------------
+    -- 3.5. the upsStatus group
+    ------------------------------------------------------------------------
+    -- ---------------------------------------------------------------------
+    -- 3.5.1 the upsBaseStatus group
+    ------------------------------------------------------------------------
+    upsBaseStatusCommunication OBJECT-TYPE
+        SYNTAX INTEGER {
+            unknown(1),
+            ok(2),
+            lostCommunication(3),
+            notEstablished(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The status of communication to UPS. lostCommunication(3) indicates
+            some errors occurred between UPS and agent. notEstablished(4) indicates
+            agent can not connect to UPS, maybe error on communication port or port
+            settings error."
+        ::= { upsBaseStatus 1 }
+
+    -- ---------------------------------------------------------------------
+    -- 3.5.2 the upsSmartStatus group
+    ------------------------------------------------------------------------
+    upsSmartStatusUPSOperatingMode OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            uPSShutdown(2),
+            onLine(3),
+            onBattery(4),
+            onBypass(5),
+            onUtilityandBattery(6),
+            state(7)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "UPS Operating Mode."
+        ::= { upsSmartStatus 1 }
+
+
+    upsSmartStatusBatterySelftestStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            testCompleted(2),
+            testStarting(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Self test Status."
+        ::= { upsSmartStatus 2 }
+
+
+    upsSmartStatusBatteryChargeMode OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            notbeingcharged(2),
+            floatcharging(3),
+            boostCharging(4),
+            state(5)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Charge Mode."
+        ::= { upsSmartStatus 3 }
+
+
+    upsSmartStatusInverterONOFFStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            turnedOn(2),
+            turnedOff(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Inverter ON/OFF Status."
+        ::= { upsSmartStatus 4 }
+
+
+    upsSmartStatusGeneratorConnectStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            disconnected(2),
+            connected(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Generator Connect Status."
+        ::= { upsSmartStatus 5 }
+
+
+    upsSmartStatusInputBreakerStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            open(2),
+            closed(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Breaker Status."
+        ::= { upsSmartStatus 6 }
+
+
+    upsSmartStatusMaintenanceBreakerStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            open(2),
+            closed(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Maintenance Breaker Status."
+        ::= { upsSmartStatus 7 }
+
+
+    upsSmartStatusBypassBreakerStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            open(2),
+            closed(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Breaker Status."
+        ::= { upsSmartStatus 8 }
+
+
+    upsSmartStatusOutputBreakerStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            open(2),
+            closed(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Breaker Status."
+        ::= { upsSmartStatus 9 }
+
+
+    upsSmartStatusParallelSystemOperatingMode OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            onLine(2),
+            onBattery(3),
+            onBypass(4),
+            uPSShutdown(5),
+            state(6)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Parallel System Operating Mode."
+        ::= { upsSmartStatus 10 }
+
+
+    upsSmartStatusSynchronizationStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            synchronous(2),
+            asynchronous(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Synchronization Status."
+        ::= { upsSmartStatus 11 }
+
+
+    upsSmartStatusUtilityStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            abnormal(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Utility Status."
+        ::= { upsSmartStatus 12 }
+
+
+    upsSmartStatusRectifierStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Rectifier Status."
+        ::= { upsSmartStatus 13 }
+
+
+    upsSmartStatusInverterStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Inverter Status."
+        ::= { upsSmartStatus 14 }
+
+
+    upsSmartStatusBypassStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            abnormal(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Status."
+        ::= { upsSmartStatus 15 }
+
+
+    upsSmartStatusBatteryVoltageStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            undervoltage(3),
+            overvoltage(4),
+            noBattery(5),
+            lowPrewarning(6),
+            batteryReverse(7),
+            state(8)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Voltage Status."
+        ::= { upsSmartStatus 16 }
+
+
+    upsSmartStatusUtilityFrequencyStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            abnormal(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Utility Frequency Status."
+        ::= { upsSmartStatus 17 }
+
+
+    upsSmartStatusInputFuseStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Fuse Status."
+        ::= { upsSmartStatus 18 }
+
+
+    upsSmartStatusMainsPhaseStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            reversed(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Mains Phase Status."
+        ::= { upsSmartStatus 19 }
+
+
+    upsSmartStatusMainsPhaseMissingStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            missing(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Mains Phase Missing Status."
+        ::= { upsSmartStatus 20 }
+
+
+    upsSmartStatusControlPower1Status OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Control Power 1 Status."
+        ::= { upsSmartStatus 21 }
+
+
+    upsSmartStatusControlPower2Status OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Control Power 2 Status."
+        ::= { upsSmartStatus 22 }
+
+
+    upsSmartStatusRECCurrentLimitStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "REC Current Limit Status."
+        ::= { upsSmartStatus 23 }
+
+
+    upsSmartStatusSoftStartStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Soft Start Status."
+        ::= { upsSmartStatus 24 }
+
+
+
+    upsSmartStatusTransRadiatorTemperatureStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overHeated(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Trans. Radiator Temperature Status."
+        ::= { upsSmartStatus 25 }
+
+
+    upsSmartStatusPowerPassiveFilterStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overHeated(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Power Passive Filter Status."
+        ::= { upsSmartStatus 26 }
+
+
+    upsSmartStatusPPFTransferTimesStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "PPF Transfer Times Status."
+        ::= { upsSmartStatus 27 }
+
+
+    upsSmartStatusPPFContactorStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "PPF Contactor Status."
+        ::= { upsSmartStatus 28 }
+
+    upsSmartStatusRECDriveCircuitStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "REC Drive Circuit Status."
+        ::= { upsSmartStatus 29 }
+
+    upsSmartStatusRECCommunicationStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "REC Communication Status."
+        ::= { upsSmartStatus 30 }
+
+
+    upsSmartStatusInverterTemperatureStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overHeated(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Inverter Temperature Status."
+        ::= { upsSmartStatus 31 }
+
+    upsSmartStatusFanStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Fan Status."
+        ::= { upsSmartStatus 32 }
+
+
+    upsSmartStatusInvSTSStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Inv. STS Status."
+        ::= { upsSmartStatus 33 }
+
+
+    upsSmartStatusBypassSTSStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass STS Status."
+        ::= { upsSmartStatus 34 }
+
+
+    upsSmartStatusOperationStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Operation Status."
+        ::= { upsSmartStatus 35 }
+
+
+    upsSmartStatusUnitOverloadStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overload(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Unit Overload Status."
+        ::= { upsSmartStatus 36 }
+
+
+    upsSmartStatusSystemOverloadStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overload(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "System Overload Status."
+        ::= { upsSmartStatus 37 }
+
+
+    upsSmartStatusUnitOverloadTimeoutAlarmStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            alarm(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Unit Overload Timeout Alarm Status."
+        ::= { upsSmartStatus 38 }
+
+
+    upsSmartStatusBypassAbnormalShutdownAlarmStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            alarm(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Abnormal Shutdown Alarm Status."
+        ::= { upsSmartStatus 39 }
+
+
+    upsSmartStatusOutputOvervoltageStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overvoltage(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Overvoltage Status."
+        ::= { upsSmartStatus 40 }
+
+
+    upsSmartStatusInverterOvercurrentStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overcurrent(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Inverter Overcurrent Status."
+        ::= { upsSmartStatus 41 }
+
+
+    upsSmartStatusBypassPhaseStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            reversed(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Phase Status."
+        ::= { upsSmartStatus 42 }
+
+
+    upsSmartStatusLoadImpactTransferAlarmStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            alarm(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Load Impact Transfer Alarm Status."
+        ::= { upsSmartStatus 43 }
+
+
+    upsSmartStatusSwitchTimesLimitedStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Switch Times Limited Status."
+        ::= { upsSmartStatus 44 }
+
+
+    upsSmartStatusLoadSharingFaultStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            fault(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Load Sharing Fault Status."
+        ::= { upsSmartStatus 45 }
+
+
+    upsSmartStatusShutoffinverterduetoabnormalDCbusvoltageAlarm OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            alarm(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Shut off inverter due to abnormal DC bus voltage Alarm."
+        ::= { upsSmartStatus 46 }
+
+
+    upsSmartStatusUPSTransfertobypassduetosystemrequestAlarm OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            alarm(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "UPS Transfer to bypass due to system request Alarm."
+        ::= { upsSmartStatus 47 }
+
+
+    upsSmartStatusParallelBoardStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Parallel Board Status."
+        ::= { upsSmartStatus 48 }
+
+
+    upsSmartStatusParallelConnectStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            fault(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Parallel Connect Status."
+        ::= { upsSmartStatus 49 }
+
+
+    upsSmartStatusParallelCommunicationStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Parallel Communication Status."
+        ::= { upsSmartStatus 50 }
+
+
+    upsSmartStatusBypassOvercurrentStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overcurrent(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Overcurrent Status."
+        ::= { upsSmartStatus 51 }
+
+
+
+    upsSmartStatusLBSStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            active(3),
+            failure(4),            
+            state(5)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "LBS Status."
+        ::= { upsSmartStatus 52 }
+
+
+    upsSmartStatusBypassInductanceStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overHeated(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Inductance Status."
+        ::= { upsSmartStatus 53 }
+
+
+    upsSmartStatusSTSTemperatureStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overHeated(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "STS Temperature Status."
+        ::= { upsSmartStatus 54 }
+
+
+    upsSmartStatusBypassFeedbackStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Feedback Status."
+        ::= { upsSmartStatus 55 }
+
+
+    upsSmartStatusINVDriveCircuitStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "INV Drive Circuit Status."
+        ::= { upsSmartStatus 56 }
+
+
+    upsSmartStatusINVCommunicationStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "INV Communication Status."
+        ::= { upsSmartStatus 57 }
+
+
+    upsSmartStatusSystemBatteryLowAlarm OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            alarm(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "System Battery Low Alarm."
+        ::= { upsSmartStatus 58 }
+
+
+    upsSmartStatusEmergencyPowerOffStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            canceled(2),
+            powerOff(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Emergency Power Off Status."
+        ::= { upsSmartStatus 59 }
+
+
+    upsSmartStatusAmbientTemperatureStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overheated(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Ambient Temperature Status."
+        ::= { upsSmartStatus 60 }
+
+
+    upsSmartStatusBatteryStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            needReplace(3),
+            bad(4),
+            state(5)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Status."
+        ::= { upsSmartStatus 61 }
+
+
+    upsSmartStatusBatteryTemperatureStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overheated(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Temperature Status."
+        ::= { upsSmartStatus 62 }
+
+
+    upsSmartStatusBatteryGroundStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Ground Status."
+        ::= { upsSmartStatus 63 }
+
+
+    upsSmartStatusBatteryFuseStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Fuse Status."
+        ::= { upsSmartStatus 64 }
+
+
+    upsSmartStatusBCBStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            notConnected(2),
+            closed(3),
+            open(4),
+            state(5)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "BCB Status."
+        ::= { upsSmartStatus 65 }
+
+
+    upsSmartStatusBusCapacitorOvervoltStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overvoltage(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bus Capacitor Overvolt Status."
+        ::= { upsSmartStatus 66 }
+
+
+    upsSmartStatusBusOvervoltageStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overvoltage(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bus Overvoltage Status."
+        ::= { upsSmartStatus 67 }
+
+
+
+    -- ------------------------------------------------------------------------
+    -- 4. the upsAlarm group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 4.1. the upsBaseAlaram group
+    -- ------------------------------------------------------------------------
+
+    -- no upsBaseAlaram variables
+
+    -- ------------------------------------------------------------------------
+    -- 4.2. the upsSmartAlarm group
+    -- ------------------------------------------------------------------------
+    upsSmartAlarmPresentNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The present number of active alarams."
+        ::= { upsSmartAlarm 1 }
+
+    upsSmartAlarmPresentTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UpsSmartAlarmPresentEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of current UPS alarms, The number of entries is given
+            by the value of upsSmartAlarmPresentNum."
+        ::= { upsSmartAlarm 2 }
+
+    upsSmartAlarmPresentEntry OBJECT-TYPE
+        SYNTAX UpsSmartAlarmPresentEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The present alarms list."
+        INDEX  { presentAlarmIndex}
+        ::= { upsSmartAlarmPresentTable 1 }
+
+    UpsSmartAlarmPresentEntry ::=
+        SEQUENCE {
+            presentAlarmIndex
+                INTEGER,
+            presentAlarmTime
+                DisplayString,
+            presentAlarmId
+                INTEGER,
+            presentAlarmName
+                DisplayString,
+            presentAlaramLevel
+                INTEGER
+        }
+
+    presentAlarmIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the present alaram entry."
+        ::= { upsSmartAlarmPresentEntry 1 }
+
+    presentAlarmTime OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The time of the alarm generated, format as yyyy/mm/dd hh:mm:ss."
+        ::= { upsSmartAlarmPresentEntry 2 }
+
+    presentAlarmId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm ID."
+       ::= { upsSmartAlarmPresentEntry 3 }
+
+    presentAlarmName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The name of the alarm."
+        ::= { upsSmartAlarmPresentEntry 4 }
+
+    presentAlaramLevel OBJECT-TYPE
+        SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm level."
+       ::= { upsSmartAlarmPresentEntry 5 }
+
+    -- historical alarms
+    upsSmartAlarmHistoryNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of historical alarms."
+        ::= { upsSmartAlarm 3 }
+
+    upsSmartAlarmHistoryTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UpsSmartAlarmHistoryEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of historical UPS alarms, The number of entries is given
+            by the value of upsSmartAlarmHistoryNum."
+        ::= { upsSmartAlarm 4 }
+
+    upsSmartAlarmHistoryEntry OBJECT-TYPE
+        SYNTAX UpsSmartAlarmHistoryEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The historical alarms list."
+        INDEX  { historyAlarmIndex}
+        ::= { upsSmartAlarmHistoryTable 1 }
+
+    UpsSmartAlarmHistoryEntry ::=
+        SEQUENCE {
+            historyAlarmIndex
+                INTEGER,
+            historyAlarmTime
+                DisplayString,
+            historyAlarmId
+                INTEGER,
+            historyAlarmName
+                DisplayString,
+            historyAlaramLevel
+                INTEGER
+        }
+
+    historyAlarmIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the historical alaram entry."
+        ::= { upsSmartAlarmHistoryEntry 1 }
+
+    historyAlarmTime OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The time of the alarm generated, format as yyyy/mm/dd hh:mm:ss."
+        ::= { upsSmartAlarmHistoryEntry 2 }
+
+    historyAlarmId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm ID."
+       ::= { upsSmartAlarmHistoryEntry 3 }
+
+    historyAlarmName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The name of the alarm."
+        ::= { upsSmartAlarmHistoryEntry 4 }
+
+    historyAlaramLevel OBJECT-TYPE
+        SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm level."
+       ::= { upsSmartAlarmHistoryEntry 5 }
+
+
+
+    -- ------------------------------------------------------------------------
+    -- Traps
+    -- ------------------------------------------------------------------------
+
+    --
+    -- trap args
+    --
+    trapArgsString OBJECT-TYPE
+        SYNTAX  DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "This OID allows Hipulse U_UPS traps to be sent with an octet string argument
+             that may not be defined in the Hipulse U UPS MIB.
+
+             A get of this OID will return a NULL string."
+        ::= { upsAlarm 2002 }
+
+
+    uPSShutdown TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS Shutdown."
+       --#TYPE "Hipulse_U_UPS: UPS Shutdown"
+       --#SUMMARY "UPS Shutdown."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 1
+
+
+    uPSinNormalMode TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: UPS in Normal Mode."
+       --#TYPE "Hipulse_U_UPS: UPS in Normal Mode"
+       --#SUMMARY "UPS in Normal Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 2
+
+
+    uPSinBatteryMode TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS in Battery Mode."
+       --#TYPE "Hipulse_U_UPS: UPS in Battery Mode"
+       --#SUMMARY "UPS in Battery Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 3
+
+
+    uPSinBypassMode TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS in Bypass Mode."
+       --#TYPE "Hipulse_U_UPS: UPS in Bypass Mode"
+       --#SUMMARY "UPS in Bypass Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 4
+
+
+
+    uPSinSourceShareMode TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS in Source Share Mode."
+       --#TYPE "Hipulse_U_UPS: UPS in Source Share Mode"
+       --#SUMMARY "UPS in Source Share Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 5
+
+
+    batterySelfTestCompleted TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Self Test Completed."
+       --#TYPE "Hipulse_U_UPS: Battery Self Test Completed"
+       --#SUMMARY "Battery Self Test Completed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 6
+
+
+    uPSBatteryTesting TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS Battery Testing."
+       --#TYPE "Hipulse_U_UPS: UPS Battery Testing"
+       --#SUMMARY "UPS Battery Testing."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 7
+
+
+    batteryNotCharging TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Not Charging."
+       --#TYPE "Hipulse_U_UPS: Battery Not Charging"
+       --#SUMMARY "Battery Not Charging."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 8
+
+    batteryFloatCharging TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Float Charging."
+       --#TYPE "Hipulse_U_UPS: Battery Float Charging"
+       --#SUMMARY "Battery Float Charging."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 9
+
+
+    batteryBoostCharging TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Boost Charging."
+       --#TYPE "Hipulse_U_UPS: Battery Boost Charging"
+       --#SUMMARY "Battery Boost Charging."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 10
+
+
+    uPSInverterOn TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: UPS Inverter On."
+       --#TYPE "Hipulse_U_UPS: UPS Inverter On"
+       --#SUMMARY "UPS Inverter On."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 11
+
+
+    uPSInverterOff TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS Inverter Off."
+       --#TYPE "Hipulse_U_UPS: UPS Inverter Off"
+       --#SUMMARY "UPS Inverter Off."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 12
+
+
+    generatorDisconnected TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Generator Disconnected."
+       --#TYPE "Hipulse_U_UPS: Generator Disconnected"
+       --#SUMMARY "Generator Disconnected."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 13
+
+
+    generatorConnected TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Generator Connected."
+       --#TYPE "Hipulse_U_UPS: Generator Connected"
+       --#SUMMARY "Generator Connected."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 14
+
+    inputDisconnectOpen TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Input Disconnect Open."
+       --#TYPE "Hipulse_U_UPS: Input Disconnect Open"
+       --#SUMMARY "Input Disconnect Open."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 15
+
+    inputDisconnectClosed TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Disconnect Closed."
+       --#TYPE "Hipulse_U_UPS: Input Disconnect Closed"
+       --#SUMMARY "Input Disconnect Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 16
+
+
+
+    maintenanceDisconnectOpen TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Maintenance Disconnect Open."
+       --#TYPE "Hipulse_U_UPS: Maintenance Disconnect Open"
+       --#SUMMARY "Maintenance Disconnect Open."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 17
+
+
+    maintenanceDisconnectClosed TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Maintenance Disconnect Closed."
+       --#TYPE "Hipulse_U_UPS: Maintenance Disconnect Closed"
+       --#SUMMARY "Maintenance Disconnect Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 18
+
+
+
+    bypassDisconnectOpen TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass Disconnect Open."
+       --#TYPE "Hipulse_U_UPS: Bypass Disconnect Open"
+       --#SUMMARY "Bypass Disconnect Open."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 19
+
+
+    bypassDisconnectClosed TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass Disconnect Closed."
+       --#TYPE "Hipulse_U_UPS: Bypass Disconnect Closed"
+       --#SUMMARY "Bypass Disconnect Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 20
+
+
+    outputDisconnectOpen TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Output Disconnect Open."
+       --#TYPE "Hipulse_U_UPS: Output Disconnect Open"
+       --#SUMMARY "Output Disconnect Open."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 21
+
+
+    outputDisconnectClosed TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Output Disconnect Closed."
+       --#TYPE "Hipulse_U_UPS: Output Disconnect Closed"
+       --#SUMMARY "Output Disconnect Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 22
+
+
+    systeminNormalMode TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: System in Normal Mode."
+       --#TYPE "Hipulse_U_UPS: System in Normal Mode"
+       --#SUMMARY "System in Normal Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 23
+
+
+    systeminBatteryMode TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: System in Battery Mode."
+       --#TYPE "Hipulse_U_UPS: System in Battery Mode"
+       --#SUMMARY "System in Battery Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 24
+
+
+    systeminBypassMode TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: System in Bypass Mode."
+       --#TYPE "Hipulse_U_UPS: System in Bypass Mode"
+       --#SUMMARY "System in Bypass Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 25
+
+
+    systemShutdown TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: System Shutdown."
+       --#TYPE "Hipulse_U_UPS: System Shutdown"
+       --#SUMMARY "System Shutdown."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 26
+
+
+    inverterResumedToBeSynchronize TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Inverter Resumed To Be Synchronize."
+       --#TYPE "Hipulse_U_UPS: Inverter Resumed To Be Synchronize"
+       --#SUMMARY "Inverter Resumed To Be Synchronize."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 27
+
+
+    inverterAsynchronous TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Inverter Asynchronous."
+       --#TYPE "Hipulse_U_UPS: Inverter Asynchronous"
+       --#SUMMARY "Inverter Asynchronous."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 28
+
+
+
+    mainsVoltageRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Mains Voltage Recovered."
+       --#TYPE "Hipulse_U_UPS: Mains Voltage Recovered"
+       --#SUMMARY "Mains Voltage Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 29
+
+
+    mainsVoltageAbnormal TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Mains Voltage Abnormal."
+       --#TYPE "Hipulse_U_UPS: Mains Voltage Abnormal"
+       --#SUMMARY "Mains Voltage Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 30
+
+
+    uPSRectifierRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: UPS Rectifier Recovered."
+       --#TYPE "Hipulse_U_UPS: UPS Rectifier Recovered"
+       --#SUMMARY "UPS Rectifier Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 31
+
+
+    uPSRectifierFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS Rectifier Fault."
+       --#TYPE "Hipulse_U_UPS: UPS Rectifier Fault"
+       --#SUMMARY "UPS Rectifier Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 32
+
+
+    uPSInverterRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: UPS Inverter Recovered."
+       --#TYPE "Hipulse_U_UPS: UPS Inverter Recovered"
+       --#SUMMARY "UPS Inverter Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 33
+
+
+    uPSInverterFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS Inverter Fault."
+       --#TYPE "Hipulse_U_UPS: UPS Inverter Fault"
+       --#SUMMARY "UPS Inverter Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 34
+
+
+    bypassRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass Recovered."
+       --#TYPE "Hipulse_U_UPS: Bypass Recovered"
+       --#SUMMARY "Bypass Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 35
+
+
+    bypassAbnormal TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass Abnormal."
+       --#TYPE "Hipulse_U_UPS: Bypass Abnormal"
+       --#SUMMARY "Bypass Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 36
+
+
+    batteryVoltageRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Voltage Recovered."
+       --#TYPE "Hipulse_U_UPS: Battery Voltage Recovered"
+       --#SUMMARY "Battery Voltage Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 37
+
+
+    batteryUndervoltage TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Undervoltage."
+       --#TYPE "Hipulse_U_UPS: Battery Undervoltage"
+       --#SUMMARY "Battery Undervoltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 38
+
+
+    batteryOvervoltage TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Overvoltage."
+       --#TYPE "Hipulse_U_UPS: Battery Overvoltage"
+       --#SUMMARY "Battery Overvoltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 39
+
+
+    noBattery TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: No Battery."
+       --#TYPE "Hipulse_U_UPS: No Battery"
+       --#SUMMARY "No Battery."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 40
+
+
+    batteryLowPrewarning TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Low Pre-warning."
+       --#TYPE "Hipulse_U_UPS: Battery Low Pre-warning"
+       --#SUMMARY "Battery Low Pre-warning."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 41
+
+
+    upsBatteryReverse TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS Battery Reverse."
+       --#TYPE "Hipulse_U_UPS: UPS Battery Reverse"
+       --#SUMMARY "UPS Battery Reverse."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 42
+
+
+    mainsFrequencyRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Mains Frequency Recovered."
+       --#TYPE "Hipulse_U_UPS: Mains Frequency Recovered"
+       --#SUMMARY "Mains Frequency Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 43
+
+
+    mainsFrequencyAbnormal TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Mains Frequency Abnormal."
+       --#TYPE "Hipulse_U_UPS: Mains Frequency Abnormal"
+       --#SUMMARY "Mains Frequency Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 44
+
+
+    inputFuseRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Fuse Recovered."
+       --#TYPE "Hipulse_U_UPS: Input Fuse Recovered"
+       --#SUMMARY "Input Fuse Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 45
+
+
+    inputFuseFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Input Fuse Fault."
+       --#TYPE "Hipulse_U_UPS: Input Fuse Fault"
+       --#SUMMARY "Input Fuse Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 46
+
+
+    mainsPhaseRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Mains Phase Recovered."
+       --#TYPE "Hipulse_U_UPS: Mains Phase Recovered"
+       --#SUMMARY "Mains Phase Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 47
+
+
+    mainsPhaseReversed TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Mains Phase Reversed."
+       --#TYPE "Hipulse_U_UPS: Mains Phase Reversed"
+       --#SUMMARY "Mains Phase Reversed."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 48
+
+
+    mainsPhaseMissingRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Mains Phase Missing Recovered."
+       --#TYPE "Hipulse_U_UPS: Mains Phase Missing Recovered"
+       --#SUMMARY "Mains Phase Missing Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 49
+
+
+    mainsPhaseMissing TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Mains Phase Missing."
+       --#TYPE "Hipulse_U_UPS: Mains Phase Missing"
+       --#SUMMARY "Mains Phase Missing."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 50
+
+
+    controlPower1Recovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Control Power 1 Recovered."
+       --#TYPE "Hipulse_U_UPS: Control Power 1 Recovered"
+       --#SUMMARY "Control Power 1 Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 51
+
+
+    controlPower1Fault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Control Power 1 Fault."
+       --#TYPE "Hipulse_U_UPS: Control Power 1 Fault"
+       --#SUMMARY "Control Power 1 Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 52
+
+
+    controlPower2Recovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Control Power 2 Recovered."
+       --#TYPE "Hipulse_U_UPS: Control Power 2 Recovered"
+       --#SUMMARY "Control Power 2 Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 53
+
+
+    controlPower2Fault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Control Power 2 Fault."
+       --#TYPE "Hipulse_U_UPS: Control Power 2 Fault"
+       --#SUMMARY "Control Power 2 Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 54
+
+
+
+    rectifierCurrentLimitRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Rectifier Current Limit Recovered."
+       --#TYPE "Hipulse_U_UPS: Rectifier Current Limit Recovered"
+       --#SUMMARY "Rectifier Current Limit Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 55
+
+
+    rectifierCurrentLimit TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Rectifier Current Limit."
+       --#TYPE "Hipulse_U_UPS: Rectifier Current Limit"
+       --#SUMMARY "Rectifier Current Limit."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 56
+
+    softStartFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Soft Start Fault."
+       --#TYPE "Hipulse_U_UPS: Soft Start Fault"
+       --#SUMMARY "Soft Start Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 57
+
+
+    rectifierTemperatureRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Rectifier Temperature Recovered."
+       --#TYPE "Hipulse_U_UPS: Rectifier Temperature Recovered"
+       --#SUMMARY "Rectifier Temperature Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 58
+
+
+    rectifierOvertemperature TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Rectifier Overtemperature."
+       --#TYPE "Hipulse_U_UPS: Rectifier Overtemperature"
+       --#SUMMARY "Rectifier Overtemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 59
+
+
+
+    powerPassiveFilterTemperatureRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Power Passive Filter Temperature Recovered."
+       --#TYPE "Hipulse_U_UPS: Power Passive Filter Temperature Recovered"
+       --#SUMMARY "Power Passive Filter Temperature Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 60
+
+
+    powerPassiveFilterOvertemperature TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Power Passive Filter Overtemperature."
+       --#TYPE "Hipulse_U_UPS: Power Passive Filter Overtemperature"
+       --#SUMMARY "Power Passive Filter Overtemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 61
+
+
+    powerPassiveFilterTransferTimesRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Power Passive Filter Transfer Times Recovered."
+       --#TYPE "Hipulse_U_UPS: Power Passive Filter Transfer Times Recovered"
+       --#SUMMARY "Power Passive Filter Transfer Times Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 62
+
+
+    powerPassiveFilterTransferTimesFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Power Passive Filter Transfer Times Fault."
+       --#TYPE "Hipulse_U_UPS: Power Passive Filter Transfer Times Fault"
+       --#SUMMARY "Power Passive Filter Transfer Times Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 63
+
+
+    powerPassiveFilterContactorRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Power Passive Filter Contactor Recovered."
+       --#TYPE "Hipulse_U_UPS: Power Passive Filter Contactor Recovered"
+       --#SUMMARY "Power Passive Filter Contactor Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 64
+
+    powerPassiveFilterContactorFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Power Passive Filter Contactor Fault."
+       --#TYPE "Hipulse_U_UPS: Power Passive Filter Contactor Fault"
+       --#SUMMARY "Power Passive Filter Contactor Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 65
+
+    rectifierDriveCircuitRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Rectifier Drive Circuit Recovered."
+       --#TYPE "Hipulse_U_UPS: Rectifier Drive Circuit Recovered"
+       --#SUMMARY "Rectifier Drive Circuit Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 66
+
+    rectifierDriveCircuitFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Rectifier Drive Circuit Fault."
+       --#TYPE "Hipulse_U_UPS: Rectifier Drive Circuit Fault"
+       --#SUMMARY "Rectifier Drive Circuit Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 67
+
+    rectiferCommunicationRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Rectifer Communication Recovered."
+       --#TYPE "Hipulse_U_UPS: Rectifer Communication Recovered"
+       --#SUMMARY "Rectifer Communication Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 68
+
+    rectiferCommunicationFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Rectifer Communication Fault."
+       --#TYPE "Hipulse_U_UPS: Rectifer Communication Fault"
+       --#SUMMARY "Rectifer Communication Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 69
+
+
+    inverterTemperatureRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Inverter Temperature Recovered."
+       --#TYPE "Hipulse_U_UPS: Inverter Temperature Recovered"
+       --#SUMMARY "Inverter Temperature Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 70
+
+
+    inverterOvertemperature TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Inverter Overtemperature."
+       --#TYPE "Hipulse_U_UPS: Inverter Overtemperature"
+       --#SUMMARY "Inverter Overtemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 71
+
+
+    fanRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Fan Recovered."
+       --#TYPE "Hipulse_U_UPS: Fan Recovered"
+       --#SUMMARY "Fan Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 72
+
+
+    fanFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Fan Fault."
+       --#TYPE "Hipulse_U_UPS: Fan Fault"
+       --#SUMMARY "Fan Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 73
+
+
+    inverterSTSRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Inverter STS Recovered."
+       --#TYPE "Hipulse_U_UPS: Inverter STS Recovered"
+       --#SUMMARY "Inverter STS Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 74
+
+
+    inverterSTSFaul TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Inverter STS Fault."
+       --#TYPE "Hipulse_U_UPS: Inverter STS Fault"
+       --#SUMMARY "Inverter STS Faul."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 75
+
+
+    bypassSTSRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass STS Recovered."
+       --#TYPE "Hipulse_U_UPS: Bypass STS Recovered"
+       --#SUMMARY "Bypass STS Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 76
+
+
+    bypassSTSFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass STS Fault."
+       --#TYPE "Hipulse_U_UPS: Bypass STS Fault"
+       --#SUMMARY "Bypass STS Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 77
+
+
+    operationInvalid TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Operation Invalid."
+       --#TYPE "Hipulse_U_UPS: Operation Invalid"
+       --#SUMMARY "Operation Invalid."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 78
+
+
+    unitOverloadRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Unit Overload Recovered."
+       --#TYPE "Hipulse_U_UPS: Unit Overload Recovered"
+       --#SUMMARY "Unit Overload Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 79
+
+    unitOverload TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Unit Overload."
+       --#TYPE "Hipulse_U_UPS: Unit Overload"
+       --#SUMMARY "Unit Overload."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 80
+
+    systemOverloadRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: System Overload Recovered."
+       --#TYPE "Hipulse_U_UPS: System Overload Recovered"
+       --#SUMMARY "System Overload Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 81
+
+
+    systemOverload TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: System Overload."
+       --#TYPE "Hipulse_U_UPS: System Overload"
+       --#SUMMARY "System Overload."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 82
+
+
+    unitOverloadTimeoutRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Unit Overload Timeout Recovered."
+       --#TYPE "Hipulse_U_UPS: Unit Overload Timeout Recovered"
+       --#SUMMARY "Unit Overload Timeout Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 83
+
+
+    unitOverloadTimeout TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Unit Overload Timeout."
+       --#TYPE "Hipulse_U_UPS: Unit Overload Timeout"
+       --#SUMMARY "Unit Overload Timeout."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 84
+
+    bypassAbnormalShutdown TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass Abnormal Shutdown."
+       --#TYPE "Hipulse_U_UPS: Bypass Abnormal Shutdown"
+       --#SUMMARY "Bypass Abnormal Shutdown."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 85
+
+
+    outputOvervoltageRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Output Overvoltage Recovered."
+       --#TYPE "Hipulse_U_UPS: Output Overvoltage Recovered"
+       --#SUMMARY "Output Overvoltage Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 86
+
+
+    outputOvervoltage TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Output Overvoltage."
+       --#TYPE "Hipulse_U_UPS: Output Overvoltage"
+       --#SUMMARY "Output Overvoltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 87
+
+
+    inverterOvercurrentRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Inverter Overcurrent Recovered."
+       --#TYPE "Hipulse_U_UPS: Inverter Overcurrent Recovered"
+       --#SUMMARY "Inverter Overcurrent Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 88
+
+    inverterOvercurrent TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Inverter Overcurrent."
+       --#TYPE "Hipulse_U_UPS: Inverter Overcurrent"
+       --#SUMMARY "Inverter Overcurrent."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 89
+
+    bypassPhaseRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass Phase Recovered."
+       --#TYPE "Hipulse_U_UPS: Bypass Phase Recovered"
+       --#SUMMARY "Bypass Phase Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 90
+
+    bypassPhaseReversed TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass Phase Reversed."
+       --#TYPE "Hipulse_U_UPS: Bypass Phase Reversed"
+       --#SUMMARY "Bypass Phase Reversed."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 91
+
+    loadImpactTransfer TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Load Impact Transfer."
+       --#TYPE "Hipulse_U_UPS: Load Impact Transfer"
+       --#SUMMARY "Load Impact Transfer."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 92
+
+    transferTime-outCanceled TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Transfer Time-out Canceled."
+       --#TYPE "Hipulse_U_UPS: Transfer Time-out Canceled"
+       --#SUMMARY "Transfer Time-out Canceled."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 93
+
+    transferTime-out TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Transfer Time-out."
+       --#TYPE "Hipulse_U_UPS: Transfer Time-out"
+       --#SUMMARY "Transfer Time-out."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 94
+
+    loadSharingFaultRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Load Sharing Fault Recovered."
+       --#TYPE "Hipulse_U_UPS: Load Sharing Fault Recovered"
+       --#SUMMARY "Load Sharing Fault Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 95
+
+
+    loadSharingFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Load Sharing Fault."
+       --#TYPE "Hipulse_U_UPS: Load Sharing Fault"
+       --#SUMMARY "Load Sharing Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 96
+
+
+    shutoffinverterduetoabnormalDC TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Shut off inverter due to abnormal DC bus voltage."
+       --#TYPE "Hipulse_U_UPS: Shut off inverter due to abnormal DC bus voltage"
+       --#SUMMARY "Shut off inverter due to abnormal DC bus voltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 97
+
+
+    uPSTransfertobypassduetosystemrequest TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS Transfer to bypass due to system request."
+       --#TYPE "Hipulse_U_UPS: UPS Transfer to bypass due to system request"
+       --#SUMMARY "UPS Transfer to bypass due to system request."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 98
+
+
+    parallelBoardFaultRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Parallel Board Fault Recovered."
+       --#TYPE "Hipulse_U_UPS: Parallel Board Fault Recovered"
+       --#SUMMARY "Parallel Board Fault Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 99
+
+
+    parallelBoardFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Parallel Board Fault."
+       --#TYPE "Hipulse_U_UPS: Parallel Board Fault"
+       --#SUMMARY "Parallel Board Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 100
+
+
+    parallelConnectRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Parallel Connect Recovered."
+       --#TYPE "Hipulse_U_UPS: Parallel Connect Recovered"
+       --#SUMMARY "Parallel Connect Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 101
+
+
+    parallelConnectFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Parallel Connect Fault."
+       --#TYPE "Hipulse_U_UPS: Parallel Connect Fault"
+       --#SUMMARY "Parallel Connect Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 102
+
+
+    parallelCommunicationRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Parallel Communication Recovered."
+       --#TYPE "Hipulse_U_UPS: Parallel Communication Recovered"
+       --#SUMMARY "Parallel Communication Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 103
+
+
+    parallelCommunicationFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Parallel Communication Fault."
+       --#TYPE "Hipulse_U_UPS: Parallel Communication Fault"
+       --#SUMMARY "Parallel Communication Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 104
+
+    bypassOverCurrentRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass OverCurrent Recovered."
+       --#TYPE "Hipulse_U_UPS: Bypass OverCurrent Recovered"
+       --#SUMMARY "Bypass OverCurrent Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 105
+
+    bypassOverCurrent TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass OverCurrent."
+       --#TYPE "Hipulse_U_UPS: Bypass OverCurrent"
+       --#SUMMARY "Bypass OverCurrent."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 106
+
+    lBSNormal TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: LBS Normal."
+       --#TYPE "Hipulse_U_UPS: LBS Normal"
+       --#SUMMARY "LBS Normal."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 107
+
+    lBSActive TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: LBS Active."
+       --#TYPE "Hipulse_U_UPS: LBS Active"
+       --#SUMMARY "LBS Active."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 108
+
+    lBSFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: LBS Fault."
+       --#TYPE "Hipulse_U_UPS: LBS Fault"
+       --#SUMMARY "LBS Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 109
+
+    bypassInductanceRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass Inductance Recovered."
+       --#TYPE "Hipulse_U_UPS: Bypass Inductance Recovered"
+       --#SUMMARY "Bypass Inductance Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 110
+
+    bypassInductanceOvertemperature TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass Inductance Overtemperature."
+       --#TYPE "Hipulse_U_UPS: Bypass Inductance Overtemperature"
+       --#SUMMARY "Bypass Inductance Overtemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 111
+
+    sTSTemperatureRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: STS Temperature Recovered."
+       --#TYPE "Hipulse_U_UPS: STS Temperature Recovered"
+       --#SUMMARY "STS Temperature Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 112
+
+    sTSOvertemperature TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: STS Overtemperature."
+       --#TYPE "Hipulse_U_UPS: STS Overtemperature"
+       --#SUMMARY "STS Overtemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 113
+
+
+    bypassFeedbackRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass Feedback Recovered."
+       --#TYPE "Hipulse_U_UPS: Bypass Feedback Recovered"
+       --#SUMMARY "Bypass Feedback Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 114
+
+
+    bypassFeedbackFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass Feedback Fault."
+       --#TYPE "Hipulse_U_UPS: Bypass Feedback Fault"
+       --#SUMMARY "Bypass Feedback Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 115
+
+
+    inverterDriveCircuitRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Inverter Drive Circuit Recovered."
+       --#TYPE "Hipulse_U_UPS: Inverter Drive Circuit Recovered"
+       --#SUMMARY "Inverter Drive Circuit Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 116
+
+
+    inverterDriveCircuitFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Inverter Drive Circuit Fault."
+       --#TYPE "Hipulse_U_UPS: Inverter Drive Circuit Fault"
+       --#SUMMARY "Inverter Drive Circuit Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 117
+
+
+    inverterCommunicationRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Inverter Communication Recovered."
+       --#TYPE "Hipulse_U_UPS: Inverter Communication Recovered"
+       --#SUMMARY "Inverter Communication Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 118
+
+    inverterCommunicationFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Inverter Communication Fault."
+       --#TYPE "Hipulse_U_UPS: Inverter Communication Fault"
+       --#SUMMARY "Inverter Communication Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 119
+
+    systemBatteryLowFaultRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: System Battery Low Fault Recovered."
+       --#TYPE "Hipulse_U_UPS: System Battery Low Fault Recovered"
+       --#SUMMARY "System Battery Low Fault Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 120
+
+    systemBatteryLowFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: System Battery Low Fault."
+       --#TYPE "Hipulse_U_UPS: System Battery Low Fault"
+       --#SUMMARY "System Battery Low Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 121
+
+    emergencyPowerOffCanceled TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Emergency Power Off Canceled."
+       --#TYPE "Hipulse_U_UPS: Emergency Power Off Canceled"
+       --#SUMMARY "Emergency Power Off Canceled."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 122
+
+
+    emergencyPowerOff TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Emergency Power Off."
+       --#TYPE "Hipulse_U_UPS: Emergency Power Off"
+       --#SUMMARY "Emergency Power Off."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 123
+
+    ambientTemperatureRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Ambient Temperature Recovered."
+       --#TYPE "Hipulse_U_UPS: Ambient Temperature Recovered"
+       --#SUMMARY "Ambient Temperature Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 124
+
+
+    ambientOvertemperature TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Ambient Overtemperature."
+       --#TYPE "Hipulse_U_UPS: Ambient Overtemperature"
+       --#SUMMARY "Ambient Overtemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 125
+
+
+    batteryRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Recovered."
+       --#TYPE "Hipulse_U_UPS: Battery Recovered"
+       --#SUMMARY "Battery Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 126
+
+
+    batteryNeedReplace TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Need Replace."
+       --#TYPE "Hipulse_U_UPS: Battery Need Replace"
+       --#SUMMARY "Battery Need Replace."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 127
+
+    batteryBad TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Bad."
+       --#TYPE "Hipulse_U_UPS: Battery Bad"
+       --#SUMMARY "Battery Bad."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 128
+
+    batteryTemperatureRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Temperature Recovered."
+       --#TYPE "Hipulse_U_UPS: Battery Temperature Recovered"
+       --#SUMMARY "Battery Temperature Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 129
+
+    batteryOvertemperature TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Overtemperature."
+       --#TYPE "Hipulse_U_UPS: Battery Overtemperature"
+       --#SUMMARY "Battery Overtemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 130
+
+    batteryGroundRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Ground Recovered."
+       --#TYPE "Hipulse_U_UPS: Battery Ground Recovered"
+       --#SUMMARY "Battery Ground Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 131
+
+
+    batteryGroundFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Ground Fault."
+       --#TYPE "Hipulse_U_UPS: Battery Ground Fault"
+       --#SUMMARY "Battery Ground Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 132
+
+    batteryFuseRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Fuse Recovered."
+       --#TYPE "Hipulse_U_UPS: Battery Fuse Recovered"
+       --#SUMMARY "Battery Fuse Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 133
+
+    batteryFuseFault TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Fuse Fault."
+       --#TYPE "Hipulse_U_UPS: Battery Fuse Fault"
+       --#SUMMARY "Battery Fuse Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 134
+        
+    bCBNotConnected TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: BCB Not Connected."
+       --#TYPE "Hipulse_U_UPS: BCB Not Connected"
+       --#SUMMARY "BCB Not Connected."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 135
+        
+    bCBClosed TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: BCB Closed."
+       --#TYPE "Hipulse_U_UPS: BCB Closed"
+       --#SUMMARY "BCB Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 136
+        
+    bCBOpen TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: BCB Open."
+       --#TYPE "Hipulse_U_UPS: BCB Open"
+       --#SUMMARY "BCB Open."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 137
+        
+    busCapacitorOvervoltageRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bus Capacitor Overvoltage Recovered."
+       --#TYPE "Hipulse_U_UPS: Bus Capacitor Overvoltage Recovered"
+       --#SUMMARY "Bus Capacitor Overvoltage Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 138
+
+    busCapacitorOvervoltage TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bus Capacitor Overvoltage."
+       --#TYPE "Hipulse_U_UPS: Bus Capacitor Overvoltage"
+       --#SUMMARY "Bus Capacitor Overvoltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 139
+
+        
+    busOvervoltageRecovered TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bus Overvoltage Recovered."
+       --#TYPE "Hipulse_U_UPS: Bus Overvoltage Recovered"
+       --#SUMMARY "Bus Overvoltage Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 140
+
+    busOvervoltage TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bus Overvoltage."
+       --#TYPE "Hipulse_U_UPS: Bus Overvoltage"
+       --#SUMMARY "Bus Overvoltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 141
+
+    communicationInterrupt TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Communication Interrupt."
+       --#TYPE "Hipulse_U_UPS: Communication Interrupt"
+       --#SUMMARY "Communication Interrupt."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 142
+
+
+    communicationRestored TRAP-TYPE
+        ENTERPRISE hipulse_U_Ups
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Communication Restored."
+       --#TYPE "Hipulse_U_UPS: Communication Restored"
+       --#SUMMARY "Communication Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 143
+
+
+END -- end of Hipulse-U-UPS-MIB

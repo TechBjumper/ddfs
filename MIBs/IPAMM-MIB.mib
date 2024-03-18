@@ -1,0 +1,628 @@
+IPAMM DEFINITIONS ::= BEGIN
+
+IMPORTS
+   enterprises, IpAddress, Gauge, TimeTicks    	FROM RFC1155-SMI
+   DisplayString                                FROM RFC1213-MIB
+   OBJECT-TYPE                                  FROM RFC-1212
+   TRAP-TYPE                                    FROM RFC-1215;
+
+
+ipamm               
+	OBJECT IDENTIFIER ::=  { enterprises 32938}
+
+product             
+	OBJECT IDENTIFIER ::=  { ipamm 1 }
+setup               
+	OBJECT IDENTIFIER ::=  { ipamm 2 }
+controlSlaveA            
+	OBJECT IDENTIFIER ::=  { ipamm 4 }
+controlSlaveB            
+	OBJECT IDENTIFIER ::=  { ipamm 5 }
+controlCentrol            
+	OBJECT IDENTIFIER ::=  { ipamm 6 }
+trap		    
+	OBJECT IDENTIFIER ::=  { ipamm 10 }
+trapSlaveA		    
+	OBJECT IDENTIFIER ::=  { ipamm 11 }
+trapSlaveB		    
+	OBJECT IDENTIFIER ::=  { ipamm 12 }
+
+ON-OFF          ::=   INTEGER { ON(1), OFF(0) }
+
+--iPAMM.product
+name    OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "iPAMM Remote Monitoring System"
+   ::= { product 1 }
+   
+
+version    OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "V1.0"
+   ::= { product 2 }
+   
+date    OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Feb 2009"
+   ::= { product 3 }
+
+
+
+--iPAMM.control
+slaveATemperature OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Temperature sensor A.
+         (Units degrees C x100)"
+    ::= { controlSlaveA 1 }
+    
+slaveAFanSpeed OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Fan speed A.
+         (Units RPM)"
+    ::= { controlSlaveA 2 }
+
+slaveAPower   OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Fan power A.
+       (Units thousandths)"
+   ::= { controlSlaveA 3 }
+
+slaveADeviceOnTimeC    OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Current device A on time. 
+      (Units seconds)"
+   ::= { controlSlaveA 4 }
+   
+slaveADeviceOnTimeT    OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Total device A on time.
+      (Units seconds)"
+   ::= { controlSlaveA 5 }
+   
+   
+slaveAFanOnTimeC  OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Current fan A on time.
+       (Units seconds)"
+    ::= { controlSlaveA 6 }        
+
+slaveAFanOnTimeT OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Total fan A on time.
+        (Units seconds)"
+    ::= { controlSlaveA 7 }  
+
+slaveBTemperature OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Temperature sensor B.
+        (Units degrees C x100)"
+    ::= { controlSlaveB 1 }
+    
+slaveBFanSpeed OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Fan speed B.
+         (Units RPM)"
+    ::= { controlSlaveB 2 }
+
+slaveBPower   OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Fan power B.
+       (Units thousandths)"
+   ::= { controlSlaveB 3 }
+
+
+slaveBDeviceOnTimeC    OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Current device B on time.
+       (Units seconds)"
+   ::= { controlSlaveB 4 }
+   
+slaveBDeviceOnTimeT    OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Total device B on time.
+       (Units seconds)"
+   ::= { controlSlaveB 5 }
+   
+slaveBFanOnTimeC  OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Current fan B on time.
+       (Units seconds)"
+    ::= { controlSlaveB 6 }        
+
+slaveBFanOnTimeT OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Total fan B on time.
+       (Units seconds)"
+    ::= { controlSlaveB 7 }  
+
+inletTemperature OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Inlet temperature.
+        (Units degrees C x100)"
+    ::= { controlCentrol 1 }  
+
+turnOnTemperature OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Turn-on temperature.
+        (Units degrees C)"
+    ::= { controlCentrol 2 }  
+
+fullSpeedTemperature OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Full speed temperature.
+        (Units degrees C)"
+    ::= { controlCentrol 3 }  
+
+minDutyCycle OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Minimum duty cycle.
+         (Units thousandths)"
+    ::= { controlCentrol 4 }  
+
+doorStatus OBJECT-TYPE
+    SYNTAX INTEGER {close(0), open(1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Door status - need door open sensor installed."
+    ::= { controlCentrol 5 }  
+
+--Traps
+trapTable       OBJECT-TYPE
+    SYNTAX SEQUENCE OF TrapEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Trap table"
+    ::= { setup 1 }       
+   
+trapEntry OBJECT-TYPE
+    SYNTAX TrapEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Single trap entry containing trap receiver info."
+    INDEX { trapReceiverNumber }
+     ::= { trapTable 1 }
+    
+TrapEntry ::=
+    SEQUENCE {
+        trapReceiverNumber
+            INTEGER,
+        trapEnabled
+            INTEGER,
+        trapReceiverIPAddress
+            IpAddress,
+        trapCommunity
+            DisplayString
+    }                   
+    
+trapReceiverNumber  OBJECT-TYPE
+    SYNTAX INTEGER (0.. 4)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Index of trap receiver"
+    ::= { trapEntry 1 }
+    
+trapEnabled OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Indicates if this trap entry is enabled or not."
+    ::= { trapEntry 2 }
+
+
+trapReceiverIPAddress OBJECT-TYPE
+    SYNTAX  IpAddress
+    ACCESS  read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Trap receiver IP address"
+    ::= { trapEntry 3 }
+
+trapCommunity OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..7))
+    ACCESS  read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Trap community to be used by agent to send trap"
+    ::= { trapEntry 4 }
+
+trapDoorOpen OBJECT-TYPE
+    SYNTAX INTEGER {close(0), open(1)}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Bit mask of fault conditions present when Door status trap"
+    ::= { trap 1 }  
+
+trapInletTemperatureOver OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Bit mask of fault conditions present when Inlet temperature over trap."
+    ::= { trap 2 }  
+
+trapInletTemperatureSensorFail OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Bit mask of fault conditions present when Inlet temperature sensor fail trap."
+    ::= { trap 3 }  
+
+trapSlaveAInactive OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Bit mask of fault conditions present when Device A inactive trap."
+    ::= { trapSlaveA 1 }
+
+trapSlaveATemperatureOver OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Bit mask of fault conditions present when Temperature A over trap."
+    ::= { trapSlaveA 2 }
+
+trapSlaveATemperatureSensorFail OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Bit mask of fault conditions present when Temperature sensor A fail trap."
+    ::= { trapSlaveA 3 }
+
+trapSlaveAFanFail OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Bit mask of fault conditions present when Fan sensor A fail trap."
+    ::= { trapSlaveA 4 }
+
+trapSlaveBInactive OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Bit mask of fault conditions present when Device B inactive trap."
+    ::= { trapSlaveB 1 }
+
+trapSlaveBTemperatureOver OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Bit mask of fault conditions present when Temperature B over trap."
+    ::= { trapSlaveB 2 }
+
+trapSlaveBTemperatureSensorFail OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Bit mask of fault conditions present when Temperature sensor B fail trap."
+    ::= { trapSlaveB 3 }
+
+trapSlaveBFanFail OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Bit mask of fault conditions present when Fan sensor B fail trap."
+    ::= { trapSlaveB 4 }
+
+
+inletTemperatureOver TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapInletTemperatureOver }
+    DESCRIPTION
+        "INFORMATIONAL: Inlet temperature over threshold."
+    --#TYPE "iPAMM: Inlet temperature over threshold."
+    --#SUMMARY "Inlet temperature over threshold."
+    --#ARGUMENTS { }
+    --#SEVERITY INFORMATIONAL
+    --#STATE OPERATIONAL
+    ::= 2
+
+inletTemperatureSensorFail TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapInletTemperatureSensorFail }
+    DESCRIPTION
+        "CRITICAL: Inlet temperature sensor failure."
+    --#TYPE "iPAMM: Inlet temperature sensor failure."
+    --#SUMMARY "Inlet temperature sensor failure."
+    --#ARGUMENTS { }
+    --#SEVERITY CRITICAL
+    --#STATE OPERATIONAL
+    ::= 3
+
+slaveAInactive TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapSlaveAInactive }
+    DESCRIPTION
+        "CRITICAL: Device A inactive."
+    --#TYPE "iPAMM: Device A inactive."
+    --#SUMMARY "Device A inactive."
+    --#ARGUMENTS { }
+    --#SEVERITY CRITICAL
+    --#STATE OPERATIONAL
+    ::= 4
+
+slaveATemperatureOver TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapSlaveATemperatureOver }
+    DESCRIPTION
+        "MAJOR: Temperature A over threshold."
+    --#TYPE "iPAMM: Temperature A over threshold."
+    --#SUMMARY "Temperature A over threshold."
+    --#ARGUMENTS { }
+    --#SEVERITY MAJOR
+    --#STATE OPERATIONAL
+    ::= 5
+
+slaveATemperatureSensorFail TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapSlaveATemperatureSensorFail }
+    DESCRIPTION
+        "CRITICAL: Temperature sensor A failure."
+    --#TYPE "iPAMM: Temperature sensor A failure."
+    --#SUMMARY "Temperature sensor A failure."
+    --#ARGUMENTS { }
+    --#SEVERITY CRITICAL
+    --#STATE OPERATIONAL
+    ::= 6
+
+slaveAFanFail TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapSlaveAFanFail }
+    DESCRIPTION
+        "CRITICAL: Fan sensor A failure."
+    --#TYPE "iPAMM: Fan sensor A failure."
+    --#SUMMARY "Fan sensor A failure."
+    --#ARGUMENTS { }
+    --#SEVERITY CRITICAL
+    --#STATE OPERATIONAL
+    ::= 7
+
+
+slaveBInactive TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapSlaveBInactive }
+    DESCRIPTION
+        "CRITICAL: Device B inactive."
+    --#TYPE "iPAMM: Device B inactive."
+    --#SUMMARY "Device B inactive."
+    --#ARGUMENTS { }
+    --#SEVERITY CRITICAL
+    --#STATE OPERATIONAL
+    ::= 8
+
+slaveBTemperatureOver TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapSlaveBTemperatureOver }
+    DESCRIPTION
+        "MAJOR: Temperature B over threshold."
+    --#TYPE "iPAMM: Temperature B over threshold."
+    --#SUMMARY "Temperature B over threshold."
+    --#ARGUMENTS { }
+    --#SEVERITY MAJOR
+    --#STATE OPERATIONAL
+    ::= 9
+
+slaveBTemperatureSensorFail TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapSlaveBTemperatureSensorFail }
+    DESCRIPTION
+        "CRITICAL: Temperature sensor B failure."
+    --#TYPE "iPAMM: Temperature sensor B failure."
+    --#SUMMARY "Temperature sensor B failure."
+    --#ARGUMENTS { }
+    --#SEVERITY CRITICAL
+    --#STATE OPERATIONAL
+    ::= 10
+
+slaveBFanFail TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapSlaveBFanFail }
+    DESCRIPTION
+        "CRITICAL: Fan sensor B failure."
+    --#TYPE "iPAMM: Fan sensor B failure."
+    --#SUMMARY "Fan sensor B failure."
+    --#ARGUMENTS { }
+    --#SEVERITY CRITICAL
+    --#STATE OPERATIONAL
+    ::= 11
+
+
+inletTemperatureOverCleared TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapInletTemperatureOver }
+    DESCRIPTION
+        "INFORMATIONAL: Inlet temperature under threshold."
+    --#TYPE "iPAMM: Inlet temperature under threshold."
+    --#SUMMARY "Inlet temperature under threshold."
+    --#ARGUMENTS { }
+    --#SEVERITY INFORMATIONAL
+    --#STATE OPERATIONAL
+    ::= 66
+
+inletTemperatureSensorFailCleared TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapInletTemperatureSensorFail }
+    DESCRIPTION
+        "INFORMATIONAL: Inlet temperature sensor OK."
+    --#TYPE "iPAMM: Inlet temperature sensor OK."
+    --#SUMMARY "Inlet temperature sensor OK."
+    --#ARGUMENTS { }
+    --#SEVERITY INFORMATIONAL
+    --#STATE OPERATIONAL
+    ::= 67
+
+slaveAInactiveCleared TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapSlaveAInactive }
+    DESCRIPTION
+        "INFORMATIONAL: Device A operational."
+    --#TYPE "iPAMM: Device A operational."
+    --#SUMMARY "Device A operational."
+    --#ARGUMENTS { }
+    --#SEVERITY INFORMATIONAL
+    --#STATE OPERATIONAL
+    ::= 68
+
+slaveATemperatureOverCleared TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapSlaveATemperatureOver }
+    DESCRIPTION
+        "INFORMATIONAL: Temperature A under threshold."
+    --#TYPE "iPAMM: Temperature A under threshold."
+    --#SUMMARY "Temperature A under threshold."
+    --#ARGUMENTS { }
+    --#SEVERITY INFORMATIONAL
+    --#STATE OPERATIONAL
+    ::= 69
+
+slaveATemperatureSensorFailCleared TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapSlaveATemperatureSensorFail }
+    DESCRIPTION
+        "INFORMATIONAL: Temperature sensor A OK."
+    --#TYPE "iPAMM: Temperature sensor A OK."
+    --#SUMMARY "Temperature sensor A OK."
+    --#ARGUMENTS { }
+    --#SEVERITY INFORMATIONAL
+    --#STATE OPERATIONAL
+    ::= 70
+
+slaveAFanFailCleared TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapSlaveAFanFail }
+    DESCRIPTION
+        "INFORMATIONAL: Fan sensor A OK."
+    --#TYPE "iPAMM: Fan sensor A OK."
+    --#SUMMARY "Fan sensor A OK."
+    --#ARGUMENTS { }
+    --#SEVERITY INFORMATIONAL
+    --#STATE OPERATIONAL
+    ::= 71
+
+
+slaveBInactiveCleared TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapSlaveBInactive }
+    DESCRIPTION
+        "INFORMATIONAL: Device B operational."
+    --#TYPE "iPAMM: Device B operational."
+    --#SUMMARY "Device B operational."
+    --#ARGUMENTS { }
+    --#SEVERITY INFORMATIONAL
+    --#STATE OPERATIONAL
+    ::= 72
+
+slaveBTemperatureOverCleared TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapSlaveBTemperatureOver }
+    DESCRIPTION
+        "INFORMATIONAL: Temperature B under threshold."
+    --#TYPE "iPAMM: Temperature B under threshold."
+    --#SUMMARY "Temperature B under threshold."
+    --#ARGUMENTS { }
+    --#SEVERITY INFORMATIONAL
+    --#STATE OPERATIONAL
+    ::= 73
+
+slaveBTemperatureSensorFailCleared TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapSlaveBTemperatureSensorFail }
+    DESCRIPTION
+        "INFORMATIONAL: Temperature sensor B OK."
+    --#TYPE "iPAMM: Temperature sensor B OK."
+    --#SUMMARY "Temperature sensor B OK."
+    --#ARGUMENTS { }
+    --#SEVERITY INFORMATIONAL
+    --#STATE OPERATIONAL
+    ::= 74
+
+slaveBFanFailCleared TRAP-TYPE
+    ENTERPRISE ipamm
+    VARIABLES { trapSlaveBFanFail }
+    DESCRIPTION
+        "INFORMATIONAL: Fan sensor B OK."
+    --#TYPE "iPAMM: Fan sensor B OK."
+    --#SUMMARY "Fan sensor B OK."
+    --#ARGUMENTS { }
+    --#SEVERITY INFORMATIONAL
+    --#STATE OPERATIONAL
+    ::= 75
+
+END

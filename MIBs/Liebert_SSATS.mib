@@ -1,0 +1,1129 @@
+  -- ----------------------------------------------------------------------------
+--                    Liebert SmartSwitch MIB
+--                    Liebert-SmartSwitch-MIB
+--
+--      Copyright (c) 1999-2000 HUAWEI ELECTRIC TECH. CO., LTD, SHENZHEN.
+--      Copyright (c) 2000-2001 AVANSYS POWER CO., LTD., SHENZHEN.
+--      Copyright (c) 2001-2005 EMERSON NETWORK POWER CO., LTD.
+--      All rights reserved.
+--
+--      Created    by: Su Chunlei
+--      Created  date: 2005-11-25
+--      Modified Date:
+-- ----------------------------------------------------------------------------
+
+Liebert-SmartSwitch-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE
+        FROM RFC-1212
+
+    TRAP-TYPE
+        FROM RFC-1215
+
+    enterprises, IpAddress
+        FROM RFC1155-SMI;
+
+    DisplayString ::= OCTET STRING
+
+
+    -- ------------------------------------------------------------------------
+    -- the location of UPS group in ENP enterprise.
+    -- ------------------------------------------------------------------------ 
+    emersonNetworkPower     OBJECT IDENTIFIER ::= { enterprises 13400 }
+    products                OBJECT IDENTIFIER ::= { emersonNetworkPower 2 }
+    emersonUps              OBJECT IDENTIFIER ::= { products 1 }
+    smartSwitch             OBJECT IDENTIFIER ::= { products 6 }
+    
+    -- ------------------------------------------------------------------------
+    -- the main objects about UPS
+    -- ------------------------------------------------------------------------ 
+    upsAgent        OBJECT IDENTIFIER ::= { emersonUps 1 }
+    upsCommon       OBJECT IDENTIFIER ::= { emersonUps 2 }
+    upsSpecial      OBJECT IDENTIFIER ::= { smartSwitch 3 }
+    upsAlarm        OBJECT IDENTIFIER ::= { emersonUps 4 }
+
+    upsIdent        OBJECT IDENTIFIER ::= { upsCommon 1 }
+
+    -- ------------------------------------------------------------------------
+    -- the common objects about a  UPS
+    -- ------------------------------------------------------------------------ 
+    upsBaseIdent    OBJECT IDENTIFIER ::=  { upsIdent 1 }
+    upsSmartIdent   OBJECT IDENTIFIER ::=  { upsIdent 2 }
+
+    upsBaseAlaram   OBJECT IDENTIFIER ::=  { upsAlarm 1 }
+    upsSmartAlarm   OBJECT IDENTIFIER ::=  { upsAlarm 2 }
+
+    -- ------------------------------------------------------------------------
+    -- the detail objects about a special UPS
+    -- ------------------------------------------------------------------------ 
+    ssatsSetting    OBJECT IDENTIFIER ::=  { upsSpecial 2 }
+    ssatsStatus     OBJECT IDENTIFIER ::=  { upsSpecial 3 }
+
+    -- ------------------------------------------------------------------------
+    -- 1. upsAgent group
+    -- ------------------------------------------------------------------------ 
+   
+    agentRevision OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The software version of the agent."
+        ::= { upsAgent 1 }
+
+    agentManagersNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of managers that can manage the agent. "
+        ::= { upsAgent 2 }
+ 
+    agentManagersTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF AgentManagersEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of managers of the agent.  The number of
+            entries is given by the value of agentManagersNum."
+        ::= { upsAgent 3 }
+ 
+    agentManagersEntry OBJECT-TYPE
+        SYNTAX AgentManagersEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The managers of the agent."
+        INDEX  { managerIndex}
+        ::= { agentManagersTable 1 }
+ 
+    AgentManagersEntry ::=
+        SEQUENCE {
+            managerIndex
+                INTEGER,
+            managerAddr
+                IpAddress,
+            publicCommunityString
+                 DisplayString,
+            privateCommunityString
+                 DisplayString,
+            managerPrivilege
+                INTEGER,
+            acceptTrapLevel
+                INTEGER,
+            managerAccept
+                INTEGER
+        }
+ 
+    managerIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the managers entry."
+        ::= { agentManagersEntry 1 }
+    
+    managerAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The IP address of the manager."
+        ::= { agentManagersEntry 2 }
+
+    publicCommunityString OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "The public community name to use in the query request."
+        ::= { agentManagersEntry 3 }
+ 
+    privateCommunityString OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "The private community name to use int the control request."
+        ::= { agentManagersEntry 4 }
+ 
+    managerPrivilege OBJECT-TYPE
+        SYNTAX INTEGER {
+            forbidden(0),
+            query(1),
+            control(2),
+            administrator(3)
+       }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The privilege of the manager to access the agent.
+            setting forbidden(0) indicates the manager have no any privilege to access the agent,
+            setting query(1) indicates the manager can GET information from agent only,
+            setting control(2) indicates the manager can GET information from agent and 
+            send control command to the agent.
+            setting administrator(3) indicates the manager has all management privilege
+            including set or modify this managers table."
+       ::= { agentManagersEntry 5 }
+
+    acceptTrapLevel OBJECT-TYPE
+         SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3),
+            noTraps(4)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The severity threshold of traps to send to the manager.
+            traps are labeled in severity as informational(1), warning(2),
+            severe(3).  Only traps of equal or greater severity than
+            this value are sent to the manager. setting noTraps(4) indicates
+            agent do not send any traps to the manager."
+       ::= { agentManagersEntry 6 }
+
+    managerAccept OBJECT-TYPE
+        SYNTAX INTEGER   {
+            view(0),
+            new(1),
+            modify(2),
+            delete(3)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "An entry will be added if new(1), will be modified if modify(2), 
+           and will be removed if delete(3)."
+        ::= { agentManagersEntry 7 }
+
+    -- ------------------------------------------------------------------------
+    -- 2. upsCommon group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------
+    -- 2.1 upsIdent group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------ 
+    -- 2.1.1 the upsBaseIdent group
+    -- ------------------------------------------------------------------------ 
+
+    upsBaseIdentModel OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The UPS model name (e.g. 'SmartSwitch 6KVA')."
+        ::= { upsBaseIdent 1 }
+
+    upsBaseIdentUpsName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "An 8 byte ID string identifying the UPS.  This object
+             can be set by the administrator."
+        ::= { upsBaseIdent 2 }
+                
+    
+    -- ------------------------------------------------------------------------ 
+    -- 2.1.2 the upsSmartIdent group
+    -- ------------------------------------------------------------------------ 
+            
+    upsSmartIdentFirmwareRevision OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The firmware revision of the UPS system."
+        ::= { upsSmartIdent 1 }
+        
+    -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    -- IMPORTANT: SmartSwitch does NOT support manu-date and product-serial
+    --            to read these variables will get 'reserved'
+    upsSmartIdentDateOfManufacture OBJECT-TYPE
+        SYNTAX DisplayString
+       ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The date when the UPS was manufactured in yyyy/mm/dd format."
+        ::= { upsSmartIdent 2 }
+
+    upsSmartIdentUpsSerialNumber OBJECT-TYPE
+         SYNTAX DisplayString
+        ACCESS read-only
+         STATUS mandatory
+         DESCRIPTION
+            "An 8-character string identifying the serial number of
+              the UPS internal microprocessor.  This number is set at
+              the factory.  NOTE: This number does NOT correspond to
+             the serial number on the rear of the UPS."
+        ::= { upsSmartIdent 3 }
+    
+    upsSmartIdentUpsFactory OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The name of the factory that manufactured this UPS."
+        ::= { upsSmartIdent 4 }
+    
+    -- ------------------------------------------------------------------------
+    -- 3. upsSpecial group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------
+    -- 3.2. the ssatsSetting group
+    -- ------------------------------------------------------------------------
+    ssatsNominalVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The Nominal Voltage Setting of SmartSwitch expressed in V."
+        ::= { ssatsSetting 1 }
+
+    ssatsSettingAmps OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The Amps Setting of SmartSwitch expressed in A."
+        ::= { ssatsSetting 2 }
+
+    ssatsSettingFrequency OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The Frequency Setting of SmartSwitch expressed in Hz."
+        ::= { ssatsSetting 3 }
+
+    ssatsSettingPhase OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The Phase Setting of SmartSwitch."
+        ::= { ssatsSetting 4 }
+
+
+    -- ------------------------------------------------------------------------
+    -- 3.3. the ssatsStatus group
+    -- ------------------------------------------------------------------------
+
+    ssatsStatusPreferredSource OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            fail(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The Preferred Source of SmartSwitch."
+        ::= { ssatsStatus 1 }
+
+    ssatsStatusAlternateSource OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            fail(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The Alternate Source of SmartSwitch."
+        ::= { ssatsStatus 2 }
+
+    ssatsStatusOutofSync OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Whether the input sources of SmartSwitch out of sync."
+        ::= { ssatsStatus 3 }
+
+    ssatsStatusTransferInhibit OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Whether the transfer has been inhibit."
+        ::= { ssatsStatus 4 }
+
+    ssatsStatusPeakOverload OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Whether the output peak has overload."
+        ::= { ssatsStatus 5 }
+
+    ssatsStatusTransferTestFail OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Whether the transfer test failed."
+        ::= { ssatsStatus 6 }
+
+    ssatsStatusPowerSupplyFault OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Whether the Power Supply is at fault."
+        ::= { ssatsStatus 7 }
+
+    ssatsStatusOnPreferredSource OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Whether the SmartSwitch Load on Preferred Source."
+        ::= { ssatsStatus 8 }
+
+    ssatsStatusOnAlternateSource OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Whether the SmartSwitch Load on Alternate Source."
+        ::= { ssatsStatus 9 }
+
+    ssatsStatusSwitchinNormalMode OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Whether the SmartSwitch Switch in Normal Mode"
+        ::= { ssatsStatus 10 }
+
+    ssatsStatusManualTransfertoS1 OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Manual Transfered to S1."
+        ::= { ssatsStatus 11 }
+
+    ssatsStatusManualTransfertoS2 OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Manual Transfered to S2."
+        ::= { ssatsStatus 12 }
+
+    ssatsStatusBypasstoS1 OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass to S1."
+        ::= { ssatsStatus 13 }
+
+    ssatsStatusBypasstoS2 OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass to S2."
+        ::= { ssatsStatus 14 }
+
+    ssatsStatusPreferredSourceAvailable OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Whether the Preferred Source available."
+        ::= { ssatsStatus 15 }
+
+    ssatsStatusAlternateSourceAvailable OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Whether the Alternate Source available."
+        ::= { ssatsStatus 16 }
+        
+    ssatsStatusCommunication OBJECT-TYPE
+        SYNTAX INTEGER {
+            unknown(1),
+            ok(2),
+            lostCommunication(3),
+            notEstablished(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The status of communication to SmartSwitch. lostCommunication(3) indicates
+            some errors occurred between SmartSwitch and agent. notEstablished(4) indicates
+            agent can not connect to SmartSwitch, maybe error on communication port or port
+            settings error."
+        ::= { ssatsStatus 55 }
+
+
+    -- ------------------------------------------------------------------------
+    -- 4. the upsAlarm group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 4.1. the upsBaseAlaram group
+    -- ------------------------------------------------------------------------
+
+    -- no upsBaseAlaram variables
+
+    -- ------------------------------------------------------------------------
+    -- 4.2. the upsSmartAlarm group
+    -- ------------------------------------------------------------------------
+    upsSmartAlarmPresentNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The present number of active alarams."
+        ::= { upsSmartAlarm 1 }
+
+    upsSmartAlarmPresentTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UpsSmartAlarmPresentEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of current UPS alarms, The number of entries is given
+            by the value of upsSmartAlarmPresentNum."
+        ::= { upsSmartAlarm 2 }
+
+    upsSmartAlarmPresentEntry OBJECT-TYPE
+        SYNTAX UpsSmartAlarmPresentEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The present alarms list."
+        INDEX  { presentAlarmIndex}
+        ::= { upsSmartAlarmPresentTable 1 }
+
+    UpsSmartAlarmPresentEntry ::=
+        SEQUENCE {
+            presentAlarmIndex
+                INTEGER,
+            presentAlarmTime
+                DisplayString,
+            presentAlarmId
+                INTEGER,
+            presentAlarmName
+                DisplayString,
+            presentAlaramLevel
+                INTEGER
+        }
+
+    presentAlarmIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the present alaram entry."
+        ::= { upsSmartAlarmPresentEntry 1 }
+
+    presentAlarmTime OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The time of the alarm generated, format as yyyy/mm/dd hh:mm:ss."
+        ::= { upsSmartAlarmPresentEntry 2 }
+
+    presentAlarmId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm ID."
+       ::= { upsSmartAlarmPresentEntry 3 }
+
+    presentAlarmName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The name of the alarm."
+        ::= { upsSmartAlarmPresentEntry 4 }
+
+    presentAlaramLevel OBJECT-TYPE
+        SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm level."
+       ::= { upsSmartAlarmPresentEntry 5 }
+
+    -- historical alarms
+    upsSmartAlarmHistoryNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of historical alarms."
+        ::= { upsSmartAlarm 3 }
+
+    upsSmartAlarmHistoryTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UpsSmartAlarmHistoryEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of historical UPS alarms, The number of entries is given
+            by the value of upsSmartAlarmHistoryNum."
+        ::= { upsSmartAlarm 4 }
+
+    upsSmartAlarmHistoryEntry OBJECT-TYPE
+        SYNTAX UpsSmartAlarmHistoryEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The historical alarms list."
+        INDEX  { historyAlarmIndex}
+        ::= { upsSmartAlarmHistoryTable 1 }
+
+    UpsSmartAlarmHistoryEntry ::=
+        SEQUENCE {
+            historyAlarmIndex
+                INTEGER,
+            historyAlarmTime
+                DisplayString,
+            historyAlarmId
+                INTEGER,
+            historyAlarmName
+                DisplayString,
+            historyAlaramLevel
+                INTEGER
+        }
+
+    historyAlarmIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the historical alaram entry."
+        ::= { upsSmartAlarmHistoryEntry 1 }
+
+    historyAlarmTime OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The time of the alarm generated, format as yyyy/mm/dd hh:mm:ss."
+        ::= { upsSmartAlarmHistoryEntry 2 }
+
+    historyAlarmId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm ID."
+       ::= { upsSmartAlarmHistoryEntry 3 }
+
+    historyAlarmName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The name of the alarm."
+        ::= { upsSmartAlarmHistoryEntry 4 }
+
+    historyAlaramLevel OBJECT-TYPE
+        SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm level."
+       ::= { upsSmartAlarmHistoryEntry 5 }
+
+
+
+    -- ------------------------------------------------------------------------
+    -- Traps
+    -- ------------------------------------------------------------------------
+
+    --
+    -- trap args
+    --
+    trapArgsString OBJECT-TYPE
+        SYNTAX  DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "This OID allows SmartSwitch traps to be sent with an octet string argument
+             that may not be defined in the SmartSwitch MIB.
+
+             A get of this OID will return a NULL string."
+        ::= { upsAlarm 2002 }
+
+
+    communicationInterrupt TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Communication Interrupt."
+       --#TYPE "SmartSwitch: Communication Interrupt"
+       --#SUMMARY "Communication Interrupt."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 1
+
+
+    communicationRestored TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Communication Restored."
+       --#TYPE "SmartSwitch: Communication Restored"
+       --#SUMMARY "Communication Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 2
+
+
+    preferredSourceNormal TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Preferred Source Normal."
+       --#TYPE "SmartSwitch: Preferred Source Normal"
+       --#SUMMARY "Preferred Source Normal."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 3
+
+
+    preferredSourceFail TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Preferred Source Fail."
+       --#TYPE "SmartSwitch: Preferred Source Fail"
+       --#SUMMARY "Preferred Source Fail."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 4
+
+
+    alternateSourceNormal TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Alternate Source Normal."
+       --#TYPE "SmartSwitch: Alternate Source Normal"
+       --#SUMMARY "Alternate Source Normal."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 5
+
+
+    alternateSourceFail TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Alternate Source Fail."
+       --#TYPE "SmartSwitch: Alternate Source Fail"
+       --#SUMMARY "Alternate Source Fail."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 6
+
+
+    inSync TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: In Sync."
+       --#TYPE "SmartSwitch: In Sync"
+       --#SUMMARY "In Sync."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 7
+
+
+    outOfSync TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Out of Sync."
+       --#TYPE "SmartSwitch: Out of Sync"
+       --#SUMMARY "Out of Sync."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 8
+
+
+    okToTransfer TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: OK to Transfer."
+       --#TYPE "SmartSwitch: OK to Transfer"
+       --#SUMMARY "OK to Transfer."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 9
+
+
+    transferInhibit TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Transfer Inhibit."
+       --#TYPE "SmartSwitch: Transfer Inhibit"
+       --#SUMMARY "Transfer Inhibit."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 10
+
+
+    peakOverloadGone TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Peak Overload Gone."
+       --#TYPE "SmartSwitch: Peak Overload Gone"
+       --#SUMMARY "Peak Overload Gone."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 11
+
+
+    peakOverload TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Peak Overload."
+       --#TYPE "SmartSwitch: Peak Overload"
+       --#SUMMARY "Peak Overload."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 12
+
+
+    transferTestPassed TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Transfer Test Passed."
+       --#TYPE "SmartSwitch: Transfer Test Passed"
+       --#SUMMARY "Transfer Test Passed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 13
+
+
+    transferTestFail TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Transfer Test Fail."
+       --#TYPE "SmartSwitch: Transfer Test Fail"
+       --#SUMMARY "Transfer Test Fail."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 14
+
+
+    powerSupplyOK TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Power Supply OK."
+       --#TYPE "SmartSwitch: Power Supply OK"
+       --#SUMMARY "Power Supply OK."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 15
+
+
+    powerSupplyFault TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Power Supply Fault."
+       --#TYPE "SmartSwitch: Power Supply Fault"
+       --#SUMMARY "Power Supply Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 16
+
+
+    loadOnPreferredSource TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Load on Preferred Source."
+       --#TYPE "SmartSwitch: Load on Preferred Source"
+       --#SUMMARY "Load on Preferred Source."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 17
+
+
+    loadOnAlternateSource TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Load on Alternate Source."
+       --#TYPE "SmartSwitch: Load on Alternate Source"
+       --#SUMMARY "Load on Alternate Source."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 18
+
+
+    switchInNormalMode TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Switch in Normal Mode."
+       --#TYPE "SmartSwitch: Switch in Normal Mode"
+       --#SUMMARY "Switch in Normal Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 19
+
+
+    manualTransferToS1 TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Manual Transfer to S1."
+       --#TYPE "SmartSwitch: Manual Transfer to S1"
+       --#SUMMARY "Manual Transfer to S1."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 20
+
+
+    manualTransferToS2 TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Manual Transfer to S2."
+       --#TYPE "SmartSwitch: Manual Transfer to S2"
+       --#SUMMARY "Manual Transfer to S2."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 21
+
+
+    bypassToS1 TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass to S1."
+       --#TYPE "SmartSwitch: Bypass to S1"
+       --#SUMMARY "Bypass to S1."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 22
+
+
+    bypassToS2 TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass to S2."
+       --#TYPE "SmartSwitch: Bypass to S2"
+       --#SUMMARY "Bypass to S2."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 23
+
+
+    preferredSourceAvailable TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Preferred Source Available."
+       --#TYPE "SmartSwitch: Preferred Source Available"
+       --#SUMMARY "Preferred Source Available."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 24
+
+
+    alternateSourceAvailable TRAP-TYPE
+        ENTERPRISE smartSwitch
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Alternate Source Available."
+       --#TYPE "SmartSwitch: Alternate Source Available"
+       --#SUMMARY "Alternate Source Available."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 25
+
+
+END -- end of Liebert-SmartSwitch-MIB

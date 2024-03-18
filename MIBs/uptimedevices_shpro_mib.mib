@@ -1,0 +1,3326 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0054)http://www.uptimedevices.com/new/support/mib/shpro.mib -->
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=windows-1252">
+<META content="MSHTML 6.00.2900.2722" name=GENERATOR></HEAD>
+<BODY><PRE>--
+--  Uptime Devices, Inc.
+--  shpro MIB
+--  $Id: shpro.mib,v 1.7 2004/05/05 05:21:06 devel Exp $
+--
+
+UPTIME-ROOT-MIB DEFINITIONS ::= BEGIN
+        IMPORTS
+                DisplayString
+                        FROM RFC1213-MIB
+                enterprises
+                        FROM RFC1155-SMI
+                OBJECT-TYPE
+                        FROM RFC-1212
+                TRAP-TYPE
+                        FROM RFC-1215;
+
+        uptime          OBJECT IDENTIFIER ::= { enterprises 13045 }
+        shseries        OBJECT IDENTIFIER ::= { uptime 1 }
+        sdcseries       OBJECT IDENTIFIER ::= { uptime 2 }
+        sh2             OBJECT IDENTIFIER ::= { shseries 1 }
+        shpro           OBJECT IDENTIFIER ::= { shseries 2 }
+        shprosystem     OBJECT IDENTIFIER ::= { shpro 1 }
+        shprosensor     OBJECT IDENTIFIER ::= { shpro 2 }
+        shproserial     OBJECT IDENTIFIER ::= { shpro 3 }
+        shpropower      OBJECT IDENTIFIER ::= { shpro 4 }
+        shprocontact    OBJECT IDENTIFIER ::= { shpro 5 }
+
+
+        -- the shpro system information
+
+        -- the shpro sensor information
+
+        shproSensorNumber OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The number of online, connected sensors."
+                ::= { shprosensor 1 }
+
+        shproSensorTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF SHProSensorEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table of sensors."
+                ::= { shprosensor 2 }
+
+        shproSensorEntry OBJECT-TYPE
+                SYNTAX SHProSensorEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "A sensor table entry."
+                INDEX { shproSensorIndex }
+                ::= { shproSensorTable 1 }
+
+        SHProSensorEntry ::=
+                SEQUENCE {
+                        shproSensorIndex                INTEGER,
+                        shproSensorName                 DisplayString,
+                        shproSensorType                 DisplayString,
+                        shproSensorCurrentValue         INTEGER,
+                        shproSensorOnlineStatus         INTEGER,
+                        shproSensorState                INTEGER,
+                        shproSensorHighCritical         INTEGER,
+                        shproSensorHighWarning          INTEGER,
+                        shproSensorLowWarning           INTEGER,
+                        shproSensorLowCritical          INTEGER,
+                        shproSensorGoOnline             INTEGER,
+                        shproSensorRearm                INTEGER,
+                        shproSensorTempScaleType        INTEGER,
+                        shproSensorDCDirection          INTEGER,
+                        shproSensorDCNormalState        INTEGER,
+                        shproSensorDCOutputLevel        INTEGER,
+                        shproSensorCalibration          INTEGER
+                }
+
+        shproSensorIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor port number."
+                ::= { shproSensorEntry 1 }
+
+        shproSensorName OBJECT-TYPE
+                SYNTAX DisplayString (SIZE (0..12))
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor name."
+                ::= { shproSensorEntry 2 }
+
+        shproSensorType OBJECT-TYPE
+                SYNTAX DisplayString (SIZE (0..255))
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor type."
+                ::= { shproSensorEntry 3 }
+
+        shproSensorCurrentValue OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor's current value."
+                ::= { shproSensorEntry 4 }
+
+        shproSensorOnlineStatus OBJECT-TYPE
+                SYNTAX INTEGER {
+                        online(1),
+                        offline(2)
+                }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "Status (online/offline) of the sensor."
+                ::= { shproSensorEntry 5 }
+
+        shproSensorState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        highCritical(1),
+                        highWarning(2),
+                        lowWarning(3),
+                        lowCritical(4),
+                        normal(5),
+                        notPresent(6)
+                        }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The sensor state relative to the thresholds." 
+                ::= { shproSensorEntry 6 }
+
+        shproSensorHighCritical OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The high critical threshold."
+                ::= { shproSensorEntry 7 }
+
+        shproSensorHighWarning OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The high warning threshold."
+                ::= { shproSensorEntry 8 }
+
+        shproSensorLowWarning OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The low warning threshold."
+                ::= { shproSensorEntry 9 }
+
+        shproSensorLowCritical OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The low critical threshold."
+                ::= { shproSensorEntry 10 }
+
+        shproSensorGoOnline OBJECT-TYPE
+                SYNTAX INTEGER {
+                        online(1),
+                        offline(2)
+                }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "Set the sensor online or offline."
+                ::= { shproSensorEntry 11 }
+
+        shproSensorRearm OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The rearm value."
+                ::= { shproSensorEntry 12 }
+
+        shproSensorTempScaleType OBJECT-TYPE
+                SYNTAX INTEGER {
+                        none(1),
+                        fahrenheit(2),
+                        celsius(3)
+                        }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The temperature scale type." 
+                ::= { shproSensorEntry 13 }
+
+        shproSensorDCDirection OBJECT-TYPE
+                SYNTAX INTEGER {
+                        none(1),
+                        input(2),
+                        output(3)
+                        }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The dry contact type." 
+                ::= { shproSensorEntry 14 }
+
+        shproSensorDCNormalState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        closed(0),
+                        open(1),
+                        none(2)
+                        }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The dry contact normal state." 
+                ::= { shproSensorEntry 15 }
+
+        shproSensorDCOutputLevel OBJECT-TYPE
+                SYNTAX INTEGER {
+                        none(1),
+                        low(2),
+                        high(3)
+                        }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The dry contact output level." 
+                ::= { shproSensorEntry 16 }
+
+        shproSensorCalibration OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The offset value to add to the temperature or humidity reading."
+                ::= { shproSensorEntry 17 }
+
+
+        -- the shpro serial information
+
+
+        -- the shpro Intelligent Power Controller (IPC) information
+
+        shproPowerCntrlNumber OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The number of attached IPCs."
+                ::= { shpropower 1 }
+
+        shproPowerCntrlTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF SHProPowerCntrlEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table of IPC information."
+                ::= { shpropower 2 }
+
+        shproPowerCntrlEntry OBJECT-TYPE
+                SYNTAX SHProPowerCntrlEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table entry of IPC information."
+                INDEX { shproCntrlIndex }
+                ::= { shproPowerCntrlTable 1 }
+
+        SHProPowerCntrlEntry ::=
+                SEQUENCE {
+                        shproCntrlIndex                         INTEGER,
+                        shproCntrlState                         INTEGER,
+                        shproCntrlModelName                     DisplayString,
+                        shproCntrlName                          DisplayString,
+                        shproCntrlFirmwareVersion               DisplayString,
+                        shproCntrlNumberOfOutlets               INTEGER,
+                        shproCntrlNumberOfCurrentSensors        INTEGER,
+                        shproCntrlNumberOfVoltageSensors        INTEGER,
+                        shproCntrlNumberOfPowerSensors          INTEGER,
+                        shproCntrlNumberOfTemperatureSensors    INTEGER,
+                        shproCntrlNumberOfCircuitBreakers       INTEGER,
+                        shproCntrlTotalCurrent                  INTEGER,
+                        shproCntrlMaxTotalCurrent               INTEGER,
+                        shproCntrlTotalPower                    INTEGER
+                }
+
+        shproCntrlIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The index into the IPC information table."
+                ::= { shproPowerCntrlEntry 1 }
+
+        shproCntrlState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        highCritical(1),
+                        highWarning(2),
+                        lowWarning(3),
+                        lowCritical(4),
+                        normal(5),
+                        notPresent(6)
+                        }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The overall state relative to the thresholds." 
+                ::= { shproPowerCntrlEntry 2 }
+
+        shproCntrlModelName OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The model name of this IPC."
+                ::= { shproPowerCntrlEntry 3 }
+
+        shproCntrlName OBJECT-TYPE
+                SYNTAX DisplayString (SIZE (0..12))
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The name of this IPC."
+                ::= { shproPowerCntrlEntry 4 }
+
+        shproCntrlFirmwareVersion OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The firmware version of this IPC."
+                ::= { shproPowerCntrlEntry 5 }
+
+        shproCntrlNumberOfOutlets OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "Number of controllable outlets on this IPC."
+                ::= { shproPowerCntrlEntry 6 }
+
+        shproCntrlNumberOfCurrentSensors OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The number of current sensors installed in this IPC."
+                ::= { shproPowerCntrlEntry 7 }
+
+        shproCntrlNumberOfVoltageSensors OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The number of voltage sensors installed in this IPC."
+                ::= { shproPowerCntrlEntry 8 }
+
+        shproCntrlNumberOfPowerSensors OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The number of power calculations for this IPC."
+                ::= { shproPowerCntrlEntry 9 }
+
+        shproCntrlNumberOfTemperatureSensors OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The number of temperature sensors installed in this IPC."
+                ::= { shproPowerCntrlEntry 10 }
+
+        shproCntrlNumberOfCircuitBreakers OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The number of circuit breakers installed in this IPC."
+                ::= { shproPowerCntrlEntry 11 }
+
+        shproCntrlTotalCurrent OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The combined total current of all current sensors in this IPC."
+                ::= { shproPowerCntrlEntry 12 }
+
+        shproCntrlMaxTotalCurrent OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The combined total maximum detected current of all current sensors in this IPC."
+                ::= { shproPowerCntrlEntry 13 }
+
+        shproCntrlTotalPower OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The combined total power of all power sensors in this IPC."
+                ::= { shproPowerCntrlEntry 14 }
+
+        shproOutletTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF SHProOutletEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table of controllable IPC outlets."
+                ::= { shpropower 3 }
+
+        shproOutletEntry OBJECT-TYPE
+                SYNTAX SHProOutletEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table entry of controllable IPC outlets."
+                INDEX { shproOutletIPCIndex, shproOutletIndex }
+                ::= { shproOutletTable 1 }
+
+        SHProOutletEntry ::=
+                SEQUENCE {
+                        shproOutletIPCIndex     INTEGER,
+                        shproOutletIndex        INTEGER,
+                        shproOutletState        INTEGER,
+                        shproOutletName         DisplayString
+                }
+
+        shproOutletIPCIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The index of the IPC."
+                ::= { shproOutletEntry 1 }
+
+        shproOutletIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The index of the outlet."
+                ::= { shproOutletEntry 2 }
+
+        shproOutletState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        off(0),
+                        on(1),
+                        reboot(2),
+                        lockon(3),
+                        lockoff(4),
+                        unlock(5),
+                        unknown(6)
+                }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "Getting this variable will return the state of the outlet;
+                        setting this variable will set the state of the outlet."
+                ::= { shproOutletEntry 3 }
+
+        shproOutletName OBJECT-TYPE
+                SYNTAX DisplayString (SIZE (0..12))
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The name of the outlet."
+                ::= { shproOutletEntry 4 }
+
+        shproAllOutletsTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF SHProAllOutletsEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table to control all IPC outlets."
+                ::= { shpropower 4 }
+
+        shproAllOutletsEntry OBJECT-TYPE
+                SYNTAX SHProAllOutletsEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table entry to control all IPC outlets."
+                INDEX { shproAllOutletsIPCIndex }
+                ::= { shproAllOutletsTable 1 }
+
+        SHProAllOutletsEntry ::=
+                SEQUENCE {
+                        shproAllOutletsIPCIndex INTEGER,
+                        shproAllOutletsState    INTEGER,
+                        shproAllOutletsStatus   DisplayString
+                }
+
+        shproAllOutletsIPCIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The index of the IPC."
+                ::= { shproAllOutletsEntry 1 }
+
+
+        shproAllOutletsState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        off(0),
+                        on(1),
+                        reboot(2),
+                        none(3)
+                }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "Turns all outlets on, off or reboot."
+                ::= { shproAllOutletsEntry 2 }
+
+        shproAllOutletsStatus OBJECT-TYPE
+                SYNTAX DisplayString
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "Reports status of outlets in a comma delimitated string (0 = off; 1 = on; 2 = reboot; 3 = locked on; 4 = locked off)."
+                ::= { shproAllOutletsEntry 3 }
+
+        shproCurrentTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF SHProCurrentEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table of current values."
+                ::= { shpropower 5 }
+
+        shproCurrentEntry OBJECT-TYPE
+                SYNTAX SHProCurrentEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table entry of current values."
+                INDEX { shproCurrentIPCIndex, shproCurrentIndex }
+                ::= { shproCurrentTable 1 }
+
+        SHProCurrentEntry ::=
+                SEQUENCE {
+                        shproCurrentIPCIndex            INTEGER,
+                        shproCurrentIndex               INTEGER,
+                        shproCurrentValue               INTEGER,
+                        shproCurrentMaxValue            INTEGER,
+                        shproCurrentState               INTEGER,
+                        shproCurrentHighCriticl         INTEGER,
+                        shproCurrentHighWarning         INTEGER,
+                        shproCurrentLowWarning          INTEGER,
+                        shproCurrentLowCritical         INTEGER,
+                        shproCurrentRearm               INTEGER
+                }
+
+        shproCurrentIPCIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The index of the IPC."
+                ::= { shproCurrentEntry 1 }
+
+        shproCurrentIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The index of the current sensor."
+                ::= { shproCurrentEntry 2 }
+
+        shproCurrentValue OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The current reading for this IPC sensor."
+                ::= { shproCurrentEntry 3 }
+
+        shproCurrentMaxValue OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The maximum detected current reading for this IPC sensor."
+                ::= { shproCurrentEntry 4 }
+
+        shproCurrentState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        highCritical(1),
+                        highWarning(2),
+                        lowWarning(3),
+                        lowCritical(4),
+                        normal(5),
+                        notPresent(6)
+                }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The current state relative to the thresholds."
+                ::= { shproCurrentEntry 5 }
+
+        shproCurrentHighCritical OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The current high critical threshold."
+                ::= { shproCurrentEntry 6 }
+
+        shproCurrentHighWarning OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The current high warning threshold."
+                ::= { shproCurrentEntry 7 }
+
+        shproCurrentLowWarning OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The current low warning threshold."
+                ::= { shproCurrentEntry 8 }
+
+        shproCurrentLowCritical OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The current low critical threshold."
+                ::= { shproCurrentEntry 9 }
+
+        shproCurrentRearm OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The current rearm value."
+                ::= { shproCurrentEntry 10 }
+
+        shproVoltageTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF SHProVoltageEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table of voltage values."
+                ::= { shpropower 6 }
+
+        shproVoltageEntry OBJECT-TYPE
+                SYNTAX SHProVoltageEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table entry of voltage values."
+                INDEX { shproVoltageIPCIndex, shproVoltageIndex }
+                ::= { shproVoltageTable 1 }
+
+        SHProVoltageEntry ::=
+                SEQUENCE {
+                        shproVoltageIPCIndex            INTEGER,
+                        shproVoltageIndex               INTEGER,
+                        shproVoltageValue               INTEGER,
+                        shproVoltageState               INTEGER,
+                        shproVoltageHighCritical        INTEGER,
+                        shproVoltageHighWarning         INTEGER,
+                        shproVoltageLowWarning          INTEGER,
+                        shproVoltageLowCritical         INTEGER,
+                        shproVoltageRearm               INTEGER
+                }
+
+        shproVoltageIPCIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The index of the IPC."
+                ::= { shproVoltageEntry 1 }
+
+        shproVoltageIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The index of the voltage sensor."
+                ::= { shproVoltageEntry 2 }
+
+        shproVoltageValue OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The voltage reading for this IPC sensor."
+                ::= { shproVoltageEntry 3 }
+
+        shproVoltageState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        highCritical(1),
+                        highWarning(2),
+                        lowWarning(3),
+                        lowCritical(4),
+                        normal(5),
+                        notPresent(6)
+                }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The voltage state relative to the thresholds."
+                ::= { shproVoltageEntry 4 }
+
+        shproVoltageHighCritical OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The voltage high critical threshold."
+                ::= { shproVoltageEntry 5 }
+
+        shproVoltageHighWarning OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The voltage high warning threshold."
+                ::= { shproVoltageEntry 6 }
+
+        shproVoltageLowWarning OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The voltage low warning threshold."
+                ::= { shproVoltageEntry 7 }
+
+        shproVoltageLowCritical OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The voltage low critical threshold."
+                ::= { shproVoltageEntry 8 }
+
+        shproVoltageRearm OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The voltage rearm value."
+                ::= { shproVoltageEntry 9 }
+
+        shproPowerTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF SHProPowerEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table of power values."
+                ::= { shpropower 7 }
+
+        shproPowerEntry OBJECT-TYPE
+                SYNTAX SHProPowerEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table entry of power values."
+                INDEX { shproPowerIPCIndex, shproPowerIndex }
+                ::= { shproPowerTable 1 }
+
+        SHProPowerEntry ::=
+                SEQUENCE {
+                        shproPowerIPCIndex      INTEGER,
+                        shproPowerIndex         INTEGER,
+                        shproPowerValue         INTEGER,
+                        shproPowerState         INTEGER,
+                        shproPowerHighCritical  INTEGER,
+                        shproPowerHighWarning   INTEGER,
+                        shproPowerLowWarning    INTEGER,
+                        shproPowerLowCritical   INTEGER,
+                        shproPowerRearm         INTEGER
+                }
+
+        shproPowerIPCIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The index of the IPC."
+                ::= { shproPowerEntry 1 }
+
+        shproPowerIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The index of the power sensor."
+                ::= { shproPowerEntry 2 }
+
+        shproPowerValue OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The power reading for this IPC sensor."
+                ::= { shproPowerEntry 3 }
+
+        shproPowerState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        highCritical(1),
+                        highWarning(2),
+                        lowWarning(3),
+                        lowCritical(4),
+                        normal(5),
+                        notPresent(6)
+                }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The power state relative to the thresholds."
+                ::= { shproPowerEntry 4 }
+
+        shproPowerHighCritical OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The power high critical threshold."
+                ::= { shproPowerEntry 5 }
+
+        shproPowerHighWarning OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The power high warning threshold."
+                ::= { shproPowerEntry 6 }
+
+        shproPowerLowWarning OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The power low warning threshold."
+                ::= { shproPowerEntry 7 }
+
+        shproPowerLowCritical OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The power low critical threshold."
+                ::= { shproPowerEntry 8 }
+
+        shproPowerRearm OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The power rearm value."
+                ::= { shproPowerEntry 9 }
+
+        shproTemperatureTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF SHProTemperatureEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table of temperature values."
+                ::= { shpropower 8 }
+
+        shproTemperatureEntry OBJECT-TYPE
+                SYNTAX SHProTemperatureEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table entry of temperature values."
+                INDEX { shproTemperatureIPCIndex, shproTemperatureIndex }
+                ::= { shproTemperatureTable 1 }
+
+        SHProTemperatureEntry ::=
+                SEQUENCE {
+                        shproTemperatureIPCIndex        INTEGER,
+                        shproTemperatureIndex           INTEGER,
+                        shproTemperatureValue           INTEGER,
+                        shproTemperatureState           INTEGER,
+                        shproTemperatureHighCritical    INTEGER,
+                        shproTemperatureHighWarning     INTEGER,
+                        shproTemperatureLowWarning      INTEGER,
+                        shproTemperatureLowCritical     INTEGER,
+                        shproTemperatureRearm           INTEGER
+                }
+
+        shproTemperatureIPCIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The index of the IPC."
+                ::= { shproTemperatureEntry 1 }
+
+        shproTemperatureIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The index of the temperature sensor."
+                ::= { shproTemperatureEntry 2 }
+
+        shproTemperatureValue OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The temperature reading for this IPC sensor."
+                ::= { shproTemperatureEntry 3 }
+
+        shproTemperatureState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        highCritical(1),
+                        highWarning(2),
+                        lowWarning(3),
+                        lowCritical(4),
+                        normal(5),
+                        notPresent(6)
+                }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The temperature state relative to the thresholds."
+                ::= { shproTemperatureEntry 4 }
+
+        shproTemperatureHighCritical OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The temperature high critical threshold."
+                ::= { shproTemperatureEntry 5 }
+
+        shproTemperatureHighWarning OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The temperature high warning threshold."
+                ::= { shproTemperatureEntry 6 }
+
+        shproTemperatureLowWarning OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The temperature low warning threshold."
+                ::= { shproTemperatureEntry 7 }
+
+        shproTemperatureLowCritical OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The temperature low critical threshold."
+                ::= { shproTemperatureEntry 8 }
+
+        shproTemperatureRearm OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The temperature rearm value."
+                ::= { shproTemperatureEntry 9 }
+
+        shproBreakersTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF SHProBreakersEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table of circuit breaker states."
+                ::= { shpropower 9 }
+
+        shproBreakersEntry OBJECT-TYPE
+                SYNTAX SHProBreakersEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table entry of circuit breaker states."
+                INDEX { shproBreakersIPCIndex, shproBreakersIndex }
+                ::= { shproBreakersTable 1 }
+
+        SHProBreakersEntry ::=
+                SEQUENCE {
+                        shproBreakersIPCIndex   INTEGER,
+                        shproBreakersIndex      INTEGER,
+                        shproBreakersState      INTEGER
+                }
+
+        shproBreakersIPCIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The index number of the IPC."
+                ::= { shproBreakersEntry 1 }
+
+        shproBreakersIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The index number of the circuit breaker."
+                ::= { shproBreakersEntry 2 }
+
+        shproBreakersState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        off(0),
+                        on(1),
+                        notPresent(2)
+                }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The circuit breaker state."
+                ::= { shproBreakersEntry 3 }
+
+
+        -- the shpro onboard contact sensor information
+
+        shproContactTable OBJECT-TYPE
+                SYNTAX SEQUENCE OF SHProContactEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table of contact information."
+                ::= { shprocontact 1 }
+
+        shproContactEntry OBJECT-TYPE
+                SYNTAX SHProContactEntry
+                ACCESS not-accessible
+                STATUS mandatory
+                DESCRIPTION
+                        "Table entry of contact information."
+                INDEX { shproContactIndex }
+                ::= { shproContactTable 1 }
+
+        shproContactEntry ::=
+                SEQUENCE {
+                        shproContactIndex               INTEGER,
+                        shproContactName                DisplayString,
+                        shproContactCurrentValue        INTEGER,
+                        shproContactNormalValue         INTEGER,
+                        shproContactState               INTEGER
+                }
+
+        shproContactIndex OBJECT-TYPE
+                SYNTAX INTEGER
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The index number of the contact."
+                ::= { shproContactEntry 1 }
+
+        shproContactName OBJECT-TYPE
+                SYNTAX DisplayString (SIZE (0..12))
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The contact name."
+                ::= { shproContactEntry 2 }
+
+        shproContactCurrentValue OBJECT-TYPE
+                SYNTAX INTEGER {
+                        closed(0),
+                        open(1)
+                }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The contact value."
+                ::= { shproContactEntry 3 }
+
+        shproContactNormalValue OBJECT-TYPE
+                SYNTAX INTEGER {
+                        closed(0),
+                        open(1)
+                }
+                ACCESS read-write
+                STATUS mandatory
+                DESCRIPTION
+                        "The contact value."
+                ::= { shproContactEntry 4 }
+
+        shproContactState OBJECT-TYPE
+                SYNTAX INTEGER {
+                        critical(1),
+                        normal(2)
+                }
+                ACCESS read-only
+                STATUS mandatory
+                DESCRIPTION
+                        "The contact state relative to normal."
+                ::= { shproContactEntry 5 }
+
+        -- traps
+
+        shproSensor1HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 1 is in the high critical state." 
+                ::= 101
+
+        shproSensor1HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 1 is in the high warning state." 
+                ::= 102
+
+        shproSensor1LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 1 is in the low warning state." 
+                ::= 103
+
+        shproSensor1LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 1 is in the low critical state." 
+                ::= 104
+
+        shproSensor1Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 1 is in the normal state." 
+                ::= 105
+
+        shproSensor2HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 2 is in the high critical state." 
+                ::= 106
+
+        shproSensor2HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 2 is in the high warning state." 
+                ::= 107
+
+        shproSensor2LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 2 is in the low warning state." 
+                ::= 108
+
+        shproSensor2LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 2 is in the low critical state." 
+                ::= 109
+
+        shproSensor2Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 2 is in the normal state." 
+                ::= 110
+
+        shproSensor3HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 3 is in the high critical state." 
+                ::= 111
+
+        shproSensor3HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 3 is in the high warning state." 
+                ::= 112
+
+        shproSensor3LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 3 is in the low warning state." 
+                ::= 113
+
+        shproSensor3LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 3 is in the low critical state." 
+                ::= 114
+
+        shproSensor3Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 3 is in the normal state." 
+                ::= 115
+
+        shproSensor4HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 4 is in the high critical state." 
+                ::= 116
+
+        shproSensor4HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 4 is in the high warning state." 
+                ::= 117
+
+        shproSensor4LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 4 is in the low warning state." 
+                ::= 118
+
+        shproSensor4LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 4 is in the low critical state." 
+                ::= 119
+
+        shproSensor4Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Sensor 4 is in the normal state." 
+                ::= 120
+
+        shproOBHumdiditySensorHighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Onboard humidity sensor is in the high critical state." 
+                ::= 121
+
+        shproOBHumdiditySensorHighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Onboard humidity sensor is in the high warning state." 
+                ::= 122
+
+        shproOBHumdiditySensorLowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Onboard humidity sensor is in the low warning state." 
+                ::= 123
+
+        shproOBHumdiditySensorLowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Onboard humidity sensor is in the low critical state." 
+                ::= 124
+
+        shproOBHumdiditySensorNormal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Onboard humidity sensor is in the normal state." 
+                ::= 125
+
+        shproOBTemperatureSensorHighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Onboard temperature sensor is in the high critical state." 
+                ::= 126
+
+        shproOBTemperatureSensorHighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Onboard temperature sensor is in the high warning state." 
+                ::= 127
+
+        shproOBTemperatureSensorLowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Onboard temperature sensor is in the low warning state." 
+                ::= 128
+
+        shproOBTemperatureSensorLowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Onboard temperature sensor is in the low critical state." 
+                ::= 129
+
+        shproOBTemperatureSensorNormal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproSensorName,
+                        shproSensorType,
+                        shproSensorCurrentValue,
+                        shproSensorState
+                        }
+                DESCRIPTION
+                        "Onboard temperature sensor is in the normal state." 
+                ::= 130
+
+        shproOBContactSensor1Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 1 is in the normal state." 
+                ::= 131
+
+        shproOBContactSensor1HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 1 is in the high critical state." 
+                ::= 132
+
+        shproOBContactSensor2Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 2 is in the normal state." 
+                ::= 133
+
+        shproOBContactSensor2HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 2 is in the high critical state." 
+                ::= 134
+
+        shproOBContactSensor3Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 3 is in the normal state." 
+                ::= 135
+
+        shproOBContactSensor3HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 3 is in the high critical state." 
+                ::= 136
+
+        shproOBContactSensor4Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 4 is in the normal state." 
+                ::= 137
+
+        shproOBContactSensor4HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 4 is in the high critical state." 
+                ::= 138
+
+        shproOBContactSensor5Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 5 is in the normal state." 
+                ::= 139
+
+        shproOBContactSensor5HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 5 is in the high critical state." 
+                ::= 140
+
+        shproOBContactSensor6Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 6 is in the normal state." 
+                ::= 141
+
+        shproOBContactSensor6HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 6 is in the high critical state." 
+                ::= 142
+
+        shproOBContactSensor7Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 7 is in the normal state." 
+                ::= 143
+
+        shproOBContactSensor7HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 7 is in the high critical state." 
+                ::= 144
+
+        shproOBContactSensor8Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 8 is in the normal state." 
+                ::= 145
+
+        shproOBContactSensor8HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 8 is in the high critical state." 
+                ::= 146
+
+        shproOBContactSensor9Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 9 is in the normal state." 
+                ::= 147
+
+        shproOBContactSensor9HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 9 is in the high critical state." 
+                ::= 148
+
+        shproOBContactSensor10Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 10 is in the normal state." 
+                ::= 149
+
+        shproOBContactSensor10HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproContactName,
+                        shproContactIndex,
+                        shproContactCurrentValue,
+                        shproContactState
+                        }
+                DESCRIPTION
+                        "Onboard contact sensor 10 is in the high critical state." 
+                ::= 150
+
+        shproPort1PowerSensor1HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 1, power sensor 1, is in the high critical state." 
+                ::= 501
+
+        shproPort1PowerSensor1HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 1, power sensor 1, is in the high warning state." 
+                ::= 502
+
+        shproPort1PowerSensor1LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 1, power sensor 1, is in the low warning state." 
+                ::= 503
+
+        shproPort1PowerSensor1LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 1, power sensor 1, is in the low critical state." 
+                ::= 504
+
+        shproPort1PowerSensor1Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 1, power sensor 1, is in the normal state." 
+                ::= 505
+
+        shproPort1VoltageSensor1HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 1, voltage sensor 1, is in the high critical state." 
+                ::= 506
+
+        shproPort1VoltageSensor1HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 1, voltage sensor 1, is in the high warning state." 
+                ::= 507
+
+        shproPort1VoltageSensor1LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 1, voltage sensor 1, is in the low warning state." 
+                ::= 508
+
+        shproPort1VoltageSensor1LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 1, voltage sensor 1, is in the low critical state." 
+                ::= 509
+
+        shproPort1VoltageSensor1Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 1, voltage sensor 1, is in the normal state." 
+                ::= 510
+
+        shproPort1CurrentSensor1HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 1, current sensor 1, is in the high critical state." 
+                ::= 511
+
+        shproPort1CurrentSensor1HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 1, current sensor 1, is in the high warning state." 
+                ::= 512
+
+        shproPort1CurrentSensor1LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 1, current sensor 1, is in the low warning state." 
+                ::= 513
+
+        shproPort1CurrentSensor1LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 1, current sensor 1, is in the low critical state." 
+                ::= 514
+
+        shproPort1CurrentSensor1Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 1, current sensor 1, is in the normal state." 
+                ::= 515
+
+        shproPort1TemperatureSensor1HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 1, temperature sensor 1, is in the high critical state." 
+                ::= 516
+
+        shproPort1TemperatureSensor1HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 1, temperature sensor 1, is in the high warning state." 
+                ::= 517
+
+        shproPort1TemperatureSensor1LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 1, temperature sensor 1, is in the low warning state." 
+                ::= 518
+
+        shproPort1TemperatureSensor1LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 1, temperature sensor 1, is in the low critical state." 
+                ::= 519
+
+        shproPort1TemperatureSensor1Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 1, temperature sensor 1, is in the normal state." 
+                ::= 520
+
+        shproPort1PowerSensor2HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 1, power sensor 2, is in the high critical state." 
+                ::= 521
+
+        shproPort1PowerSensor2HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 1, power sensor 2, is in the high warning state." 
+                ::= 522
+
+        shproPort1PowerSensor2LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 1, power sensor 2, is in the low warning state." 
+                ::= 523
+
+        shproPort1PowerSensor2LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 1, power sensor 2, is in the low critical state." 
+                ::= 524
+
+        shproPort1PowerSensor2Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 1, power sensor 2, is in the normal state." 
+                ::= 525
+
+        shproPort1VoltageSensor2HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 1, voltage sensor 2, is in the high critical state." 
+                ::= 526
+
+        shproPort1VoltageSensor2HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 1, voltage sensor 2, is in the high warning state." 
+                ::= 527
+
+        shproPort1VoltageSensor2LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 1, voltage sensor 2, is in the low warning state." 
+                ::= 528
+
+        shproPort1VoltageSensor2LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 1, voltage sensor 2, is in the low critical state." 
+                ::= 529
+
+        shproPort1VoltageSensor2Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 1, voltage sensor 2, is in the normal state." 
+                ::= 530
+
+        shproPort1CurrentSensor2HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 1, current sensor 2, is in the high critical state." 
+                ::= 531
+
+        shproPort1CurrentSensor2HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 1, current sensor 2, is in the high warning state." 
+                ::= 532
+
+        shproPort1CurrentSensor2LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 1, current sensor 2, is in the low warning state." 
+                ::= 533
+
+        shproPort1CurrentSensor2LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 1, current sensor 2, is in the low critical state." 
+                ::= 534
+
+        shproPort1CurrentSensor2Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 1, current sensor 2, is in the normal state." 
+                ::= 535
+
+        shproPort1TemperatureSensor2HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 1, temperature sensor 2, is in the high critical state." 
+                ::= 536
+
+        shproPort1TemperatureSensor2HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 1, temperature sensor 2, is in the high warning state." 
+                ::= 537
+
+        shproPort1TemperatureSensor2LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 1, temperature sensor 2, is in the low warning state." 
+                ::= 538
+
+        shproPort1TemperatureSensor2LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 1, temperature sensor 2, is in the low critical state." 
+                ::= 539
+
+        shproPort1TemperatureSensor2Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 1, temperature sensor 2, is in the normal state." 
+                ::= 540
+
+        shproPort1PowerSensor3HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 1, power sensor 3, is in the high critical state." 
+                ::= 541
+
+        shproPort1PowerSensor3HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 1, power sensor 3, is in the high warning state." 
+                ::= 542
+
+        shproPort1PowerSensor3LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 1, power sensor 3, is in the low warning state." 
+                ::= 543
+
+        shproPort1PowerSensor3LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 1, power sensor 3, is in the low critical state." 
+                ::= 544
+
+        shproPort1PowerSensor3Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 1, power sensor 3, is in the normal state." 
+                ::= 545
+
+        shproPort1VoltageSensor3HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 1, voltage sensor 3, is in the high critical state." 
+                ::= 546
+
+        shproPort1VoltageSensor3HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 1, voltage sensor 3, is in the high warning state." 
+                ::= 547
+
+        shproPort1VoltageSensor3LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 1, voltage sensor 3, is in the low warning state." 
+                ::= 548
+
+        shproPort1VoltageSensor3LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 1, voltage sensor 3, is in the low critical state." 
+                ::= 549
+
+        shproPort1VoltageSensor3Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 1, voltage sensor 3, is in the normal state." 
+                ::= 550
+
+        shproPort1CurrentSensor3HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 1, current sensor 3, is in the high critical state." 
+                ::= 551
+
+        shproPort1CurrentSensor3HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 1, current sensor 3, is in the high warning state." 
+                ::= 552
+
+        shproPort1CurrentSensor3LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 1, current sensor 3, is in the low warning state." 
+                ::= 553
+
+        shproPort1CurrentSensor3LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 1, current sensor 3, is in the low critical state." 
+                ::= 554
+
+        shproPort1CurrentSensor3Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 1, current sensor 3, is in the normal state." 
+                ::= 555
+
+        shproPort1TemperatureSensor3HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 1, temperature sensor 3, is in the high critical state." 
+                ::= 556
+
+        shproPort1TemperatureSensor3HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 1, temperature sensor 3, is in the high warning state." 
+                ::= 557
+
+        shproPort1TemperatureSensor3LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 1, temperature sensor 3, is in the low warning state." 
+                ::= 558
+
+        shproPort1TemperatureSensor3LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 1, temperature sensor 3, is in the low critical state." 
+                ::= 559
+
+        shproPort1TemperatureSensor3Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 1, temperature sensor 3, is in the normal state." 
+                ::= 560
+
+        shproPort2PowerSensor1HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 2, power sensor 1, is in the high critical state." 
+                ::= 561
+
+        shproPort2PowerSensor1HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 2, power sensor 1, is in the high warning state." 
+                ::= 562
+
+        shproPort2PowerSensor1LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 2, power sensor 1, is in the low warning state." 
+                ::= 563
+
+        shproPort2PowerSensor1LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 2, power sensor 1, is in the low critical state." 
+                ::= 564
+
+        shproPort2PowerSensor1Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 2, power sensor 1, is in the normal state." 
+                ::= 565
+
+        shproPort2VoltageSensor1HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 2, voltage sensor 1, is in the high critical state." 
+                ::= 566
+
+        shproPort2VoltageSensor1HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 2, voltage sensor 1, is in the high warning state." 
+                ::= 567
+
+        shproPort2VoltageSensor1LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 2, voltage sensor 1, is in the low warning state." 
+                ::= 568
+
+        shproPort2VoltageSensor1LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 2, voltage sensor 1, is in the low critical state." 
+                ::= 569
+
+        shproPort2VoltageSensor1Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 2, voltage sensor 1, is in the normal state." 
+                ::= 570
+
+        shproPort2CurrentSensor1HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 2, current sensor 1, is in the high critical state." 
+                ::= 571
+
+        shproPort2CurrentSensor1HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 2, current sensor 1, is in the high warning state." 
+                ::= 572
+
+        shproPort2CurrentSensor1LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 2, current sensor 1, is in the low warning state." 
+                ::= 573
+
+        shproPort2CurrentSensor1LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 2, current sensor 1, is in the low critical state." 
+                ::= 574
+
+        shproPort2CurrentSensor1Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 2, current sensor 1, is in the normal state." 
+                ::= 575
+
+        shproPort2TemperatureSensor1HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 2, temperature sensor 1, is in the high critical state." 
+                ::= 576
+
+        shproPort2TemperatureSensor1HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 2, temperature sensor 1, is in the high warning state." 
+                ::= 577
+
+        shproPort2TemperatureSensor1LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 2, temperature sensor 1, is in the low warning state." 
+                ::= 578
+
+        shproPort2TemperatureSensor1LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 2, temperature sensor 1, is in the low critical state." 
+                ::= 579
+
+        shproPort2TemperatureSensor1Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 2, temperature sensor 1, is in the normal state." 
+                ::= 580
+
+        shproPort2PowerSensor2HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 2, power sensor 2, is in the high critical state." 
+                ::= 581
+
+        shproPort2PowerSensor2HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 2, power sensor 2, is in the high warning state." 
+                ::= 582
+
+        shproPort2PowerSensor2LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 2, power sensor 2, is in the low warning state." 
+                ::= 583
+
+        shproPort2PowerSensor2LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 2, power sensor 2, is in the low critical state." 
+                ::= 584
+
+        shproPort2PowerSensor2Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 2, power sensor 2, is in the normal state." 
+                ::= 585
+
+        shproPort2VoltageSensor2HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 2, voltage sensor 2, is in the high critical state." 
+                ::= 586
+
+        shproPort2VoltageSensor2HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 2, voltage sensor 2, is in the high warning state." 
+                ::= 587
+
+        shproPort2VoltageSensor2LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 2, voltage sensor 2, is in the low warning state." 
+                ::= 588
+
+        shproPort2VoltageSensor2LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 2, voltage sensor 2, is in the low critical state." 
+                ::= 589
+
+        shproPort2VoltageSensor2Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 2, voltage sensor 2, is in the normal state." 
+                ::= 590
+
+        shproPort2CurrentSensor2HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 2, current sensor 2, is in the high critical state." 
+                ::= 591
+
+        shproPort2CurrentSensor2HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 2, current sensor 2, is in the high warning state." 
+                ::= 592
+
+        shproPort2CurrentSensor2LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 2, current sensor 2, is in the low warning state." 
+                ::= 593
+
+        shproPort2CurrentSensor2LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 2, current sensor 2, is in the low critical state." 
+                ::= 594
+
+        shproPort2CurrentSensor2Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 2, current sensor 2, is in the normal state." 
+                ::= 595
+
+        shproPort2TemperatureSensor2HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 2, temperature sensor 2, is in the high critical state." 
+                ::= 596
+
+        shproPort2TemperatureSensor2HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 2, temperature sensor 2, is in the high warning state." 
+                ::= 597
+
+        shproPort2TemperatureSensor2LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 2, temperature sensor 2, is in the low warning state." 
+                ::= 598
+
+        shproPort2TemperatureSensor2LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 2, temperature sensor 2, is in the low critical state." 
+                ::= 599
+
+        shproPort2TemperatureSensor2Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 2, temperature sensor 2, is in the normal state." 
+                ::= 600
+
+        shproPort2PowerSensor3HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 2, power sensor 3, is in the high critical state." 
+                ::= 601
+
+        shproPort2PowerSensor3HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 2, power sensor 3, is in the high warning state." 
+                ::= 602
+
+        shproPort2PowerSensor3LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 2, power sensor 3, is in the low warning state." 
+                ::= 603
+
+        shproPort2PowerSensor3LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 2, power sensor 3, is in the low critical state." 
+                ::= 604
+
+        shproPort2PowerSensor3Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproPowerIPCIndex,
+                        shproPowerIndex,
+                        shproPowerValue,
+                        shproPowerState
+                        }
+                DESCRIPTION
+                        "Port 2, power sensor 3, is in the normal state." 
+                ::= 605
+
+        shproPort2VoltageSensor3HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 2, voltage sensor 3, is in the high critical state." 
+                ::= 606
+
+        shproPort2VoltageSensor3HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 2, voltage sensor 3, is in the high warning state." 
+                ::= 607
+
+        shproPort2VoltageSensor3LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 2, voltage sensor 3, is in the low warning state." 
+                ::= 608
+
+        shproPort2VoltageSensor3LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 2, voltage sensor 3, is in the low critical state." 
+                ::= 609
+
+        shproPort2VoltageSensor3Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproVoltageIPCIndex,
+                        shproVoltageIndex,
+                        shproVoltageValue,
+                        shproVoltageState
+                        }
+                DESCRIPTION
+                        "Port 2, voltage sensor 3, is in the normal state." 
+                ::= 610
+
+        shproPort2CurrentSensor3HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 2, current sensor 3, is in the high critical state." 
+                ::= 611
+
+        shproPort2CurrentSensor3HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 2, current sensor 3, is in the high warning state." 
+                ::= 612
+
+        shproPort2CurrentSensor3LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 2, current sensor 3, is in the low warning state." 
+                ::= 613
+
+        shproPort2CurrentSensor3LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 2, current sensor 3, is in the low critical state." 
+                ::= 614
+
+        shproPort2CurrentSensor3Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproCurrentIPCIndex,
+                        shproCurrentIndex,
+                        shproCurrentValue,
+                        shproCurrentState
+                        }
+                DESCRIPTION
+                        "Port 2, current sensor 3, is in the normal state." 
+                ::= 615
+
+        shproPort2TemperatureSensor3HighCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 2, temperature sensor 3, is in the high critical state." 
+                ::= 616
+
+        shproPort2TemperatureSensor3HighWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 2, temperature sensor 3, is in the high warning state." 
+                ::= 617
+
+        shproPort2TemperatureSensor3LowWarning TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 2, temperature sensor 3, is in the low warning state." 
+                ::= 618
+
+        shproPort2TemperatureSensor3LowCritical TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 2, temperature sensor 3, is in the low critical state." 
+                ::= 619
+
+        shproPort2TemperatureSensor3Normal TRAP-TYPE
+                ENTERPRISE shpro
+                VARIABLES {
+                        sysDescr,
+                        shproTemperatureIPCIndex,
+                        shproTemperatureIndex,
+                        shproTemperatureValue,
+                        shproTemperatureState
+                        }
+                DESCRIPTION
+                        "Port 2, temperature sensor 3, is in the normal state." 
+                ::= 620
+
+END
+</PRE></BODY></HTML>

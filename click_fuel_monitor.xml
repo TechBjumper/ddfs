@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="apc_ddf_1_6.xsl"?>
+<APC_DDF
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+	ddfid="click_fuel_monitor"
+	ddfname="Click Fuel Monitor"
+	ddfversion="2"
+	canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+	<device deviceid="click_fuel_monitor">
+		<setProductData ruleid="vendordata" field="vendor">Click</setProductData>
+		<setProductData ruleid="modeldata" field="model">Click Fuel Monitor</setProductData>
+		<setProductData ruleid="typedata" field="type">Generic Device</setProductData>
+		<setDefaultLabel ruleid="labeldata">C0-12DRE-D - <sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<numSensor ruleid="generator-fuel-level">
+			<type>pctofcapacity</type>
+			<sensorId>GENERATOR_FUEL_LEVEL</sensorId>
+			<value>
+				<getOid>GENERATOR_FUEL_LEVEL</getOid>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Generator Fuel Level</label>
+			<sensorSet></sensorSet>
+		</numSensor>
+		<alarmFlags ruleid="hh-alarm">
+			<value><getOid>HH_ALARM</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>HH Alarm</activeText>
+					<inactiveText>HH Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>System</category>
+				<description>
+					<activeText>An HH Alarm condition exists.</activeText>
+					<inactiveText>HH Alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+	</device>
+	<protocol>
+		<modbus>
+			<type_definition type_name="swapped_float">
+				<type>float</type>
+				<byte_order>1,0,3,2</byte_order>
+			</type_definition>
+			<value_ref_id valid="GENERATOR_FUEL_LEVEL">
+				<function>3</function>
+				<start_addr>28672</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_float</type>
+			</value_ref_id>
+			<value_ref_id valid="HH_ALARM">
+				<function>1</function>
+				<start_addr>8192</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+		</modbus>
+	</protocol>
+</APC_DDF>

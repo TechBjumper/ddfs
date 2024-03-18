@@ -1,0 +1,4363 @@
+--/********************* (c) 2010 CyberPower System ***************************/
+--
+-- PROJECT: SNMP MIB FILE CONSTRUCTED
+--
+-- Version : 1.7
+--
+-- File Name: CPSMIB2011.mib
+--
+-- CREATION DATE :  06/09/2011
+--
+-- AUTHOR : Zander
+--
+--//////////////////////////////////////////////////////////////////////////////
+--
+-- DESCRIPTION : CPS Management Information Base(MIB)
+--
+--//////////////////////////////////////////////////////////////////////////////
+--
+--
+--/****************************************************************************/
+-- CPSMIB { iso org(3) dod(6) internet(1) private(4)
+--          enterprises(1) cps(3808) }
+
+CPS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   enterprises, Gauge, TimeTicks, IpAddress         FROM RFC1155-SMI
+   DisplayString                                    FROM RFC1213-MIB
+   OBJECT-TYPE                                      FROM RFC-1212
+   TRAP-TYPE                                        FROM RFC-1215;
+
+
+cps                            OBJECT IDENTIFIER ::=  { enterprises 3808 }
+
+products                       OBJECT IDENTIFIER ::=  { cps 1 }
+cpsmgmt                        OBJECT IDENTIFIER ::=  { cps 2 }
+
+hardware                       OBJECT IDENTIFIER ::=  { products 1 }
+
+
+mconfig                        OBJECT IDENTIFIER ::=  { cpsmgmt 1 }
+mtrapinfo                      OBJECT IDENTIFIER ::=  { cpsmgmt 2 }
+
+ups                            OBJECT IDENTIFIER ::=  { hardware 1 }
+eswitch                        OBJECT IDENTIFIER ::=  { hardware 2 }
+ePDU                           OBJECT IDENTIFIER ::=  { hardware 3 }
+
+
+mconfigClock                   OBJECT IDENTIFIER ::=  { mconfig 5 }
+
+
+upsIdent                       OBJECT IDENTIFIER ::=  { ups 1 }
+upsBattery                     OBJECT IDENTIFIER ::=  { ups 2 }
+upsInput                       OBJECT IDENTIFIER ::=  { ups 3 }
+upsOutput                      OBJECT IDENTIFIER ::=  { ups 4 }
+upsConfig                      OBJECT IDENTIFIER ::=  { ups 5 }
+upsControl                     OBJECT IDENTIFIER ::=  { ups 6 }
+upsTest                        OBJECT IDENTIFIER ::=  { ups 7 }
+upsOutlet                      OBJECT IDENTIFIER ::=  { ups 8 }
+
+upsBaseIdent                   OBJECT IDENTIFIER ::=  { upsIdent 1 }
+upsAdvanceIdent                OBJECT IDENTIFIER ::=  { upsIdent 2 }
+
+upsBaseBattery                 OBJECT IDENTIFIER ::=  { upsBattery 1 }
+upsAdvanceBattery              OBJECT IDENTIFIER ::=  { upsBattery 2 }
+
+upsBaseInput                   OBJECT IDENTIFIER ::=  { upsInput 1 }
+upsAdvanceInput                OBJECT IDENTIFIER ::=  { upsInput 2 }
+
+upsBaseOutput                  OBJECT IDENTIFIER ::=  { upsOutput 1 }
+upsAdvanceOutput               OBJECT IDENTIFIER ::=  { upsOutput 2 }
+
+upsBaseConfig                  OBJECT IDENTIFIER ::=  { upsConfig 1 }
+upsAdvanceConfig               OBJECT IDENTIFIER ::=  { upsConfig 2 }
+
+upsBaseControl                 OBJECT IDENTIFIER ::=  { upsControl 1 }
+upsAdvanceControl              OBJECT IDENTIFIER ::=  { upsControl 2 }
+
+upsBaseTest                    OBJECT IDENTIFIER ::=  { upsTest 1 }
+upsAdvanceTest                 OBJECT IDENTIFIER ::=  { upsTest 2 }
+
+upsBankOutletControl           OBJECT IDENTIFIER ::=  { upsOutlet 1 }
+
+eSwitchIdent                   OBJECT IDENTIFIER ::=  { eswitch 1 }
+eSwitchBase                    OBJECT IDENTIFIER ::=  { eswitch 2 }
+
+
+ePDUIdent                      OBJECT IDENTIFIER ::=  { ePDU 1 }
+ePDULoad                       OBJECT IDENTIFIER ::=  { ePDU 2 }
+ePDUOutlet                     OBJECT IDENTIFIER ::=  { ePDU 3 }
+ePDUPowerSupply                OBJECT IDENTIFIER ::=  { ePDU 4 }
+ePDUStatus                     OBJECT IDENTIFIER ::=  { ePDU 5 }
+
+ePDULoadDevice                 OBJECT IDENTIFIER ::=  { ePDULoad 1 }
+ePDULoadPhaseConfig            OBJECT IDENTIFIER ::=  { ePDULoad 2 }
+ePDULoadStatus                 OBJECT IDENTIFIER ::=  { ePDULoad 3 }
+ePDULoadBankConfig             OBJECT IDENTIFIER ::=  { ePDULoad 4 }
+
+ePDUOutletDevice               OBJECT IDENTIFIER ::=  { ePDUOutlet 1 }
+ePDUOutletPhase                OBJECT IDENTIFIER ::=  { ePDUOutlet 2 }
+ePDUOutletControl              OBJECT IDENTIFIER ::=  { ePDUOutlet 3 }
+ePDUOutletConfig               OBJECT IDENTIFIER ::=  { ePDUOutlet 4 }
+ePDUOutletStatus               OBJECT IDENTIFIER ::=  { ePDUOutlet 5 }
+ePDUOutletBank                 OBJECT IDENTIFIER ::=  { ePDUOutlet 6 }
+
+ePDUPowerSupplyDevice          OBJECT IDENTIFIER ::=  { ePDUPowerSupply 1 }
+
+
+
+-- object types
+-- the cpsmgmt group
+-- the mconfig group
+mconfigNumTrapAccepters OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The number of receivers to send traps to."
+   ::= { mconfig 1 }
+
+mconfigTrapAccepterTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF MconfigTrapAccepterEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "A list of receivers to send traps to. The numbers of
+       entries are given by the value of mconfigNumTrapAccepters."
+   ::= { mconfig 2 }
+
+mconfigTrapAccepterEntry OBJECT-TYPE
+   SYNTAX MconfigTrapAccepterEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "The receivers to send traps to."
+   INDEX  { trapIndex }
+   ::= { mconfigTrapAccepterTable 1 }
+
+MconfigTrapAccepterEntry ::=
+   SEQUENCE {
+      trapIndex
+         INTEGER,
+      accepterAddr
+         IpAddress,
+      communityString
+          DisplayString,
+      severityDegree
+         INTEGER,
+      accepterActive
+         INTEGER
+   }
+
+trapIndex OBJECT-TYPE
+   SYNTAX INTEGER(1..10)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The trap receiver entry index."
+   ::= { mconfigTrapAccepterEntry 1 }
+
+accepterAddr OBJECT-TYPE
+   SYNTAX IpAddress
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The trap receiver IP address."
+   ::= { mconfigTrapAccepterEntry 2 }
+
+communityString OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The trap receiver community name."
+   ::= { mconfigTrapAccepterEntry 3 }
+
+severityDegree OBJECT-TYPE
+   SYNTAX INTEGER {
+      information(1),
+      warning(2),
+      severe(3)
+   }
+   ACCESS read-only
+   STATUS obsolete
+   DESCRIPTION
+      "The trap receiver severity level. Traps are marked in severity level
+       as informational(1), warning(2), severe(3). Only send the traps of
+       equal or greater severity than this value to the receiver."
+   ::= { mconfigTrapAccepterEntry 4 }
+
+accepterActive OBJECT-TYPE
+   SYNTAX INTEGER   {
+      yes (1),
+      no  (2)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "A receiver will accept traps if yes, and none if no."
+   ::= { mconfigTrapAccepterEntry 5 }
+
+mconfigDHCPEnabled OBJECT-TYPE
+   SYNTAX INTEGER {
+      yes (1),
+      no  (2)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The system will automatically obtain its IP from a DHCP server if yes,
+       and none if no."
+   ::= { mconfig 3 }
+
+mconfigMyAddr OBJECT-TYPE
+   SYNTAX IpAddress
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The system IP address."
+   ::= { mconfig 4 }
+
+
+mconfigClockDate OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The current date in the mm/dd/yyyy format. Example: 01/01/2000."
+   ::= { mconfigClock 1 }
+
+mconfigClockTime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The current time in the hh:mm:ss 24H format."
+   ::= { mconfigClock 2 }
+
+
+
+-- The mtrapinfo group
+-- These OIDs allows CPS traps to be sent with additional arguments
+-- which may not be defined in the CPS MIB.
+mtrapinfoInteger OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Allow CPS traps with an integer argument for providing detail
+       information. Not being defined in the MIB, only reply 0."
+   ::= { mtrapinfo 1 }
+
+mtrapinfoIpAddress OBJECT-TYPE
+   SYNTAX IpAddress
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Allow CPS traps with an IP address argument for providing detail
+       information. Not being defined in the MIB, only reply 0.0.0.0."
+   ::= { mtrapinfo 2 }
+
+mtrapinfoString OBJECT-TYPE
+   SYNTAX  DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Allow CPS traps with an octet string argument for providing detail
+       information. Not being defined in the MIB, only reply a NULL string."
+   ::= { mtrapinfo 3 }
+
+mtrapinfoGauge OBJECT-TYPE
+   SYNTAX  Gauge
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Allow CPS traps with an Gauge argument for providing detail
+       information. Not being defined in the MIB, only reply 0."
+   ::= { mtrapinfo 4 }
+
+mtrapinfoTimeTicks OBJECT-TYPE
+   SYNTAX TimeTicks
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Allow CPS traps with an TimeTicks argument for providing detail
+       information. Not being defined in the MIB, only reply 0."
+   ::= { mtrapinfo 5 }
+
+-- the ups group
+-- the upsIdent group
+-- the upsBaseIdent
+upsBaseIdentModel OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The UPS model name."
+   ::= { upsBaseIdent 1 }
+
+upsBaseIdentName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The UPS identified name could be set by the administrator."
+   ::= { upsBaseIdent 2 }
+
+
+-- the upsAdvanceIdent group
+upsAdvanceIdentFirmwareRevision OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The UPS firmware revision."
+   ::= { upsAdvanceIdent 1 }
+
+upsAdvanceIdentDateOfManufacture OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The UPS manufacture date in mm/dd/yy format."
+   ::= { upsAdvanceIdent 2 }
+
+upsAdvanceIdentSerialNumber OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The UPS serial number in the internal microprocessor."
+   ::= { upsAdvanceIdent 3 }
+
+upsAdvanceIdentAgentFirmwareRevision OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The SNMP agent firmware revision."
+   ::= { upsAdvanceIdent 4 }
+
+
+-- the upsBattery group
+-- the upsBaseBattery group
+upsBaseBatteryStatus OBJECT-TYPE
+   SYNTAX INTEGER  {
+      unknown(1),
+      batteryNormal(2),
+      batteryLow(3)
+   }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The UPS battery status.  A batteryLow(3) value means the
+       battery will be exhausted soon under the current load.
+       The amount of low battery run time can be configured by the
+       upsAdvanceConfigLowBatteryRunTime."
+   ::= { upsBaseBattery 1 }
+
+upsBaseBatteryTimeOnBattery OBJECT-TYPE
+   SYNTAX TimeTicks
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The UPS wasted battery time since the UPS has transfered to
+       backup mode."
+   ::= { upsBaseBattery 2 }
+
+upsBaseBatteryLastReplaceDate OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The UPS batteries last replaced date in mm/dd/yy format.
+       This value is originally set when manufactured. If batteries
+       replaced, administrator should reset this value."
+   ::= { upsBaseBattery 3 }
+
+
+-- the upsAdvanceBattery group
+upsAdvanceBatteryCapacity OBJECT-TYPE
+   SYNTAX Gauge
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The battery capacity expressed in percentage."
+   ::= { upsAdvanceBattery 1 }
+
+upsAdvanceBatteryVoltage OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The battery voltage expressed in 1/10 VDC."
+   ::= { upsAdvanceBattery 2 }
+
+upsAdvanceBatteryTemperature OBJECT-TYPE
+   SYNTAX Gauge
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The UPS battery temperature expressed in Celsius."
+   ::= { upsAdvanceBattery 3 }
+
+upsAdvanceBatteryRunTimeRemaining OBJECT-TYPE
+   SYNTAX TimeTicks
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The UPS battery remaining run time."
+   ::= { upsAdvanceBattery 4 }
+
+upsAdvanceBatteryReplaceIndicator OBJECT-TYPE
+   SYNTAX INTEGER  {
+      noBatteryNeedsReplacing(1),
+      batteryNeedsReplacing(2)
+   }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "This value indicates if UPS batteries need to be replaced."
+   ::= { upsAdvanceBattery 5 }
+
+upsAdvanceBatteryFullChargeVoltage OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The battery charged voltage expressed in 1/10 VDC."
+   ::= { upsAdvanceBattery 6 }
+
+upsAdvanceBatteryCurrent OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The battery current expressed in percentage."
+   ::= { upsAdvanceBattery 7 }
+
+
+-- the upsBaseInput group
+upsBaseInputPhase OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The AC input phase."
+   ::= { upsBaseInput 1 }
+
+
+-- the upsAdvanceInput group
+upsAdvanceInputLineVoltage OBJECT-TYPE
+   SYNTAX Gauge
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The input line voltage in 1/10 VAC."
+   ::= { upsAdvanceInput 1 }
+
+upsAdvanceInputMaxLineVoltage OBJECT-TYPE
+   SYNTAX Gauge
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The maximum input line voltage in 1/10 VAC over the
+       previous 1 minute period."
+   ::= { upsAdvanceInput 2 }
+
+upsAdvanceInputMinLineVoltage OBJECT-TYPE
+   SYNTAX Gauge
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The minimum input line voltage in 1/10 VAC over the
+       previous 1 minute period."
+   ::= { upsAdvanceInput 3 }
+
+upsAdvanceInputFrequency OBJECT-TYPE
+   SYNTAX Gauge
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The input line frequency in 1/10 Hz."
+   ::= { upsAdvanceInput 4 }
+
+upsAdvanceInputLineFailCause OBJECT-TYPE
+   SYNTAX INTEGER  {
+      noTransfer(1),
+      highLineVoltage(2),
+      brownout(3),
+      selfTest(4)
+   }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The reason of UPS power failure.
+       This value is set to:
+       - noTransfer(1), if UPS is in utility mode.
+       - highLineVoltage(2), if UPS switch to battery mode by reason of
+         input voltage over the high transfer vloltage.
+       - brownout(3), if UPS switch to battery mode by reason of
+         input voltage under the low transfer vloltage.
+       - selfTest(4), if the UPS was commanded to do a self test."
+   ::= { upsAdvanceInput 5 }
+
+
+-- the upsBaseOutput group
+upsBaseOutputStatus OBJECT-TYPE
+   SYNTAX INTEGER  {
+      unknown(1),
+      onLine(2),
+      onBattery(3),
+      onBoost(4),
+      onSleep(5),
+      off(6),
+      rebooting(7)
+   }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The UPS output status."
+   ::= { upsBaseOutput 1 }
+
+upsBaseOutputPhase OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The output phase."
+   ::= { upsBaseOutput 2 }
+
+
+-- the upsAdvanceOutput group
+upsAdvanceOutputVoltage OBJECT-TYPE
+   SYNTAX Gauge
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The UPS output voltage in 1/10 VAC."
+   ::= { upsAdvanceOutput 1 }
+
+upsAdvanceOutputFrequency OBJECT-TYPE
+   SYNTAX Gauge
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The UPS output frequency in 1/10 Hz."
+   ::= { upsAdvanceOutput 2 }
+
+upsAdvanceOutputLoad OBJECT-TYPE
+   SYNTAX Gauge
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The UPS output load expressed in percentage"
+   ::= { upsAdvanceOutput 3 }
+
+upsAdvanceOutputCurrent OBJECT-TYPE
+   SYNTAX Gauge
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The UPS output current in ampres."
+   ::= { upsAdvanceOutput 4 }
+
+-- the upsBaseConfig group
+upsBaseConfigNumDevices OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The number of equipment plugged into the UPS."
+   ::= { upsBaseConfig 1 }
+
+upsBaseConfigDeviceTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF UpsBaseConfigDeviceEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "A list of equipment plugged into the UPS.
+       The numbers of entries are given by the value of
+       upsBaseConfigNumDevices."
+   ::= { upsBaseConfig 2 }
+
+upsBaseConfigDeviceEntry OBJECT-TYPE
+   SYNTAX UpsBaseConfigDeviceEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "The equipment plugged in to the UPS."
+   INDEX  { deviceIndex }
+   ::= { upsBaseConfigDeviceTable 1 }
+
+UpsBaseConfigDeviceEntry ::=
+   SEQUENCE {
+      deviceIndex
+         INTEGER,
+      deviceName
+         DisplayString,
+      vaRating
+         INTEGER,
+      acceptThisDevice
+         INTEGER
+   }
+
+deviceIndex OBJECT-TYPE
+   SYNTAX INTEGER(1..255)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The index of the equipment plugged into the UPS."
+   ::= { upsBaseConfigDeviceEntry 1 }
+
+deviceName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The name of the equipment plugged into the UPS."
+   ::= { upsBaseConfigDeviceEntry 2 }
+
+vaRating OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The VA rating of the equipment plugged into the UPS."
+   ::= { upsBaseConfigDeviceEntry 3 }
+
+acceptThisDevice OBJECT-TYPE
+   SYNTAX INTEGER   {
+      yes(1),
+      no(2)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "An equipment is plugged if yes, unplugged if no."
+   ::= { upsBaseConfigDeviceEntry 4 }
+
+
+-- the upsAdvanceConfig group
+upsAdvanceConfigRatedOutputVoltage OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The standard UPS output voltage in VAC.
+       The possible values are 100, 110, 120, 127,
+       208, 220, 230, and 240.
+       If a value other than a possible value is set,
+       it will not be accepted."
+   ::= { upsAdvanceConfig 1 }
+
+upsAdvanceConfigHighTransferVolt OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "Adjust the high transfer vloltage in VAC.
+       The high transfer vloltage will become the UPS default value
+       subtracts this value. The allowed values depend on the output:
+       100-127 volt system allow settings of 0-15.
+       208-240 volt system allow settings of 0-30.
+       If the adjustable value is over the allowed values,
+       it will not be accepted."
+   ::= { upsAdvanceConfig 2 }
+
+upsAdvanceConfigLowTransferVolt OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "Adjust the low transfer vloltage in VAC.
+       The low transfer vloltage will become the UPS default value
+       adds this value. The allowed values depend on the output:
+       100-127 volt system allow settings of 0-15.
+       208-240 volt system allow settings of 0-30.
+       If the adjustable value is over the allowed values,
+       it will not be accepted."
+   ::= { upsAdvanceConfig 3 }
+
+upsAdvanceConfigAlarm OBJECT-TYPE
+   SYNTAX INTEGER  {
+      timed(1),
+      enable(2),
+      disable(3),
+      mute(4)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "This value is set to handle audible alarms when power failure."
+   ::= { upsAdvanceConfig 4 }
+
+upsAdvanceConfigAlarmTimer OBJECT-TYPE
+   SYNTAX TimeTicks
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The time after power failure at which the UPS begins giving
+       audible alarms. This timer is effective only if the value of
+       upsAdvanceConfigAlarm is timed(1).
+       Accepted values are between 0 to 60 seconds.
+       If a value other than a supported value is set, the value
+       will not be accepted."
+   ::= { upsAdvanceConfig 5 }
+
+upsAdvanceConfigMinReturnCapacity OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The minimum battery capacity that UPS will return from
+       a low battery shutdown condition. The possible values
+       are between 0 to 40.
+       If a value other than a supported value is set, the value
+       will not be accepted."
+   ::= { upsAdvanceConfig 6 }
+
+upsAdvanceConfigSensitivity OBJECT-TYPE
+   SYNTAX INTEGER  {
+      auto(1),
+      low(2),
+      medium(3),
+      high(4)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The sensitivity of the UPS to power failure detection."
+   ::= { upsAdvanceConfig 7 }
+
+upsAdvanceConfigLowBatteryRunTime OBJECT-TYPE
+   SYNTAX TimeTicks
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The desired run time, in seconds, UPS will enter in a
+       low battery sequence. The possible values are
+       120, 300, 420, 600.
+       If a value other than a supported value is set, the value
+       will not be accepted."
+   ::= { upsAdvanceConfig 8 }
+
+upsAdvanceConfigReturnDelay OBJECT-TYPE
+   SYNTAX TimeTicks
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The delay time the UPS will turn on after power recovery.
+       The value is also used in a 'reboot' or 'wake up' sequence.
+       The possible values are 0 to 600 seconds.
+       If a value other than a supported value is set, the value
+       will not be accepted."
+   ::= { upsAdvanceConfig 9 }
+
+upsAdvanceConfigShutoffDelay OBJECT-TYPE
+   SYNTAX TimeTicks
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The delay time the UPS will remain on after receiving a
+       turn off command.  The possible values are between 3 to
+       99 minutes.
+       If a value other than a supported value is set, the value
+       will not be accepted."
+   ::= { upsAdvanceConfig 10 }
+
+upsAdvanceConfigUpsSleepTime OBJECT-TYPE
+   SYNTAX TimeTicks
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The time for the UPS to enter sleep mode by user's request.
+       Without regard to the utility state the UPS will not provide
+       output power in sleep mode. Output power will recover when
+       specified time has elapsed.
+       Any setting value is accepted, however the UPS only recognizes
+       increasing in minutes."
+   ::= { upsAdvanceConfig 11 }
+
+
+upsAdvanceConfigSetEEPROMDefaults OBJECT-TYPE
+   SYNTAX INTEGER  {
+      noSetEEPROMDefaults(1),
+      setEEPROMDefaults(2)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "Reset the UPS EEPROM parameters to default values."
+   ::= { upsAdvanceConfig 12 }
+
+-- the upsBaseControl group
+upsBaseControlConserveBattery OBJECT-TYPE
+   SYNTAX INTEGER  {
+      noTurnOffUps(1),
+      turnOffUpsToConserveBattery(2)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "UPS on battery will enter sleeping when the variable is set
+       to turnOffUpsToConserveBattery(2). When utility power recovers
+       the UPS will turn back on. Trying to turn off a UPS that is
+       not on battery mode will cause badValue error.
+       It is no effective to set this value to noTurnOffUps(1)."
+   ::= { upsBaseControl 1 }
+
+
+-- the upsAdvanceControl group
+upsAdvanceControlUpsOff OBJECT-TYPE
+   SYNTAX INTEGER  {
+      noTurnUpsOff(1),
+      turnUpsOff(2)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "UPS will shutdown when the variable is set to turnUpsOff(2).
+       Without regard to the utility state the UPS will not provide
+       output power in this state.
+       It is no effective to set this value to noTurnUpsOff(1)."
+   ::= { upsAdvanceControl 1 }
+
+upsAdvanceControlRebootUps OBJECT-TYPE
+   SYNTAX INTEGER  {
+      noRebootUps(1),
+      rebootUps(2)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "UPS will shutdown and turn back on when the variable is
+       set to rebootUps(2).
+       It is no effective to set this value to noRebootUps(1)."
+   ::= { upsAdvanceControl 2 }
+
+upsAdvanceControlUpsSleep OBJECT-TYPE
+   SYNTAX INTEGER  {
+      noPutUpsToSleep(1),
+      putUpsToSleep(2)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "UPS will enter sleep mode for the time specified by
+       upsAdvanceConfigUpsSleepTime when the variable is set
+       to putUpsToSleep(2).
+       Without regard to the utility state the UPS will not provide
+       output power in sleep mode. Output power will recover when
+       specified time has elapsed.
+       It is no effective to set this value to noPutUpsToSleep(1)."
+   ::= { upsAdvanceControl 3 }
+
+upsAdvanceControlSimulatePowerFail OBJECT-TYPE
+   SYNTAX INTEGER  {
+      noSimulatePowerFailure(1),
+      simulatePowerFailure(2)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "UPS will transfer to backup mode when the variable is set
+       to simulatePowerFailure(2).
+       It is no effective to set this value to noFlashAndBeep(1)."
+   ::= { upsAdvanceControl 4 }
+
+upsAdvanceControlFlashAndBeep OBJECT-TYPE
+   SYNTAX INTEGER  {
+      noFlashAndBeep(1),
+      flashAndBeep(2)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "UPS will beep and simultaneously turn on the panel lights
+       when the variable is set to flashAndBeep(2).
+       It is no effective to set this value to noSimulatePowerFailure(1)."
+   ::= { upsAdvanceControl 5 }
+
+upsAdvanceControlTurnOnUPS OBJECT-TYPE
+   SYNTAX INTEGER  {
+      noTurnOnUPS(1),
+      turnOnUPS(2)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "UPS will turned on immediately when the variable is set
+       to turnOnUPS(2).
+       It is no effective to set this value to noTurnOnUPS(1)."
+   ::= { upsAdvanceControl 6 }
+
+
+-- the upsTest group
+-- the upsAdvanceTest group
+upsAdvanceTestDiagnosticSchedule OBJECT-TYPE
+   SYNTAX INTEGER  {
+      unknown(1),
+      biweekly(2),
+      weekly(3),
+      atTurnOn(4),
+      never(5)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The schedule of the UPS automatic selftest."
+   ::= { upsAdvanceTest 1 }
+
+upsAdvanceTestDiagnostics OBJECT-TYPE
+   SYNTAX INTEGER  {
+      noTestDiagnostics(1),
+      testDiagnostics(2)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "UPS will do a diagnostic selftest when the variable is set
+       to testDiagnostics(2).
+       It is no effective to set this value to noTestDiagnostics(1)."
+   ::= { upsAdvanceTest 2 }
+
+upsAdvanceTestDiagnosticsResults OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok(1),
+      failed(2),
+      invalidTest(3),
+      testInProgress(4)
+   }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The last UPS selftest result."
+   ::= { upsAdvanceTest 3 }
+
+upsAdvanceTestLastDiagnosticsDate OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The last UPS selftest date in mm/dd/yy format."
+   ::= { upsAdvanceTest 4 }
+
+upsAdvanceTestIndicators OBJECT-TYPE
+   SYNTAX INTEGER {
+	noTestIndicators(1),
+	testIndicators(2)
+	}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "UPS will perform a panel indicator test when the variable
+       is set to testIndicators(2).
+       It is no effective to set this value to noTestIndicators(1)."
+   ::= { upsAdvanceTest 5 }
+
+upsAdvanceTestRuntimeCalibration OBJECT-TYPE
+   SYNTAX INTEGER  {
+      noPerformCalibration(1),
+      performCalibration(2),
+      cancelCurrentCalibration(3)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "UPS will discharge to calibrate the UPS runtime when the variable
+       is set to performCalibration(2).
+       This test runs until the UPS is in a low battery condition.
+       UPS will cancel the discharge after setting performCalibration(2)
+       when the variable is set to cancelCurrentCalibration(3).
+       It is no effective to set this value to noPerformCalibration(1).
+       The result of the runtime test will be stored in
+       upsAdvanceTestCalibrationResults."
+   ::= { upsAdvanceTest 6 }
+
+upsAdvanceTestCalibrationResults OBJECT-TYPE
+   SYNTAX INTEGER {
+      ok(1),
+      invalidCalibration(2),
+      calibrationInProgress(3)
+   }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The last runtime calibration result.
+       This value means :
+       - ok(1), if a successful runtime calibration.
+       - invalidCalibration(2), if runtime calibration failure.
+       - calibrationInProgress(3), if calibration is processing now."
+   ::= { upsAdvanceTest 7 }
+
+upsAdvanceTestCalibrationDate OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The last UPS runtime calibration date"
+   ::= { upsAdvanceTest 8 }
+
+-- the upsBankOutletControl grop
+upsBankOutletControlTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF UpsBankOutletControlEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Allows for control of the outlet banks."
+   ::= { upsBankOutletControl 1 }
+
+upsBankOutletControlEntry OBJECT-TYPE
+   SYNTAX UpsBankOutletControlEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "The outlet to control."
+   INDEX  { upsBankControlIndex }
+   ::= { upsBankOutletControlTable 1 }
+
+UpsBankOutletControlEntry ::=
+   SEQUENCE {
+      upsBankControlIndex
+         INTEGER,
+      upsBankControlOutletCommand
+         INTEGER
+   }
+
+upsBankControlIndex OBJECT-TYPE
+   SYNTAX INTEGER(1..24)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The index to the outlet entry."
+   ::= { upsBankOutletControlEntry 1 }
+
+upsBankControlOutletCommand OBJECT-TYPE
+   SYNTAX INTEGER   {
+      immediateOn             (1),
+      immediateOff            (2),
+      bankNotExist            (3),
+      criticalBank            (4)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this variable will return the outlet bank state. If
+       the outlet bank is on, the immediateOn (1) value will be returned.
+       If the outlet bank is off, the immediateOff (2) value will be
+       returned. If the outlet bank is critical (uncontrollable), the
+       criticalBank (4) value will be returned.
+       Setting this variable to immediateOn (1) will immediately turn
+       the outlet on.
+       Setting this variable to immediateOff (2) will immediately turn
+       the outlet off."
+   ::= { upsBankOutletControlEntry 2 }
+
+-- the eswitch group
+-- the eSwitchIdent group
+eSwitchIdentHardwareRev OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The hardware revision set at the factory."
+   ::= { eSwitchIdent 1 }
+
+eSwitchIdentFirmwareRev OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The firmware revision set at the factory."
+   ::= { eSwitchIdent 2 }
+
+eSwitchIdentDateOfManufacture OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The manufacture date in mm/dd/yy format."
+   ::= { eSwitchIdent 3 }
+
+eSwitchIdentModelName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The model name set at the factory.
+       This value need to consist with safty report."
+   ::= { eSwitchIdent 4 }
+
+
+-- the eSwitchBase group
+eSwitchNumber OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The numbers of switch have been attached to the system."
+   ::= { eSwitchBase 1 }
+
+eSwitchBaseTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF ESwitchBaseEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "A list of switch information. The number of entries is given
+       by the value of eSwitchNumber."
+   ::= { eSwitchBase 2 }
+
+eSwitchBaseEntry OBJECT-TYPE
+   SYNTAX ESwitchBaseEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "An entry information of the individual switch."
+   INDEX  { eSwitchID}
+   ::= { eSwitchBaseTable 1 }
+
+ESwitchBaseEntry ::=
+   SEQUENCE {
+      eSwitchID
+        INTEGER,
+      eSwitchOutletNum
+        INTEGER,
+      eSwitchOutletState
+        DisplayString
+   }
+
+eSwitchID OBJECT-TYPE
+   SYNTAX INTEGER(0..16)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The power switch ID number."
+   ::= { eSwitchBaseEntry 1 }
+
+eSwitchOutletNum OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The number of outlets provided in the switch."
+   ::= { eSwitchBaseEntry 2 }
+
+eSwitchOutletState  OBJECT-TYPE
+   SYNTAX  DisplayString
+   ACCESS  read-only
+   STATUS  mandatory
+   DESCRIPTION
+      "Getting this OID will reply the status of all outlets in the switch.
+       '0' for outlet off, '1' for outlet on.
+       The index from left to right is outlet#8, #7, #6, #5, #4, #3, #2, #1.
+       For Example:
+       If the string is '01011010', it means the outlets status are the following:
+       outlet #8 is off,
+       outlet #7 is on,
+       outlet #6 is off,
+       outlet #5 is on,
+       outlet #4 is on,
+       outlet #3 is off,
+       outlet #2 is on,
+       outlet #1 is off.
+      "
+    ::= { eSwitchBaseEntry 3 }
+
+eSwitchBaseCtrTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF ESwitchBaseCtrEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "A list of switch control parameters. The number of entries is given
+       by the value of eSwitchNumber."
+   ::= { eSwitchBase 3 }
+
+eSwitchBaseCtrEntry OBJECT-TYPE
+   SYNTAX ESwitchBaseCtrEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "An entry control information of individual switches."
+   INDEX  { eSwitchCtrID}
+   ::= { eSwitchBaseCtrTable 1 }
+
+ESwitchBaseCtrEntry ::=
+   SEQUENCE {
+      eSwitchCtrID
+        INTEGER,
+      eSwitchActOutlet
+        INTEGER,
+      eSwitchActType
+        INTEGER
+   }
+
+eSwitchCtrID OBJECT-TYPE
+   SYNTAX INTEGER(0..16)
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "Select the switch ID to be controlled."
+   ::= { eSwitchBaseCtrEntry 1 }
+
+eSwitchActOutlet OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The action outlets to be controlled."
+   ::= { eSwitchBaseCtrEntry 2 }
+
+eSwitchActType OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The on/off type of the action outlets.
+      1 for duration off, 2 for duration on,
+      3 for immediately off, 4 for immediately on,
+      and 5 for reboot."
+   ::= { eSwitchBaseCtrEntry 3 }
+
+
+
+-- ePDU Group
+
+-- the ePDUIdent group
+
+ePDUIdentName OBJECT-TYPE
+   SYNTAX  DisplayString
+   ACCESS  read-write
+   STATUS  mandatory
+   DESCRIPTION
+      "The name of the Rack PDU.
+       The maximum string size is device dependent."
+   ::= { ePDUIdent 1 }
+
+ePDUIdentHardwareRev OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The hardware revision of the Rack PDU.
+       This value is set at the factory."
+   ::= { ePDUIdent 2 }
+
+ePDUIdentFirmwareRev OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "An 8-byte ID string identifying the Rack PDU firmware revision.
+       This value is set at the factory."
+   ::= {  ePDUIdent 3 }
+
+
+ePDUIdentDateOfManufacture OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The date when the Rack PDU was manufactured in mm/dd/yyyy format.
+       This value is set at the factory. The year 2000 will be
+       represented by 00."
+   ::= { ePDUIdent 4 }
+
+ePDUIdentModelNumber OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "A 10-character string identifying the model number of
+       the Rack PDU. This value is set at the factory."
+   ::= { ePDUIdent 5 }
+
+ePDUIdentSerialNumber OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "A 12-character string identifying the serial number of
+       the Rack PDU. This value is set at the factory."
+   ::= { ePDUIdent 6 }
+
+ePDUIdentDeviceRating OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the electrical rating of the device."
+
+   ::= { ePDUIdent 7 }
+
+ePDUIdentDeviceNumOutlets OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the number of outlets contained in the device."
+
+   ::= { ePDUIdent 8 }
+
+ePDUIdentDeviceNumPhases OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the number of phases supported by the device."
+
+   ::= { ePDUIdent 9 }
+
+ePDUIdentDeviceNumBreakers OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the number of circuit breakers supported by the device.
+       This is the same as the number of banks of outlets.
+       0 will be returned if the unit has no phase breakers. "
+
+   ::= { ePDUIdent 10 }
+
+ePDUIdentDeviceBreakerRating OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return rating of the circuit breakers on the device if it has any."
+
+   ::= { ePDUIdent 11 }
+
+ePDUIdentDeviceOrientation OBJECT-TYPE
+   SYNTAX INTEGER       {
+      orientHorizontal            (1),
+      orientVertical              (2)
+   }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the intended physical orientation of the device.
+
+       OrientHorizonatal(1) indicates Horizontal.
+       OrientVertical(2) indicates Vertical."
+
+   ::= { ePDUIdent 12 }
+
+ePDUIdentDeviceOutletLayout OBJECT-TYPE
+   SYNTAX INTEGER       {
+      seqPhaseToNeutral            (1),
+      seqPhaseToPhase              (2),
+      seqPhToNeu21PhToPh           (3),
+      seqPhToPhGrouped             (4)
+   }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return outlet layout for the device.
+
+       SeqPhaseToNeutral(1) indicates outlet layout as follows:
+       1:1-N,2:2-N,3:3-N,4:1-N,5:2-N,...
+
+       SeqPhaseToPhase(2) indicates outlet layout as follows:
+       1:1-2,2:2-3,3:3-1,4:1-2,5:2-3,...
+
+       SeqPhToNeu21PhToPh(3) indicates outlet layout as follows:
+       1:1-N,2:2-N...21:3-N,22:1-2,23:2-3,24:3-1,...
+
+       SeqPhToPhGrouped(4) indicates outlet layout as follows:
+       Otlts1-8::(3-1),Otlts9-16::(2-3),Otlts17-24::(1-2)."
+   ::= { ePDUIdent 13 }
+
+ePDUIdentDeviceDisplayOrientation OBJECT-TYPE
+   SYNTAX INTEGER       {
+      displayNormal            (1),
+      displayReverse           (2)
+   }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the intended physical orientation of the Seven-Segment Display.
+
+       Normal(1) indicates Normal.
+       Reverse(2)indicates Upside-Down."
+
+   ::= { ePDUIdent 14 }
+
+
+ePDUIdentDeviceLinetoLineVoltage OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "Getting/Setting this OID will return/set the Line to Line Volatage.
+
+      The valid range is between 0V to 440V"
+
+   ::= { ePDUIdent 15 }
+
+-- the ePDULoadDevice group
+
+ePDULoadDevMaxPhaseLoad   OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the maximum rated power
+       that each phase of the Rack PDU can provide. It is
+       represented in Amps.
+
+       0 will be returned if the unit is banked."
+   ::= { ePDULoadDevice 1 }
+
+ePDULoadDevNumPhases OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The number of phases available with this Rack PDU."
+   ::= { ePDULoadDevice 2 }
+
+ePDULoadDevMaxBankLoad   OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the maximum rated power
+       that a bank of the Rack PDU can provide. It is
+       represented in Amps.
+
+       0 will be returned if the device does not have any banks."
+
+   ::= { ePDULoadDevice 3 }
+
+ePDULoadDevNumBanks OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The number of banks of outlets available with this Rack PDU.
+       A bank of outlets has a unique circuit breaker for a subset
+       of the total number of outlets on the ePDU.
+
+       0 will be returned if the unit no banks."
+   ::= { ePDULoadDevice 4 }
+
+ePDULoadDevBankTableSize OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The size of the Bank Table."
+   ::= { ePDULoadDevice 5 }
+
+
+ePDULoadDevBankTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF LoadDevBankEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Allows for getting the Bank Max Load in the Rack PDU."
+
+   ::= { ePDULoadDevice 6 }
+
+ePDULoadDevBankEntry OBJECT-TYPE
+   SYNTAX LoadDevBankEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "The Rack PDU Banks Access."
+   INDEX  { ePDULoadDevBankIndex}
+   ::= { ePDULoadDevBankTable 1 }
+
+LoadDevBankEntry ::=
+   SEQUENCE {
+      ePDULoadDevBankIndex      INTEGER,
+      ePDULoadDevBankNumber	    INTEGER,
+      ePDULoadDevBankMaxLoad    INTEGER
+   }
+
+ePDULoadDevBankIndex OBJECT-TYPE
+   SYNTAX INTEGER(1..10)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The index to the Rack PDU bank entry."
+   ::= { ePDULoadDevBankEntry 1 }
+
+ePDULoadDevBankNumber OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the bank number."
+
+   ::= { ePDULoadDevBankEntry 2 }
+
+ePDULoadDevBankMaxLoad OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the maximum rated power
+       that each bank of the Rack PDU can provide. It is
+       represented in Amps."
+
+   ::= { ePDULoadDevBankEntry 3 }
+
+ePDULoadDevMaxOutletTableSize OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The size of the Outlet Table."
+   ::= { ePDULoadDevice 7 }
+
+
+ePDULoadDevMaxOutletTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF LoadDevMaxOutletEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Allows for getting the Max Outlet Load in an Outlet Monitored Rack PDU."
+   ::= { ePDULoadDevice 8 }
+
+ePDULoadDevMaxOutletEntry OBJECT-TYPE
+   SYNTAX LoadDevMaxOutletEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "This gives access to Max Outlet Load of an Outlet Monitored Rack PDU"
+   INDEX  { ePDULoadDevOutletIndex}
+   ::= { ePDULoadDevMaxOutletTable 1 }
+
+LoadDevMaxOutletEntry ::=
+   SEQUENCE {
+      ePDULoadDevOutletIndex    INTEGER,
+      ePDULoadDevOutletNumber	INTEGER,
+      ePDULoadDevMaxOutletLoad  INTEGER
+   }
+
+ePDULoadDevOutletIndex OBJECT-TYPE
+   SYNTAX INTEGER(1..24)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The index to the Outlet Monitored Rack PDU Max Outlet Load entry."
+   ::= { ePDULoadDevMaxOutletEntry 1 }
+
+ePDULoadDevOutletNumber OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the Outlet number."
+   ::= { ePDULoadDevMaxOutletEntry 2 }
+
+
+ePDULoadDevMaxOutletLoad OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the maximum rated power
+       that each Outlet of an Outlet Monitored Rack PDU can provide. It is
+       represented in Amps. "
+   ::= { ePDULoadDevMaxOutletEntry 3 }
+
+
+-- the ePDULoadPhaseConfig group
+
+ePDULoadPhaseConfigTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF LoadPhaseConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Allows for configuration of each Rack PDU phase.
+       The number of entries is contained in the
+       ePDULoadDevNumPhases OID."
+   ::= { ePDULoadPhaseConfig 1 }
+
+ePDULoadPhaseConfigEntry OBJECT-TYPE
+   SYNTAX LoadPhaseConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "The Rack PDU phase to configure."
+   INDEX  { ePDULoadPhaseConfigIndex}
+   ::= { ePDULoadPhaseConfigTable 1 }
+
+LoadPhaseConfigEntry ::=
+   SEQUENCE {
+      ePDULoadPhaseConfigIndex                  INTEGER,
+      ePDULoadPhaseConfigLowLoadThreshold       INTEGER,
+      ePDULoadPhaseConfigNearOverloadThreshold  INTEGER,
+      ePDULoadPhaseConfigOverloadThreshold      INTEGER,
+      ePDULoadPhaseConfigAlarm                  INTEGER
+   }
+
+ePDULoadPhaseConfigIndex OBJECT-TYPE
+   SYNTAX INTEGER {
+      phase1                     (1),
+      phase2                     (2),
+      phase3                     (3)
+   }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The index to the Rack PDU phase entry."
+   ::= { ePDULoadPhaseConfigEntry 1 }
+
+ePDULoadPhaseConfigLowLoadThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "A threshold that indicates the power consumption of
+       the load is nearing a low consumption condition. It is
+       represented in Amps.  A warning will be issued when the
+       load is less than the threshold value.
+
+       A threshold value of 0 Amps effectively disables this
+       warning.
+
+       Maximum value must be less than the value returned
+       by the ePDULoadPhaseConfigNearOverloadThreshold OID."
+   ::= { ePDULoadPhaseConfigEntry 2 }
+
+ePDULoadPhaseConfigNearOverloadThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "A threshold that indicates the power consumption of
+       the load is nearing an overload condition. It is
+       represented in Amps.  A warning will be issued when the
+       load is greater than or equal to the threshold value.
+
+       Minimum value must be greater than the value returned by
+       the ePDULoadPhaseConfigLowLoadThreshold OID.
+
+       Maximum value must be less than or equal to the value
+       returned by the ePDULoadPhaseConfigOverloadThreshold OID."
+   ::= { ePDULoadPhaseConfigEntry 3 }
+
+ePDULoadPhaseConfigOverloadThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "A threshold that indicates the power consumption of
+       the load has entered an overload condition. It is
+       represented in Amps.  A warning will be issued when the
+       load is greater than or equal to the threshold value.
+
+       Minimum value must be greater than or equal to the value
+       returned by the ePDULoadPhaseConfigNearOverloadThreshold OID.
+
+       Maximum value must be less than or equal to the value
+       returned by the ePDULoadDevMaxPhaseLoad OID."
+   ::= { ePDULoadPhaseConfigEntry 4 }
+
+
+ePDULoadPhaseConfigAlarm OBJECT-TYPE
+   SYNTAX INTEGER {
+        noLoadAlarm             (1),
+        underCurrentAlarm       (2),
+        nearOverCurrentAlarm    (3),
+        overCurrentAlarm        (4)
+    }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+   "Getting this OID will return the current Phase Alarm."
+   ::= { ePDULoadPhaseConfigEntry 5 }
+
+
+-- the ePDULoadStatus group
+
+ePDULoadStatusTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF LoadStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Allows for getting of status of each Rack PDU phase/bank.
+       The number of entries is calculated by adding
+       the number of phases (ePDULoadDevNumPhases OID) and
+       the number of banks of outlets (ePDULoadDevNumBanks)
+       Number of entries = #phases + #banks.
+       NOTE: If a device has phase and bank information, all phase information
+       shall precede the bank information."
+   ::= { ePDULoadStatus 1 }
+
+ePDULoadStatusEntry OBJECT-TYPE
+   SYNTAX LoadStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "The Rack PDU phase/bank to gather status from."
+   INDEX  { ePDULoadStatusIndex}
+   ::= { ePDULoadStatusTable 1 }
+
+LoadStatusEntry ::=
+   SEQUENCE {
+      ePDULoadStatusIndex                 INTEGER,
+      ePDULoadStatusLoad                  Gauge,
+      ePDULoadStatusLoadState             INTEGER,
+      ePDULoadStatusPhaseNumber           INTEGER,
+      ePDULoadStatusBankNumber            INTEGER
+   }
+
+ePDULoadStatusIndex OBJECT-TYPE
+   SYNTAX INTEGER(1..24)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The index to the Rack PDU phase/bank entry. All phase information will precede
+       any bank information"
+   ::= { ePDULoadStatusEntry 1 }
+
+ePDULoadStatusLoad OBJECT-TYPE
+   SYNTAX Gauge
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the phase/bank load measured
+       in tenths of Amps."
+   ::= { ePDULoadStatusEntry 2 }
+
+ePDULoadStatusLoadState OBJECT-TYPE
+   SYNTAX INTEGER       {
+      phaseLoadNormal                 (1),
+      phaseLoadLow                    (2),
+      phaseLoadNearOverload           (3),
+      phaseLoadOverload               (4)
+   }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the phase/bank load state.
+
+       phaseLoadNormal(1) indicates that the phase/bank is
+       operating properly within the ePDULoadConfigLowLoadThreshold
+       and ePDULoadConfigNearOverloadThreshold OID values.
+
+       phaseLoadLow(2) indicates that the phase/bank load has
+       dropped below the ePDULoadConfigLowLoadThreshold OID value.
+       An SNMP trap will occur when this state is entered or cleared.
+
+       phaseLoadNearOverload(3) indicates that the phase/bank load
+       is greater than or equal to the
+       ePDULoadConfigNearOverloadThreshold OID value.
+       An SNMP trap will occur when this state is entered or cleared.
+
+       phaseLoadOverload(4) indicates that the phase/bank load is
+       greater than or equal to the ePDULoadConfigOverloadThreshold
+       OID value.
+       An SNMP trap will occur when this state is entered or cleared."
+   ::= { ePDULoadStatusEntry 3 }
+
+ePDULoadStatusPhaseNumber OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The phase number to which this record refers."
+   ::= { ePDULoadStatusEntry 4 }
+
+ePDULoadStatusBankNumber OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The bank number to which this record refers.  A value of 0 will be returned if
+       any bank is not present or if it is phase related."
+   ::= { ePDULoadStatusEntry 5 }
+
+
+-- the ePDULoadBankConfig group
+
+ePDULoadBankConfigTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF LoadBankConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Allows for configuration of each Rack PDU bank.
+       The number of entries is contained in the
+       ePDULoadDevNumBanks OID."
+   ::= { ePDULoadBankConfig 1 }
+
+ePDULoadBankConfigEntry OBJECT-TYPE
+   SYNTAX LoadBankConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "The Rack PDU bank to configure."
+   INDEX  { ePDULoadBankConfigIndex}
+   ::= { ePDULoadBankConfigTable 1 }
+
+LoadBankConfigEntry ::=
+   SEQUENCE {
+      ePDULoadBankConfigIndex                    INTEGER,
+      ePDULoadBankConfigLowLoadThreshold         INTEGER,
+      ePDULoadBankConfigNearOverloadThreshold    INTEGER,
+      ePDULoadBankConfigOverloadThreshold        INTEGER,
+      ePDULoadBankConfigAlarm                    INTEGER
+   }
+
+ePDULoadBankConfigIndex OBJECT-TYPE
+   SYNTAX INTEGER(1..24)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The index to the Rack PDU bank entry."
+   ::= { ePDULoadBankConfigEntry 1 }
+
+ePDULoadBankConfigLowLoadThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "A threshold that indicates the power consumption of
+       the load is nearing a low consumption condition. It is
+       represented in Amps.  A warning will be issued when the
+       load is less than the threshold value.
+
+       A threshold value of 0 Amps effectively disables this
+       warning.
+
+       Maximum value must be less than the value returned
+       by the ePDULoadBankConfigNearOverloadThreshold OID."
+
+   ::= { ePDULoadBankConfigEntry 2 }
+
+ePDULoadBankConfigNearOverloadThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "A threshold that indicates the power consumption of
+       the load is nearing an overload condition. It is
+       represented in Amps.  A warning will be issued when the
+       load is greater than or equal to the threshold value.
+
+       Minimum value must be greater than the value returned by
+       the ePDULoadBankConfigLowLoadThreshold OID.
+
+       Maximum value must be less than or equal to the value
+       returned by the ePDULoadBankConfigOverloadThreshold OID."
+
+   ::= { ePDULoadBankConfigEntry 3 }
+
+ePDULoadBankConfigOverloadThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "A threshold that indicates the power consumption of
+       the load has entered an overload condition. It is
+       represented in Amps.  A warning will be issued when the
+       load is greater than or equal to the threshold value.
+
+       Minimum value must be greater than or equal to the value
+       returned by the ePDULoadBankConfigNearOverloadThreshold OID.
+
+       Maximum value must be less than or equal to the value
+       returned by the ePDULoadDevMaxBankLoad OID."
+
+   ::= { ePDULoadBankConfigEntry 4 }
+
+ePDULoadBankConfigAlarm OBJECT-TYPE
+   SYNTAX INTEGER {
+        noLoadAlarm             (1),
+        underCurrentAlarm       (2),
+        nearOverCurrentAlarm    (3),
+        overCurrentAlarm        (4)
+
+    }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+   " Getting this OID will return the current Bank Alarm."
+   ::= { ePDULoadBankConfigEntry 5 }
+
+
+-- the ePDUOutletDevice group
+
+ePDUOutletDevCommand  OBJECT-TYPE
+  SYNTAX INTEGER       {
+      noCommandAll               (1),
+      immediateAllOn             (2),
+      immediateAllOff            (3),
+      immediateAllReboot         (4),
+      delayedAllOn               (5),
+      delayedAllOff              (6),
+      delayedAllReboot           (7),
+      cancelAllPendingCommands   (8)
+   }
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "Setting this OID to immediateAllOn (2) will turn all outlets
+       on immediately.
+
+       Setting this OID to immediateAllOff (3) will turn all outlets
+       off immediately.
+
+       Setting this OID to immediateAllReboot (4) will reboot all outlets
+       immediately.
+
+       Setting this OID to delayedAllOn (5) will turn all outlets on as
+       defined by each outlet's ePDUOutletConfigPowerOnTime OID value.
+
+       Setting this OID to delayedAllOff (6) will turn all outlets
+       off as defined by each outlet's ePDUOutletConfigPowerOffTime OID value.
+
+       Setting this OID to delayedAllReboot (7) will cause a
+       delayedAllOff command to be performed. Once all outlets are off,
+       the Switched Rack PDU will then delay the largest
+       ePDUOutletConfigRebootDuration OID time, and then perform a
+       delayedAllOn command.
+
+       Setting this OID to cancelAllPendingCommands (8) will cause all pending
+       commands on the Switched Rack PDU to be canceled.
+
+       Getting this OID will return the noCommandAll (1) value."
+   ::= { ePDUOutletDevice 1 }
+
+ePDUOutletDevColdstartDelay  OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The amount of delay, in seconds, between when
+       power is provided to the Switched Rack PDU and
+       when the Switched Rack PDU provides basic master
+       power to the outlets.
+
+       Allowed values are:
+
+       -1       - never apply power automatically.
+       0        - apply power immediately.
+       1 to 300 - delay up to 300 seconds (5 minutes)."
+   ::= { ePDUOutletDevice 2 }
+
+ePDUOutletDevNumCntrlOutlets OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The number of controlled outlets on this Switched Rack PDU."
+   ::= { ePDUOutletDevice 3 }
+
+ePDUOutletDevNumTotalOutlets OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The total number of outlets on this Rack PDU."
+   ::= { ePDUOutletDevice 4 }
+
+ePDUOutletDevMonitoredOutlets  OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The total number of monitored outlets on this Rack PDU."
+   ::= { ePDUOutletDevice 5 }
+
+ePDUOutletDevColdstartState OBJECT-TYPE
+   SYNTAX INTEGER {
+      allOn                      (1),
+      previous                   (2)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The ePDU outlet state after coldstart.
+      Allowed values are:
+      1 - all outlets on after coldstart.
+      2 - outlet status same as previous state."
+   ::= { ePDUOutletDevice 6 }
+
+-- the ePDUOutletPhase group
+
+ePDUOutletPhaseTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF OutletPhaseEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Allows for management of outlets on a per phase basis."
+   ::= { ePDUOutletPhase 1 }
+
+ePDUOutletPhaseEntry OBJECT-TYPE
+   SYNTAX OutletPhaseEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "The phase to manage."
+   INDEX  { ePDUOutletPhaseIndex}
+   ::= { ePDUOutletPhaseTable 1 }
+
+OutletPhaseEntry ::=
+   SEQUENCE {
+      ePDUOutletPhaseIndex                INTEGER,
+      ePDUOutletPhaseOverloadRestriction  INTEGER
+   }
+
+ePDUOutletPhaseIndex OBJECT-TYPE
+   SYNTAX INTEGER {
+      phase1                     (1),
+      phase2                     (2),
+      phase3                     (3)
+   }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The index to the Switched Rack PDU phase entry."
+   ::= { ePDUOutletPhaseEntry 1 }
+
+ePDUOutletPhaseOverloadRestriction OBJECT-TYPE
+   SYNTAX INTEGER       {
+      alwaysAllowTurnON         (1),
+      restrictOnNearOverload    (2),
+      restrictOnOverload        (3)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "This OID controls the behavior of a Switched Rack PDU
+       phase when an overload condition is possible and
+       additional outlets are requested to be turned on.
+
+       Setting this OID to alwaysAllowTurnON (1) will always allow
+       the outlets on the corresponding phase to turn on.
+
+       Setting this OID to restrictOnNearOverload (2) will not allow
+       outlets on the corresponding phase to turn on if the
+       ePDULoadConfigNearOverloadThreshold OID is exceeded.
+
+       Setting this OID to restrictOnOverload (3) will not allow
+       outlets on the corresponding phase to turn on if the
+       ePDULoadConfigOverloadThreshold OID is exceeded."
+   ::= { ePDUOutletPhaseEntry 2 }
+
+
+
+-- the ePDUOutletControl group
+
+ePDUOutletControlTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF EPDUOutletControlEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Allows for control of the individual outlets.
+       The number of entries is contained in the
+       ePDUOutletDevNumCntrlOutlets OID."
+   ::= { ePDUOutletControl 1 }
+
+ePDUOutletControlEntry OBJECT-TYPE
+   SYNTAX EPDUOutletControlEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "The outlet to control."
+   INDEX  { ePDUOutletControlIndex}
+   ::= { ePDUOutletControlTable 1 }
+
+EPDUOutletControlEntry ::=
+   SEQUENCE {
+      ePDUOutletControlIndex         INTEGER,
+      ePDUOutletControlOutletName    DisplayString,
+      ePDUOutletControlOutletPhase   INTEGER,
+      ePDUOutletControlOutletCommand INTEGER,
+      ePDUOutletControlOutletBank    INTEGER
+   }
+
+ePDUOutletControlIndex OBJECT-TYPE
+   SYNTAX INTEGER(1..24)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The index to the outlet entry."
+   ::= { ePDUOutletControlEntry 1 }
+
+ePDUOutletControlOutletName    OBJECT-TYPE
+   SYNTAX  DisplayString
+   ACCESS  read-only
+   STATUS  mandatory
+   DESCRIPTION
+      "The name of the outlet. The maximum string size is device dependent.
+       An error will be returned if the set request exceeds the max size.
+       This OID is provided for informational purposes only."
+   ::= { ePDUOutletControlEntry 2 }
+
+ePDUOutletControlOutletPhase    OBJECT-TYPE
+   SYNTAX INTEGER {
+      phase1                     (1),
+      phase2                     (2),
+      phase3                     (3),
+      phase1-2                   (4),
+      phase2-3                   (5),
+      phase3-1                   (6)
+   }
+   ACCESS  read-only
+   STATUS  mandatory
+   DESCRIPTION
+      "The phase/s associated with this outlet.
+
+       For single phase devices, this object will always
+       return phase1(1).
+
+       For 3-phase devices, this object will return phase1 (1),
+       phase2 (2), or phase3 (3) for outlets tied to a single
+       phase.  For outlets tied to two phases, this object will
+       return phase1-2 (4) for phases 1 and 2, phase2-3 (5) for
+       phases 2 and 3, and phase3-1 (6) for phases 3 and 1."
+   ::= { ePDUOutletControlEntry 3 }
+
+ePDUOutletControlOutletCommand OBJECT-TYPE
+   SYNTAX INTEGER {
+      immediateOn             (1),
+      immediateOff            (2),
+      immediateReboot         (3),
+      delayedOn               (4),
+      delayedOff              (5),
+      delayedReboot           (6),
+      cancelPendingCommand    (7),
+      outletIdentify					(8)
+   }
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If
+        the outlet is on, the immediateOn (1) value will be returned.
+        If the outlet is off, the immediateOff (2) value will be
+        returned.
+
+
+        Setting this variable to immediateOn (1) will immediately turn
+        the outlet on.
+
+        Setting this variable to immediateOff (2) will immediately turn
+        the outlet off.
+
+        Setting this variable to immediateReboot (3) will immediately
+        reboot the outlet.
+
+        Setting this variable to delayedOn (4) will turn the outlet on
+        after the ePDUOutletConfigPowerOnTime OID time has elapsed.
+
+        Setting this variable to delayedOff (5) will turn the outlet off
+        after the ePDUOutletConfigPowerOffTime OID time has elapsed.
+
+        Setting this variable to delayedReboot  (6) will cause the
+        Switched Rack PDU to perform a delayedOff command, wait the
+        ePDUOutletConfigRebootDuration OID time, and then perform a
+        delayedOn command.
+
+        Setting this variable to cancelPendingCommand (7) will cause any
+        pending command to this outlet to be canceled.
+
+        Setting this variable to outletIdentify (8) will cause PDU LED
+        to display the number of the outlet."
+
+    ::= { ePDUOutletControlEntry 4 }
+
+ePDUOutletControlOutletBank    OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS  read-only
+   STATUS  mandatory
+   DESCRIPTION
+      "The bank associated with this outlet."
+   ::= { ePDUOutletControlEntry 5 }
+
+
+
+-- the ePDUOutletConfig group
+
+ePDUOutletConfigTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF EPDUOutletConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Allows for configuration of individual outlets. The number of
+       entries is contained in the ePDUOutletDevNumCntrlOutlets OID."
+   ::= { ePDUOutletConfig 1 }
+
+ePDUOutletConfigEntry OBJECT-TYPE
+   SYNTAX EPDUOutletConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "The outlet to configure."
+   INDEX  { ePDUOutletConfigIndex}
+   ::= { ePDUOutletConfigTable 1 }
+
+EPDUOutletConfigEntry ::=
+   SEQUENCE {
+      ePDUOutletConfigIndex                 INTEGER,
+      ePDUOutletConfigOutletName            DisplayString,
+      ePDUOutletConfigOutletPhase           INTEGER,
+      ePDUOutletConfigPowerOnTime           INTEGER,
+      ePDUOutletConfigPowerOffTime          INTEGER,
+      ePDUOutletConfigRebootDuration        INTEGER,
+      ePDUOutletConfigOutletBank            INTEGER
+   }
+
+ePDUOutletConfigIndex OBJECT-TYPE
+   SYNTAX INTEGER(1..24)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The index to the outlet entry."
+   ::= { ePDUOutletConfigEntry 1 }
+
+ePDUOutletConfigOutletName    OBJECT-TYPE
+   SYNTAX  DisplayString
+   ACCESS  read-write
+   STATUS  mandatory
+   DESCRIPTION
+      "The name of the outlet. The maximum string size is device dependent.
+       An error will be returned if the set request exceeds the max size."
+   ::= { ePDUOutletConfigEntry 2 }
+
+ePDUOutletConfigOutletPhase    OBJECT-TYPE
+   SYNTAX INTEGER {
+      phase1                     (1),
+      phase2                     (2),
+      phase3                     (3),
+      phase1-2                   (4),
+      phase2-3                   (5),
+      phase3-1                   (6)
+   }
+   ACCESS  read-only
+   STATUS  mandatory
+   DESCRIPTION
+      "The phase/s associated with this outlet.
+
+       For single phase devices, this object will always
+       return phase1(1).
+
+       For 3-phase devices, this object will return phase1 (1),
+       phase2 (2), or phase3 (3) for outlets tied to a single
+       phase.  For outlets tied to two phases, this object will
+       return phase1-2 (4) for phases 1 and 2, phase2-3 (5) for
+       phases 2 and 3, and phase3-1 (6) for phases 3 and 1."
+   ::= { ePDUOutletConfigEntry 3 }
+
+ePDUOutletConfigPowerOnTime OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The amount of time (in seconds) the outlet will delay
+       powering on at coldstart or when a command that requires
+       a turn-on delay is issued.
+
+       Allowed values are:
+
+       -1        - never power on.
+       0         - power on immediately.
+       1 to 7200 - power on up to 7200 seconds after being
+                  commanded."
+   ::= { ePDUOutletConfigEntry 4 }
+
+ePDUOutletConfigPowerOffTime OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The amount of time (in seconds) the outlet will delay
+       powering off when a command that requires
+       a turn-off delay is issued.
+
+       Allowed values are:
+
+       -1        - never power off.
+       0         - power off immediately.
+       1 to 7200 - power off up to 7200 seconds after being
+                  commanded."
+   ::= { ePDUOutletConfigEntry 5 }
+
+ePDUOutletConfigRebootDuration OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "During a reboot sequence, power is turned off and then
+       back on. This OID defines the amount of time to wait,
+       in seconds, after turning the power off, at the start
+       of the sequence, before turning power back on, at the
+       end of the reboot sequence.
+
+       Allowed range is any value between 5 and 60 seconds (1 minute)."
+   ::= { ePDUOutletConfigEntry 6 }
+
+ePDUOutletConfigOutletBank    OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS  read-only
+   STATUS  mandatory
+   DESCRIPTION
+      "The bank associated with this outlet."
+   ::= { ePDUOutletConfigEntry 7 }
+
+
+-- Monitored Outlets table
+
+ePDUOutletConfigMonitoredTableSize OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The size of the Outlet Config Monitored Table"
+   ::= { ePDUOutletConfig 2 }
+
+
+ePDUOutletConfigMonitoredTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF OutletConfigMonitoredEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Allows for getting/setting of outlet thresholds of an Outlet Monitored Rack PDU."
+   ::= { ePDUOutletConfig 3 }
+
+ePDUOutletConfigMonitoredEntry  OBJECT-TYPE
+   SYNTAX OutletConfigMonitoredEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "This gives access to Monitored Outlet entries"
+   INDEX  { ePDUOutletConfigMonitoredIndex }
+   ::= { ePDUOutletConfigMonitoredTable 1 }
+
+OutletConfigMonitoredEntry ::=
+   SEQUENCE {
+      ePDUOutletConfigMonitoredIndex                    INTEGER,
+      ePDUOutletConfigMonitoredName                     DisplayString,
+      ePDUOutletConfigMonitoredNumber                   INTEGER,
+      ePDUOutletConfigMonitoredLowLoadThreshold         INTEGER,
+      ePDUOutletConfigMonitoredNearOverloadThreshold    INTEGER,
+      ePDUOutletConfigMonitoredOverloadThreshold        INTEGER
+   }
+
+ePDUOutletConfigMonitoredIndex OBJECT-TYPE
+   SYNTAX INTEGER(1..24)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The index to the RACK PDU Phase entry."
+   ::= { ePDUOutletConfigMonitoredEntry 1 }
+
+ePDUOutletConfigMonitoredName    OBJECT-TYPE
+   SYNTAX  DisplayString
+   ACCESS  read-write
+   STATUS  mandatory
+   DESCRIPTION
+      "The name of the Monitored Outlet. The maximum string size is device dependent.
+       An error will be returned if the set request exceeds the max size."
+   ::= { ePDUOutletConfigMonitoredEntry 2 }
+
+ePDUOutletConfigMonitoredNumber OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The outlet number of an Outlet Monitored RACK PDU."
+   ::= { ePDUOutletConfigMonitoredEntry 3 }
+
+
+ePDUOutletConfigMonitoredLowLoadThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "A threshold that indicates the power consumption of
+       the load is nearing a low consumption condition. It is
+       represented in Amps.  A warning will be issued when the
+       load is less than the threshold value.
+
+       A threshold value of 0 Amps effectively disables this
+       warning.
+
+       Maximum value must be less than the value returned
+       by the ePDUOutletConfigMonitoredNearOverloadThreshold OID.
+
+       0 will be returned if the unit is not Outlet Monitored Rack PDU."
+   ::= { ePDUOutletConfigMonitoredEntry 4 }
+
+ePDUOutletConfigMonitoredNearOverloadThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "A threshold that indicates the power consumption of
+       the load is nearing an overload condition. It is
+       represented in Amps.  A warning will be issued when the
+       load is greater than or equal to the threshold value.
+
+       Minimum value must be greater than the value returned by
+       the ePDUOutletConfigMonitoredLowLoadThreshold OID.
+
+       Maximum value must be less than or equal to the value
+       returned by the ePDUOutletConfigMonitoredOverloadThreshold OID.
+
+       0 will be returned if the unit is not Outlet Monitored Rack PDU."
+   ::= { ePDUOutletConfigMonitoredEntry 5 }
+
+ePDUOutletConfigMonitoredOverloadThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "A threshold that indicates the power consumption of
+       the load has entered an overload condition. It is
+       represented in Amps.  A warning will be issued when the
+       load is greater than or equal to the threshold value.
+
+       Minimum value must be greater than or equal to the value
+       returned by the ePDUOutletConfigMonitoredNearOverloadThreshold OID.
+
+       Maximum value must be less than or equal to the value
+       returned by the ePDULoadDevMaxOutletLoad OID.
+
+       0 will be returned if the unit is not Outlet Monitored Rack PDU."
+   ::= { ePDUOutletConfigMonitoredEntry 6 }
+
+
+
+-- the ePDUOutletStatus group
+
+ePDUOutletStatusTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF EPDUOutletStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Allows for getting of status of individual outlets. The number of
+       entries is contained in the ePDUOutletDevNumCntrlOutlets OID."
+   ::= { ePDUOutletStatus 1 }
+
+ePDUOutletStatusEntry OBJECT-TYPE
+   SYNTAX EPDUOutletStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "The outlet to gather status from."
+   INDEX  { ePDUOutletStatusIndex}
+   ::= { ePDUOutletStatusTable 1 }
+
+EPDUOutletStatusEntry ::=
+   SEQUENCE {
+      ePDUOutletStatusIndex          INTEGER,
+      ePDUOutletStatusOutletName     DisplayString,
+      ePDUOutletStatusOutletPhase    INTEGER,
+      ePDUOutletStatusOutletState    INTEGER,
+      ePDUOutletStatusCommandPending INTEGER,
+      ePDUOutletStatusOutletBank     INTEGER,
+      ePDUOutletStatusLoad           Gauge
+   }
+
+ePDUOutletStatusIndex OBJECT-TYPE
+   SYNTAX INTEGER(1..24)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The index to the outlet entry."
+   ::= { ePDUOutletStatusEntry 1 }
+
+ePDUOutletStatusOutletName    OBJECT-TYPE
+   SYNTAX  DisplayString
+   ACCESS  read-only
+   STATUS  mandatory
+   DESCRIPTION
+      "The name of the outlet. The maximum string size is device dependent.
+       This OID is provided for informational purposes only."
+   ::= { ePDUOutletStatusEntry 2 }
+
+ePDUOutletStatusOutletPhase    OBJECT-TYPE
+   SYNTAX INTEGER {
+      phase1                     (1),
+      phase2                     (2),
+      phase3                     (3),
+      phase1-2                   (4),
+      phase2-3                   (5),
+      phase3-1                   (6)
+   }
+   ACCESS  read-only
+   STATUS  mandatory
+   DESCRIPTION
+      "The phase/s associated with this outlet.
+
+       For single phase devices, this object will always
+       return phase1(1).
+
+       For 3-phase devices, this object will return phase1 (1),
+       phase2 (2), or phase3 (3) for outlets tied to a single
+       phase.  For outlets tied to two phases, this object will
+       return phase1-2 (4) for phases 1 and 2, phase2-3 (5) for
+       phases 2 and 3, and phase3-1 (6) for phases 3 and 1."
+   ::= { ePDUOutletStatusEntry 3 }
+
+ePDUOutletStatusOutletState OBJECT-TYPE
+   SYNTAX INTEGER {
+        outletStatusOn              (1),
+        outletStatusOff             (2)
+   }
+
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If
+       the outlet is on, the outletStatusOn (1) value will be returned.
+       If the outlet is off, the outletStatusOff (2) value will be
+       returned."
+   ::= { ePDUOutletStatusEntry 4 }
+
+ePDUOutletStatusCommandPending    OBJECT-TYPE
+   SYNTAX INTEGER {
+        outletStatusCommandPending    (1),
+        outletStatusNoCommandPending  (2)
+   }
+
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the command pending
+        state of the outlet. If a command is pending on the
+        outlet, the outletStatusCommandPending (1) value
+        will be returned. If there is not a command pending
+        on the outlet, the outletStatusNoCommandPending (2)
+        will be returned."
+   ::= { ePDUOutletStatusEntry 5 }
+
+ePDUOutletStatusOutletBank    OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS  read-only
+   STATUS  mandatory
+   DESCRIPTION
+      "The bank associated with this outlet."
+   ::= { ePDUOutletStatusEntry 6 }
+
+ePDUOutletStatusLoad OBJECT-TYPE
+   SYNTAX Gauge
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the measured Outlet load for an Outlet Monitored Rack PDU
+       in tenths of Amps."
+   ::= { ePDUOutletStatusEntry 7 }
+
+
+-- the ePDUOutletBank group
+
+ePDUOutletBankTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF OutletBankEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Allows for management of outlets on a per bank basis."
+   ::= { ePDUOutletBank 1 }
+
+ePDUOutletBankEntry OBJECT-TYPE
+   SYNTAX OutletBankEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "The bank to manage."
+   INDEX  { ePDUOutletBankIndex}
+   ::= { ePDUOutletBankTable 1 }
+
+OutletBankEntry ::=
+   SEQUENCE {
+      ePDUOutletBankIndex                INTEGER,
+      ePDUOutletBankOverloadRestriction  INTEGER
+   }
+
+ePDUOutletBankIndex OBJECT-TYPE
+   SYNTAX INTEGER(1..10)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The index to the Switched Rack PDU bank entry."
+   ::= { ePDUOutletBankEntry 1 }
+
+ePDUOutletBankOverloadRestriction OBJECT-TYPE
+   SYNTAX INTEGER       {
+      alwaysAllowTurnON         (1),
+      restrictOnNearOverload    (2),
+      restrictOnOverload        (3)
+   }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "This OID controls the behavior of a Switched Rack PDU
+       bank when an overload condition is possible and
+       additional outlets are requested to be turned on.
+
+       Setting this OID to alwaysAllowTurnON (1) will always allow
+       the outlets on the corresponding bank to turn on.
+
+       Setting this OID to restrictOnNearOverload (2) will not allow
+       outlets on the corresponding bank to turn on if the
+       ePDULoadBankConfigNearOverloadThreshold OID is exceeded.
+
+       Setting this OID to restrictOnOverload (3) will not allow
+       outlets on the corresponding bank to turn on if the
+       ePDULoadBankConfigOverloadThreshold OID is exceeded."
+   ::= { ePDUOutletBankEntry 2 }
+
+
+-- the ePDUPowerSupplyDevice group
+
+ePDUPowerSupply1Status OBJECT-TYPE
+   SYNTAX INTEGER       {
+      powerSupplyOneOk             (1),
+      powerSupplyOneFailed         (2)
+   }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return powerSupply1Ok(1) if power
+       supply 1 is functioning normally.  If not functioning normally,
+       this OID will return powerSupply1Failed(2)."
+   ::= { ePDUPowerSupplyDevice 1 }
+
+ePDUPowerSupply2Status OBJECT-TYPE
+   SYNTAX INTEGER       {
+      powerSupplyTwoOk             (1),
+      powerSupplyTwoFailed         (2),
+      powerSupplyTwoNotPresent     (3)
+   }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return powerSupply2Ok(1) if power
+       supply 2 is functioning normally.  If not functioning normally,
+       this OID will return powerSupply2Failed(2).
+
+       Metered Rack PDUs do not have a redundant powersupply."
+
+   ::= { ePDUPowerSupplyDevice 2 }
+
+ePDUPowerSupplyAlarm OBJECT-TYPE
+   SYNTAX INTEGER {
+    allAvailablePowerSuppliesOK (1),
+    powerSupplyOneFailed        (2),
+    powerSupplyTwoFailed        (3),
+    powerSupplyOneandTwoFailed  (4)
+   }
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return powerSupply Alarm"
+   ::= { ePDUPowerSupplyDevice 3 }
+
+
+-- the ePDUStatus group
+
+ePDUStatusBankTableSize OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The size of the Status Bank Table"
+   ::= { ePDUStatus 1 }
+
+
+ePDUStatusBankTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF BankEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Allows for getting of status of each Rack PDU Bank"
+   ::= { ePDUStatus 2 }
+
+ePDUStatusBankEntry  OBJECT-TYPE
+   SYNTAX BankEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "This gives access to Bank entries"
+   INDEX  { ePDUStatusBankIndex }
+   ::= { ePDUStatusBankTable 1 }
+
+BankEntry ::=
+   SEQUENCE {
+      ePDUStatusBankIndex   INTEGER,
+      ePDUStatusBankNumber  INTEGER,
+      ePDUStatusBankState   INTEGER
+   }
+
+ePDUStatusBankIndex OBJECT-TYPE
+   SYNTAX INTEGER(1..10)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The index to the RACK PDU Bank entry."
+   ::= { ePDUStatusBankEntry 1 }
+
+ePDUStatusBankNumber OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the bank number."
+   ::= { ePDUStatusBankEntry 2 }
+
+ePDUStatusBankState    OBJECT-TYPE
+   SYNTAX INTEGER {
+      bankLoadNormal                 (1),
+      bankLoadLow                    (2),
+      bankLoadNearOverload           (3),
+      bankLoadOverload               (4)
+   }
+   ACCESS  read-only
+   STATUS  mandatory
+   DESCRIPTION
+    "Getting this OID will return the bank load state.
+
+    bankLoadNormal(1) indicates that the bank is
+    operating properly within the ePDULoadBankConfigLowLoadThreshold
+    and ePDULoadBankConfigNearOverloadThreshold OID values.
+
+    bankLoadLow(2) indicates that the bank load has
+    dropped below the ePDULoadBankConfigLowLoadThreshold OID value.
+    An SNMP trap will occur when this state is entered or cleared.
+
+    bankLoadNearOverload(3) indicates that the bank load
+    is greater than or equal to the
+    ePDULoadBankConfigNearOverloadThreshold OID value.
+    An SNMP trap will occur when this state is entered or cleared.
+
+    bankLoadOverload(4) indicates that the bank load is
+    greater than or equal to the ePDULoadBankConfigOverloadThreshold
+    OID value.
+    An SNMP trap will occur when this state is entered or cleared."
+   ::= { ePDUStatusBankEntry 3 }
+
+-- Phase status table
+
+ePDUStatusPhaseTableSize OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The size of the Status Phase Table"
+   ::= { ePDUStatus 3 }
+
+
+ePDUStatusPhaseTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF PhaseEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Allows for getting of status of each Rack PDU Phase"
+   ::= { ePDUStatus 4 }
+
+ePDUStatusPhaseEntry  OBJECT-TYPE
+   SYNTAX PhaseEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "This gives access to Phase entries"
+   INDEX  { ePDUStatusPhaseIndex }
+   ::= { ePDUStatusPhaseTable 1 }
+
+PhaseEntry ::=
+   SEQUENCE {
+      ePDUStatusPhaseIndex  INTEGER,
+      ePDUStatusPhaseNumber INTEGER,
+      ePDUStatusPhaseState  INTEGER
+   }
+
+ePDUStatusPhaseIndex OBJECT-TYPE
+   SYNTAX INTEGER(1..24)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The index to the RACK PDU Phase entry."
+   ::= { ePDUStatusPhaseEntry 1 }
+
+ePDUStatusPhaseNumber OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the phase number."
+   ::= { ePDUStatusPhaseEntry 2 }
+
+ePDUStatusPhaseState    OBJECT-TYPE
+   SYNTAX INTEGER {
+      phaseLoadNormal                 (1),
+      phaseLoadLow                    (2),
+      phaseLoadNearOverload           (3),
+      phaseLoadOverload               (4)
+   }
+   ACCESS  read-only
+   STATUS  mandatory
+   DESCRIPTION
+    "Getting this OID will return the Phase load state.
+
+    phaseLoadNormal(1) indicates that the Phase is
+    operating properly within the ePDULoadPhaseConfigLowLoadThreshold
+    and ePDULoadPhaseConfigNearOverloadThreshold OID values.
+
+    phaseLoadLow(2) indicates that the Phase load has
+    dropped below the ePDULoadPhaseConfigLowLoadThreshold OID value.
+    An SNMP trap will occur when this state is entered or cleared.
+
+    phaseLoadNearOverload(3) indicates that the Phase load
+    is greater than or equal to the
+    ePDULoadPhaseConfigNearOverloadThreshold OID value.
+    An SNMP trap will occur when this state is entered or cleared.
+
+    phaseLoadOverload(4) indicates that the Phase load is
+    greater than or equal to the ePDULoadPhaseConfigOverloadThreshold
+    OID value.
+    An SNMP trap will occur when this state is entered or cleared."
+   ::= { ePDUStatusPhaseEntry 3 }
+
+
+-- Outlet status table
+
+ePDUStatusOutletTableSize OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The size of the Status Outlet Table"
+   ::= { ePDUStatus 5 }
+
+
+ePDUStatusOutletTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF OutletEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "Allows for getting of status of each Outlet of an Outlet Monitored Rack PDU."
+   ::= { ePDUStatus 6 }
+
+ePDUStatusOutletEntry  OBJECT-TYPE
+   SYNTAX OutletEntry
+   ACCESS not-accessible
+   STATUS mandatory
+   DESCRIPTION
+      "This gives access to Outlet entries"
+   INDEX  { ePDUStatusOutletIndex }
+   ::= { ePDUStatusOutletTable 1 }
+
+OutletEntry ::=
+   SEQUENCE {
+      ePDUStatusOutletIndex 	INTEGER,
+      ePDUStatusOutletNumber 	INTEGER,
+      ePDUStatusOutletState     INTEGER
+   }
+
+ePDUStatusOutletIndex OBJECT-TYPE
+   SYNTAX INTEGER(1..24)
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "The index to the RACK PDU Outlet entry."
+   ::= { ePDUStatusOutletEntry 1 }
+
+ePDUStatusOutletNumber OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Getting this OID will return the Outlet number."
+   ::= { ePDUStatusOutletEntry 2 }
+
+ePDUStatusOutletState    OBJECT-TYPE
+   SYNTAX INTEGER {
+      outletLoadNormal                 (1),
+      outletLoadLow                    (2),
+      outletLoadNearOverload           (3),
+      outletLoadOverload               (4)
+   }
+   ACCESS  read-only
+   STATUS  mandatory
+   DESCRIPTION
+    "Getting this OID will return the Outlet load state.
+
+    outletLoadNormal(1) indicates that the Outlet is
+    operating properly within the ePDUOutletConfigMonitoredLowLoadThreshold
+    and ePDUOutletConfigMonitoredNearOverloadThreshold OID values.
+
+    outletLoadLow(2) indicates that the Outlet load has
+    dropped below the ePDUOutletConfigMonitoredLowLoadThreshold OID value.
+    An SNMP trap will occur when this state is entered or cleared.
+
+    outletLoadNearOverload(3) indicates that the Outlet load
+    is greater than or equal to the
+    ePDUOutletConfigMonitoredNearOverloadThreshold OID value.
+    An SNMP trap will occur when this state is entered or cleared.
+
+    outletLoadOverload(4) indicates that the Outlet load is
+    greater than or equal to the ePDUOutletConfigMonitoredOverloadThreshold
+    OID value.
+    An SNMP trap will occur when this state is entered or cleared."
+   ::= { ePDUStatusOutletEntry 3 }
+
+
+
+
+
+
+-- Traps
+-- Annotations are provided for Novell's NMS product
+communicationLost TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "SEVERE: Communication with the UPS has been lost."
+   --#TYPE "CPS UPS: Communication lost"
+   --#SUMMARY "Communication with the UPS has been lost."
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 1
+
+upsOverload TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "SEVERE: The UPS has sensed an overload condition."
+   --#TYPE "CPS UPS: Overload"
+   --#SUMMARY "The UPS has sensed an overload condition."
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 2
+
+upsDiagnosticsFailed TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "SEVERE: The UPS battery test failed."
+   --#TYPE "CPS UPS: battery test failed"
+   --#SUMMARY "The UPS battery test failed."
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 3
+
+upsDischarged TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "SEVERE: The UPS has started a runtime calibration process."
+   --#TYPE "CPS UPS: batteries are discharged"
+   --#SUMMARY "The UPS has started a runtime calibration process."
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 4
+
+upsOnBattery TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "WARNING: Utility power failed, transfer to backup mode."
+   --#TYPE "CPS UPS: The UPS is on battery"
+   --#SUMMARY "Utility power failed, transfer to backup mode."
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 5
+
+upsBoostOn TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "WARNING: The UPS has enabled boost, low utility voltage."
+   --#TYPE "CPS UPS: Boost enable"
+   --#SUMMARY "The UPS has enabled boost, low utility voltage."
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 6
+
+lowBattery TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "SEVERE: The UPS battery capacity is low than threshold, soon to be exhausted."
+   --#TYPE "CPS UPS: Low battery"
+   --#SUMMARY "The UPS battery capacity is low than threshold, soon to be exhausted."
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 7
+
+communicationEstablished TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: Communication to the UPS has been established."
+   --#TYPE "CPS UPS: Communication established"
+   --#SUMMARY "Communication to the UPS has been established."
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 8
+
+powerRestored TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: Utility power restored, return from backup mode."
+   --#TYPE "CPS UPS: Power restored"
+   --#SUMMARY "Utility power restored, return from backup mode."
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 9
+
+upsDiagnosticsPassed TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: The UPS battery test passed."
+   --#TYPE "CPS UPS: Selftest passed"
+   --#SUMMARY "The UPS battery test passed."
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 10
+
+returnFromLowBattery TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: The UPS has returned from a low battery condition."
+   --#TYPE "CPS UPS: Low battery condition cleared"
+   --#SUMMARY "The UPS has returned from a low battery condition."
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 11
+
+upsTurnedOff TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "WARNING: The UPS has been turned off."
+   --#TYPE "CPS UPS: UPS turned off"
+   --#SUMMARY "The UPS has been turned off."
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE NONOPERATIONAL
+   ::= 12
+
+upsSleeping   TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "WARNING: The UPS entered sleep mode. Output power will not be provided."
+   --#TYPE "CPS UPS: Entered sleep mode"
+   --#SUMMARY "The UPS entered sleep mode. Output power will not be provided."
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE NONOPERATIONAL
+   ::= 13
+
+upsWokeUp TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "INFORMATION: The UPS woke up from sleep mode. Output power is being provided."
+   --#TYPE "CPS UPS: UPS woke up"
+   --#SUMMARY "The UPS woke up from sleep mode. Output power is being provided."
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 14
+
+upsRebootStarted TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "WARNING: The UPS started reboot sequence."
+   --#TYPE "CPS UPS: Starting reboot"
+   --#SUMMARY "The UPS started reboot sequence."
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE NONOPERATIONAL
+   ::= 15
+
+upsOverTemp TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "SEVERE: The UPS inner temperature is too high."
+   --#TYPE "CPS UPS: UPS over temperature"
+   --#SUMMARY "The UPS inner temperature is too high."
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 16
+
+returnFromOverTemp TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: The UPS over temperature condition cleared."
+   --#TYPE "CPS UPS: UPS over temperature cleared"
+   --#SUMMARY "The UPS over temperature condition cleared."
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 17
+
+upsBuckOn TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "WARNING: The UPS has enabled buck, high utility voltage."
+   --#TYPE "CPS UPS: Buck enable"
+   --#SUMMARY "The UPS has enabled buck, high utility voltage."
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 18
+
+returnFromOverLoad TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: The UPS has returned from an overload condition."
+   --#TYPE "CPS UPS: Returned from overload condition"
+   --#SUMMARY "The UPS has returned from an overload condition."
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 19
+
+returnFromDischarged TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: The UPS runtime calibration completed."
+   --#TYPE "CPS UPS: Discharged condition cleared"
+   --#SUMMARY "The UPS runtime calibration completed."
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 20
+
+upsScheduleShutdown TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "WARNING: The UPS has started its schedule shutdown sequence."
+   --#TYPE "CPS UPS: Schedule shutdown"
+   --#SUMMARY "The UPS has started its schedule shutdown sequence."
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE NONOPERATIONAL
+   ::= 21
+
+upsEnterSleep TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "WARNING: The UPS started sleep sequence."
+   --#TYPE "CPS UPS: Entered sleep mode sequence"
+   --#SUMMARY "The UPS started sleep sequence."
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE NONOPERATIONAL
+   ::= 22
+
+upsChargerFailure TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "WARNING: The battery charger is abnormal."
+   --#TYPE "CPS UPS: The charger failed."
+   --#SUMMARY "The battery charger is abnormal."
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 23
+
+returnFromChargerFailure TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "INFORMATIONAL: The charger returned from a failure condition."
+   --#TYPE "CPS UPS: The charger failure cleared"
+   --#SUMMARY "The charger returned from a failure condition."
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 24
+
+upsTurnoffStarted TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "WARNING: The UPS started turn off sequence."
+   --#TYPE "CPS UPS: Starting turn off"
+   --#SUMMARY "The UPS started its turn off sequence."
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE NONOPERATIONAL
+   ::= 25
+
+upsTurnedOn TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "WARNING: The UPS has been turned on."
+   --#TYPE "CPS UPS: UPS turned on"
+   --#SUMMARY "The UPS has been turned on."
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE NONOPERATIONAL
+   ::= 26
+
+upsRemoteCommandFailed TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "WARNING: The UPS remote command failed."
+   --#TYPE "CPS UPS: Command failed"
+   --#SUMMARY "The UPS remote command failed."
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 27
+
+upsSignalClientShutdown TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+      "SEVERE: The UPS has signaled clients to shutdown."
+   --#TYPE "CPS UPS: Signal clients to shutdown"
+   --#SUMMARY "The UPS has signaled clients to shutdown."
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 29
+
+
+-- Outlet Traps
+nclBankOn TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "INFORMATIONAL: Non-Critical bank has been turned on."
+   --#TYPE "CPS UPS: NCL bank turned on."
+   --#SUMMARY "Non-Critical bank has been turned on"
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 31
+
+nclBankOff TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "INFORMATIONAL: Non-Critical bank has been turned off."
+   --#TYPE "CPS UPS: NCL bank turned off."
+   --#SUMMARY "Non-Critical bank has been turned off"
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 32
+
+upsCommandCancel TRAP-TYPE
+	 ENTERPRISE cps
+	 VARIABLES { mtrapinfoString }
+	 DESCRIPTION
+	 		"INFORMATION: The cancel command has been executed."
+	 --#TYPE "CPS UPS: Ups command canceled."
+	 --#SUMMARY "The cancel command has been executed."
+	 --#SEVERITY INFORMATION
+	 --#TIMEINDEX 1
+	 --#HELP ""
+	 --#STATE OPERATIONAL
+	 ::= 33
+
+upsStartBatteryTest TRAP-TYPE
+	 ENTERPRISE cps
+	 VARIABLES { mtrapinfoString }
+	 DESCRIPTION
+	 		"INFORMATION: The UPS has started a battery test process."
+	 --#TYPE "CPS UPS: UPS selftest start."
+	 --#SUMMARY "The UPS has started a battery test process."
+	 --#SEVERITY INFORMATION
+	 --#TIMEINDEX 1
+	 --#HELP ""
+	 --#STATE OPERATIONAL
+	 ::= 34
+
+upsRemainRuntimeLowThanThreshold TRAP-TYPE
+	 ENTERPRISE cps
+	 VARIABLES { mtrapinfoString }
+	 DESCRIPTION
+	 		"WARING: The UPS remaining runtime is lower than threshold."
+	 --#TYPE "CPS UPS: Low remaining runtime."
+	 --#SUMMARY "The UPS remaining runtime us lower than threshold."
+	 --#SEVERITY INFORMATION
+	 --#TIMEINDEX 1
+	 --#HELP ""
+	 --#STATE OPERATIONAL
+	 ::= 35
+
+nclBankStartScheduleOff TRAP-TYPE
+	 ENTERPRISE cps
+	 VARIABLES { mtrapinfoString }
+	 DESCRIPTION
+	 		"INFORMATION: Non-Critial bank has started its schedule off sequence."
+	 --#TYPE "CPS UPS: NCL bank started scheduled off sequence."
+	 --#SUMMARY "Non-Critial bank has started its schedule off sequence."
+	 --#SEVERITY INFORMATION
+	 --#TIMEINDEX 1
+	 --#HELP ""
+	 --#STATE OPERATIONAL
+	 ::= 36
+
+upsCalibrationAbort TRAP-TYPE
+	 ENTERPRISE cps
+	 VARIABLES { mtrapinfoString }
+	 DESCRIPTION
+	 		"WARING: The UPS runtime calibration aborted."
+	 --#TYPE "CPS UPS: Runtime calibration aborted."
+	 --#SUMMARY "The UPS runtime calibration aborted."
+	 --#SEVERITY INFORMATION
+	 --#TIMEINDEX 1
+	 --#HELP ""
+	 --#STATE OPERATIONAL
+	 ::= 37
+
+upsHardwareFault TRAP-TYPE
+	 ENTERPRISE cps
+	 VARIABLES { mtrapinfoString }
+	 DESCRIPTION
+	 		"WARING: The UPS hardware fault."
+	 --#TYPE "CPS UPS: Hardware fault."
+	 --#SUMMARY "The UPS hardware fault."
+	 --#SEVERITY INFORMATION
+	 --#TIMEINDEX 1
+	 --#HELP ""
+	 --#STATE OPERATIONAL
+	 ::= 38
+
+upsBatteryNotPresent TRAP-TYPE
+	 ENTERPRISE cps
+	 VARIABLES { mtrapinfoString }
+	 DESCRIPTION
+	 		"WARING: Battery is not present."
+	 --#TYPE "CPS UPS: Battery is not present."
+	 --#SUMMARY "Battery is not present."
+	 --#SEVERITY INFORMATION
+	 --#TIMEINDEX 1
+	 --#HELP ""
+	 --#STATE OPERATIONAL
+	 ::= 39
+
+-- OL extension event: Wiring Fault
+upsWiringFault TRAP-TYPE
+		ENTERPRISE cps
+		VARIABLES { mtrapinfoString }
+		DESCRIPTION
+			 "WARING: The UPS wiring fault has been detected."
+		--#TYPE "The UPS wiring fault has been detected."
+   --#SUMMARY "The UPS wiring fault has been detected."
+   --#ARGUMENTS { }
+   --#SEVERITY MAJOR
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE NONOPERATIONAL
+		::= 40
+
+upsWiringFaultCleared TRAP-TYPE
+		ENTERPRISE cps
+		VARIABLES { mtrapinfoString }
+		DESCRIPTION
+			 "INFORMATION: The UPS wiring fault has been cleared."
+		--#TYPE "The UPS wiring fault has been cleared."
+   --#SUMMARY "The UPS wiring fault has been cleared."
+   --#ARGUMENTS { }
+   --#SEVERITY MAJOR
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE NONOPERATIONAL
+		::= 41
+
+upsEnterBypassMode TRAP-TYPE
+		ENTERPRISE cps
+		VARIABLES { mtrapinfoString }
+		DESCRIPTION
+			 "WARING: The UPS enters bypass mode."
+		--#TYPE "The UPS enters bypass mode"
+   --#SUMMARY "The UPS enters bypass mode."
+   --#ARGUMENTS { }
+   --#SEVERITY MAJOR
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE NONOPERATIONAL
+		::= 42
+
+upsReturnFromBypassMode TRAP-TYPE
+		ENTERPRISE cps
+		VARIABLES { mtrapinfoString }
+		DESCRIPTION
+			 "INFORMATION: The UPS leaves bypass mode."
+		--#TYPE "The UPS leaves bypass mode."
+   --#SUMMARY "The UPS leaves bypass mode."
+   --#ARGUMENTS { }
+   --#SEVERITY MAJOR
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE NONOPERATIONAL
+		::= 43
+
+upsBypassOverload TRAP-TYPE
+		ENTERPRISE cps
+		VARIABLES { mtrapinfoString }
+		DESCRIPTION
+			 "WARING: The UPS bypass overload."
+		--#TYPE "The UPS bypass overload."
+   --#SUMMARY "The UPS bypass overload."
+   --#ARGUMENTS { }
+   --#SEVERITY MAJOR
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE NONOPERATIONAL
+		::= 44
+
+upsBypassOverloadCleared TRAP-TYPE
+		ENTERPRISE cps
+		VARIABLES { mtrapinfoString }
+		DESCRIPTION
+			 "INFORMATION: The UPS bypass overload has been cleared."
+		--#TYPE "The UPS bypass overload has been cleared."
+   --#SUMMARY "The UPS bypass overload has been cleared."
+   --#ARGUMENTS { }
+   --#SEVERITY MAJOR
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE NONOPERATIONAL
+		::= 45
+
+upsEnterECOMode TRAP-TYPE
+		ENTERPRISE cps
+		VARIABLES { mtrapinfoString }
+		DESCRIPTION
+			 "WARING: The UPS enters ECO mode."
+		--#TYPE "The UPS enters ECO mode"
+   --#SUMMARY "The UPS enters ECO mode."
+   --#ARGUMENTS { }
+   --#SEVERITY MAJOR
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE NONOPERATIONAL
+		::= 46
+
+upsReturnFromECOMode TRAP-TYPE
+		ENTERPRISE cps
+		VARIABLES { mtrapinfoString }
+		DESCRIPTION
+			 "WARING: The UPS leaves ECO mode."
+		--#TYPE "The UPS leaves ECO mode"
+   --#SUMMARY "The UPS leaves ECO mode."
+   --#ARGUMENTS { }
+   --#SEVERITY MAJOR
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE NONOPERATIONAL
+		::= 47
+
+-- Misc. Traps
+failAuthViaHTTP TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "INFORMATION: Login authorization failure via HTTP."
+   --#TYPE "CPS: HTTP authorization failure."
+   --#SUMMARY "Login authorization failure via HTTP."
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 61
+
+passwordChange TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "WARNING: The password has been changed."
+   --#TYPE "CPS: Password changed."
+   --#SUMMARY "The password has been changed."
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 62
+
+failAuthViaConsole TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "WARNING: Login authorization failure via Console."
+   --#TYPE "CPS: HTTP authorization failure."
+   --#SUMMARY "Login authorization failure via Console."
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 63
+
+configFileUpload TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "INFORMATION: Configuration file uploaded."
+   --#TYPE "CPS: Configuration file uploaded."
+   --#SUMMARY "Configuration file uploaded."
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 64
+
+adminLoginInfo TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "INFORMATION: Administrator login."
+   --#TYPE "CPS: Administrator login information."
+   --#SUMMARY "Administrator login."
+   --#SEVERITY Information
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 65
+
+adminLogoutInfo TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "INFORMATION: Administrator logout."
+   --#TYPE "CPS: Administrator logout information."
+   --#SUMMARY "Administrator logout."
+   --#SEVERITY Information
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 66
+
+deviceLoginInfo TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "INFORMATION: Device login."
+   --#TYPE "CPS: Device user login information."
+   --#SUMMARY "Device user login from IP source."
+   --#SEVERITY Information
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 67
+
+deviceLogoutInfo TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "INFORMATION: Device logout."
+   --#TYPE "CPS: Device user logout information."
+   --#SUMMARY "Device user logout from IP source."
+   --#SEVERITY Information
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 68
+
+configurationChanged TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "INFORMATION: Configuration has been changed."
+   --#TYPE "CPS: Configuration changed."
+   --#SUMMARY "Configuration has been changed."
+   --#SEVERITY Information
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 69
+
+clientRegistered TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "Information: PowerPanel client has been registered."
+   --#TYPE "CPS: PowerPanel client has been registered."
+   --#SUMMARY "PowerPanel client has been registered."
+   --#SEVERITY Information
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 70
+
+clientRemoved TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "Information: PowerPanel client has been removed."
+   --#TYPE "CPS: Device user logout information."
+   --#SUMMARY "PowerPanel client has been registered."
+   --#SEVERITY Information
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 71
+
+testEvent TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "Information: Test Event."
+   --#TYPE "CPS: This is test message."
+   --#SUMMARY "This is test message."
+   --#SEVERITY Information
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 72
+
+outletUserLoginInfo TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "Information: Outlet User login."
+   --#TYPE "CPS: Outlet user login information."
+   --#SUMMARY "Outlet user login from IP source."
+   --#SEVERITY Information
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 73
+
+outletUserLogoutInfo TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { mtrapinfoString }
+   DESCRIPTION
+       "Information: Outlet User logout."
+   --#TYPE "CPS: Outlet user logout information."
+   --#SUMMARY "Outlet user logout from IP source."
+   --#SEVERITY Information
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 74
+
+-- ePDU. Traps
+
+ePDUCommunicationEstablished TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName, mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: Communication with a Rack PDU has been established.
+       The first argument is the serial number.
+       The second argument is the device name."
+   --#TYPE "A Rack PDU: Communication established."
+   --#SUMMARY "Communication with a Rack PDU established."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 100
+
+ePDUCommunicationLost TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName, mtrapinfoString }
+   DESCRIPTION
+      "SEVERE: Communication with a Rack PDU has been lost.
+       The first argument is the serial number.
+       The second argument is the device name."
+   --#TYPE "A Rack PDU: Communication lost."
+   --#SUMMARY "Communication with a Rack PDU has been lost."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 101
+
+ePDUOutletOn TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDUOutletControlIndex, ePDUOutletControlOutletName,
+               mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: An outlet on a Switched Rack PDU has turned on.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the outlet index number.
+       The fourth argument is the outlet name."
+   --#TYPE "A Switched Rack PDU: An outlet has turned on."
+   --#SUMMARY "An outlet on a Switched Rack PDU has turned on."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 102
+
+ePDUOutletOff TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDUOutletControlIndex, ePDUOutletControlOutletName,
+               mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: An outlet on a Switched Rack PDU has turned off.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the outlet index number.
+       The fourth argument is the outlet name."
+   --#TYPE "A Switched Rack PDU: An outlet has turned off."
+   --#SUMMARY "An outlet on a Switched Rack PDU has turned off."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 103
+
+ePDUDeviceConfigChange TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName, mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: A device configuration change has been made on a
+       Rack PDU.
+       The first argument is the serial number.
+       The second argument is the device name."
+   --#TYPE "CPS Rack PDU: Device configuration change made."
+   --#SUMMARY "Device configuration change has been made on a Rack PDU."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 104
+
+ePDUOutletConfigChange TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDUOutletControlIndex, ePDUOutletControlOutletName,
+               mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: An outlet configuration change has been made on a
+       Switched Rack PDU.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the outlet index number.
+       The fourth argument is the outlet name."
+   --#TYPE "CPS Switched Rack PDU: Outlet configuration change made."
+   --#SUMMARY "Outlet configuration change has been made on a Switched Rack PDU."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 105
+
+ePDULowLoad TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDULoadStatusPhaseNumber, mtrapinfoString }
+   DESCRIPTION
+      "WARNING: A Rack PDU has violated the low load threshold.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the phase number."
+   --#TYPE "CPS Rack PDU: Violation of low load threshold."
+   --#SUMMARY "A Rack PDU has violated the low load threshold."
+   --#ARGUMENTS { }
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 106
+
+ePDULowLoadCleared TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDULoadStatusPhaseNumber, mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: The low load condition on a Rack PDU has been
+       cleared.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the phase number."
+   --#TYPE "CPS Rack PDU: Low load condition cleared."
+   --#SUMMARY "The low load condition on a Rack PDU has been cleared."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 107
+
+ePDUNearOverload TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDULoadStatusPhaseNumber, mtrapinfoString }
+   DESCRIPTION
+      "WARNING: A Rack PDU is near an overload condition.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the phase number."
+   --#TYPE "CPS Rack PDU: Near an overload condition."
+   --#SUMMARY "A Rack PDU is near an overload condition."
+   --#ARGUMENTS { }
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 108
+
+ePDUNearOverloadCleared TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDULoadStatusPhaseNumber, mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: The near overload condition on a Rack PDU has
+       been cleared.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the phase number."
+   --#TYPE "CPS Rack PDU: Near overload condition has cleared."
+   --#SUMMARY "Rack PDU near overload condition has cleared."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 109
+
+ePDUOverload TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDULoadStatusPhaseNumber, mtrapinfoString }
+   DESCRIPTION
+      "SEVERE: A Rack PDU is in an overload condition.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the phase number."
+   --#TYPE "CPS Rack PDU: Overload condition."
+   --#SUMMARY "A Rack PDU is in an overload condition."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 110
+
+ePDUOverloadCleared TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDULoadStatusPhaseNumber, mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: The overload condition on a Rack PDU has been
+       cleared.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the phase number."
+   --#TYPE "CPS Rack PDU: Overload condition has cleared."
+   --#SUMMARY "The overload condition on a Rack PDU has cleared."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 111
+
+ePDUDelayOutletOnCommand TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDUOutletControlIndex, ePDUOutletControlOutletName,
+               mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: An outlet on a Switched Rack PDU has been assigned to turn on.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the outlet index number.
+       The fourth argument is the outlet name."
+   --#TYPE "A Switched Rack PDU: An outlet has been assigned to turn on."
+   --#SUMMARY "An outlet on a Switched Rack PDU has been assigned to turn on."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 112
+
+ePDUDelayOutletOffCommand TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDUOutletControlIndex, ePDUOutletControlOutletName,
+               mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: An outlet on a Switched Rack PDU has been assigned to turn off.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the outlet index number.
+       The fourth argument is the outlet name."
+   --#TYPE "A Switched Rack PDU: An outlet has been assigned to turn off."
+   --#SUMMARY "An outlet on a Switched Rack PDU has been assigned to turn off."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 113
+
+ePDUDelayOutletRebootCommand TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDUOutletControlIndex, ePDUOutletControlOutletName,
+               mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: An outlet on a Switched Rack PDU has been assigned to reboot.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the outlet index number.
+       The fourth argument is the outlet name."
+   --#TYPE "A Switched Rack PDU: An outlet has been assigned to reboot."
+   --#SUMMARY "An outlet on a Switched Rack PDU has been assigned to reboot."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 114
+
+ePDUCancelPendingCommand TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDUOutletControlIndex, ePDUOutletControlOutletName,
+               mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: A cancel pending command has been made on a
+       Switched Rack PDU.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the outlet index number (0 indicates all outlets).
+       The fourth argument is the outlet name (or device name if all outlets)."
+   --#TYPE "A Switched Rack PDU: Cancel Pending Command made."
+   --#SUMMARY "A Cancel Pending Command has been made on a Switched Rack PDU."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 115
+
+
+ePDULineUndervoltage TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDULoadStatusPhaseNumber, mtrapinfoString }
+   DESCRIPTION
+      "SEVERE: Utility Line Undervoltage
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the phase number."
+   --#TYPE "A Rack PDU: Utility Line Undervoltage."
+   --#SUMMARY "Utility Line Undervoltage."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 116
+
+ePDULineUndervoltageCleared TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDULoadStatusPhaseNumber, mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: Utility Line Undervoltage Cleared.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the phase number."
+   --#TYPE "A Rack PDU: Utility Line Undervoltage Cleared."
+   --#SUMMARY "Utility Line Undervoltage Cleared."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 117
+
+ePDULineOvervoltage TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDULoadStatusPhaseNumber, mtrapinfoString }
+   DESCRIPTION
+      "SEVERE: Utility Line Overvoltage.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the phase number."
+   --#TYPE "CPS PDU: Utility Line Overvoltage."
+   --#SUMMARY "Utility Line Overvoltage."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 118
+
+ePDULineOvervoltageCleared TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDULoadStatusPhaseNumber, mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: Utility Line Overvoltage Cleared.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the phase number."
+   --#TYPE "CPS PDU: Utility Line Overvoltage Cleared."
+   --#SUMMARY "Utility Line Overvoltage Cleared."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 119
+
+
+ePDUPowerSupply1Fail TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName, mtrapinfoString }
+   DESCRIPTION
+      "SEVERE: Power Supply 1 on Rack PDU is in FAIL state.
+       The first argument is the serial number.
+       The second argument is the device name."
+   --#TYPE "A Rack PDU: Power Supply 1 is in FAIL state."
+   --#SUMMARY "Power Supply 1 on Rack PDU is in FAIL state."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 120
+
+ePDUPowerSupply1Ok TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName, mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: Power Supply 1 on Rack PDU is operating normally.
+       The first argument is the serial number.
+       The second argument is the device name."
+   --#TYPE "A Rack PDU: Power Supply 1 is operating normally."
+   --#SUMMARY "Power Supply 1 on Rack PDU is operating normally."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 121
+
+ePDUPowerSupply2Fail TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName, mtrapinfoString }
+   DESCRIPTION
+      "SEVERE: Power Supply 2 on Rack PDU is in FAIL state.
+       The first argument is the serial number.
+       The second argument is the device name."
+   --#TYPE "A Rack PDU: Power Supply 2 is in FAIL state."
+   --#SUMMARY "Power Supply 2 on Rack PDU is in FAIL state."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 122
+
+ePDUPowerSupply2Ok TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName, mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: Power Supply 2 on Rack PDU is operating normally.
+       The first argument is the serial number.
+       The second argument is the device name."
+   --#TYPE "A Rack PDU: Power Supply 2 is operating normally."
+   --#SUMMARY "Power Supply 2 on Rack PDU is operating normally."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 123
+
+ePDUBankLowLoad TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDULoadStatusBankNumber, mtrapinfoString }
+   DESCRIPTION
+      "WARNING: A Rack PDU bank has violated the low load threshold.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the bank number."
+   --#TYPE "CPS Rack PDU: Bank violation of low load threshold."
+   --#SUMMARY "A Rack PDU bank has violated the low load threshold."
+   --#ARGUMENTS { }
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 124
+
+ePDUBankLowLoadCleared TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDULoadStatusBankNumber, mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: The low load condition on a Rack PDU bank has been
+       cleared.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the bank number."
+   --#TYPE "CPS Rack PDU: Bank Low load condition cleared."
+   --#SUMMARY "The low load condition on a Rack PDU bank has been cleared."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 125
+
+ePDUBankNearOverload TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDULoadStatusBankNumber, mtrapinfoString }
+   DESCRIPTION
+      "WARNING: A Rack PDU bank is near an overload condition.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the bank number."
+   --#TYPE "CPS Rack PDU: Bank near an overload condition."
+   --#SUMMARY "A Rack PDU bank is near an overload condition."
+   --#ARGUMENTS { }
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 126
+
+ePDUBankNearOverloadCleared TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDULoadStatusBankNumber, mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: The near overload condition on a Rack PDU bank has
+       been cleared.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the phase/bank number."
+   --#TYPE "CPS Rack PDU: Bank near overload condition has cleared."
+   --#SUMMARY "Rack PDU bank near overload condition has cleared."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 127
+
+ePDUBankOverload TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDULoadStatusBankNumber, mtrapinfoString }
+   DESCRIPTION
+      "SEVERE: A Rack PDU bank is in an overload condition.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the bank number."
+   --#TYPE "CPS Rack PDU: Bank overload condition."
+   --#SUMMARY "A Rack PDU bank is in an overload condition."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 128
+
+ePDUBankOverloadCleared TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               ePDULoadStatusBankNumber, mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: The overload condition on a Rack PDU bank has been
+       cleared.
+       The first argument is the serial number.
+       The second argument is the device name.
+       The third argument is the bank number."
+   --#TYPE "CPS Rack PDU: Bank overload condition has cleared."
+   --#SUMMARY "The bank overload condition on a Rack PDU has cleared."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 129
+
+ePDUComponentCommunicationEstablished TRAP-TYPE
+   ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               mtrapinfoString }
+   DESCRIPTION
+      "INFORMATIONAL: Component communication lost has been cleared.
+       The first argument is the serial number.
+       The second argument is the device name."
+   --#TYPE "CPS Rack PDU: Component communication lost has been cleared."
+   --#SUMMARY "Component communication lost has been cleared."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 130
+
+ePDUComponentCommunicationLost TRAP-TYPE
+ENTERPRISE cps
+   VARIABLES { ePDUIdentSerialNumber, ePDUIdentName,
+               mtrapinfoString }
+   DESCRIPTION
+      "SEVERE: Component communication lost.
+       The first argument is the serial number.
+       The second argument is the device name."
+   --#TYPE "CPS Rack PDU: Component communication lost."
+   --#SUMMARY "Component communication lost."
+   --#ARGUMENTS { }
+   --#SEVERITY INFORMATIONAL
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 131
+
+END
+

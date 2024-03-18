@@ -1,0 +1,222 @@
+<?xml version="1.0"?>
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	ddfid="caterpillar_generator_emcp4"
+	ddfname="Caterpillar Generator (EMCP4)"
+	ddfversion="7"
+	canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+
+	<device deviceid="caterpillar_emcp4">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<setProductData ruleid="vendordata" field="vendor">Caterpillar</setProductData>
+		<setProductData ruleid="modeldata" field="model">Electronic Modular Control Panel 4</setProductData>
+		<setProductData ruleid="typedata" field="type">Generator</setProductData>
+		<setDefaultLabel ruleid="labeldata">
+			<sysHostname/> - Slave <commSetting field="slaveaddress"/>
+		</setDefaultLabel>
+		<numSensor ruleid="battery_voltage">
+			<rowTest>
+				<if>
+					<op>
+						<le>
+							<op>
+								<getOid>reg_202</getOid>
+							</op>
+							<op>64255</op>
+						</le>
+					</op>
+					<op>[true]</op>
+					<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>BATTERY_VOLTAGE</sensorId>
+			<value>
+				<div>
+					<op>
+						<getOid>reg_202</getOid>
+					</op>
+					<op>20</op>
+					<!-- 0.05 V per bit -->
+				</div>
+			</value>
+			<label>Battery Voltage</label>
+			<sensorSet>Engine Status</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="sys-light">
+			<type>state</type>
+			<sensorId>SYS_LIGHT</sensorId>
+			<value>
+				<mapValue mapid="sys-light-vm">
+				<getOid>reg_335</getOid>
+				</mapValue>
+			</value>
+			<enum>sys-light-em</enum>
+			<label>System Event Lamp Status</label>
+			<sensorSet>Data Link</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="gen-circ-brk">
+			<type>state</type>
+			<sensorId>GEN_CIRC_BRK</sensorId>
+			<value>
+				<mapValue mapid="gen-circ-brk-vm">
+				<getOid>reg_1065</getOid>
+				</mapValue>
+			</value>
+			<enum>gen-circ-brk-em</enum>
+			<label>Generator Circuit Breaker Status</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<numSensor ruleid="interval_days_remaining">
+			<rowTest>
+				<if>
+				<op>
+					<le>
+					<op><getOid>reg_212</getOid></op>
+					<op>64255</op>
+					</le>
+				</op>
+				<op>[true]</op>
+				<op>[false]</op>				
+				</if>
+			</rowTest>
+			<type>timeindays</type>
+			<sensorId>_INTERVAL_DAYS_REMAINING</sensorId>
+			<value>
+				<getOid>reg_212</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Service Maintenance Interval Days Remaining</label>
+			<sensorSet>Engine Status</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="automatic-startstop-state">
+			<type>state</type>
+			<sensorId>AUTOMATIC_STARTSTOP_STATE</sensorId>
+			<value>
+				<mapValue mapid="autoStopStart-vm">
+				<getOid>reg_206</getOid>
+				</mapValue>
+			</value>
+			<enum>autoStopStart-em</enum>
+			<label>Automatic Start/Stop State</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="eng-ctrl-switch">
+			<type>state</type>
+			<sensorId>ENG_CTRL_SWITCH</sensorId>
+			<value>
+				<mapValue mapid="stopAutoRun-vm">
+				<getOid>reg_301</getOid>
+				</mapValue>
+			</value>
+			<enum>stopAutoRun-em</enum>
+			<label>Engine Control Switch Position</label>
+			<sensorSet>Engine Status</sensorSet>
+		</stateSensor>
+		<valueMap ruleid="autoStopStart-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>2</valueIn><valueOut>2</valueOut>
+			<valueIn>3</valueIn><valueOut>3</valueOut>
+			<valueIn>4</valueIn><valueOut>4</valueOut>
+			<valueIn>5</valueIn><valueOut>5</valueOut>
+			<valueIn>6</valueIn><valueOut>6</valueOut>
+			<valueIn>7</valueIn><valueOut>7</valueOut>
+			<valueIn>8</valueIn><valueOut>8</valueOut>
+			<valueIn>*</valueIn><valueOut>9</valueOut>
+		</valueMap>
+		<enumMap ruleid="autoStopStart-em">
+			<label>Init</label>
+			<label>Pre-Crank</label>
+			<label>Starting</label>
+			<label>Running</label>
+			<label>Pre-Cooldown</label>
+			<label>Cooldown</label>
+			<label>Stopping</label>
+			<label>Stopped</label>
+			<label>Idling</label>
+			<label>Unknown</label>
+		</enumMap>
+		<valueMap ruleid="stopAutoRun-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>2</valueIn><valueOut>2</valueOut>
+			<valueIn>*</valueIn><valueOut>3</valueOut>
+		</valueMap>
+		<enumMap ruleid="stopAutoRun-em">
+			<label>Stop</label>
+			<label>Auto</label>
+			<label>Run</label>
+			<label>Unknown</label>
+		</enumMap>
+		<valueMap ruleid="sys-light-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>4</valueIn><valueOut>2</valueOut>
+			<valueIn>5</valueIn><valueOut>3</valueOut>
+			<valueIn>*</valueIn><valueOut>4</valueOut>
+		</valueMap>
+		<enumMap ruleid="sys-light-em">
+			<label>No Lamp Active</label>
+			<label>Red Lamp Active</label>
+			<label>Amber Lamp Active</label>
+			<label>Amber and Red Lamp Active</label>
+			<label>Unknown</label>
+		</enumMap>
+		<valueMap ruleid="gen-circ-brk-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>2</valueIn><valueOut>2</valueOut>
+			<valueIn>7</valueIn><valueOut>3</valueOut>
+			<valueIn>*</valueIn><valueOut>4</valueOut>
+		</valueMap>
+		<enumMap ruleid="gen-circ-brk-em">
+			<label>Open</label>
+			<label>Closed</label>
+			<label>Locked Out</label>
+			<label>Error</label>
+			<label>Unknown</label>
+		</enumMap>
+	</device>
+	<protocol>
+		<modbus>
+			<value_ref_id valid="reg_202">
+				<function>3</function>
+				<start_addr>201</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_335">
+				<function>3</function>
+				<start_addr>334</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_1065">
+				<function>3</function>
+				<start_addr>1064</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_212">
+				<function>3</function>
+				<start_addr>211</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_206">
+				<function>3</function>
+				<start_addr>205</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_301">
+				<function>3</function>
+				<start_addr>300</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+		</modbus>
+	</protocol>
+</APC_DDF>

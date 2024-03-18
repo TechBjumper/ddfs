@@ -1,0 +1,1483 @@
+-- Ingrasys inSentry MIB
+-- MIB for inSentry Environemntal Monitoring System
+--
+-- { iso org(3) dod(6) internet(1) private(4) enterprises(1) allion(2468)
+-- product(1) webAppliance(3) inSentry(1)
+-- ==============================================================================================
+---
+---     Revision History
+---
+---     v0.80   01-Oct-2003     Johnny Lin/Ingrasys
+---                             Created
+--
+---     v0.81   28-Oct-2003     Johnny Lin/Ingrasys
+---                             Add Configuration Log
+--
+---     v0.90   04-Nov-2003     Johnny Lin/Ingrasys
+---                             Restructure whole tree
+--
+---     v0.91   17-Nov-2003     Johnny Lin/Ingrasys
+---                             Fixed some incorrect description
+---
+---     v0.92   28-Nov-2003     Johnny Lin/Ingrasys
+---                             Fixed the InsightManager compiler error.
+---
+---     v1.00   24-Dec-2003     Johnny Lin/Ingrasys
+---                             Final release.
+---
+inSentry-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+  enterprises
+    FROM RFC1155-SMI
+  OBJECT-TYPE
+    FROM RFC-1212
+  DisplayString
+    FROM RFC1213-MIB
+  TRAP-TYPE
+    FROM RFC-1215;
+
+allion          OBJECT IDENTIFIER ::= { enterprises 2468 }
+product         OBJECT IDENTIFIER ::= { allion 1 }
+webAppliance    OBJECT IDENTIFIER ::= { product 3 }
+inSentry        OBJECT IDENTIFIER ::= { webAppliance 1}
+insObjects      OBJECT IDENTIFIER ::= { inSentry 1 }
+inSentryTraps   OBJECT IDENTIFIER ::= { inSentry 2 }
+
+inSentryIdent   OBJECT IDENTIFIER ::= { insObjects 1 }
+inSentryConfig  OBJECT IDENTIFIER ::= { insObjects 2 }
+sensorMonitor   OBJECT IDENTIFIER ::= { insObjects 3 }
+sensorConfig    OBJECT IDENTIFIER ::= { insObjects 4 }
+
+-- ===========================================================================
+--
+-- insIdentification
+--
+--     All objects in this group except for upsIdentName and
+--     upsIdentAttachedDevices are set at device initialization
+--     and remain static.
+--
+-- ===========================================================================
+
+insIdentManufacturer OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The name of the inSentry manufacturer."
+       ::= { inSentryIdent 1 }
+
+insIdentModel OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (0..63))
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+          "The inSentry Model designation."
+      ::= { inSentryIdent 2 }
+
+insIdentAgentSoftwareVersion OBJECT-TYPE
+      SYNTAX DisplayString (SIZE(0..31))
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+               "The inSentry software/firmware version.  This variable may or
+               may not have the same value as
+               upsIdentUPSSoftwareVersion in some implementations."
+      ::= { inSentryIdent 3 }
+
+insIdentName OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..31))
+       ACCESS read-write
+       STATUS     mandatory
+       DESCRIPTION
+               "A string identifying the inSentry.  This object should be
+               set by the administrator."
+       ::= { inSentryIdent 4 }
+
+-- ===========================================================================
+--
+-- inSentryConfig
+--
+-- ===========================================================================
+
+inSentryConfigMibVersion OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The version of MIB spec."
+        ::= { inSentryConfig 1}
+
+inSentryConfigNetwork   OBJECT IDENTIFIER ::= { inSentryConfig 2 }
+
+inSentryConfigIpAddress OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                " The ip address that NMS can identify the managed
+                device"
+        ::= { inSentryConfigNetwork 1 }
+
+inSentryConfigGateway OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                " The default gateway that allow device managed
+                through routers "
+        ::= { inSentryConfigNetwork 2 }
+
+inSentryConfigSubnetMask OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                " Internet address subnet mask"
+        ::= { inSentryConfigNetwork 3 }
+
+inSentryConfigDateTime   OBJECT IDENTIFIER ::= { inSentryConfig 3 }
+
+inSentryConfigDate OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (10..10))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The date in inSentry, format is (dd/mm/yyyy)"
+        ::= { inSentryConfigDateTime 1}
+
+inSentryConfigTime OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (8..8))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The time in inSenty, format is (hh:mm:ss)"
+        ::= { inSentryConfigDateTime 2}
+
+inSentryConfigTimeFromNtp OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable update date/time from NTP server."
+        ::= { inSentryConfigDateTime 3}
+
+inSentryConfigNtpIpAddress OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "NTP IP address."
+        ::= { inSentryConfigDateTime 4}
+
+inSentryConfigNtpTimeZone OBJECT-TYPE
+        SYNTAX INTEGER {
+                gMT-1200(1),
+                gMT-1100(2),
+                gMT-1000(3),
+                gMT-0900(4),
+                gMT-0800(5),
+                gMT-0700(6),
+                gMT-0600(7),
+                gMT-0500(8),
+                gMT-0400(9),
+                gMT-0330(10),
+                gMT-0300(11),
+                gMT-0200(12),
+                gMT-0100(13),
+                gMT-0000(14),
+                gMT+0100(15),
+                gMT+0200(16),
+                gMT+0300(17),
+                gMT+0330(18),
+                gMT+0400(19),
+                gMT+0500(20),
+                gMT+0530(21),
+                gMT+0600(22),
+                gMT+0700(23),
+                gMT+0800(24),
+                gMT+0900(25),
+                gMT+1000(26),
+                gMT+1100(27),
+                gMT+1200(28)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable update date/time from NTP server."
+        ::= { inSentryConfigDateTime 5}
+
+
+inSentryConfigLog   OBJECT IDENTIFIER ::= { inSentryConfig 4 }
+
+inSentryConfigHistoryLogFrequency OBJECT-TYPE
+        SYNTAX INTEGER (5..3600) -- in seconds
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The frequency of the updation of the history log. The value
+                 is in seconds"
+        ::= { inSentryConfigLog 1}
+
+inSentryConfigExtHistoryLogFrequency      OBJECT-TYPE
+        SYNTAX INTEGER (1..1440) -- in minutes
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The frequency of the updation of the extended history log.
+                 The value is in seconds"
+        ::= { inSentryConfigLog 2}
+
+inSentryConfigConfigurationLog OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                " Enable/disblae inSentry to log parameters change."
+        ::= { inSentryConfigLog 3}
+
+inSentryConfigDhcpStatue OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable or disable DHCP/BootP capability"
+        ::= { inSentryConfig 5}
+
+inSentryConfigPingStatue OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable or disable Ping Echo capability"
+        ::= { inSentryConfig 6}
+
+inSentryConfigTftpStatue OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable or disable TFTP network upgrade capability"
+        ::= { inSentryConfig 7}
+
+inSentryConfigTelnet   OBJECT IDENTIFIER ::= { inSentryConfig 8 }
+
+inSentryConfigTelnetStatue OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable or disable telnet access"
+        ::= { inSentryConfigTelnet 1}
+
+inSentryConfigTelnetPortNumber            OBJECT-TYPE
+        SYNTAX INTEGER (1..65535)
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                 "Setting the server port of telnet."
+        ::= { inSentryConfigTelnet 2}
+
+inSentryConfigHttp   OBJECT IDENTIFIER ::= { inSentryConfig 9 }
+
+inSentryConfigHttpStatue OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable or disable HTTP access"
+        ::= { inSentryConfigHttp 1}
+
+inSentryConfigHttpPortNumber            OBJECT-TYPE
+        SYNTAX INTEGER (1..65535)
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                 "Setting the server port of HTTP."
+        ::= { inSentryConfigHttp 2}
+
+inSentryConfigHttpSecurity OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable HTTP access for read-only users"
+        ::= { inSentryConfigHttp 3}
+
+
+inSentryConfigSnmp   OBJECT IDENTIFIER ::= { inSentryConfig 10 }
+inSentryConfigSnmpStatue OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable or disable SNMP access"
+        ::= { inSentryConfigSnmp 1}
+
+inSentryConfigSnmpPortNumber            OBJECT-TYPE
+        SYNTAX INTEGER (1..65535)
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                 "Setting the server port of SNMP."
+        ::= { inSentryConfigSnmp 2}
+
+inSentryConfigControl   OBJECT IDENTIFIER ::= { inSentryConfig 11 }
+inSentryConfigResetToDefault OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset(1),
+                nothing(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset all parameters of USHA to default value"
+        ::= { inSentryConfigControl 1}
+
+inSentryConfigRestart OBJECT-TYPE
+        SYNTAX  INTEGER {
+                restart(1),
+                nothing(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Restart inSentry"
+        ::= { inSentryConfigControl 2}
+
+inSentryConfigTrap   OBJECT IDENTIFIER ::= { inSentryConfig 12 }
+inSentryConfigTrapRetryCount OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The count of repeat traps to send to NMS before trap
+                 acknowledge received."
+        ::= { inSentryConfigTrap 1}
+
+inSentryConfigTrapRetryTime OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The time between retry traps sned to NMS."
+        ::= { inSentryConfigTrap 2}
+
+inSentryConfigTrapAckSignature OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The signature of trap acknowledge."
+        ::= { inSentryConfigTrap 3}
+
+
+inSentryConfigPollRate OBJECT-TYPE
+        SYNTAX INTEGER (3..60)
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                " The frequency that inSentry update reading from sensors
+                (unit : second)."
+        ::= { inSentryConfig 13}
+
+inSentryConfigTrapsReceiversTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF inSentryConfigTrapsReceiversEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of managers to send traps to.  The number of
+                 entries is given by the value of inSentryConfigNumTrapReceivers"
+        ::= { inSentryConfig 14}
+
+inSentryConfigTrapsReceiversEntry OBJECT-TYPE
+        SYNTAX inSentryConfigTrapsReceiversEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The managers to send traps to."
+        INDEX  { trapsIndex}
+        ::= { inSentryConfigTrapsReceiversTable 1 }
+
+inSentryConfigTrapsReceiversEntry ::=
+        SEQUENCE {
+                trapsIndex
+                        INTEGER,
+                trapsReceiverAddr
+                        IpAddress,
+                receiverCommunityString
+                         DisplayString,
+                receiverSeverityLevel
+                        INTEGER,
+                receiverDescription
+                         DisplayString
+        }
+
+trapsIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a trap receiver entry."
+        ::= { inSentryConfigTrapsReceiversEntry 1 }
+
+trapsReceiverAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The IP address of the manager to send a trap to."
+        ::= { inSentryConfigTrapsReceiversEntry 2 }
+
+receiverCommunityString OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..19))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The community name to use in the trap when
+                 sent to the manager."
+        ::= { inSentryConfigTrapsReceiversEntry 3 }
+
+receiverSeverityLevel OBJECT-TYPE
+        SYNTAX  INTEGER {
+                informational(1),
+                warning(2),
+                severe(3)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The severity level of traps to be received by this manager."
+        ::= { inSentryConfigTrapsReceiversEntry 4 }
+
+receiverDescription OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..31))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Description of trap receivers"
+        ::= { inSentryConfigTrapsReceiversEntry 5 }
+
+
+-- Sensor Monitoring
+
+sensorMonitorSensorNumber OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The number of sensors can be monitored."
+        ::= { sensorMonitor 1}
+
+sensorMonitorSensorTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF SensorMonitorSensorEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of sensor device to be monitor."
+        ::= { sensorMonitor 2}
+
+sensorMonitorSensorEntry OBJECT-TYPE
+        SYNTAX SensorMonitorSensorEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The sensor device."
+        INDEX  { sensorMonitorDeviceIndex}
+        ::= { sensorMonitorSensorTable 1 }
+
+sensorMonitorSensorEntry ::=
+        SEQUENCE {
+                sensorMonitorDeviceIndex
+                        INTEGER,
+                sensorMonitorDeviceStatus
+                        INTEGER,
+                sensorMonitorDeviceTemperature
+                        INTEGER,
+                sensorMonitorDeviceTemperatureAlarm
+                        INTEGER,
+                sensorMonitorDeviceHumidity
+                        INTEGER,
+                sensorMonitorDeviceHumidityAlarm
+                        INTEGER,
+                sensorMonitorAlarm1
+                        INTEGER,
+                sensorMonitorAlarm2
+                        INTEGER
+        }
+
+sensorMonitorDeviceIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a sensor device entry."
+        ::= { sensorMonitorSensorEntry 1 }
+
+sensorMonitorDeviceStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknow(1),
+                disabled(2),
+                EMD-HT(3),
+                EMD-T(4)
+                }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The device type pluged into inSentry."
+        ::= { sensorMonitorSensorEntry 2 }
+
+sensorMonitorDeviceTemperature OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The temperature of sensor on device inSentry."
+        ::= { sensorMonitorSensorEntry 3 }
+
+sensorMonitorDeviceTemperatureAlarm OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknow(1),
+                disabled(2),
+                normal(3),
+                lowWarning(4),
+                lowCritical(5),
+                highWarning(6),
+                highCritical(7)
+                }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The status of temperature sensor on device inSentry."
+        ::= { sensorMonitorSensorEntry 4 }
+
+sensorMonitorDeviceHumidity OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The humidity of sensor on device inSentry."
+        ::= { sensorMonitorSensorEntry 5 }
+
+sensorMonitorDeviceHumidityAlarm OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknow(1),
+                disabled(2),
+                normal(3),
+                lowWarning(4),
+                lowCritical(5),
+                highWarning(6),
+                highCritical(7)
+                }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The device type pluged into inSentry."
+        ::= { sensorMonitorSensorEntry 6 }
+
+sensorMonitorAlarm1 OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknow(1),
+                disabled(2),
+                active(3),
+                inactive(4)
+                }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The device type pluged into inSentry."
+        ::= { sensorMonitorSensorEntry 7 }
+
+sensorMonitorAlarm2 OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknow(1),
+                disabled(2),
+                active(3),
+                inactive(4)
+                }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The device type pluged into inSentry."
+        ::= { sensorMonitorSensorEntry 8 }
+
+-- Sensor Configuration
+
+sensorConfigSensorNumber OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The number of sensors can plug in with inSentry."
+        ::= { sensorConfig 1}
+
+sensorConfigSensorTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF SensorConfigSensorEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of sensor device to be configured."
+        ::= { sensorConfig 2}
+
+sensorConfigSensorEntry OBJECT-TYPE
+        SYNTAX SensorConfigSensorEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The sensor device."
+        INDEX  { sensorConfigDeviceIndex}
+        ::= { sensorConfigSensorTable 1 }
+
+sensorConfigSensorEntry ::=
+        SEQUENCE {
+                sensorConfigDeviceIndex
+                        INTEGER,
+                sensorConfigDeviceName
+                         DisplayString,
+                sensorConfigDeviceState
+                        INTEGER
+        }
+
+sensorConfigDeviceIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a sensor device entry."
+        ::= { sensorConfigSensorEntry 1 }
+
+sensorConfigDeviceName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..15))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The name of the sensor device for identification."
+        ::= { sensorConfigSensorEntry 2 }
+
+sensorConfigDeviceState OBJECT-TYPE
+        SYNTAX  INTEGER {
+                disabled(1),
+                auto(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The setup of sensor device type."
+        ::= { sensorConfigSensorEntry 3 }
+
+sensorConfigSensor1    OBJECT IDENTIFIER ::= { sensorConfig 3 }
+
+sensorConfigSensor1DeviceName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..15))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "TThe name of sensor device."
+        ::= { sensorConfigSensor1 1}
+
+sensorConfigSensor1DeviceState OBJECT-TYPE
+        SYNTAX  INTEGER {
+                disabled(1),
+                auto(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The setup of sensor device type."
+        ::= { sensorConfigSensor1 2 }
+
+sensorConfigSensor1Temperature    OBJECT IDENTIFIER ::= { sensorConfigSensor1 3 }
+
+sensorConfigSensor1TemperatureName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..15))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The temperature sensor name."
+        ::= { sensorConfigSensor1Temperature 1 }
+
+sensorConfigSensor1TemperatureLowWarning OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The set point to trigger low warning alarm."
+        ::= { sensorConfigSensor1Temperature 2 }
+
+
+sensorConfigSensor1TemperatureLowCritical OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The threshole to trigger low critical alarm."
+        ::= { sensorConfigSensor1Temperature 3 }
+
+sensorConfigSensor1TemperatureHighWarning OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The threshole to trigger high warning alarm."
+        ::= { sensorConfigSensor1Temperature 4 }
+
+sensorConfigSensor1TemperatureHighCritical OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The threshole to trigger high critical alarm."
+        ::= { sensorConfigSensor1Temperature 5 }
+
+sensorConfigSensor1TemperatureHysteresis OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The set value to prevent too many alarms when temperature is hovering around the
+                 set threshole."
+        ::= { sensorConfigSensor1Temperature 6 }
+
+sensorConfigSensor1TemperatureCalibration OBJECT-TYPE
+        SYNTAX INTEGER {
+                0.0(1),
+                +0.5(2),
+                +1.0(3),
+                +1.5(4),
+                +2.0(5),
+                +2.5(6),
+                +3.0(7),
+                -0.5(8),
+                -1.0(9),
+                -1.5(10),
+                -2.0(11),
+                -2.5(12),
+                -3.0(13)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The set value to get the correct temperature accoring to your reference temperature."
+        ::= { sensorConfigSensor1Temperature 7 }
+
+sensorConfigSensor1TemperatureLowWarningStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the set point to trigger low warning alarm."
+        ::= { sensorConfigSensor1Temperature 8 }
+
+sensorConfigSensor1TemperatureLowCriticalStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the set point to trigger low critical alarm."
+        ::= { sensorConfigSensor1Temperature 9 }
+
+sensorConfigSensor1TemperatureHighWarningStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the set point to trigger high warning alarm."
+        ::= { sensorConfigSensor1Temperature 10 }
+
+sensorConfigSensor1TemperatureHighCriticalStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the set point to trigger high critical alarm."
+        ::= { sensorConfigSensor1Temperature 11 }
+
+sensorConfigSensor1Humidity    OBJECT IDENTIFIER ::= { sensorConfigSensor1 4 }
+
+sensorConfigSensor1HumdityName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..15))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The humidity sensor name."
+        ::= { sensorConfigSensor1Humidity 1 }
+
+sensorConfigSensor1HumidityLowWarning OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The set point to trigger low warning alarm."
+        ::= { sensorConfigSensor1Humidity 2 }
+
+
+sensorConfigSensor1HumidityLowCritical OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The threshole to trigger low critical alarm."
+        ::= { sensorConfigSensor1Humidity 3 }
+
+sensorConfigSensor1HumidityHighWarning OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The threshole to trigger high warning alarm."
+        ::= { sensorConfigSensor1Humidity 4 }
+
+sensorConfigSensor1HumidityHighCritical OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The threshole to trigger high critical alarm."
+        ::= { sensorConfigSensor1Humidity 5 }
+
+sensorConfigSensor1HumidityHysteresis OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The set value to prevent too many alarms when Humidity is hovering around the
+                 set threshole."
+        ::= { sensorConfigSensor1Humidity 6 }
+
+sensorConfigSensor1HumidityCalibration OBJECT-TYPE
+        SYNTAX INTEGER {
+                0.0(1),
+                +1.0(2),
+                +2.0(3),
+                +3.0(4),
+                +4.0(5),
+                +5.0(6),
+                +6.0(7),
+                -1.0(8),
+                -2.0(9),
+                -3.0(10),
+                -4.0(11),
+                -5.0(12),
+                -6.0(13)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The set value to get the correct temperature accoring to your reference temperature."
+        ::= { sensorConfigSensor1Humidity 7 }
+
+sensorConfigSensor1HumidityLowWarningStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the set point to trigger low warning alarm."
+        ::= { sensorConfigSensor1Humidity 8 }
+
+sensorConfigSensor1HumidityLowCriticalStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the set point to trigger low critical alarm."
+        ::= { sensorConfigSensor1Humidity 9 }
+
+sensorConfigSensor1HumidityHighWarningStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the set point to trigger high warning alarm."
+        ::= { sensorConfigSensor1Humidity 10 }
+
+sensorConfigSensor1HumidityHighCriticalStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the set point to trigger high critical alarm."
+        ::= { sensorConfigSensor1Humidity 11 }
+
+sensorConfigSensor1Alarm1    OBJECT IDENTIFIER ::= { sensorConfigSensor1 5 }
+
+sensorConfigSensor1Alarm1Name OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..15))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The name of alarm-1."
+        ::= { sensorConfigSensor1Alarm1 1 }
+
+sensorConfigSensor1Alarm1State OBJECT-TYPE
+        SYNTAX INTEGER {
+                disabled(1),
+                normalOpen(2),
+                normalClose(3),
+                highActive(4),
+                lowActive(5)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Setup the signal type to trigger alarm."
+        ::= { sensorConfigSensor1Alarm1 2 }
+
+sensorConfigSensor1Alarm1Hysteresis OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The set value to delay the alarm triggered when event occurs."
+        ::= { sensorConfigSensor1Alarm1 3 }
+
+sensorConfigSensor1Alarm2    OBJECT IDENTIFIER ::= { sensorConfigSensor1 6 }
+
+sensorConfigSensor1Alarm2Name OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..15))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The name of alarm-1."
+        ::= { sensorConfigSensor1Alarm2 1 }
+
+sensorConfigSensor1Alarm2State OBJECT-TYPE
+        SYNTAX INTEGER {
+                disabled(1),
+                normalOpen(2),
+                normalClose(3),
+                highActive(4),
+                lowActive(5)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Setup the signal type to trigger alarm."
+        ::= { sensorConfigSensor1Alarm2 2 }
+
+sensorConfigSensor1Alarm2Hysteresis OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The set value to delay the alarm triggered when event occurs."
+        ::= { sensorConfigSensor1Alarm2 3 }
+
+sensorConfigSensor2    OBJECT IDENTIFIER ::= { sensorConfig 4 }
+
+sensorConfigSensor2DeviceName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..15))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "TThe name of sensor device."
+        ::= { sensorConfigSensor2 1}
+
+sensorConfigSensor2DeviceState OBJECT-TYPE
+        SYNTAX  INTEGER {
+                disabled(1),
+                auto(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The setup of sensor device type."
+        ::= { sensorConfigSensor2 2 }
+
+sensorConfigSensor2Temperature    OBJECT IDENTIFIER ::= { sensorConfigSensor2 3 }
+
+sensorConfigSensor2TemperatureName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..15))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The temperature sensor name."
+        ::= { sensorConfigSensor2Temperature 1 }
+
+sensorConfigSensor2TemperatureLowWarning OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The set point to trigger low warning alarm."
+        ::= { sensorConfigSensor2Temperature 2 }
+
+
+sensorConfigSensor2TemperatureLowCritical OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The threshole to trigger low critical alarm."
+        ::= { sensorConfigSensor2Temperature 3 }
+
+sensorConfigSensor2TemperatureHighWarning OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The threshole to trigger high warning alarm."
+        ::= { sensorConfigSensor2Temperature 4 }
+
+sensorConfigSensor2TemperatureHighCritical OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The threshole to trigger high critical alarm."
+        ::= { sensorConfigSensor2Temperature 5 }
+
+sensorConfigSensor2TemperatureHysteresis OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The set value to prevent too many alarms when temperature is hovering around the
+                 set threshole."
+        ::= { sensorConfigSensor2Temperature 6 }
+
+sensorConfigSensor2TemperatureCalibration OBJECT-TYPE
+        SYNTAX INTEGER {
+                0.0(1),
+                +0.5(2),
+                +1.0(3),
+                +1.5(4),
+                +2.0(5),
+                +2.5(6),
+                +3.0(7),
+                -0.5(8),
+                -1.0(9),
+                -1.5(10),
+                -2.0(11),
+                -2.5(12),
+                -3.0(13)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The set value to get the correct temperature accoring to your reference temperature."
+        ::= { sensorConfigSensor2Temperature 7 }
+
+sensorConfigSensor2TemperatureLowWarningStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the set point to trigger low warning alarm."
+        ::= { sensorConfigSensor2Temperature 8 }
+
+sensorConfigSensor2TemperatureLowCriticalStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the set point to trigger low critical alarm."
+        ::= { sensorConfigSensor2Temperature 9 }
+
+sensorConfigSensor2TemperatureHighWarningStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the set point to trigger high warning alarm."
+        ::= { sensorConfigSensor2Temperature 10 }
+
+sensorConfigSensor2TemperatureHighCriticalStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the set point to trigger high critical alarm."
+        ::= { sensorConfigSensor2Temperature 11 }
+
+sensorConfigSensor2Humidity    OBJECT IDENTIFIER ::= { sensorConfigSensor2 4 }
+
+sensorConfigSensor2HumdityName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..15))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The humidity sensor name."
+        ::= { sensorConfigSensor2Humidity 1 }
+
+sensorConfigSensor2HumidityLowWarning OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The set point to trigger low warning alarm."
+        ::= { sensorConfigSensor2Humidity 2 }
+
+
+sensorConfigSensor2HumidityLowCritical OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The threshole to trigger low critical alarm."
+        ::= { sensorConfigSensor2Humidity 3 }
+
+sensorConfigSensor2HumidityHighWarning OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The threshole to trigger high warning alarm."
+        ::= { sensorConfigSensor2Humidity 4 }
+
+sensorConfigSensor2HumidityHighCritical OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The threshole to trigger high critical alarm."
+        ::= { sensorConfigSensor2Humidity 5 }
+
+sensorConfigSensor2HumidityHysteresis OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The set value to prevent too many alarms when Humidity is hovering around the
+                 set threshole."
+        ::= { sensorConfigSensor2Humidity 6 }
+
+sensorConfigSensor2HumidityCalibration OBJECT-TYPE
+        SYNTAX INTEGER {
+                0.0(1),
+                +1.0(2),
+                +2.0(3),
+                +3.0(4),
+                +4.0(5),
+                +5.0(6),
+                +6.0(7),
+                -1.0(8),
+                -2.0(9),
+                -3.0(10),
+                -4.0(11),
+                -5.0(12),
+                -6.0(13)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The set value to get the correct temperature accoring to your reference temperature."
+        ::= { sensorConfigSensor2Humidity 7 }
+
+sensorConfigSensor2HumidityLowWarningStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the set point to trigger low warning alarm."
+        ::= { sensorConfigSensor2Humidity 8 }
+
+sensorConfigSensor2HumidityLowCriticalStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the set point to trigger low critical alarm."
+        ::= { sensorConfigSensor2Humidity 9 }
+
+sensorConfigSensor2HumidityHighWarningStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the set point to trigger high warning alarm."
+        ::= { sensorConfigSensor2Humidity 10 }
+
+sensorConfigSensor2HumidityHighCriticalStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the set point to trigger high critical alarm."
+        ::= { sensorConfigSensor2Humidity 11 }
+
+sensorConfigSensor2Alarm1    OBJECT IDENTIFIER ::= { sensorConfigSensor2 5 }
+
+sensorConfigSensor2Alarm1Name OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..15))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The name of alarm-1."
+        ::= { sensorConfigSensor2Alarm1 1 }
+
+sensorConfigSensor2Alarm1State OBJECT-TYPE
+        SYNTAX INTEGER {
+                disabled(1),
+                normalOpen(2),
+                normalClose(3),
+                highActive(4),
+                lowActive(5)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Setup the signal type to trigger alarm."
+        ::= { sensorConfigSensor2Alarm1 2 }
+
+sensorConfigSensor2Alarm1Hysteresis OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The set value to delay the alarm triggered when event occurs."
+        ::= { sensorConfigSensor2Alarm1 3 }
+
+sensorConfigSensor2Alarm2    OBJECT IDENTIFIER ::= { sensorConfigSensor2 6 }
+
+sensorConfigSensor2Alarm2Name OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..15))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The name of alarm-1."
+        ::= { sensorConfigSensor2Alarm2 1 }
+
+sensorConfigSensor2Alarm2State OBJECT-TYPE
+        SYNTAX INTEGER {
+                disabled(1),
+                normalOpen(2),
+                normalClose(3),
+                highActive(4),
+                lowActive(5)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Setup the signal type to trigger alarm."
+        ::= { sensorConfigSensor2Alarm2 2 }
+
+sensorConfigSensor2Alarm2Hysteresis OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The set value to delay the alarm triggered when event occurs."
+        ::= { sensorConfigSensor2Alarm2 3 }
+
+
+-- ===========================================================================
+-- upsTraps
+--
+-- Traps group
+-- ===========================================================================
+
+   -- This section defines the well-known notifications sent by
+   -- UPS agents.
+   -- Care must be taken to insure that no particular notification
+   -- is sent to a single receiving entity more often than once
+   -- every five seconds.
+
+inSentryCommunicationRestored TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "INFORMATION: Communication between inSentry and sensor had
+                 established."
+        ::= 1
+
+inSentryCommunicationLost TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "WARNING: Communication between inSentry and sensor had
+                 lost."
+        ::= 2
+
+inSentryAlarm1Inactive TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "INFORMATION: Alarm1 of sensor had return from active state."
+        ::= 3
+
+inSentryAlarm1Active TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "WARNING: Alarm1 had became active."
+        ::= 4
+
+inSentryAlarm2Inactive TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "INFORMATION: Alarm2 of sensor had return from active state."
+        ::= 5
+
+inSentryAlarm2Active TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "WARNING: Alarm2 had became active."
+        ::= 6
+
+inSentryTemperatureNotHighWarning TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "INFORMATION: The temperature of sensor had return from High warning to normal."
+        ::= 7
+
+inSentryTemperatureHighWarning TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "WARNING: The temperature of sensor was higher than High warning set point."
+        ::= 8
+
+inSentryTemperatureNotLowWarning TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "INFORMATION: The temperature of sensor had return from low warning to normal."
+        ::= 9
+
+inSentryTemperatureLowWarning TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "WARNING: The temperature of sensor was lower than low warning set point."
+        ::= 10
+
+inSentryTemperatureNotHighCritical TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "INFORMATION: The temperature of sensor lower than high critical set point."
+        ::= 11
+
+inSentryTemperatureHighCritical TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "CRITICAL: The temperature of sensor was higher than high critical set point."
+        ::= 12
+
+inSentryTemperatureNotLowCritical TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "INFORMATION: The temperature of sensor was higher than low critical set point."
+        ::= 13
+
+inSentryTemperatureLowCritical TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "CRITICAL: The temperature of sensor was lower than low critical set point."
+        ::= 14
+inSentryHumidityNotHighWarning TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "INFORMATION: The humidity of sensor had return from High warning to normal."
+        ::= 15
+
+inSentryHumidityHighWarning TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "WARNING: The humidity of sensor was higher than High warning set point."
+        ::= 16
+
+inSentryHumidityNotLowWarning TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "INFORMATION: The humidity of sensor had return from low warning to normal."
+        ::= 17
+
+inSentryHumidityLowWarning TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "WARNING: The humidity of sensor was lower than low warning set point."
+        ::= 18
+
+inSentryHumidityNotHighCritical TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "INFORMATION: The humidity of sensor lower than high critical set point."
+        ::= 19
+
+inSentryHumidityHighCritical TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "CRITICAL: The humidity of sensor was higher than high critical set point."
+        ::= 20
+
+inSentryHumidityNotLowCritical TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "INFORMATION: The humidity of sensor was higher than low critical set point."
+        ::= 21
+
+inSentryHumidityLowCritical TRAP-TYPE
+        ENTERPRISE inSentryTraps
+        DESCRIPTION
+                "CRITICAL: The humidity of sensor was lower than low critical set point."
+        ::= 22
+
+  END

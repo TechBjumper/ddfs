@@ -1,0 +1,3771 @@
+<?xml version="1.0"?>
+<!-- Test Modbus related information -->
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+    ddfid="powerlogic_8xx"
+	ddfname="PowerLogic 800 series"
+	ddfversion="2"
+	canremove="yes">
+  <schemaVersion>1.6</schemaVersion>
+
+  <device deviceid="powerlogic_8xx_header">
+    <oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+    <setProductData ruleid="vendordata" field="vendor">Schneider Electric</setProductData>
+    <setProductData ruleid="modeldata" field="model">PowerLogic PM800 Series</setProductData>
+    <setProductData ruleid="typedata" field="type">Power Meter</setProductData>
+    <setDefaultLabel ruleid="labeldata"><getOid>nameplate</getOid>(<sysHostname/> - Slave <commSetting field="slaveaddress"/>)</setDefaultLabel>
+
+    <!-- I/O Status value map -->
+    <valueMap ruleid="iostatus-vm">
+      <valueIn>0</valueIn><valueOut>0</valueOut>
+      <valueIn>1</valueIn><valueOut>1</valueOut>
+      <valueIn>*</valueIn><valueOut>0</valueOut>
+    </valueMap>
+
+    <!-- I/O Status Enums -->
+    <enumMap ruleid="iostatus-em">
+      <label>Off</label>
+      <label>On</label>
+    </enumMap>
+
+    <valueMap ruleid="delete_null_sensor">
+      <valueIn>-32768</valueIn><valueOut>[false]</valueOut>
+      <valueIn>32768</valueIn><valueOut>[false]</valueOut>
+      <valueIn>*</valueIn><valueOut>[true]</valueOut>
+    </valueMap>
+
+    <!-- Nominal System Frequency -->
+    <valueMap ruleid="nominal_sys_freq-vm">
+      <valueIn>50</valueIn><valueOut>0.01</valueOut>
+      <valueIn>60</valueIn><valueOut>0.01</valueOut>
+      <valueIn>400</valueIn><valueOut>0.1</valueOut>
+      <valueIn>*</valueIn><valueOut>0.01</valueOut>
+    </valueMap>
+
+    <valueMap ruleid="tenToTheX-vm">
+      <valueIn>-3</valueIn><valueOut>0.001</valueOut>
+      <valueIn>-2</valueIn><valueOut>0.01</valueOut>
+      <valueIn>-1</valueIn><valueOut>0.1</valueOut>
+      <valueIn>0</valueIn><valueOut>1</valueOut>
+      <valueIn>1</valueIn><valueOut>10</valueOut>
+      <valueIn>2</valueIn><valueOut>100</valueOut>
+      <valueIn>3</valueIn><valueOut>1000</valueOut>
+      <valueIn>*</valueIn><valueOut>1</valueOut>
+    </valueMap>
+
+    <numSensor ruleid="nominal_system_frequency">
+      <type>frequency</type>
+      <sensorId>NOM_SYS_FREQUENCY_1</sensorId>
+      <value>
+        <getOid>nomsysfreq</getOid>
+      </value>
+      <valueInc>1</valueInc>
+      <label>Nominal System Frequency</label>
+      <sensorSet>Other Sensors</sensorSet>
+    </numSensor>
+
+  </device>
+
+  <device deviceid="powerlogic_8xx_demand">
+    <oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+    
+    <numSensor ruleid="current_a_demand">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currentadem</getOid>
+        </mapValue>
+      </rowTest>
+      <type>amperage</type>
+      <sensorId>CURRENT_DEMAND_1</sensorId>
+      <value>
+         <mult>
+            <op><getOid>currentadem</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasecurrentscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Current, A, Demand Present</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="current_a_demand_pk">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currentadempk</getOid>
+        </mapValue>
+      </rowTest>
+      <type>amperage</type>
+      <sensorId>CURRENT_DEMAND_PK_1</sensorId>
+      <value>
+        <mult>
+            <op><getOid>currentadempk</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasecurrentscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Current, A, Demand Peak</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="current_b_demand">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currentbdem</getOid>
+        </mapValue>
+      </rowTest>
+      <type>amperage</type>
+      <sensorId>CURRENT_DEMAND_2</sensorId>
+      <value>
+        <mult>
+            <op><getOid>currentbdem</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasecurrentscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Current, B, Demand Present</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="current_b_demand_pk">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currentbdempk</getOid>
+        </mapValue>
+      </rowTest>
+      <type>amperage</type>
+      <sensorId>CURRENT_DEMAND_PK_2</sensorId>
+      <value>
+        <mult>
+            <op><getOid>currentbdempk</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasecurrentscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Current, B, Demand Peak</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="current_c_demand">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currentcdem</getOid>
+        </mapValue>
+      </rowTest>
+      <type>amperage</type>
+      <sensorId>CURRENT_DEMAND_3</sensorId>
+      <value>
+        <mult>
+            <op><getOid>currentcdem</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasecurrentscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Current, C, Demand Present</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="current_c_demand_pk">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currentcdempk</getOid>
+        </mapValue>
+      </rowTest>
+      <type>amperage</type>
+      <sensorId>CURRENT_DEMAND_PK_3</sensorId>
+      <value>
+        <mult>
+            <op><getOid>currentcdempk</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasecurrentscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Current, C, Demand Peak</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="current_n_demand">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currentndem</getOid>
+        </mapValue>
+      </rowTest>
+      <type>amperage</type>
+      <sensorId>CURRENT_DEMAND_4</sensorId>
+      <value>
+        <mult>
+            <op><getOid>currentndem</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>neutralcurrentscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Current, N, Demand Present</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="current_n_demand_pk">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currentndempk</getOid>
+        </mapValue>
+      </rowTest>
+      <type>amperage</type>
+      <sensorId>CURRENT_DEMAND_PK_4</sensorId>
+      <value>
+        <mult>
+            <op><getOid>currentndempk</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>neutralcurrentscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Current, N, Demand Peak</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="real_power_tot_demand">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">realpowertotdem</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKW</type>
+      <sensorId>TOTAL_POWER_KW_2</sensorId>
+      <value>
+        <mult>
+            <op><getOid>realpowertotdem</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Real Power, Total Demand Present</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="real_power_tot_dem_peak">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">realpowertotdempk</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKW</type>
+      <sensorId>TOTAL_PEAK_POWER_KW_1</sensorId>
+      <value>
+        <mult>
+            <op><getOid>realpowertotdempk</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Real Power, Total Demand Peak</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="reactive_power_tot_demand">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">reacpowertotdem</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKVAR</type>
+      <sensorId>TOTAL_POWER_KVAR_2</sensorId>
+      <value>
+        <mult>
+            <op><getOid>reacpowertotdem</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Reactive Power, Total Demand Present</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="reactive_power_tot_dem_peak">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">reacpowertotdempk</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKVAR</type>
+      <sensorId>TOTAL_PEAK_POWER_KVAR_1</sensorId>
+      <value>
+        <mult>
+            <op><getOid>reacpowertotdempk</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Reactive Power, Total Demand Peak</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="apparent_power_tot_demand">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">apppowertotdem</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKVA</type>
+      <sensorId>TOTAL_POWER_KVA_2</sensorId>
+      <value>
+        <mult>
+            <op><getOid>apppowertotdem</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Apparent Power, Total Demand Present</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="apparent_power_tot_dem_peak">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">apppowertotdempk</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKVA</type>
+      <sensorId>TOTAL_PEAK_POWER_KVA_1</sensorId>
+      <value>
+        <mult>
+            <op><getOid>apppowertotdempk</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Apparent Power, Total Demand Peak</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+  </device>
+
+  <device deviceid="powerlogic_8xx_statuses">
+    <oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+    <stateSensor ruleid="input_status_2">
+      <type>state</type>
+      <sensorId>POINT2_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 1 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>std_discrete_input</getOid></op>
+                  <op>1</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Standard Input Status</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="input_status_3">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positiona_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT3_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 0 -->
+            <bitwise_and>
+              <op><getOid>positiona_discrete_input</getOid></op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position A Input Status - Point 1</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="input_status_4">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positiona_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT4_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 1 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positiona_discrete_input</getOid></op>
+                  <op>1</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position A Input Status - Point 2</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="input_status_5">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positiona_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT5_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 2 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positiona_discrete_input</getOid></op>
+                  <op>2</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position A Input Status - Point 3</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="input_status_6">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positiona_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT6_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 3 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positiona_discrete_input</getOid></op>
+                  <op>3</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position A Input Status - Point 4</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="input_status_7">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positiona_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT7_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 4 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positiona_discrete_input</getOid></op>
+                  <op>4</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position A Input Status - Point 5</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="input_status_8">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positiona_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT8_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 5 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positiona_discrete_input</getOid></op>
+                  <op>5</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position A Input Status - Point 6</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="input_status_9">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positiona_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT9_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 6 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positiona_discrete_input</getOid></op>
+                  <op>6</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position A Input Status - Point 7</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="input_status_10">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positiona_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT10_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 7 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positiona_discrete_input</getOid></op>
+                  <op>7</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position A Input Status - Point 8</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="input_status_11">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positionb_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT11_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 0 -->
+            <bitwise_and>
+              <op><getOid>positionb_discrete_input</getOid></op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position B Input Status - Point 1</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="input_status_12">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positionb_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT12_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 1 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positionb_discrete_input</getOid></op>
+                  <op>1</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position B Input Status - Point 2</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="input_status_13">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positionb_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT13_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 2 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positionb_discrete_input</getOid></op>
+                  <op>2</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position B Input Status - Point 3</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="input_status_14">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positionb_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT14_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 3 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positionb_discrete_input</getOid></op>
+                  <op>3</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position B Input Status - Point 4</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="input_status_15">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positionb_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT15_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 4 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positionb_discrete_input</getOid></op>
+                  <op>4</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position B Input Status - Point 5</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="input_status_16">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positionb_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT16_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 5 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positionb_discrete_input</getOid></op>
+                  <op>5</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position B Input Status - Point 6</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="input_status_17">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positionb_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT17_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 6 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positionb_discrete_input</getOid></op>
+                  <op>6</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position B Input Status - Point 7</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="input_status_18">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positionb_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT18_IO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 7 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positionb_discrete_input</getOid></op>
+                  <op>7</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position B Input Status - Point 8</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Input Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_2">
+      <type>state</type>
+      <sensorId>POINT1_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 0 -->
+            <bitwise_and>
+              <op><getOid>std_discrete_output</getOid></op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Standard Output Status</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_3">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positiona_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT3_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 0 -->
+            <bitwise_and>
+              <op><getOid>positiona_discrete_output</getOid></op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position A Output Status - Point 1</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_4">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positiona_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT4_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 1 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positiona_discrete_output</getOid></op>
+                  <op>1</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position A Output Status - Point 2</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_5">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positiona_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT5_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 2 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positiona_discrete_output</getOid></op>
+                  <op>2</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position A Output Status - Point 3</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_6">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positiona_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT6_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 3 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positiona_discrete_output</getOid></op>
+                  <op>3</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position A Output Status - Point 4</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_7">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positiona_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT7_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 4 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positiona_discrete_output</getOid></op>
+                  <op>4</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position A Output Status - Point 5</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_8">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positiona_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT8_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 5 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positiona_discrete_output</getOid></op>
+                  <op>5</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position A Output Status - Point 6</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_9">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positiona_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT9_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 6 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positiona_discrete_output</getOid></op>
+                  <op>6</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position A Output Status - Point 7</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_10">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positiona_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT10_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 7 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positiona_discrete_output</getOid></op>
+                  <op>7</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position A Output Status - Point 8</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_11">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positionb_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT11_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 0 -->
+            <bitwise_and>
+              <op><getOid>positionb_discrete_output</getOid></op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position B Output Status - Point 1</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_12">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positionb_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT12_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 1 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positionb_discrete_output</getOid></op>
+                  <op>1</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position B Output Status - Point 2</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_13">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positionb_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT13_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 2 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positionb_discrete_output</getOid></op>
+                  <op>2</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position B Output Status - Point 3</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_14">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positionb_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT14_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 3 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positionb_discrete_output</getOid></op>
+                  <op>3</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position B Output Status - Point 4</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+ <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_15">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positionb_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT15_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 4 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positionb_discrete_output</getOid></op>
+                  <op>4</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position B Output Status - Point 5</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_16">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positionb_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT16_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 5 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positionb_discrete_output</getOid></op>
+                  <op>5</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position B Output Status - Point 6</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_17">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positionb_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT17_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 6 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positionb_discrete_output</getOid></op>
+                  <op>6</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position B Output Status - Point 7</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="output_status_18">
+      <rowTest>
+        <!-- if module type != not installed -->
+        <neq><op><getOid default="0">positionb_io_module</getOid></op><op>0</op></neq>
+      </rowTest>
+      <type>state</type>
+      <sensorId>POINT18_OUTPUT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="powerlogic_8xx_header/iostatus-vm">
+          <formatNumber>
+            <!-- Determined by bit 7 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>positionb_discrete_output</getOid></op>
+                  <op>7</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Position B Output Status - Point 8</label>
+      <enum>powerlogic_8xx_header/iostatus-em</enum>
+      <sensorSet>Discrete Output Status Sensors</sensorSet>
+    </stateSensor>
+
+    
+  </device>
+
+  <device deviceid="powerlogic_8xx_integers">
+    <oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+	<oidMustNotMatch ruleid="dont-use-floats" oid="use_floats">
+		<valueList>
+			<value>1</value>
+		</valueList>
+	</oidMustNotMatch>
+
+    <numSensor ruleid="current_a">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currenta</getOid>
+        </mapValue>
+      </rowTest>
+      <type>amperage</type>
+      <sensorId>CURRENT_1</sensorId>
+      <value>
+        <mult>
+            <op><getOid>currenta</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasecurrentscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Current, A</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="current_b">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currentb</getOid>
+        </mapValue>
+      </rowTest>
+      <type>amperage</type>
+      <sensorId>CURRENT_2</sensorId>
+      <value>
+        <mult>
+            <op><getOid>currentb</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasecurrentscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Current, B</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="current_c">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currentc</getOid>
+        </mapValue>
+      </rowTest>
+      <type>amperage</type>
+      <sensorId>CURRENT_3</sensorId>
+      <value>
+        <mult>
+            <op><getOid>currentc</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasecurrentscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Current, C</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="current_n">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currentn</getOid>
+        </mapValue>
+      </rowTest>
+      <type>amperage</type>
+      <sensorId>CURRENT_4</sensorId>
+      <value>
+        <mult>
+            <op><getOid>currentn</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>neutralcurrentscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Current, N</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="current_avg">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currentavg</getOid>
+        </mapValue>
+      </rowTest>
+      <type>amperage</type>
+      <sensorId>CURRENT_5</sensorId>
+      <value>
+        <mult>
+            <op><getOid>currentavg</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasecurrentscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Current, Avg</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="voltage_ab">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">voltageab</getOid>
+        </mapValue>
+      </rowTest>
+      <type>voltage</type>
+      <sensorId>VOLTAGE_LL_1</sensorId>
+      <value>
+        <mult>
+            <op><getOid>voltageab</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasevoltagescale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Voltage, A-B</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="voltage_bc">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">voltagebc</getOid>
+        </mapValue>
+      </rowTest>
+      <type>voltage</type>
+      <sensorId>VOLTAGE_LL_2</sensorId>
+      <value>
+        <mult>
+            <op><getOid>voltagebc</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasevoltagescale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Voltage, B-C</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="voltage_ca">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">voltageca</getOid>
+        </mapValue>
+      </rowTest>
+      <type>voltage</type>
+      <sensorId>VOLTAGE_LL_3</sensorId>
+      <value>
+        <mult>
+            <op><getOid>voltageca</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasevoltagescale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Voltage, C-A</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="voltage_ll_avg">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">voltagellavg</getOid>
+        </mapValue>
+      </rowTest>
+      <type>voltage</type>
+      <sensorId>VOLTAGE_LL_4</sensorId>
+      <value>
+        <mult>
+            <op><getOid>voltagellavg</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasevoltagescale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Voltage, L-L Avg</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="voltage_an">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">voltagean</getOid>
+        </mapValue>
+      </rowTest>
+      <type>voltage</type>
+      <sensorId>VOLTAGE_LN_1</sensorId>
+      <value>
+        <mult>
+            <op><getOid>voltagean</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasevoltagescale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Voltage, A-N</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="voltage_bn">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">voltagebn</getOid>
+        </mapValue>
+      </rowTest>
+      <type>voltage</type>
+      <sensorId>VOLTAGE_LN_2</sensorId>
+      <value>
+        <mult>
+            <op><getOid>voltagebn</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasevoltagescale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Voltage, B-N</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="voltage_cn">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">voltagecn</getOid>
+        </mapValue>
+      </rowTest>
+      <type>voltage</type>
+      <sensorId>VOLTAGE_LN_3</sensorId>
+      <value>
+        <mult>
+            <op><getOid>voltagecn</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasevoltagescale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Voltage, C-N</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="voltage_nr">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">voltagenr</getOid>
+        </mapValue>
+      </rowTest>
+      <type>voltage</type>
+      <sensorId>VOLTAGE_NR</sensorId>
+      <value>
+        <mult>
+            <op><getOid>voltagenr</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>neutralvoltagescale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Voltage, N-R</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="voltage_ln_avg">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">voltagelnavg</getOid>
+        </mapValue>
+      </rowTest>
+      <type>voltage</type>
+      <sensorId>VOLTAGE_LN_4</sensorId>
+      <value>
+        <mult>
+            <op><getOid>voltagelnavg</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>phasevoltagescale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Voltage, L-N Avg</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="real_power_a">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">realpowera</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKW</type>
+      <sensorId>POWER_KW_1</sensorId>
+      <value>
+        <mult>
+            <op><getOid>realpowera</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Real Power, A</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="real_power_b">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">realpowerb</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKW</type>
+      <sensorId>POWER_KW_2</sensorId>
+      <value>
+        <mult>
+            <op><getOid>realpowerb</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Real Power, B</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="real_power_c">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">realpowerc</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKW</type>
+      <sensorId>POWER_KW_3</sensorId>
+      <value>
+        <mult>
+            <op><getOid>realpowerc</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Real Power, C</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="real_power_tot">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">realpowertot</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKW</type>
+      <sensorId>TOTAL_POWER_KW_1</sensorId>
+      <value>
+        <mult>
+            <op><getOid>realpowertot</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Real Power Total</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="reactive_power_a">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">reactivepowera</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKVAR</type>
+      <sensorId>POWER_KVAR_1</sensorId>
+      <value>
+        <mult>
+            <op><getOid>reactivepowera</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Reactive Power, A</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="reactive_power_b">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">reactivepowerb</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKVAR</type>
+      <sensorId>POWER_KVAR_2</sensorId>
+      <value>
+        <mult>
+            <op><getOid>reactivepowerb</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Reactive Power, B</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="reactive_power_c">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">reactivepowerc</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKVAR</type>
+      <sensorId>POWER_KVAR_3</sensorId>
+      <value>
+        <mult>
+            <op><getOid>reactivepowerc</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Reactive Power, C</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="reactive_power_tot">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">reactivepowertot</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKVAR</type>
+      <sensorId>TOTAL_POWER_KVAR_1</sensorId>
+      <value>
+        <mult>
+            <op><getOid>reactivepowertot</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Reactive Power Total</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="apparent_power_a">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">apparentpowera</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKVA</type>
+      <sensorId>POWER_KVA_1</sensorId>
+      <value>
+        <mult>
+            <op><getOid>apparentpowera</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Apparent Power, A</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="apparent_power_b">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">apparentpowerb</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKVA</type>
+      <sensorId>POWER_KVA_2</sensorId>
+      <value>
+        <mult>
+            <op><getOid>apparentpowerb</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Apparent Power, B</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="apparent_power_c">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">apparentpowerc</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKVA</type>
+      <sensorId>POWER_KVA_3</sensorId>
+      <value>
+        <mult>
+            <op><getOid>apparentpowerc</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Apparent Power, C</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="apparent_power_tot">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">apparentpowertot</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerKVA</type>
+      <sensorId>TOTAL_POWER_KVA_1</sensorId>
+      <value>
+        <mult>
+            <op><getOid>apparentpowertot</getOid></op>
+            <op><mapValue mapid="powerlogic_8xx_header/tenToTheX-vm"><getOid>powerscale</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Apparent Power Total</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="power_factor_a">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">powerfactora</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerfactor</type>
+      <sensorId>POWER_FACTOR_1</sensorId>
+      <value>
+         <!-- convert 1000ths to powerfactor -->
+         <mult>
+           <op>
+             <if>  <!-- special scaling for "lagging" value -->
+               <op><lt><op><getOid>powerfactora</getOid></op><op>0</op></lt></op>
+               <op><mult><op><add><op><getOid>powerfactora</getOid></op><op>32768</op></add></op><op>-1.0</op></mult></op>
+               <op><getOid>powerfactora</getOid></op>
+             </if>
+           </op>
+           <op>.001</op>
+         </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Power Factor, A</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="power_factor_b">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">powerfactorb</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerfactor</type>
+      <sensorId>POWER_FACTOR_2</sensorId>
+      <value>
+         <!-- convert 1000ths to powerfactor -->
+         <mult>
+           <op>
+             <if>  <!-- special scaling for "lagging" value -->
+               <op><lt><op><getOid>powerfactorb</getOid></op><op>0</op></lt></op>
+               <op><mult><op><add><op><getOid>powerfactorb</getOid></op><op>32768</op></add></op><op>-1.0</op></mult></op>
+               <op><getOid>powerfactorb</getOid></op>
+             </if>
+           </op>
+           <op>.001</op>
+         </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Power Factor, B</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="power_factor_c">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">powerfactorc</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerfactor</type>
+      <sensorId>POWER_FACTOR_3</sensorId>
+      <value>
+         <!-- convert 1000ths to powerfactor -->
+         <mult>
+           <op>
+             <if>  <!-- special scaling for "lagging" value -->
+               <op><lt><op><getOid>powerfactorc</getOid></op><op>0</op></lt></op>
+               <op><mult><op><add><op><getOid>powerfactorc</getOid></op><op>32768</op></add></op><op>-1.0</op></mult></op>
+               <op><getOid>powerfactorc</getOid></op>
+             </if>
+           </op>
+           <op>.001</op>
+         </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Power Factor, C</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="power_factor_tot">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">powerfactortot</getOid>
+        </mapValue>
+      </rowTest>
+      <type>num/powerfactor</type>
+      <sensorId>TOTAL_POWER_FACTOR_1</sensorId>
+      <value>
+         <!-- convert 1000ths to powerfactor -->
+         <mult>
+           <op>
+             <if>  <!-- special scaling for "lagging" value -->
+               <op><lt><op><getOid>powerfactortot</getOid></op><op>0</op></lt></op>
+               <op><mult><op><add><op><getOid>powerfactortot</getOid></op><op>32768</op></add></op><op>-1.0</op></mult></op>
+               <op><getOid>powerfactortot</getOid></op>
+             </if>
+           </op>
+           <op>.001</op>
+         </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label>Power Factor Total</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="frequency">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">frequency</getOid>
+        </mapValue>
+      </rowTest>
+      <type>frequency</type>
+      <sensorId>FREQUENCY_1</sensorId>
+      <value>
+        <!-- Scale based on Nominal System Frequency -->
+        <mult>
+          <op><getOid>frequency</getOid></op>
+          <op><mapValue mapid="powerlogic_8xx_header/nominal_sys_freq-vm"><getOid>nomsysfreq</getOid></mapValue></op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Frequency</label>
+      <sensorSet>Other Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="current_a_thd">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currentathd</getOid>
+        </mapValue>
+      </rowTest>
+      <type>pctofcapacity</type>
+      <sensorId>CURRENT_THD_1</sensorId>
+      <value>
+        <!-- Convert 10ths percent to percent -->
+        <mult>
+          <op><getOid>currentathd</getOid></op>
+          <op>0.1</op>
+        </mult>
+      </value>
+      <label>Current, A, THD</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="current_b_thd">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currentbthd</getOid>
+        </mapValue>
+      </rowTest>
+      <type>pctofcapacity</type>
+      <sensorId>CURRENT_THD_2</sensorId>
+      <value>
+        <!-- Convert 10ths percent to percent -->
+        <mult>
+          <op><getOid>currentbthd</getOid></op>
+          <op>0.1</op>
+        </mult>
+      </value>
+      <label>Current, B, THD</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="current_c_thd">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currentcthd</getOid>
+        </mapValue>
+      </rowTest>
+      <type>pctofcapacity</type>
+      <sensorId>CURRENT_THD_3</sensorId>
+      <value>
+        <!-- Convert 10ths percent to percent -->
+        <mult>
+          <op><getOid>currentcthd</getOid></op>
+          <op>0.1</op>
+        </mult>
+      </value>
+      <label>Current, C, THD</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="current_n_thd">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">currentnthd</getOid>
+        </mapValue>
+      </rowTest>
+      <type>pctofcapacity</type>
+      <sensorId>CURRENT_THD_4</sensorId>
+      <value>
+        <!-- Convert 10ths percent to percent -->
+        <mult>
+          <op><getOid>currentnthd</getOid></op>
+          <op>0.1</op>
+        </mult>
+      </value>
+      <label>Current, N, THD</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="voltage_an_thd">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">voltageanthd</getOid>
+        </mapValue>
+      </rowTest>
+      <type>pctofcapacity</type>
+      <sensorId>VOLTAGE_LN_THD_1</sensorId>
+      <value>
+        <!-- Convert 10ths percent to percent -->
+        <mult>
+          <op><getOid>voltageanthd</getOid></op>
+          <op>0.1</op>
+        </mult>
+      </value>
+      <label>Voltage, A-N, THD</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="voltage_bn_thd">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">voltagebnthd</getOid>
+        </mapValue>
+      </rowTest>
+      <type>pctofcapacity</type>
+      <sensorId>VOLTAGE_LN_THD_2</sensorId>
+      <value>
+        <!-- Convert 10ths percent to percent -->
+        <mult>
+          <op><getOid>voltagebnthd</getOid></op>
+          <op>0.1</op>
+        </mult>
+      </value>
+      <label>Voltage, B-N, THD</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="voltage_cn_thd">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">voltagecnthd</getOid>
+        </mapValue>
+      </rowTest>
+      <type>pctofcapacity</type>
+      <sensorId>VOLTAGE_LN_THD_3</sensorId>
+      <value>
+        <!-- Convert 10ths percent to percent -->
+        <mult>
+          <op><getOid>voltagecnthd</getOid></op>
+          <op>0.1</op>
+        </mult>
+      </value>
+      <label>Voltage, C-N, THD</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="voltage_ab_thd">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">voltageabthd</getOid>
+        </mapValue>
+      </rowTest>
+      <type>pctofcapacity</type>
+      <sensorId>VOLTAGE_LL_THD_1</sensorId>
+      <value>
+        <!-- Convert 10ths percent to percent -->
+        <mult>
+          <op><getOid>voltageabthd</getOid></op>
+          <op>0.1</op>
+        </mult>
+      </value>
+      <label>Voltage, A-B, THD</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="voltage_bc_thd">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">voltagebcthd</getOid>
+        </mapValue>
+      </rowTest>
+      <type>pctofcapacity</type>
+      <sensorId>VOLTAGE_LL_THD_2</sensorId>
+      <value>
+        <!-- Convert 10ths percent to percent -->
+        <mult>
+          <op><getOid>voltagebcthd</getOid></op>
+          <op>0.1</op>
+        </mult>
+      </value>
+      <label>Voltage, B-C, THD</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="voltage_ca_thd">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">voltagecathd</getOid>
+        </mapValue>
+      </rowTest>
+      <type>pctofcapacity</type>
+      <sensorId>VOLTAGE_LL_THD_3</sensorId>
+      <value>
+        <!-- Convert 10ths percent to percent -->
+        <mult>
+          <op><getOid>voltagecathd</getOid></op>
+          <op>0.1</op>
+        </mult>
+      </value>
+      <label>Voltage, C-A, THD</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="real_energy_in">
+      <type>num/kwatthr</type>
+      <sensorId>REAL_ENERGY_IN</sensorId>
+      <value>
+		<add>
+			<op><add>
+				<op><add>
+					<op><mult>
+						<op><getOid>real_energy_in2</getOid></op>
+						<op>10000</op>
+						</mult></op>
+					<op><getOid>real_energy_in1</getOid></op>
+					</add></op>
+				<op><mult>
+					<op><getOid>real_energy_in3</getOid></op>
+					<op>100000000</op>
+					</mult></op>
+				</add></op>
+			<op><mult>
+				<op><getOid>real_energy_in4</getOid></op>
+				<op>1000000000000</op>
+				</mult></op>
+		</add>
+      </value>
+	  <valueInc>0.1</valueInc>
+      <label>Real Energy In</label>
+      <sensorSet>Energy Sensors</sensorSet>
+    </numSensor>
+	
+    <numSensor ruleid="reactive_energy_in">
+      <type>num/kdispreactenergy</type>
+      <sensorId>REACTIVE_ENERGY_IN</sensorId>
+      <value>
+		<add>
+			<op><add>
+				<op><add>
+					<op><mult>
+						<op><getOid>reactive_energy_in2</getOid></op>
+						<op>10000</op>
+						</mult></op>
+					<op><getOid>reactive_energy_in1</getOid></op>
+					</add></op>
+				<op><mult>
+					<op><getOid>reactive_energy_in3</getOid></op>
+					<op>100000000</op>
+					</mult></op>
+				</add></op>
+			<op><mult>
+				<op><getOid>reactive_energy_in4</getOid></op>
+				<op>1000000000000</op>
+				</mult></op>
+		</add>
+      </value>
+	  <valueInc>0.1</valueInc>
+      <label>Reactive Energy In</label>
+      <sensorSet>Energy Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="real_energy_out">
+      <type>num/kdisprealenergy</type>
+      <sensorId>REAL_ENERGY_OUT</sensorId>
+      <value>
+		<add>
+			<op><add>
+				<op><add>
+					<op><mult>
+						<op><getOid>real_energy_out2</getOid></op>
+						<op>10000</op>
+						</mult></op>
+					<op><getOid>real_energy_out1</getOid></op>
+					</add></op>
+				<op><mult>
+					<op><getOid>real_energy_out3</getOid></op>
+					<op>100000000</op>
+					</mult></op>
+				</add></op>
+			<op><mult>
+				<op><getOid>real_energy_out4</getOid></op>
+				<op>1000000000000</op>
+				</mult></op>
+		</add>
+      </value>
+	  <valueInc>0.1</valueInc>
+      <label>Real Energy Out</label>
+      <sensorSet>Energy Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="reactive_energy_out">
+      <type>num/kdispreactenergy</type>
+      <sensorId>REACTIVE_ENERGY_OUT</sensorId>
+      <value>
+		<add>
+			<op><add>
+				<op><add>
+					<op><mult>
+						<op><getOid>reactive_energy_out2</getOid></op>
+						<op>10000</op>
+						</mult></op>
+					<op><getOid>reactive_energy_out1</getOid></op>
+					</add></op>
+				<op><mult>
+					<op><getOid>reactive_energy_out3</getOid></op>
+					<op>100000000</op>
+					</mult></op>
+				</add></op>
+			<op><mult>
+				<op><getOid>reactive_energy_out4</getOid></op>
+				<op>1000000000000</op>
+				</mult></op>
+		</add>
+      </value>
+	  <valueInc>0.1</valueInc>
+      <label>Reactive Energy Out</label>
+      <sensorSet>Energy Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="real_energy_total">
+      <type>num/kdisprealenergy</type>
+      <sensorId>REAL_ENERGY_TOTAL</sensorId>
+      <value>
+		<add>
+			<op><add>
+				<op><add>
+					<op><mult>
+						<op><getOid>real_energy_total2</getOid></op>
+						<op>10000</op>
+						</mult></op>
+					<op><getOid>real_energy_total1</getOid></op>
+					</add></op>
+				<op><mult>
+					<op><getOid>real_energy_total3</getOid></op>
+					<op>100000000</op>
+					</mult></op>
+				</add></op>
+			<op><mult>
+				<op><getOid>real_energy_total4</getOid></op>
+				<op>1000000000000</op>
+				</mult></op>
+		</add>
+      </value>
+	  <valueInc>0.1</valueInc>
+      <label>Real Energy Total</label>
+      <sensorSet>Energy Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="reactive_energy_total">
+      <type>num/kdispreactenergy</type>
+      <sensorId>REACTIVE_ENERGY_TOTAL</sensorId>
+      <value>
+		<add>
+			<op><add>
+				<op><add>
+					<op><mult>
+						<op><getOid>reactive_energy_total2</getOid></op>
+						<op>10000</op>
+						</mult></op>
+					<op><getOid>reactive_energy_total1</getOid></op>
+					</add></op>
+				<op><mult>
+					<op><getOid>reactive_energy_total3</getOid></op>
+					<op>100000000</op>
+					</mult></op>
+				</add></op>
+			<op><mult>
+				<op><getOid>reactive_energy_total4</getOid></op>
+				<op>1000000000000</op>
+				</mult></op>
+		</add>
+      </value>
+	  <valueInc>0.1</valueInc>
+      <label>Reactive Energy Total</label>
+      <sensorSet>Energy Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="apparent_energy_total">
+      <type>num/kdispappenergy</type>
+      <sensorId>APPARENT_ENERGY_TOTAL</sensorId>
+      <value>
+		<add>
+			<op><add>
+				<op><add>
+					<op><mult>
+						<op><getOid>apparent_energy_total2</getOid></op>
+						<op>10000</op>
+						</mult></op>
+					<op><getOid>apparent_energy_total1</getOid></op>
+					</add></op>
+				<op><mult>
+					<op><getOid>apparent_energy_total3</getOid></op>
+					<op>100000000</op>
+					</mult></op>
+				</add></op>
+			<op><mult>
+				<op><getOid>apparent_energy_total4</getOid></op>
+				<op>1000000000000</op>
+				</mult></op>
+		</add>
+      </value>
+	  <valueInc>0.1</valueInc>
+      <label>Apparent Energy Total</label>
+      <sensorSet>Energy Sensors</sensorSet>
+    </numSensor>
+
+
+  </device>
+
+  <device deviceid="powerlogic_8xx_floats">
+    <oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+	<oidMustMatch ruleid="use-floats" oid="use_floats">
+		<valueList>
+			<value>1</value>
+		</valueList>
+	</oidMustMatch>
+
+    <numSensor ruleid="float_current_a">
+      <type>amperage</type>
+      <sensorId>CURRENT_1</sensorId>
+      <value>
+      		<getOid>float_currenta</getOid>
+      </value>
+      <label>Current, A</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_current_b">
+      <type>amperage</type>
+      <sensorId>CURRENT_2</sensorId>
+      <value>
+			<getOid>float_currentb</getOid>
+      </value>
+      <label>Current, B</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_current_c">
+      <type>amperage</type>
+      <sensorId>CURRENT_3</sensorId>
+      <value>
+			<getOid>float_currentc</getOid>
+      </value>
+      <label>Current, C</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_current_n">
+      <type>amperage</type>
+      <sensorId>CURRENT_4</sensorId>
+      <value>
+			<getOid>float_currentn</getOid>
+      </value>
+      <label>Current, N</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_current_avg">
+      <type>amperage</type>
+      <sensorId>CURRENT_5</sensorId>
+      <value>
+			<getOid>float_currentavg</getOid>
+      </value>
+      <label>Current, Avg</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_voltage_ab">
+      <type>voltage</type>
+      <sensorId>VOLTAGE_LL_1</sensorId>
+      <value>
+			<getOid>float_voltageab</getOid>
+      </value>
+      <label>Voltage, A-B</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_voltage_bc">
+      <type>voltage</type>
+      <sensorId>VOLTAGE_LL_2</sensorId>
+      <value>
+			<getOid>float_voltagebc</getOid>
+      </value>
+      <label>Voltage, B-C</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_voltage_ca">
+      <type>voltage</type>
+      <sensorId>VOLTAGE_LL_3</sensorId>
+      <value>
+			<getOid>float_voltageca</getOid>
+      </value>
+      <label>Voltage, C-A</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_voltage_ll_avg">
+      <type>voltage</type>
+      <sensorId>VOLTAGE_LL_4</sensorId>
+      <value>
+			<getOid>float_voltagellavg</getOid>
+      </value>
+      <label>Voltage, L-L Avg</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_voltage_an">
+      <type>voltage</type>
+      <sensorId>VOLTAGE_LN_1</sensorId>
+      <value>
+			<getOid>float_voltagean</getOid>
+      </value>
+      <label>Voltage, A-N</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_voltage_bn">
+      <type>voltage</type>
+      <sensorId>VOLTAGE_LN_2</sensorId>
+      <value>
+			<getOid>float_voltagebn</getOid>
+      </value>
+      <label>Voltage, B-N</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_voltage_cn">
+      <type>voltage</type>
+      <sensorId>VOLTAGE_LN_3</sensorId>
+      <value>
+			<getOid>float_voltagecn</getOid>
+      </value>
+      <label>Voltage, C-N</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_voltage_nr">
+      <type>voltage</type>
+      <sensorId>VOLTAGE_NR</sensorId>
+      <value>
+			<getOid>float_voltagenr</getOid>
+      </value>
+      <label>Voltage, N-G</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_voltage_ln_avg">
+      <type>voltage</type>
+      <sensorId>VOLTAGE_LN_4</sensorId>
+      <value>
+			<getOid>float_voltagelnavg</getOid>
+      </value>
+      <label>Voltage, L-N Avg</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_real_power_a">
+      <type>num/powerKW</type>
+      <sensorId>POWER_KW_1</sensorId>
+      <value>
+			<getOid>float_realpowera</getOid>
+      </value>
+      <label>Real Power, A</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_real_power_b">
+      <type>num/powerKW</type>
+      <sensorId>POWER_KW_2</sensorId>
+      <value>
+			<getOid>float_realpowerb</getOid>
+      </value>
+      <label>Real Power, B</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_real_power_c">
+      <type>num/powerKW</type>
+      <sensorId>POWER_KW_3</sensorId>
+      <value>
+			<getOid>float_realpowerc</getOid>
+      </value>
+      <label>Real Power, C</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_real_power_tot">
+      <type>num/powerKW</type>
+      <sensorId>TOTAL_POWER_KW_1</sensorId>
+      <value>
+			<getOid>float_realpowertot</getOid>
+      </value>
+      <label>Real Power Total</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_reactive_power_a">
+      <type>num/powerKVAR</type>
+      <sensorId>POWER_KVAR_1</sensorId>
+      <value>
+			<getOid>float_reactivepowera</getOid>
+      </value>
+      <label>Reactive Power, A</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_reactive_power_b">
+      <type>num/powerKVAR</type>
+      <sensorId>POWER_KVAR_2</sensorId>
+      <value>
+			<getOid>float_reactivepowerb</getOid>
+      </value>
+      <label>Reactive Power, B</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_reactive_power_c">
+      <type>num/powerKVAR</type>
+      <sensorId>POWER_KVAR_3</sensorId>
+      <value>
+			<getOid>float_reactivepowerc</getOid>
+      </value>
+      <label>Reactive Power, C</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_reactive_power_tot">
+      <type>num/powerKVAR</type>
+      <sensorId>TOTAL_POWER_KVAR_1</sensorId>
+      <value>
+			<getOid>float_reactivepowertot</getOid>
+      </value>
+      <label>Reactive Power Total</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_apparent_power_a">
+      <type>num/powerKVA</type>
+      <sensorId>POWER_KVA_1</sensorId>
+      <value>
+			<getOid>float_apparentpowera</getOid>
+      </value>
+      <label>Apparent Power, A</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_apparent_power_b">
+      <type>num/powerKVA</type>
+      <sensorId>POWER_KVA_2</sensorId>
+      <value>
+			<getOid>float_apparentpowerb</getOid>
+      </value>
+      <label>Apparent Power, B</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_apparent_power_c">
+      <type>num/powerKVA</type>
+      <sensorId>POWER_KVA_3</sensorId>
+      <value>
+			<getOid>float_apparentpowerc</getOid>
+      </value>
+      <label>Apparent Power, C</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_apparent_power_tot">
+      <type>num/powerKVA</type>
+      <sensorId>TOTAL_POWER_KVA_1</sensorId>
+      <value>
+			<getOid>float_apparentpowertot</getOid>
+      </value>
+      <label>Apparent Power Total</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_power_factor_a">
+      <type>num/powerfactor</type>
+      <sensorId>POWER_FACTOR_1</sensorId>
+      <value>
+			<getOid>float_powerfactora</getOid>
+      </value>
+      <label>Power Factor, A</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_power_factor_b">
+      <type>num/powerfactor</type>
+      <sensorId>POWER_FACTOR_2</sensorId>
+      <value>
+			<getOid>float_powerfactorb</getOid>
+      </value>
+      <label>Power Factor, B</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_power_factor_c">
+      <type>num/powerfactor</type>
+      <sensorId>POWER_FACTOR_3</sensorId>
+      <value>
+			<getOid>float_powerfactorc</getOid>
+      </value>
+      <label>Power Factor, C</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_power_factor_tot">
+      <type>num/powerfactor</type>
+      <sensorId>TOTAL_POWER_FACTOR_1</sensorId>
+      <value>
+			<getOid>float_powerfactortot</getOid>
+      </value>
+      <label>Power Factor Total</label>
+      <sensorSet>Power Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_frequency">
+      <rowTest>
+        <mapValue mapid="powerlogic_8xx_header/delete_null_sensor">
+          <getOid default="-32768">float_frequency</getOid>
+        </mapValue>
+      </rowTest>
+      <type>frequency</type>
+      <sensorId>FREQUENCY_1</sensorId>
+      <value>
+			<getOid>float_frequency</getOid>
+      </value>
+      <label>Frequency</label>
+      <sensorSet>Other Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_current_a_thd">
+      <type>pctofcapacity</type>
+      <sensorId>CURRENT_THD_1</sensorId>
+      <value>
+			<getOid>float_currentathd</getOid>
+      </value>
+      <label>Current, A, THD</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_current_b_thd">
+      <type>pctofcapacity</type>
+      <sensorId>CURRENT_THD_2</sensorId>
+      <value>
+			<getOid>float_currentbthd</getOid>
+      </value>
+      <label>Current, B, THD</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_current_c_thd">
+      <type>pctofcapacity</type>
+      <sensorId>CURRENT_THD_3</sensorId>
+      <value>
+			<getOid>float_currentcthd</getOid>
+      </value>
+      <label>Current, C, THD</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_current_n_thd">
+      <type>pctofcapacity</type>
+      <sensorId>CURRENT_THD_4</sensorId>
+      <value>
+			<getOid>float_currentnthd</getOid>
+      </value>
+      <label>Current, N, THD</label>
+      <sensorSet>Current Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_voltage_an_thd">
+      <type>pctofcapacity</type>
+      <sensorId>VOLTAGE_LN_THD_1</sensorId>
+      <value>
+			<getOid>float_voltageanthd</getOid>
+      </value>
+      <label>Voltage, A-N, THD</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_voltage_bn_thd">
+      <type>pctofcapacity</type>
+      <sensorId>VOLTAGE_LN_THD_2</sensorId>
+      <value>
+			<getOid>float_voltagebnthd</getOid>
+      </value>
+      <label>Voltage, B-N, THD</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_voltage_cn_thd">
+      <type>pctofcapacity</type>
+      <sensorId>VOLTAGE_LN_THD_3</sensorId>
+      <value>
+			<getOid>float_voltagecnthd</getOid>
+      </value>
+      <label>Voltage, C-N, THD</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_voltage_ab_thd">
+      <type>pctofcapacity</type>
+      <sensorId>VOLTAGE_LL_THD_1</sensorId>
+      <value>
+			<getOid>float_voltageabthd</getOid>
+      </value>
+      <label>Voltage, A-B, THD</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_voltage_bc_thd">
+      <type>pctofcapacity</type>
+      <sensorId>VOLTAGE_LL_THD_2</sensorId>
+      <value>
+			<getOid>float_voltagebcthd</getOid>
+      </value>
+      <label>Voltage, B-C, THD</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_voltage_ca_thd">
+      <type>pctofcapacity</type>
+      <sensorId>VOLTAGE_LL_THD_3</sensorId>
+      <value>
+			<getOid>float_voltagecathd</getOid>
+      </value>
+      <label>Voltage, C-A, THD</label>
+      <sensorSet>Voltage Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_real_energy_in">
+      <type>num/kdisprealenergy</type>
+      <sensorId>REAL_ENERGY_IN</sensorId>
+      <value>
+			<getOid>float_real_energy_in</getOid>
+      </value>
+      <label>Real Energy In</label>
+      <sensorSet>Energy Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_reactive_energy_in">
+      <type>num/kdispreactenergy</type>
+      <sensorId>REACTIVE_ENERGY_IN</sensorId>
+      <value>
+			<getOid>float_reactive_energy_in</getOid>
+      </value>
+      <label>Reactive Energy In</label>
+      <sensorSet>Energy Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_real_energy_out">
+      <type>num/kdisprealenergy</type>
+      <sensorId>REAL_ENERGY_OUT</sensorId>
+      <value>
+			<getOid>float_real_energy_out</getOid>
+      </value>
+      <label>Real Energy Out</label>
+      <sensorSet>Energy Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_reactive_energy_out">
+      <type>num/kdispreactenergy</type>
+      <sensorId>REACTIVE_ENERGY_OUT</sensorId>
+      <value>
+			<getOid>float_reactive_energy_out</getOid>
+      </value>
+      <label>Reactive Energy Out</label>
+      <sensorSet>Energy Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_real_energy_total">
+      <type>num/kdisprealenergy</type>
+      <sensorId>REAL_ENERGY_TOTAL</sensorId>
+      <value>
+			<getOid>float_real_energy_total</getOid>
+      </value>
+      <label>Real Energy Total</label>
+      <sensorSet>Energy Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_reactive_energy_total">
+      <type>num/kdispreactenergy</type>
+      <sensorId>REACTIVE_ENERGY_TOTAL</sensorId>
+      <value>
+			<getOid>float_reactive_energy_total</getOid>
+      </value>
+      <label>Reactive Energy Total</label>
+      <sensorSet>Energy Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="float_apparent_energy_total">
+      <type>num/kdispappenergy</type>
+      <sensorId>APPARENT_ENERGY_TOTAL</sensorId>
+      <value>
+			<getOid>float_apparent_energy_total</getOid>
+      </value>
+      <label>Apparent Energy Total</label>
+      <sensorSet>Energy Sensors</sensorSet>
+    </numSensor>
+  </device>
+
+
+  <protocol>
+    <modbus>
+      <value_ref_id valid="currenta">
+        <function>3</function>
+        <start_addr>1099</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="currentb">
+        <function>3</function>
+        <start_addr>1100</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="currentc">
+        <function>3</function>
+        <start_addr>1101</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="currentn">
+        <function>3</function>
+        <start_addr>1102</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="currentavg">
+        <function>3</function>
+        <start_addr>1104</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="voltageab">
+        <function>3</function>
+        <start_addr>1119</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="voltagebc">
+        <function>3</function>
+        <start_addr>1120</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="voltageca">
+        <function>3</function>
+        <start_addr>1121</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="voltagellavg">
+        <function>3</function>
+        <start_addr>1122</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="voltagean">
+        <function>3</function>
+        <start_addr>1123</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="voltagebn">
+        <function>3</function>
+        <start_addr>1124</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="voltagecn">
+        <function>3</function>
+        <start_addr>1125</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="voltagenr">
+        <function>3</function>
+        <start_addr>1126</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="voltagelnavg">
+        <function>3</function>
+        <start_addr>1127</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="realpowera">
+        <function>3</function>
+        <start_addr>1139</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="realpowerb">
+        <function>3</function>
+        <start_addr>1140</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="realpowerc">
+        <function>3</function>
+        <start_addr>1141</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="realpowertot">
+        <function>3</function>
+        <start_addr>1142</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="reactivepowera">
+        <function>3</function>
+        <start_addr>1143</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="reactivepowerb">
+        <function>3</function>
+        <start_addr>1144</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="reactivepowerc">
+        <function>3</function>
+        <start_addr>1145</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="reactivepowertot">
+        <function>3</function>
+        <start_addr>1146</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="apparentpowera">
+        <function>3</function>
+        <start_addr>1147</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="apparentpowerb">
+        <function>3</function>
+        <start_addr>1148</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="apparentpowerc">
+        <function>3</function>
+        <start_addr>1149</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="apparentpowertot">
+        <function>3</function>
+        <start_addr>1150</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="powerfactora">
+        <function>3</function>
+        <start_addr>1159</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="powerfactorb">
+        <function>3</function>
+        <start_addr>1160</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="powerfactorc">
+        <function>3</function>
+        <start_addr>1161</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="powerfactortot">
+        <function>3</function>
+        <start_addr>1162</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="frequency">
+        <function>3</function>
+        <start_addr>1179</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="currentathd">
+        <function>3</function>
+        <start_addr>1199</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="currentbthd">
+        <function>3</function>
+        <start_addr>1200</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="currentcthd">
+        <function>3</function>
+        <start_addr>1201</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="currentnthd">
+        <function>3</function>
+        <start_addr>1202</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="voltageanthd">
+        <function>3</function>
+        <start_addr>1206</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="voltagebnthd">
+        <function>3</function>
+        <start_addr>1207</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="voltagecnthd">
+        <function>3</function>
+        <start_addr>1208</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="voltageabthd">
+        <function>3</function>
+        <start_addr>1210</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="voltagebcthd">
+        <function>3</function>
+        <start_addr>1211</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="voltagecathd">
+        <function>3</function>
+        <start_addr>1212</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="currentadem">
+        <function>3</function>
+        <start_addr>1960</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="currentadempk">
+        <function>3</function>
+        <start_addr>1962</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="currentbdem">
+        <function>3</function>
+        <start_addr>1970</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="currentbdempk">
+        <function>3</function>
+        <start_addr>1972</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="currentcdem">
+        <function>3</function>
+        <start_addr>1980</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="currentcdempk">
+        <function>3</function>
+        <start_addr>1982</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="currentndem">
+        <function>3</function>
+        <start_addr>1990</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="currentndempk">
+        <function>3</function>
+        <start_addr>1992</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="realpowertotdem">
+        <function>3</function>
+        <start_addr>2150</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="realpowertotdempk">
+        <function>3</function>
+        <start_addr>2153</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="reacpowertotdem">
+        <function>3</function>
+        <start_addr>2165</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="reacpowertotdempk">
+        <function>3</function>
+        <start_addr>2168</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="apppowertotdem">
+        <function>3</function>
+        <start_addr>2180</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="apppowertotdempk">
+        <function>3</function>
+        <start_addr>2183</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="nameplate">
+        <function>3</function>
+        <start_addr>3001</start_addr>
+        <quantity>8</quantity>
+        <type>ascii</type>
+      </value_ref_id>
+
+      <value_ref_id valid="nomsysfreq">
+        <function>3</function>
+        <start_addr>3207</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="phasecurrentscale">
+        <function>3</function>
+        <start_addr>3208</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="neutralcurrentscale">
+        <function>3</function>
+        <start_addr>3209</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="phasevoltagescale">
+        <function>3</function>
+        <start_addr>3211</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="neutralvoltagescale">
+        <function>3</function>
+        <start_addr>3212</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="powerscale">
+        <function>3</function>
+        <start_addr>3213</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      
+      <value_ref_id valid="std_discrete_input">
+        <function>3</function>
+        <start_addr>3999</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="positiona_discrete_input">
+        <function>3</function>
+        <start_addr>4000</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="positionb_discrete_input">
+        <function>3</function>
+        <start_addr>4001</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="std_discrete_output">
+        <function>3</function>
+        <start_addr>4004</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="positiona_discrete_output">
+        <function>3</function>
+        <start_addr>4005</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="positionb_discrete_output">
+        <function>3</function>
+        <start_addr>4006</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="positiona_io_module">
+        <function>3</function>
+        <start_addr>4020</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="positionb_io_module">
+        <function>3</function>
+        <start_addr>4021</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+	  <value_ref_id valid="real_energy_in1">
+		<function>3</function>
+		<start_addr>1699</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="real_energy_in2">
+		<function>3</function>
+		<start_addr>1700</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="real_energy_in3">
+		<function>3</function>
+		<start_addr>1701</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="real_energy_in4">
+		<function>3</function>
+		<start_addr>1702</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+
+
+
+
+	  <value_ref_id valid="reactive_energy_in1">
+		<function>3</function>
+		<start_addr>1703</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="reactive_energy_in2">
+		<function>3</function>
+		<start_addr>1704</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="reactive_energy_in3">
+		<function>3</function>
+		<start_addr>1705</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="reactive_energy_in4">
+		<function>3</function>
+		<start_addr>1706</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+
+
+
+	  <value_ref_id valid="real_energy_out1">
+		<function>3</function>
+		<start_addr>1707</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="real_energy_out2">
+		<function>3</function>
+		<start_addr>1708</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="real_energy_out3">
+		<function>3</function>
+		<start_addr>1709</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="real_energy_out4">
+		<function>3</function>
+		<start_addr>1710</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+
+
+	  <value_ref_id valid="reactive_energy_out1">
+		<function>3</function>
+		<start_addr>1711</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="reactive_energy_out2">
+		<function>3</function>
+		<start_addr>1712</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="reactive_energy_out3">
+		<function>3</function>
+		<start_addr>1713</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="reactive_energy_out4">
+		<function>3</function>
+		<start_addr>1714</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+
+
+	  <value_ref_id valid="real_energy_total1">
+		<function>3</function>
+		<start_addr>1715</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="real_energy_total2">
+		<function>3</function>
+		<start_addr>1716</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="real_energy_total3">
+		<function>3</function>
+		<start_addr>1717</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="real_energy_total4">
+		<function>3</function>
+		<start_addr>1718</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+
+
+	  <value_ref_id valid="reactive_energy_total1">
+		<function>3</function>
+		<start_addr>1719</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="reactive_energy_total2">
+		<function>3</function>
+		<start_addr>1720</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="reactive_energy_total3">
+		<function>3</function>
+		<start_addr>1721</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="reactive_energy_total4">
+		<function>3</function>
+		<start_addr>1722</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+
+
+	  <value_ref_id valid="apparent_energy_total1">
+		<function>3</function>
+		<start_addr>1723</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="apparent_energy_total2">
+		<function>3</function>
+		<start_addr>1724</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="apparent_energy_total3">
+		<function>3</function>
+		<start_addr>1725</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+	  <value_ref_id valid="apparent_energy_total4">
+		<function>3</function>
+		<start_addr>1726</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+
+	  <value_ref_id valid="use_floats">
+		<function>3</function>
+		<start_addr>3247</start_addr>
+		<quantity>1</quantity>
+		<type>uint_16</type>
+	  </value_ref_id>
+
+      <value_ref_id valid="float_currenta">
+        <function>3</function>
+        <start_addr>11699</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_currentb">
+        <function>3</function>
+        <start_addr>11701</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_currentc">
+        <function>3</function>
+        <start_addr>11703</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_currentn">
+        <function>3</function>
+        <start_addr>11705</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_currentavg">
+        <function>3</function>
+        <start_addr>11709</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_voltageab">
+        <function>3</function>
+        <start_addr>11711</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_voltagebc">
+        <function>3</function>
+        <start_addr>11713</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_voltageca">
+        <function>3</function>
+        <start_addr>11715</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_voltagellavg">
+        <function>3</function>
+        <start_addr>11717</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_voltagean">
+        <function>3</function>
+        <start_addr>11719</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_voltagebn">
+        <function>3</function>
+        <start_addr>11721</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_voltagecn">
+        <function>3</function>
+        <start_addr>11723</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_voltagenr">
+        <function>3</function>
+        <start_addr>11725</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_voltagelnavg">
+        <function>3</function>
+        <start_addr>11727</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_realpowera">
+        <function>3</function>
+        <start_addr>11729</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_realpowerb">
+        <function>3</function>
+        <start_addr>11731</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_realpowerc">
+        <function>3</function>
+        <start_addr>11733</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_realpowertot">
+        <function>3</function>
+        <start_addr>11735</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_reactivepowera">
+        <function>3</function>
+        <start_addr>11737</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_reactivepowerb">
+        <function>3</function>
+        <start_addr>11739</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_reactivepowerc">
+        <function>3</function>
+        <start_addr>11741</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_reactivepowertot">
+        <function>3</function>
+        <start_addr>11743</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_apparentpowera">
+        <function>3</function>
+        <start_addr>11745</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_apparentpowerb">
+        <function>3</function>
+        <start_addr>11747</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_apparentpowerc">
+        <function>3</function>
+        <start_addr>11749</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_apparentpowertot">
+        <function>3</function>
+        <start_addr>11751</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_powerfactora">
+        <function>3</function>
+        <start_addr>11753</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_powerfactorb">
+        <function>3</function>
+        <start_addr>11755</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_powerfactorc">
+        <function>3</function>
+        <start_addr>11757</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_powerfactortot">
+        <function>3</function>
+        <start_addr>11759</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_frequency">
+        <function>3</function>
+        <start_addr>11761</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_currentathd">
+        <function>3</function>
+        <start_addr>11959</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_currentbthd">
+        <function>3</function>
+        <start_addr>11961</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_currentcthd">
+        <function>3</function>
+        <start_addr>11963</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_currentnthd">
+        <function>3</function>
+        <start_addr>11965</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_voltageanthd">
+        <function>3</function>
+        <start_addr>11967</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_voltagebnthd">
+        <function>3</function>
+        <start_addr>11969</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_voltagecnthd">
+        <function>3</function>
+        <start_addr>11971</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_voltageabthd">
+        <function>3</function>
+        <start_addr>11973</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_voltagebcthd">
+        <function>3</function>
+        <start_addr>11975</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+      <value_ref_id valid="float_voltagecathd">
+        <function>3</function>
+        <start_addr>11977</start_addr>
+        <quantity>2</quantity>
+        <type>float</type>
+      </value_ref_id>
+
+	  <value_ref_id valid="float_real_energy_in">
+		<function>3</function>
+		<start_addr>11799</start_addr>
+		<quantity>2</quantity>
+		<type>float</type>
+	  </value_ref_id>
+	  <value_ref_id valid="float_reactive_energy_in">
+		<function>3</function>
+		<start_addr>11801</start_addr>
+		<quantity>2</quantity>
+		<type>float</type>
+	  </value_ref_id>
+	  <value_ref_id valid="float_real_energy_out">
+		<function>3</function>
+		<start_addr>11803</start_addr>
+		<quantity>2</quantity>
+		<type>float</type>
+	  </value_ref_id>
+	  <value_ref_id valid="float_reactive_energy_out">
+		<function>3</function>
+		<start_addr>11805</start_addr>
+		<quantity>2</quantity>
+		<type>float</type>
+	  </value_ref_id>
+	  <value_ref_id valid="float_real_energy_total">
+		<function>3</function>
+		<start_addr>11807</start_addr>
+		<quantity>2</quantity>
+		<type>float</type>
+	  </value_ref_id>
+	  <value_ref_id valid="float_reactive_energy_total">
+		<function>3</function>
+		<start_addr>11809</start_addr>
+		<quantity>2</quantity>
+		<type>float</type>
+	  </value_ref_id>
+	  <value_ref_id valid="float_apparent_energy_total">
+		<function>3</function>
+		<start_addr>11811</start_addr>
+		<quantity>2</quantity>
+		<type>float</type>
+	  </value_ref_id>
+
+      <!-- Bulk read for performance -->
+      <packet>
+        <function>3</function>
+        <start_addr>1099</start_addr>
+        <quantity>4</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>1119</start_addr>
+        <quantity>9</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>1139</start_addr>
+        <quantity>12</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>1159</start_addr>
+        <quantity>4</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>1199</start_addr>
+        <quantity>4</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>1206</start_addr>
+        <quantity>3</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>1210</start_addr>
+        <quantity>3</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>3207</start_addr>
+        <quantity>3</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>3211</start_addr>
+        <quantity>3</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>3999</start_addr>
+        <quantity>3</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>4004</start_addr>
+        <quantity>3</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>4020</start_addr>
+        <quantity>2</quantity>
+      </packet>
+
+      <packet>
+        <function>3</function>
+        <start_addr>11699</start_addr>
+        <quantity>62</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>11959</start_addr>
+        <quantity>20</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>11799</start_addr>
+        <quantity>14</quantity>
+      </packet>
+
+
+     </modbus>
+  </protocol>
+</APC_DDF>

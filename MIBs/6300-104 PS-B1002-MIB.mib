@@ -1,0 +1,343 @@
+PS-B1002-MIB DEFINITIONS ::= BEGIN
+
+
+IMPORTS
+    MODULE-COMPLIANCE, NOTIFICATION-GROUP, OBJECT-GROUP
+        FROM SNMPv2-CONF
+    Integer32, MODULE-IDENTITY, NOTIFICATION-TYPE, OBJECT-TYPE, enterprises
+        FROM SNMPv2-SMI
+    ;    
+
+
+psPowerShield MODULE-IDENTITY
+    LAST-UPDATED "201706210000Z"
+    ORGANIZATION "PowerShield Limited"
+    CONTACT-INFO "12 Target Court, Glenfield, Auckland, New Zealand. 
+                  Phone:+64 9 913 7576"
+    DESCRIPTION "MIB module describing the B1002."
+    REVISION    "201706210000Z"
+    DESCRIPTION "Initial"
+--    ::= { psProductB1002 }
+    ::= {enterprises 35154 }
+
+psB1002MIB OBJECT IDENTIFIER ::= { psPowerShield 1002 }
+
+-- TODO: import psProductB1002
+--psPowerShield  OBJECT IDENTIFIER ::= { enterprises 35154 }
+--psProductB1002 OBJECT IDENTIFIER ::= { psPowerShield 1002 }
+
+
+-- Define typical mib nodes, like where the objects are going to lie.
+-- we'll prefix everything in this mib with nst (net snmp tutorial)
+psB1002Objects       OBJECT IDENTIFIER ::= { psB1002MIB 1 }
+psB1002Notifications OBJECT IDENTIFIER ::= { psB1002MIB 2 }
+psB1002Conformance   OBJECT IDENTIFIER ::= { psB1002MIB 3 }
+
+
+psMeasurements  OBJECT IDENTIFIER ::= { psB1002Objects 1 } -- .1.3.6.1.4.1.35154.1002.1.1
+psAlarms        OBJECT IDENTIFIER ::= { psB1002Objects 2 } -- .1.3.6.1.4.1.35154.1002.1.2
+psStatus        OBJECT IDENTIFIER ::= { psB1002Objects 3 } -- .1.3.6.1.4.1.35154.1002.1.3
+
+--
+-- Monoblock measurement data
+--
+
+psMonoblockTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PSSEQMonoblockEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+    "This is a table of measurements for each monoblock in the system."
+    ::= { psMeasurements 1 } -- .1.3.6.1.4.1.35154.1002.1.1.1
+
+psMonoblockEntry OBJECT-TYPE
+    SYNTAX  PSSEQMonoblockEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Measurement Data for a Monoblock"
+    INDEX {psMonoblockIndex}
+    ::= {psMonoblockTable 1}    -- .1.3.6.1.4.1.35154.1002.1.1.1.1
+
+PSSEQMonoblockEntry ::= SEQUENCE
+{
+    psMonoblockIndex Integer32,
+    psMonoblockStringNumber Integer32,
+    psMonoblockNumber Integer32,
+    psMonoblockDCVoltage Integer32,
+    psMonoblockACVoltage Integer32,
+    psMonoblockPostTemp Integer32,
+    psMonoblockImpedance Integer32
+}
+
+psMonoblockIndex OBJECT-TYPE
+    SYNTAX  Integer32 (1..1024)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Table Index Number for Monoblock"
+    ::= {psMonoblockEntry 1}
+
+psMonoblockStringNumber OBJECT-TYPE
+    SYNTAX  Integer32 (1..64)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "String Number for Monoblock"
+    ::= {psMonoblockEntry 2}
+
+psMonoblockNumber OBJECT-TYPE
+    SYNTAX  Integer32 (1..1024)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Monoblock Number"
+    ::= {psMonoblockEntry 3}
+
+psMonoblockDCVoltage OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS "Millivolts"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "DC Voltage for a Monoblock"
+    ::= {psMonoblockEntry 4}
+
+psMonoblockACVoltage OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS "Millivolts"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Ripple Voltage for a Monoblock"
+    ::= {psMonoblockEntry 5}
+
+psMonoblockPostTemp OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS "0.1 Celcius"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Post temperature for a Monoblock"
+    ::= {psMonoblockEntry 6}
+
+psMonoblockImpedance OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS "Microohms"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Impedance for a Monoblock"
+    ::= {psMonoblockEntry 7}
+
+--
+-- String measurement data
+--
+
+psStringTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PSSEQStringEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+    "This is a table of measurements for each string in the system."
+    ::= { psMeasurements 2 }
+
+psStringEntry OBJECT-TYPE
+    SYNTAX  PSSEQStringEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Measurement Data for a String"
+    INDEX {psStringNumber}
+    ::= {psStringTable 1}
+
+
+PSSEQStringEntry ::= SEQUENCE
+{
+    psStringNumber Integer32,
+    psStringDCVoltage Integer32,
+    psStringCurrent Integer32,
+    psStringRippleCurrent Integer32,
+    psStringTemperature1 Integer32,
+    psStringTemperature2 Integer32,
+    psStringHumidity Integer32
+}
+
+psStringNumber OBJECT-TYPE
+    SYNTAX  Integer32 (1..32)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "String Number"
+    ::= {psStringEntry 1}
+
+psStringDCVoltage OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS "0.1 Volts"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "String DC Voltage"
+    ::= {psStringEntry 2}
+
+psStringCurrent OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS "0.1 Amps"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "String Current"
+    ::= {psStringEntry 3}
+
+psStringRippleCurrent OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS "0.1 Amps"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "String Ripple Current"
+    ::= {psStringEntry 4}
+
+psStringTemperature1 OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS "0.1 Celcius"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "String Ambient Temperature 1"
+    ::= {psStringEntry 5}
+
+psStringTemperature2 OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS "0.1 Celcius"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "String Ambient Temperature 2"
+    ::= {psStringEntry 6}
+
+psStringHumidity OBJECT-TYPE
+    SYNTAX  Integer32
+    UNITS "Percent"
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "String Humidity"
+    ::= {psStringEntry 7}
+
+--
+-- Alarms
+--
+
+psAlarmTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PSSEQAlarmEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+    "This is a table of active alarms in the system."
+    ::= { psAlarms 1 }
+
+PSSEQAlarmEntry ::= SEQUENCE
+{
+    psAlarmEntryNumber Integer32,
+    psAlarmID Integer32,
+    psAlarmStringNumber Integer32,
+    psAlarmMonoblockNumber Integer32,
+    psAlarmTimestamp Integer32
+}
+
+psAlarmEntry OBJECT-TYPE
+    SYNTAX  PSSEQAlarmEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION "Active Alarm Data"
+    INDEX {psStringNumber}
+    ::= {psAlarmTable 1}
+
+psAlarmEntryNumber OBJECT-TYPE
+    SYNTAX  Integer32 (1..32768)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Alarm data index"
+    ::= {psAlarmEntry 1}
+
+psAlarmID OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Alarm ID"
+    ::= {psAlarmEntry 2}
+
+psAlarmStringNumber OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "String index"
+    ::= {psAlarmEntry 3}
+
+psAlarmMonoblockNumber OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Monoblock index (or 0)"
+    ::= {psAlarmEntry 4}
+
+psAlarmTimestamp OBJECT-TYPE
+    SYNTAX  Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "Alarm timestamp"
+    ::= {psAlarmEntry 5}
+
+
+
+--
+-- Conformance Stuff
+--
+
+psB1002MonoblockTableRow OBJECT-GROUP
+    OBJECTS
+    {
+        psMonoblockIndex,
+        psMonoblockStringNumber,
+        psMonoblockNumber,
+        psMonoblockDCVoltage,
+        psMonoblockACVoltage,
+        psMonoblockPostTemp,
+        psMonoblockImpedance
+    }
+    STATUS current
+    DESCRIPTION "The Objects that are accessible to MIB browsers"
+    ::= { psB1002Conformance 1 }
+
+psB1002StringTableRow OBJECT-GROUP
+    OBJECTS
+    {
+        psStringNumber,
+        psStringDCVoltage,
+        psStringCurrent,
+        psStringRippleCurrent,
+        psStringTemperature1,
+        psStringTemperature2,
+        psStringHumidity
+    }
+    STATUS current
+    DESCRIPTION "The Objects that are accessible to MIB browsers"
+    ::= { psB1002Conformance 2 }
+
+psB1002AlarmTableRow OBJECT-GROUP
+    OBJECTS
+    {
+        psAlarmEntryNumber,
+        psAlarmID,
+        --psAlarmMessage??
+        psAlarmStringNumber,
+        psAlarmMonoblockNumber,
+        psAlarmTimestamp
+    }
+    STATUS current
+    DESCRIPTION "The Objects that are accessible to MIB browsers"
+    ::= { psB1002Conformance 3 }
+
+psB1002Compliance MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION "The compliance statement for Controller Devices"
+    MODULE -- this module
+        MANDATORY-GROUPS
+        {
+            psB1002MonoblockTableRow,
+            psB1002StringTableRow,
+            psB1002AlarmTableRow
+        }
+    ::= { psB1002Conformance 6 }
+
+
+--
+-- End
+--
+
+END

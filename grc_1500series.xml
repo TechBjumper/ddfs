@@ -1,0 +1,1186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<APC_DDF
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+	ddfid="grc_1500series"
+	ddfname="GRC 1500 Series"
+	ddfversion="4"
+	canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+	<!--
+		SOURCE
+		\modbus\register_maps\grc\GRC_1500Series.txt
+		GRC 1500Series Register Map | 29 May 2020
+	-->
+	<device deviceid="grc_1500series">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<setProductData ruleid="vendordata" field="vendor">Green Revolution Cooling</setProductData>
+		<setProductData ruleid="modeldata" field="model">1500 Series</setProductData>
+		<setProductData ruleid="typedata" field="type">Cooling Device</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+		
+		<valueMap ruleid="zero2onebased-vm">
+			<valueIn>0</valueIn><valueOut>1</valueOut>
+			<valueIn>1</valueIn><valueOut>2</valueOut>
+			<valueIn>2</valueIn><valueOut>3</valueOut>
+			<valueIn>3</valueIn><valueOut>4</valueOut>
+			<valueIn>*</valueIn><valueOut>?</valueOut>
+		</valueMap>
+		
+		<valueMap ruleid="delete_null_sensor-vm">
+			<valueIn>32768</valueIn><valueOut>[false]</valueOut>
+			<valueIn>-32768</valueIn><valueOut>[false]</valueOut>
+			<valueIn>*</valueIn><valueOut>[true]</valueOut>
+		</valueMap>
+
+		<numSensor ruleid="tank_top_a_temperature" index="TANK_TOP_A_TEMPERATURE">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getRowOid>TANK_TOP_A_TEMPERATURE</getRowOid>
+				</mapValue>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>_TANK_TOP_A_TEMPERATURE_<mapValue mapid="zero2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>TANK_TOP_A_TEMPERATURE</getRowOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Tank <mapValue mapid="zero2onebased-vm"><rowNumber/></mapValue> Top A Temperature</label>
+			<sensorSet>Tank Information</sensorSet>
+		</numSensor>
+		<numSensor ruleid="tank_top_b_temperature" index="TANK_TOP_B_TEMPERATURE">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getRowOid>TANK_TOP_B_TEMPERATURE</getRowOid>
+				</mapValue>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>_TANK_TOP_B_TEMPERATURE_<mapValue mapid="zero2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>TANK_TOP_B_TEMPERATURE</getRowOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Tank <mapValue mapid="zero2onebased-vm"><rowNumber/></mapValue> Top B Temperature</label>
+			<sensorSet>Tank Information</sensorSet>
+		</numSensor>
+		
+		<stateSensor ruleid="tank_float_switch_status" index="TANK_FLOAT_SWITCH_STATUS">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getRowOid>TANK_FLOAT_SWITCH_STATUS</getRowOid>
+				</mapValue>
+			</rowTest>
+			<type>state</type>
+			<sensorId>_TANK_FLOAT_SWITCH_STATUS_<mapValue mapid="zero2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mapValue mapid="1state-vm">
+					<getRowOid>TANK_FLOAT_SWITCH_STATUS</getRowOid>
+				</mapValue>
+			</value>
+			<label>Tank <mapValue mapid="zero2onebased-vm"><rowNumber/></mapValue> Float Switch Status</label>
+			<enum>normalLow-em</enum>
+			<sensorSet>Tank Information</sensorSet>
+		</stateSensor>
+
+		<valueMap ruleid="1state-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>*</valueIn><valueOut>2</valueOut>
+		</valueMap>
+		
+		<enumMap ruleid="normalLow-em">
+			<label>NORMAL</label>
+			<label>LOW</label>
+			<label>Unknown</label>
+		</enumMap>
+		
+		<numSensor ruleid="tank_coolant_pressure" index="TANK_COOLANT_PRESSURE">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getRowOid>TANK_COOLANT_PRESSURE</getRowOid>
+				</mapValue>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>_TANK_COOLANT_PRESSURE_<mapValue mapid="zero2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<!-- convert psi to kPa -->
+				<mult>
+					<op>
+						<mult>
+							<op><getRowOid>TANK_COOLANT_PRESSURE</getRowOid></op>
+							<op>0.1</op>
+						</mult>
+					</op>
+					<op>6.895</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Tank <mapValue mapid="zero2onebased-vm"><rowNumber/></mapValue> Oil Pressure</label>
+			<sensorSet>Tank Information</sensorSet>
+		</numSensor>
+		
+		<stateSensor ruleid="tankBackupSystemActive" index="TANK_BACKUP_SYS_ACTIVE">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getRowOid>TANK_BACKUP_SYS_ACTIVE</getRowOid>
+				</mapValue>
+			</rowTest>
+			<type>state</type>
+			<sensorId>_TANK_BACKUP_SYS_ACTIVE_<mapValue mapid="zero2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mapValue mapid="1state-vm">
+					<getRowOid>TANK_BACKUP_SYS_ACTIVE</getRowOid>
+				</mapValue>
+			</value>
+			<label>Tank <mapValue mapid="zero2onebased-vm"><rowNumber/></mapValue> Backup System Active Status</label>
+			<enum>offOn-em</enum>
+			<sensorSet>Tank Information</sensorSet>
+		</stateSensor>
+		
+		<enumMap ruleid="offOn-em">
+			<label>OFF</label>
+			<label>ON</label>
+			<label>Unknown</label>
+		</enumMap>
+		
+		<stateSensor ruleid="tankCoolantLevel" index="TANK_COOLANT_LEVEL">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getRowOid>TANK_COOLANT_LEVEL</getRowOid>
+				</mapValue>
+			</rowTest>
+			<type>state</type>
+			<sensorId>_TANK_COOLANT_LEVEL_<mapValue mapid="zero2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mapValue mapid="1state-vm">
+					<getRowOid>TANK_COOLANT_LEVEL</getRowOid>
+				</mapValue>
+			</value>
+			<label>Tank <mapValue mapid="zero2onebased-vm"><rowNumber/></mapValue> Coolant Level</label>
+			<enum>normalLow-em</enum>
+			<sensorSet>Tank Information</sensorSet>
+		</stateSensor>
+		
+		<numSensor ruleid="coolant_pump_speed">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>COOLANT_PUMP_SPEED</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num</type>
+			<sensorId>_COOLANT_PUMP_SPEED</sensorId>
+			<value>
+				<mult>
+					<op><getOid>COOLANT_PUMP_SPEED</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Coolant Pump Speed</label>
+			<sensorSet>Coolant Pump</sensorSet>
+		</numSensor>
+		<numSensor ruleid="ct_fan_speed">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>CT_FAN_SPEED</getOid>
+				</mapValue>
+			</rowTest>
+			<type>fanspeed</type>
+			<sensorId>_CT_FAN_SPEED</sensorId>
+			<value>
+				<mult>
+					<op><getOid>CT_FAN_SPEED</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Cooling Tower Fan Speed</label>
+			<sensorSet>Cooling Tower</sensorSet>
+		</numSensor>
+		<numSensor ruleid="water_pump1_speed">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>WATER_PUMP1_SPEED</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num</type>
+			<sensorId>_WATER_PUMP1_SPEED</sensorId>
+			<value>
+				<mult>
+					<op><getOid>WATER_PUMP1_SPEED</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Water Pump 1 Speed</label>
+			<sensorSet>Water Pump</sensorSet>
+		</numSensor>
+		<numSensor ruleid="water_pump2_speed">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>WATER_PUMP2_SPEED</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num</type>
+			<sensorId>_WATER_PUMP2_SPEED</sensorId>
+			<value>
+				<mult>
+					<op><getOid>WATER_PUMP2_SPEED</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Water Pump 2 Speed</label>
+			<sensorSet>Water Pump</sensorSet>
+		</numSensor>
+		<numSensor ruleid="coolant_in_temp">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>COOLANT_IN_TEMP</getOid>
+				</mapValue>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>_COOLANT_IN_TEMP</sensorId>
+			<value>
+				<mult>
+					<op><getOid>COOLANT_IN_TEMP</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Coolant Inlet Temperature</label>
+			<sensorSet>Temperature</sensorSet>
+		</numSensor>
+		<numSensor ruleid="coolant_out_temp">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>COOLANT_OUT_TEMP</getOid>
+				</mapValue>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>_COOLANT_OUT_TEMP</sensorId>
+			<value>
+				<mult>
+					<op><getOid>COOLANT_OUT_TEMP</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Coolant Outlet Temperature</label>
+			<sensorSet>Temperature</sensorSet>
+		</numSensor>
+		<numSensor ruleid="water_in_temp">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>WATER_IN_TEMP</getOid>
+				</mapValue>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>_WATER_IN_TEMP</sensorId>
+			<value>
+				<mult>
+					<op><getOid>WATER_IN_TEMP</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Water Inlet Temperature</label>
+			<sensorSet>Temperature</sensorSet>
+		</numSensor>
+		<numSensor ruleid="water_out_temp">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>WATER_OUT_TEMP</getOid>
+				</mapValue>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>_WATER_OUT_TEMP</sensorId>
+			<value>
+				<mult>
+					<op><getOid>WATER_OUT_TEMP</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Water Outlet Temperature</label>
+			<sensorSet>Temperature</sensorSet>
+		</numSensor>
+		<numSensor ruleid="water_pressure">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>WATER_PRESSURE</getOid>
+				</mapValue>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>_WATER_PRESSURE</sensorId>
+			<value>
+				<!-- convert psi to kPa -->
+				<mult>
+					<op>
+						<mult>
+							<op><getOid>WATER_PRESSURE</getOid></op>
+							<op>0.1</op>
+						</mult>
+					</op>
+					<op>6.895</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Water Pressure</label>
+			<sensorSet>Pressure</sensorSet>
+		</numSensor>
+		<numSensor ruleid="coolant_pressure">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>COOLANT_PRESSURE</getOid>
+				</mapValue>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>_COOLANT_PRESSURE</sensorId>
+			<value>
+				<!-- convert psi to kPa -->
+				<mult>
+					<op>
+						<mult>
+							<op><getOid>COOLANT_PRESSURE</getOid></op>
+							<op>0.1</op>
+						</mult>
+					</op>
+					<op>6.895</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Coolant Pressure</label>
+			<sensorSet>Pressure</sensorSet>
+		</numSensor>
+		<numSensor ruleid="vacuum_pressure">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>VACUUM_PRESSURE</getOid>
+				</mapValue>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>_VACUUM_PRESSURE</sensorId>
+			<value>
+				<!-- convert psi to kPa -->
+				<mult>
+					<op>
+						<mult>
+							<op><getOid>VACUUM_PRESSURE</getOid></op>
+							<op>0.1</op>
+						</mult>
+					</op>
+					<op>6.895</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Vacuum Pressure</label>
+			<sensorSet>Pressure</sensorSet>
+		</numSensor>
+		<numSensor ruleid="filter_pressure">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>FILTER_PRESSURE</getOid>
+				</mapValue>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>_FILTER_PRESSURE</sensorId>
+			<value>
+				<!-- convert psi to kPa -->
+				<mult>
+					<op>
+						<mult>
+							<op><getOid>FILTER_PRESSURE</getOid></op>
+							<op>0.1</op>
+						</mult>
+					</op>
+					<op>6.895</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Filter Pressure</label>
+			<sensorSet>Pressure</sensorSet>
+		</numSensor>
+		
+		<stateSensor ruleid="pump_float_switch_status">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>PUMP_FLOAT_SWITCH_STATUS</getOid>
+				</mapValue>
+			</rowTest>
+			<type>state</type>
+			<sensorId>_PUMP_FLOAT_SWITCH_STATUS</sensorId>
+			<value>
+				<mapValue mapid="1state-vm">
+					<getOid>PUMP_FLOAT_SWITCH_STATUS</getOid>
+				</mapValue>
+			</value>
+			<label>Pump Float Switch Status</label>
+			<enum>normalLow-em</enum>
+			<sensorSet>General</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="ct_float_switch_status">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>CT_FLOAT_SWITCH_STATUS</getOid>
+				</mapValue>
+			</rowTest>
+			<type>state</type>
+			<sensorId>_CT_FLOAT_SWITCH_STATUS</sensorId>
+			<value>
+				<mapValue mapid="1state-vm">
+					<getOid>CT_FLOAT_SWITCH_STATUS</getOid>
+				</mapValue>
+			</value>
+			<label>Cooling Tower Float Switch Status</label>
+			<enum>normalLow-em</enum>
+			<sensorSet>General</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="backup_system_active_status">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>BACKUP_SYSTEM_ACTIVE_STATUS</getOid>
+				</mapValue>
+			</rowTest>
+			<type>state</type>
+			<sensorId>_BACKUP_SYSTEM_ACTIVE_STATUS</sensorId>
+			<value>
+				<mapValue mapid="1state-vm">
+					<getOid>BACKUP_SYSTEM_ACTIVE_STATUS</getOid>
+				</mapValue>
+			</value>
+			<label>Backup System Active Status</label>
+			<enum>offOn-em</enum>
+			<sensorSet>General</sensorSet>
+		</stateSensor>
+		
+		<numSensor ruleid="water_valve_position">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>WATER_VALVE_POSITION</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num</type>
+			<sensorId>_WATER_VALVE_POSITION</sensorId>
+			<value>
+				<mult>
+					<op><getOid>WATER_VALVE_POSITION</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Water Valve Position</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		<numSensor ruleid="primary_rms_current">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>PRIMARY_RMS_CURRENT</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>_PRIMARY_RMS_CURRENT</sensorId>
+			<value>
+				<mult>
+					<op><getOid>PRIMARY_RMS_CURRENT</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Primary RMS Current</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		<numSensor ruleid="primary_rms_voltage">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>PRIMARY_RMS_VOLTAGE</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>_PRIMARY_RMS_VOLTAGE</sensorId>
+			<value>
+				<mult>
+					<op><getOid>PRIMARY_RMS_VOLTAGE</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Primary RMS Voltage</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		<numSensor ruleid="secondary_rms_current">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>SECONDARY_RMS_CURRENT</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>_SECONDARY_RMS_CURRENT</sensorId>
+			<value>
+				<mult>
+					<op><getOid>SECONDARY_RMS_CURRENT</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Secondary RMS Current</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		<!-- 
+		<numSensor ruleid="secondary_rms_voltage">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>SECONDARY_RMS_VOLTAGE</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>_SECONDARY_RMS_VOLTAGE</sensorId>
+			<value>
+				<mult>
+					<op><getOid>SECONDARY_RMS_VOLTAGE</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Secondary RMS Voltage</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		-->
+		<numSensor ruleid="primary_power">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>PRIMARY_POWER</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerW</type>
+			<sensorId>_PRIMARY_POWER</sensorId>
+			<value>
+				<mult>
+					<op><getOid>PRIMARY_POWER</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Primary Power</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		<numSensor ruleid="voltage_divider">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>VOLTAGE_DIVIDER</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>_VOLTAGE_DIVIDER</sensorId>
+			<value>
+				<mult>
+					<op><getOid>VOLTAGE_DIVIDER</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Voltage Divider</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		<numSensor ruleid="last_updated">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>LAST_UPDATED</getOid>
+				</mapValue>
+			</rowTest>
+			<type>timeinsec</type>
+			<sensorId>_LAST_UPDATED</sensorId>
+			<value>
+				<getOid>LAST_UPDATED</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Last Updated</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		<numSensor ruleid="heat_dissipation">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>HEAT_DISSIPATION</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKW</type>
+			<sensorId>_HEAT_DISSIPATION</sensorId>
+			<value>
+				<mult>
+					<op><getOid>HEAT_DISSIPATION</getOid></op>
+					<op>0.01</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Heat Dissipation</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		<numSensor ruleid="set_temp">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>SET_TEMP</getOid>
+				</mapValue>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>_SET_TEMP</sensorId>
+			<value>
+				<mult>
+					<op><getOid>SET_TEMP</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Set Temperature</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		
+		<stateSensor ruleid="test_line">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>TEST_LINE</getOid>
+				</mapValue>
+			</rowTest>
+			<type>state</type>
+			<sensorId>_TEST_LINE</sensorId>
+			<value>
+				<mapValue mapid="1state-vm">
+					<getOid>TEST_LINE</getOid>
+				</mapValue>
+			</value>
+			<label>Test Line Status</label>
+			<enum>normalAlert-em</enum>
+			<sensorSet>Status Alarms</sensorSet>
+		</stateSensor>
+		
+		<enumMap ruleid="normalAlert-em">
+			<label>NORMAL</label>
+			<label>ALERT</label>
+			<label>Unknown</label>
+		</enumMap>
+		
+		<stateSensor ruleid="tvss_alarm_1_status">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>TVSS_ALARM_1_STATUS</getOid>
+				</mapValue>
+			</rowTest>
+			<type>state</type>
+			<sensorId>_TVSS_ALARM_1_STATUS</sensorId>
+			<value>
+				<mapValue mapid="1state-vm">
+					<getOid>TVSS_ALARM_1_STATUS</getOid>
+				</mapValue>
+			</value>
+			<label>TVSS Alarm 1 Status</label>
+			<enum>normalAlert-em</enum>
+			<sensorSet>Status Alarms</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="tvss_alarm_2_status">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>TVSS_ALARM_2_STATUS</getOid>
+				</mapValue>
+			</rowTest>
+			<type>state</type>
+			<sensorId>_TVSS_ALARM_2_STATUS</sensorId>
+			<value>
+				<mapValue mapid="1state-vm">
+					<getOid>TVSS_ALARM_2_STATUS</getOid>
+				</mapValue>
+			</value>
+			<label>TVSS Alarm 2 Status</label>
+			<enum>normalAlert-em</enum>
+			<sensorSet>Status Alarms</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="fire_alarm_1_status">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>FIRE_ALARM_1_STATUS</getOid>
+				</mapValue>
+			</rowTest>
+			<type>state</type>
+			<sensorId>_FIRE_ALARM_1_STATUS</sensorId>
+			<value>
+				<mapValue mapid="1state-vm">
+					<getOid>FIRE_ALARM_1_STATUS</getOid>
+				</mapValue>
+			</value>
+			<label>Fire Alarm 1 Status</label>
+			<enum>normalAlert-em</enum>
+			<sensorSet>Status Alarms</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="fire_alarm_2_status">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>FIRE_ALARM_2_STATUS</getOid>
+				</mapValue>
+			</rowTest>
+			<type>state</type>
+			<sensorId>_FIRE_ALARM_2_STATUS</sensorId>
+			<value>
+				<mapValue mapid="1state-vm">
+					<getOid>FIRE_ALARM_2_STATUS</getOid>
+				</mapValue>
+			</value>
+			<label>Fire Alarm 2 Status</label>
+			<enum>normalAlert-em</enum>
+			<sensorSet>Status Alarms</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="containment_leak_alarm_1_status">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>CONTAINMENT_LEAK_ALARM_1_STATUS</getOid>
+				</mapValue>
+			</rowTest>
+			<type>state</type>
+			<sensorId>_CONTAINMENT_LEAK_ALARM_1_STATUS</sensorId>
+			<value>
+				<mapValue mapid="1state-vm">
+					<getOid>CONTAINMENT_LEAK_ALARM_1_STATUS</getOid>
+				</mapValue>
+			</value>
+			<label>Containment Leak Alarm 1 Status</label>
+			<enum>normalAlert-em</enum>
+			<sensorSet>Status Alarms</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="containment_leak_alarm_2_status">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>CONTAINMENT_LEAK_ALARM_2_STATUS</getOid>
+				</mapValue>
+			</rowTest>
+			<type>state</type>
+			<sensorId>_CONTAINMENT_LEAK_ALARM_2_STATUS</sensorId>
+			<value>
+				<mapValue mapid="1state-vm">
+					<getOid>CONTAINMENT_LEAK_ALARM_2_STATUS</getOid>
+				</mapValue>
+			</value>
+			<label>Containment Leak Alarm 2 Status</label>
+			<enum>normalAlert-em</enum>
+			<sensorSet>Status Alarms</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="water_treatment_alarm_1_status">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>WATER_TREATMENT_ALARM_1_STATUS</getOid>
+				</mapValue>
+			</rowTest>
+			<type>state</type>
+			<sensorId>_WATER_TREATMENT_ALARM_1_STATUS</sensorId>
+			<value>
+				<mapValue mapid="1state-vm">
+					<getOid>WATER_TREATMENT_ALARM_1_STATUS</getOid>
+				</mapValue>
+			</value>
+			<label>Water Treatment Alarm Status</label>
+			<enum>normalAlert-em</enum>
+			<sensorSet>Status Alarms</sensorSet>
+		</stateSensor>
+		
+		<numSensor ruleid="ambient_temperature">
+			<rowTest>
+				<mapValue mapid="delete_null_sensor-vm">
+					<getOid>AMBIENT_TEMPERATURE</getOid>
+				</mapValue>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>_AMBIENT_TEMPERATURE</sensorId>
+			<value>
+				<mult>
+					<op><getOid>AMBIENT_TEMPERATURE</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Ambient Temperature</label>
+			<sensorSet>General</sensorSet>
+		</numSensor>
+		
+	</device>
+	<protocol>
+		<modbus>
+            <value_ref_id valid="TANK1_TOP_A_TEMPERATURE">
+                <function>3</function>
+                <start_addr>8000</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK1_TOP_B_TEMPERATURE">
+                <function>3</function>
+                <start_addr>8001</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK1_FLOAT_SWITCH_STATUS">
+                <function>3</function>
+                <start_addr>8002</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK1_COOLANT_PRESSURE">
+                <function>3</function>
+                <start_addr>8003</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK1_BACKUP_SYS_ACTIVE">
+                <function>3</function>
+                <start_addr>8004</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK1_COOLANT_LEVEL">
+                <function>3</function>
+                <start_addr>8005</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK2_TOP_A_TEMPERATURE">
+                <function>3</function>
+                <start_addr>8010</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK2_TOP_B_TEMPERATURE">
+                <function>3</function>
+                <start_addr>8011</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK2_FLOAT_SWITCH_STATUS">
+                <function>3</function>
+                <start_addr>8012</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK2_COOLANT_PRESSURE">
+                <function>3</function>
+                <start_addr>8013</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK2_BACKUP_SYS_ACTIVE">
+                <function>3</function>
+                <start_addr>8014</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK2_COOLANT_LEVEL">
+                <function>3</function>
+                <start_addr>8015</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK3_TOP_A_TEMPERATURE">
+                <function>3</function>
+                <start_addr>8020</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK3_TOP_B_TEMPERATURE">
+                <function>3</function>
+                <start_addr>8021</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK3_FLOAT_SWITCH_STATUS">
+                <function>3</function>
+                <start_addr>8022</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK3_COOLANT_PRESSURE">
+                <function>3</function>
+                <start_addr>8023</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK3_BACKUP_SYS_ACTIVE">
+                <function>3</function>
+                <start_addr>8024</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK3_COOLANT_LEVEL">
+                <function>3</function>
+                <start_addr>8025</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK4_TOP_A_TEMPERATURE">
+                <function>3</function>
+                <start_addr>8030</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK4_TOP_B_TEMPERATURE">
+                <function>3</function>
+                <start_addr>8031</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK4_FLOAT_SWITCH_STATUS">
+                <function>3</function>
+                <start_addr>8032</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK4_COOLANT_PRESSURE">
+                <function>3</function>
+                <start_addr>8033</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK4_BACKUP_SYS_ACTIVE">
+                <function>3</function>
+                <start_addr>8034</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TANK4_COOLANT_LEVEL">
+                <function>3</function>
+                <start_addr>8035</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="COOLANT_PUMP_SPEED">
+                <function>3</function>
+                <start_addr>8040</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="CT_FAN_SPEED">
+                <function>3</function>
+                <start_addr>8041</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="WATER_PUMP1_SPEED">
+                <function>3</function>
+                <start_addr>8042</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="WATER_PUMP2_SPEED">
+                <function>3</function>
+                <start_addr>8043</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="COOLANT_IN_TEMP">
+                <function>3</function>
+                <start_addr>8050</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="COOLANT_OUT_TEMP">
+                <function>3</function>
+                <start_addr>8051</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="WATER_IN_TEMP">
+                <function>3</function>
+                <start_addr>8052</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="WATER_OUT_TEMP">
+                <function>3</function>
+                <start_addr>8053</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="WATER_PRESSURE">
+                <function>3</function>
+                <start_addr>8060</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="COOLANT_PRESSURE">
+                <function>3</function>
+                <start_addr>8061</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="VACUUM_PRESSURE">
+                <function>3</function>
+                <start_addr>8062</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="FILTER_PRESSURE">
+                <function>3</function>
+                <start_addr>8063</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="PUMP_FLOAT_SWITCH_STATUS">
+                <function>3</function>
+                <start_addr>8070</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="CT_FLOAT_SWITCH_STATUS">
+                <function>3</function>
+                <start_addr>8071</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="BACKUP_SYSTEM_ACTIVE_STATUS">
+                <function>3</function>
+                <start_addr>8080</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="WATER_VALVE_POSITION">
+                <function>3</function>
+                <start_addr>8081</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="PRIMARY_RMS_CURRENT">
+                <function>3</function>
+                <start_addr>8082</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="PRIMARY_RMS_VOLTAGE">
+                <function>3</function>
+                <start_addr>8083</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="SECONDARY_RMS_CURRENT">
+                <function>3</function>
+                <start_addr>8084</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <!-- 
+			<value_ref_id valid="SECONDARY_RMS_VOLTAGE">
+                <function>3</function>
+                <start_addr>8085</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+			-->
+            <value_ref_id valid="PRIMARY_POWER">
+                <function>3</function>
+                <start_addr>8086</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="VOLTAGE_DIVIDER">
+                <function>3</function>
+                <start_addr>8087</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="LAST_UPDATED">
+                <function>3</function>
+                <start_addr>8088</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="HEAT_DISSIPATION">
+                <function>3</function>
+                <start_addr>8089</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="SET_TEMP">
+                <function>3</function>
+                <start_addr>8090</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TEST_LINE">
+                <function>3</function>
+                <start_addr>8100</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TVSS_ALARM_1_STATUS">
+                <function>3</function>
+                <start_addr>8101</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="TVSS_ALARM_2_STATUS">
+                <function>3</function>
+                <start_addr>8102</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="FIRE_ALARM_1_STATUS">
+                <function>3</function>
+                <start_addr>8103</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="FIRE_ALARM_2_STATUS">
+                <function>3</function>
+                <start_addr>8104</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="CONTAINMENT_LEAK_ALARM_1_STATUS">
+                <function>3</function>
+                <start_addr>8105</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="CONTAINMENT_LEAK_ALARM_2_STATUS">
+                <function>3</function>
+                <start_addr>8106</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="WATER_TREATMENT_ALARM_1_STATUS">
+                <function>3</function>
+                <start_addr>8107</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="AMBIENT_TEMPERATURE">
+                <function>3</function>
+                <start_addr>8108</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+			
+			<table_ref_id indexid="TANK_TOP_A_TEMPERATURE">
+				<entry num="0">TANK1_TOP_A_TEMPERATURE</entry>
+				<entry num="1">TANK2_TOP_A_TEMPERATURE</entry>
+				<entry num="2">TANK3_TOP_A_TEMPERATURE</entry>
+				<entry num="3">TANK4_TOP_A_TEMPERATURE</entry>
+			</table_ref_id>
+			
+			<table_ref_id indexid="TANK_TOP_B_TEMPERATURE">
+				<entry num="0">TANK1_TOP_B_TEMPERATURE</entry>
+				<entry num="1">TANK2_TOP_B_TEMPERATURE</entry>
+				<entry num="2">TANK3_TOP_B_TEMPERATURE</entry>
+				<entry num="3">TANK4_TOP_B_TEMPERATURE</entry>
+			</table_ref_id>
+			
+			<table_ref_id indexid="TANK_FLOAT_SWITCH_STATUS">
+				<entry num="0">TANK1_FLOAT_SWITCH_STATUS</entry>
+				<entry num="1">TANK2_FLOAT_SWITCH_STATUS</entry>
+				<entry num="2">TANK3_FLOAT_SWITCH_STATUS</entry>
+				<entry num="3">TANK4_FLOAT_SWITCH_STATUS</entry>
+			</table_ref_id>
+			
+			<table_ref_id indexid="TANK_COOLANT_PRESSURE">
+				<entry num="0">TANK1_COOLANT_PRESSURE</entry>
+				<entry num="1">TANK2_COOLANT_PRESSURE</entry>
+				<entry num="2">TANK3_COOLANT_PRESSURE</entry>
+				<entry num="3">TANK4_COOLANT_PRESSURE</entry>
+			</table_ref_id>
+			
+			<table_ref_id indexid="TANK_BACKUP_SYS_ACTIVE">
+				<entry num="0">TANK1_BACKUP_SYS_ACTIVE</entry>
+				<entry num="1">TANK2_BACKUP_SYS_ACTIVE</entry>
+				<entry num="2">TANK3_BACKUP_SYS_ACTIVE</entry>
+				<entry num="3">TANK4_BACKUP_SYS_ACTIVE</entry>
+			</table_ref_id>
+			
+			<table_ref_id indexid="TANK_COOLANT_LEVEL">
+				<entry num="0">TANK1_COOLANT_LEVEL</entry>
+				<entry num="1">TANK2_COOLANT_LEVEL</entry>
+				<entry num="2">TANK3_COOLANT_LEVEL</entry>
+				<entry num="3">TANK4_COOLANT_LEVEL</entry>
+			</table_ref_id>
+			
+		</modbus>
+	</protocol>
+</APC_DDF>

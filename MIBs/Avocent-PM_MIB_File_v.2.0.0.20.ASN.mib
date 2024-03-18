@@ -1,0 +1,2187 @@
+--------------------------------------------------------------------------------
+--  Avocent PM MIB
+--  Copyright 2007 Avocent Corporation
+--  Revision: 1.0.0
+--  Last Modified: May 06, 2008
+--------------------------------------------------------------------------------
+
+PM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+  enterprises, OBJECT-TYPE, MODULE-IDENTITY, Integer32
+      FROM SNMPv2-SMI
+  DisplayString
+      FROM SNMPv2-TC
+  InterfaceIndex, InterfaceIndexOrZero
+        FROM IF-MIB;
+
+--------------------------------------------------------------------------------
+-- Object Groupings
+--------------------------------------------------------------------------------
+
+--@ Note: every product type should be uniquely identified underneath the
+--@ acsProducts object group. Each product should report its unique acsProducts
+--@ OBJECT IDENTIFIER in mib-2.system.sysObjectID. Please see the file
+--@ "_Avocent Enterprise Object Identifier Assignment.txt" for a list of the
+--@ IDs that have been assigned.
+
+-- enterprises  .1.3.6.1.4.1
+
+-- avocent         OBJECT IDENTIFIER ::= { enterprises 10418 }
+
+pm    MODULE-IDENTITY
+        LAST-UPDATED    "201005030000Z"
+        ORGANIZATION    "Avocent Corporation"
+        CONTACT-INFO    "postal : Avocent Corporation
+                                  47281 Bayview Parkway
+                                  Fremont, CA 94538, USA
+                         e-mail : Technical Support
+                                  techsupport@avocent.com"
+        DESCRIPTION        
+        "This module defines the Avocent MIB extensions to 
+         pmxxxx products."
+
+        REVISION        "201005030000Z"
+        DESCRIPTION     "Fix syntax up to validation level3"
+
+        REVISION        "200905210000Z"
+        DESCRIPTION     "New tables for power measurements"
+::= { enterprises 10418 17 }
+
+pmProducts     OBJECT IDENTIFIER ::= { pm 1 }
+pmManagement   OBJECT IDENTIFIER ::= { pm 2 }
+--
+pm1024         OBJECT IDENTIFIER ::= { pmProducts 1 }    -- 10418.17.1.1
+pm2003         OBJECT IDENTIFIER ::= { pmProducts 2 }    -- 10418.17.1.2
+pm2006         OBJECT IDENTIFIER ::= { pmProducts 3 }    -- 10418.17.1.3
+pm2024         OBJECT IDENTIFIER ::= { pmProducts 4 }
+pm3003         OBJECT IDENTIFIER ::= { pmProducts 5 }
+pm3006         OBJECT IDENTIFIER ::= { pmProducts 6 }
+pm3024         OBJECT IDENTIFIER ::= { pmProducts 7 }
+pm1010         OBJECT IDENTIFIER ::= { pmProducts 8 }
+pm2010         OBJECT IDENTIFIER ::= { pmProducts 9 }
+pm3010         OBJECT IDENTIFIER ::= { pmProducts 10 }
+pm1020         OBJECT IDENTIFIER ::= { pmProducts 11 }
+pm2020         OBJECT IDENTIFIER ::= { pmProducts 12 }
+pm3020         OBJECT IDENTIFIER ::= { pmProducts 13 }
+
+pmAppliance    OBJECT IDENTIFIER ::= { pmManagement 1  }  -- 10418.17.2.1
+pmSessions     OBJECT IDENTIFIER ::= { pmManagement 2  }  -- 10418.17.2.2
+pmPowerMgmt    OBJECT IDENTIFIER ::= { pmManagement 5  }  -- 10418.17.2.5
+
+--
+-- Note that traps are defined in a separate trap MIB 
+--
+pmTrapObject   OBJECT IDENTIFIER ::= { pmManagement 6 }  -- 10418.17.2.6
+
+
+--
+-- pmAppliance 
+-- OBJECT IDENTIFIER ::= { pmManagement 1  }  10418.17.2.1
+--
+pmHostName OBJECT-TYPE
+        SYNTAX             DisplayString ( SIZE (0..32) )
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "The appliance name"
+::= { pmAppliance 1 }
+
+pmProductModel OBJECT-TYPE
+        SYNTAX             DisplayString ( SIZE (0..50) )
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "The appliance product model"
+::= { pmAppliance 2 }
+
+pmPartNumber OBJECT-TYPE
+        SYNTAX             DisplayString ( SIZE (0..32) )
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "The part number of this appliance as shown on the label
+         attached or imprinted on the appliance."
+::= { pmAppliance 3 }
+
+pmSerialNumber OBJECT-TYPE
+        SYNTAX             DisplayString ( SIZE (0..32) )
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "The serial number of this appliance as shown on the label
+         attached or imprinted on the appliance."
+::= { pmAppliance 4 }
+
+pmEIDNumber OBJECT-TYPE
+        SYNTAX             DisplayString ( SIZE (0..32) )
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "The electronic ID number (EID) of this appliance as shown on the label
+         attached or imprinted on the appliance."
+::= { pmAppliance 5 }
+
+pmBootcodeVersion OBJECT-TYPE
+        SYNTAX             DisplayString ( SIZE (0..32) )
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION 
+        "The version of the bootcode of this appliance."
+::= { pmAppliance 6 }
+
+pmFirmwareVersion OBJECT-TYPE
+        SYNTAX             DisplayString ( SIZE (0..32) )
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION 
+        "The version of the firmware of this appliance."
+::= { pmAppliance 7 }
+
+pmReboot OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reboot(2)
+             }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION 
+        "A set value of reboot(2) will reboot the appliance.
+         noAction(1) = always returned in a GET. Does nothing if SET.        
+         reboot(2)   = when SET the appliance immediately reboots."
+::= { pmAppliance 9 }
+
+--
+-- pmSessions      
+-- OBJECT IDENTIFIER ::= { pmManagement 2  }   10418.17.2.2
+--
+pmActiveSessionsNumberOfSession OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of active sessions."
+::= { pmSessions 1 }
+
+pmActiveSessionsTable OBJECT-TYPE
+        SYNTAX             SEQUENCE OF PmActiveSessionsTableEntry
+        MAX-ACCESS         not-accessible
+        STATUS             current
+        DESCRIPTION
+        "This table contains the list of active sessions."
+::= { pmSessions 2 }
+ 
+pmActiveSessionsTableEntry        OBJECT-TYPE
+        SYNTAX            PmActiveSessionsTableEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION                
+        "each entry has the information about the active session"
+        INDEX        { pmActiveSessionsTableIndex }
+::= { pmActiveSessionsTable 1 }
+
+PmActiveSessionsTableEntry ::= SEQUENCE  {
+        pmActiveSessionsTableIndex        InterfaceIndexOrZero,     
+        pmActiveSessionsTableUser         DisplayString, -- user name
+        pmActiveSessionsTableGroup        DisplayString, -- group name
+        pmActiveSessionsTableType	    DisplayString, -- RO/RW-ssh,telnet or web 
+        pmActiveSessionsTableConnection   DisplayString, -- type + target name
+        pmActiveSessionsTableSessionTime  DisplayString, -- time of session
+        pmActiveSessionsTableFrom         DisplayString, -- source of the session
+        pmActiveSessionsTableKill         INTEGER
+}
+
+pmActiveSessionsTableIndex OBJECT-TYPE
+        SYNTAX             InterfaceIndexOrZero
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "A unique index representing an entry in this table."
+::= { pmActiveSessionsTableEntry 1 }
+
+pmActiveSessionsTableUser OBJECT-TYPE
+        SYNTAX             DisplayString ( SIZE (0..32) )
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION 
+        "The name of the user that opens this session."
+::= { pmActiveSessionsTableEntry 2 }
+
+pmActiveSessionsTableGroup OBJECT-TYPE
+        SYNTAX             DisplayString ( SIZE (0..32) )
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION 
+        "The name of the group that the user belongs to."
+::= { pmActiveSessionsTableEntry 3 }
+
+pmActiveSessionsTableType OBJECT-TYPE
+        SYNTAX             DisplayString ( SIZE (0..32) )
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION 
+        "The session type."
+::= { pmActiveSessionsTableEntry 4 }
+
+pmActiveSessionsTableConnection OBJECT-TYPE
+        SYNTAX             DisplayString ( SIZE (0..32) )
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION 
+        "Connection type."
+::= { pmActiveSessionsTableEntry 5 }
+
+pmActiveSessionsTableSessionTime OBJECT-TYPE
+        SYNTAX             DisplayString ( SIZE (0..32) )
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION 
+        "Time of the session"
+::= { pmActiveSessionsTableEntry 6 }
+
+pmActiveSessionsTableFrom OBJECT-TYPE
+        SYNTAX             DisplayString ( SIZE (0..32) )
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION 
+        "The source IP address of the session."
+::= { pmActiveSessionsTableEntry 7 }
+
+pmActiveSessionsTableKill OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                killSession(2)
+             }
+        MAX-ACCESS     read-write
+        STATUS         current
+        DESCRIPTION 
+        "A set value of killSession(2) will kill the session.
+         noAction(1)   = always returned in a GET. Does nothing if SET.
+         killSession(2)= when SET the appliance immediately kills the session."
+::= { pmActiveSessionsTableEntry 8 }
+
+
+--
+-- pmPowerMgmt     
+-- OBJECT IDENTIFIER ::= { pmManagement 5  }   10418.17.2.5
+--
+pmPowerMgmtNumSerialPorts OBJECT-TYPE
+          SYNTAX            Integer32
+          MAX-ACCESS        read-only
+          STATUS            current
+          DESCRIPTION   
+        "The number of Serial Ports that has PDU connected on the appliance."
+::= { pmPowerMgmt 1 }
+
+pmPowerMgmtSerialTable OBJECT-TYPE
+          SYNTAX            SEQUENCE OF PmPowerMgmtSerialTableEntry
+          MAX-ACCESS        not-accessible
+          STATUS            current
+          DESCRIPTION   
+        "Information about each serial port thas has PDU connect."
+::= { pmPowerMgmt 2 }
+
+pmPowerMgmtSerialTableEntry   OBJECT-TYPE
+        SYNTAX          PmPowerMgmtSerialTableEntry
+        MAX-ACCESS      not-accessible
+        STATUS          current
+        DESCRIPTION     
+        "Information about each serial port thas has PDU connect."
+        INDEX           { pmPowerMgmtSerialTableIndex }
+::= { pmPowerMgmtSerialTable 1 }
+
+PmPowerMgmtSerialTableEntry ::= SEQUENCE  {
+        pmPowerMgmtSerialTableIndex          InterfaceIndex,   
+        pmPowerMgmtSerialTablePortNumber     Integer32,
+        pmPowerMgmtSerialTableDeviceName     DisplayString,     
+        pmPowerMgmtSerialTableNumberPDUs     Integer32
+}
+
+pmPowerMgmtSerialTableIndex   OBJECT-TYPE
+        SYNTAX         InterfaceIndex   
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+        "The index of the register."
+::= { pmPowerMgmtSerialTableEntry 1 }
+
+pmPowerMgmtSerialTablePortNumber      OBJECT-TYPE
+        SYNTAX         Integer32        
+        MAX-ACCESS     read-only
+        STATUS         current
+        DESCRIPTION
+        "The number of the serial port when the PDU is connected."
+::= { pmPowerMgmtSerialTableEntry 2 }
+
+pmPowerMgmtSerialTableDeviceName  OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "The device name of this serial port."
+::= { pmPowerMgmtSerialTableEntry 3 }
+
+pmPowerMgmtSerialTableNumberPDUs              OBJECT-TYPE
+        SYNTAX          Integer32     
+        MAX-ACCESS      read-only
+        STATUS          current
+        DESCRIPTION
+        "Total number of units connected in this serial port."
+::= { pmPowerMgmtSerialTableEntry 4 }
+        
+pmPowerMgmtPDUTable OBJECT-TYPE
+        SYNTAX             SEQUENCE OF PmPowerMgmtPDUTableEntry
+        MAX-ACCESS         not-accessible
+        STATUS             current
+        DESCRIPTION
+        "This table contains the list of detected PDUs."
+::= { pmPowerMgmt 3 }
+ 
+pmPowerMgmtPDUTableEntry        OBJECT-TYPE
+        SYNTAX            PmPowerMgmtPDUTableEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION                
+        "each entry has the information about the PDU."
+        INDEX                { pmPowerMgmtPDUTablePortNumber, pmPowerMgmtPDUTablePduIndex }
+::= { pmPowerMgmtPDUTable 1 }
+
+PmPowerMgmtPDUTableEntry ::= SEQUENCE  {
+        pmPowerMgmtPDUTablePortNumber        InterfaceIndex,  -- number of serial port
+        pmPowerMgmtPDUTablePduIndex          InterfaceIndexOrZero,     
+        pmPowerMgmtPDUTablePduId             DisplayString,   -- PDU identification
+        pmPowerMgmtPDUTablePortName          DisplayString,   -- Serial Port Name
+        pmPowerMgmtPDUTableModel             DisplayString,   -- PDU model
+        pmPowerMgmtPDUTableVendor            DisplayString,   -- Vendor
+        pmPowerMgmtPDUTableFirmwareVersion   DisplayString,   -- Firmware Version
+        pmPowerMgmtPDUTableNumberOfOutlets   Integer32, 
+        pmPowerMgmtPDUTableCurrentNOS        Integer32,        -- number of current sensors
+        pmPowerMgmtPDUTableCurrent1Value     Integer32,        -- actual value for current of the sensor 1
+        pmPowerMgmtPDUTableCurrent1Max       Integer32,        -- max value for current of the sensor 1
+        pmPowerMgmtPDUTableCurrent2Value     Integer32,        -- actual value for current of the sensor 2
+        pmPowerMgmtPDUTableCurrent2Max       Integer32,        -- max value for current of the sensor 2
+        pmPowerMgmtPDUTableCurrent3Value     Integer32,        -- actual value for current of the sensor 3
+        pmPowerMgmtPDUTableCurrent3Max       Integer32,        -- max value for current of the sensor 3
+        pmPowerMgmtPDUTableTemperatureNOS    Integer32,        -- number of temperature  sensors
+        pmPowerMgmtPDUTableTemperature1Value Integer32,        -- actual value for Temperature 1
+        pmPowerMgmtPDUTableTemperature1Max   Integer32,        -- max value for Temperature 1
+        pmPowerMgmtPDUTableTemperature2Value Integer32,        -- actual value for Temperaturet 2
+        pmPowerMgmtPDUTableTemperature2Max   Integer32,        -- max value for Temperature 2
+        pmPowerMgmtPDUTableTemperature3Value Integer32,        -- actual value for Temperature 3
+        pmPowerMgmtPDUTableTemperature3Max   Integer32,        -- max value for Temperature 3
+        pmPowerMgmtPDUTableHumidityNOS       Integer32,        -- humidity number of humidity sensors
+        pmPowerMgmtPDUTableHumidity1Value    Integer32,        -- actual value for Humidity of the sensor 1
+        pmPowerMgmtPDUTableHumidity1Max      Integer32,        -- max value for Humidityof the sensor 1
+        pmPowerMgmtPDUTableHumidity2Value    Integer32,        -- actual value for Humidity of the sensor 2
+        pmPowerMgmtPDUTableHumidity2Max      Integer32,        -- max value for Humidity of the sensor 2
+        pmPowerMgmtPDUTableHumidity3Value    Integer32,        -- actual value for Humidity of the sensor 3
+        pmPowerMgmtPDUTableHumidity3Max      Integer32,        -- max value for Humidity of the sensor 3
+        pmPowerMgmtPDUTableVoltageNOS        Integer32,        -- number of voltage sensor
+        pmPowerMgmtPDUTableVoltage1Value     Integer32,        -- actual value for Voltage of the sensor 1
+        pmPowerMgmtPDUTableVoltage1Max       Integer32,        -- max value for Voltage of the sensor 1
+        pmPowerMgmtPDUTableVoltage2Value     Integer32,        -- actual value for Voltage of the sensor 2
+        pmPowerMgmtPDUTableVoltage2Max       Integer32,        -- max value for Voltaget of the sensor 2
+        pmPowerMgmtPDUTableVoltage3Value     Integer32,        -- actual value for Voltage of the sensor 3
+        pmPowerMgmtPDUTableVoltage3Max       Integer32,        -- max value for Voltage of the sensor 3
+        pmPowerMgmtPDUTableNumberOfPhases    Integer32,        -- number of phases (0 if single phase)
+        pmPowerMgmtPDUTableNumberOfBanks     Integer32,        -- number of banks
+        pmPowerMgmtPDUTableNumberOfSensors   Integer32,        -- number of sensors
+        pmPowerMgmtPDUTableCurrentValue Integer32,    -- actual value for current of the sensor
+        pmPowerMgmtPDUTableCurrentMax   Integer32,    -- max value for current
+        pmPowerMgmtPDUTableCurrentMin   Integer32,    -- min value for current
+        pmPowerMgmtPDUTableCurrentAvg   Integer32,    -- average value for current
+        pmPowerMgmtPDUTableCurrentReset   INTEGER,    -- reset the current stats
+        pmPowerMgmtPDUTablePowerValue   Integer32,    -- actual value for power
+        pmPowerMgmtPDUTablePowerMax     Integer32,    -- max value for power
+        pmPowerMgmtPDUTablePowerMin     Integer32,    -- min value for power
+        pmPowerMgmtPDUTablePowerAvg     Integer32,    -- average value for power
+        pmPowerMgmtPDUTablePowerReset     INTEGER,    -- reset the power stats
+        pmPowerMgmtPDUTableVoltageValue Integer32,    -- actual value for voltage
+        pmPowerMgmtPDUTableVoltageMax   Integer32,    -- max value for voltage
+        pmPowerMgmtPDUTableVoltageMin   Integer32,    -- min value for voltage
+        pmPowerMgmtPDUTableVoltageAvg   Integer32,    -- average value for voltage
+        pmPowerMgmtPDUTableVoltageReset   INTEGER,    -- reset the voltage stats
+        pmPowerMgmtPDUTablePowerFactorValue  Integer32,    -- actual value for powerfactor
+        pmPowerMgmtPDUTablePowerFactorMax    Integer32,    -- max value for powerfactor
+        pmPowerMgmtPDUTablePowerFactorMin    Integer32,    -- min value for powerfactor
+        pmPowerMgmtPDUTablePowerFactorAvg    Integer32,    -- average value for powerfactor
+        pmPowerMgmtPDUTablePowerFactorReset    INTEGER,    -- reset the powerfactor stats
+	pmPowerMgmtPDUTablePowerControl		INTEGER,          -- manage the outlets in this PDU
+	pmPowerMgmtPDUTableResetOCP		INTEGER,          -- reset the ocp (pdu wide)
+	pmPowerMgmtPDUTableReboot		INTEGER          -- reboot the PDU
+}
+
+pmPowerMgmtPDUTablePortNumber OBJECT-TYPE
+        SYNTAX            InterfaceIndex
+        MAX-ACCESS        read-only
+        STATUS            current
+        DESCRIPTION
+        "Number of serial port when the PDU is connected."
+::= { pmPowerMgmtPDUTableEntry 1 }
+
+pmPowerMgmtPDUTablePduIndex OBJECT-TYPE
+        SYNTAX            InterfaceIndexOrZero
+        MAX-ACCESS        read-only
+        STATUS            current
+        DESCRIPTION
+        "A PDU position in the chain."
+::= { pmPowerMgmtPDUTableEntry 2 }
+
+pmPowerMgmtPDUTablePduId  OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "PDU identification."
+::= { pmPowerMgmtPDUTableEntry 3 }
+
+pmPowerMgmtPDUTablePortName OBJECT-TYPE
+        SYNTAX             DisplayString
+
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Name of serial port when the PDU is connected."
+::= { pmPowerMgmtPDUTableEntry 4 }
+
+pmPowerMgmtPDUTableModel  OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Model of the PDU."
+::= { pmPowerMgmtPDUTableEntry 5 }
+
+pmPowerMgmtPDUTableVendor   OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Vendor of the PDU."
+::= { pmPowerMgmtPDUTableEntry 6 }
+
+pmPowerMgmtPDUTableFirmwareVersion        OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Version of the PDU firmware."
+::= { pmPowerMgmtPDUTableEntry 7 }
+
+pmPowerMgmtPDUTableNumberOfOutlets OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of outlets of the PDU."
+::= { pmPowerMgmtPDUTableEntry 8 }
+
+pmPowerMgmtPDUTableCurrentNOS OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of current sensors in the PDU."
+::= { pmPowerMgmtPDUTableEntry 9 }
+
+pmPowerMgmtPDUTableCurrent1Value OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Current of the sensor 1 in this PDU unit in AMP.
+         The value of this object is the actual current in 
+         AMP * 10. You need to translate the readed value
+         (Ex. : value is 5, the current is 0.5 AMP.).
+         This OID is obsoleted. The value can be retrieved
+         from pmPowerMgmtPDUTableCurrentValue, 
+         pmPowerMgmtPhasesTableCurrentValue, or 
+         pmPowerMgmtOutletsTableCurrentValue"
+::= { pmPowerMgmtPDUTableEntry 10 }
+
+pmPowerMgmtPDUTableCurrent1Max OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "Maximum current of the sensor 1 in this PDU unit in AMP.
+         When the PDU does not have support for maximum value,
+         the value will be 0.
+         The value of this object is the actual current in 
+         AMP * 10. You need to translate the readed value
+         (Ex. : value is 5, the current is 0.5 AMP.)
+         Clear this value, set it with Zero value. 
+         This OID is obsoleted. The value can be retrieved
+         from pmPowerMgmtPDUTableCurrentMax, 
+         pmPowerMgmtPhasesTableCurrentMax, or 
+         pmPowerMgmtOutletsTableCurrentMax"
+::= { pmPowerMgmtPDUTableEntry 11 }
+
+pmPowerMgmtPDUTableCurrent2Value OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Current of the sensor 2 in this PDU unit in AMP.
+         The value of this object is the actual current in 
+         AMP * 10. You need to translate the readed value
+         (Ex. : value is 5, the current is 0.5 AMP.). 
+         This OID is obsoleted. The value can be retrieved
+         from pmPowerMgmtPDUTableCurrentValue, 
+         pmPowerMgmtPhasesTableCurrentValue, or 
+         pmPowerMgmtOutletsTableCurrentValue"
+::= { pmPowerMgmtPDUTableEntry 12 }
+
+pmPowerMgmtPDUTableCurrent2Max OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "Maximum current of the sensor 2 in this PDU unit in AMP.
+          When the PDU does not have support for maximum value,
+         the value will be 0.
+         The value of this object is the actual current in 
+         AMP * 10. You need to translate the readed value
+         (Ex. : value is 5, the current is 0.5 AMP.)
+         Clear this value, set it with Zero value. 
+         This OID is obsoleted. The value can be retrieved
+         from pmPowerMgmtPDUTableCurrentMax, 
+         pmPowerMgmtPhasesTableCurrentMax, or 
+         pmPowerMgmtOutletsTableCurrentMax"
+::= { pmPowerMgmtPDUTableEntry 13}
+
+pmPowerMgmtPDUTableCurrent3Value OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Current of the sensor 3 in this PDU unit in AMP.
+         The value of this object is the actual current in 
+         AMP * 10. You need to translate the readed value
+        (Ex. : value is 5, the current is 0.5 AMP.) 
+         This OID is obsoleted. The value can be retrieved
+         from pmPowerMgmtPDUTableCurrentValue, 
+         pmPowerMgmtPhasesTableCurrentValue, or 
+         pmPowerMgmtOutletsTableCurrentValue"
+::= { pmPowerMgmtPDUTableEntry 14 }
+
+pmPowerMgmtPDUTableCurrent3Max OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+         "Maximum current of the sensor 3 in this PDU unit in AMP.
+         When the PDU does not have support for maximum value,
+         the value will be 0.
+         The value of this object is the actual current in 
+         AMP * 10. You need to translate the readed value
+         (Ex. : value is 5, the current is 0.5 AMP.)
+         Clear this value, set it with Zero value. 
+         This OID is obsoleted. The value can be retrieved
+         from pmPowerMgmtPDUTableCurrentMax, 
+         pmPowerMgmtPhasesTableCurrentMax, or 
+         pmPowerMgmtOutletsTableCurrentMax"
+::= { pmPowerMgmtPDUTableEntry 15 }
+
+pmPowerMgmtPDUTableTemperatureNOS OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of temperature sensors in the PDU."
+::= { pmPowerMgmtPDUTableEntry 16 }
+
+pmPowerMgmtPDUTableTemperature1Value OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Temperature of this PM unit in Celsius degrees.
+         The value of this object is the actual temperature in 
+         degrees C * 10. You need to translate the readed value
+        (Ex. : value is 240, the temperature is 24 Celsius.) 
+         If the temperature measurement is not installed this 
+         value will be 0.
+        Valid values are 5 to 999 ( 0.5 to 99.9 Celsius)." 
+::= { pmPowerMgmtPDUTableEntry 17 }
+
+pmPowerMgmtPDUTableTemperature1Max OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "Maximum temperature detected in this PM unit in Celsius degrees.
+        The value will be Zero when the PDU does not have support for maximum value.
+         The value of this object is the actual temperature in 
+         degrees C * 10. You need to translate the readed value
+        (Ex. : value is 240, the temperature is 24 Celsius.) 
+         If the temperature measurement is not installed this 
+         value will be 0.
+         Valid values are 5 to 999 ( 0.5 to 99.9 Celsius).
+        Set with Zero value to clear the max. temperature." 
+::= { pmPowerMgmtPDUTableEntry 18 }
+
+pmPowerMgmtPDUTableTemperature2Value OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Temperature of this PM unit in Celsius degrees.
+         The value of this object is the actual temperature in 
+         degrees C * 10. You need to translate the readed value
+         (Ex. : value is 240, the temperature is 24 Celsius.) 
+         If the temperature measurement is not installed this 
+         value will be 0.
+          Valid values are 5 to 999 ( 0.5 to 99.9 Celsius)." 
+::= { pmPowerMgmtPDUTableEntry 19 }
+
+pmPowerMgmtPDUTableTemperature2Max OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "Maximum temperature detected in this PM unit in Celsius degrees.
+         The value will be Zero when the PDU does not have support for maximum value.
+         The value of this object is the actual temperature in 
+         degrees C * 10. You need to translate the readed value
+         (Ex. : value is 240, the temperature is 24 Celsius.) 
+         If the temperature measurement is not installed this 
+         value will be 0.
+         Valid values are 5 to 999 ( 0.5 to 99.9 Celsius).
+         Set with Zero value to clear the max. temperature." 
+::= { pmPowerMgmtPDUTableEntry 20 }
+
+pmPowerMgmtPDUTableTemperature3Value OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Temperature of this PM unit in Celsius degrees.
+        The value of this object is the actual temperature in 
+        degrees C * 10. You need to translate the readed value
+        (Ex. : value is 240, the temperature is 24 Celsius.) 
+        If the temperature measurement is not installed this 
+        value will be 0.
+        Valid values are 5 to 999 ( 0.5 to 99.9 Celsius)." 
+::= { pmPowerMgmtPDUTableEntry 21 }
+
+pmPowerMgmtPDUTableTemperature3Max OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "Maximum temperature detected in this PM unit in Celsius degrees.
+        The value will be Zero when the PDU does not have support for maximum value.
+         The value of this object is the actual temperature in 
+         degrees C * 10. You need to translate the readed value
+         (Ex. : value is 240, the temperature is 24 Celsius.) 
+         If the temperature measurement is not installed this 
+         value will be 0.
+         Valid values are 5 to 999 ( 0.5 to 99.9 Celsius).
+         Set with Zero value to clear the max. temperature." 
+::= { pmPowerMgmtPDUTableEntry 22 }
+
+pmPowerMgmtPDUTableHumidityNOS OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of humidity sensors in the PDU."
+::= { pmPowerMgmtPDUTableEntry 23 }
+
+pmPowerMgmtPDUTableHumidity1Value OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Humidity of this PM unit .
+         If the humidity measurement is not installed this 
+         value will be 0." 
+::= {  pmPowerMgmtPDUTableEntry 24 }
+
+pmPowerMgmtPDUTableHumidity1Max OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "Maximum humidity detected in this PM unit.
+         If the humidity measurement  is not installed  or the PDU does not have support for maximum value this 
+         value will be 0.
+         Set with Zero value to clear the max. temperature." 
+::= {  pmPowerMgmtPDUTableEntry 25 }
+
+pmPowerMgmtPDUTableHumidity2Value OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Humidity of this PM unit .
+         If the humidity measurement is not installed this 
+         value will be 0." 
+::= {  pmPowerMgmtPDUTableEntry 26 }
+
+pmPowerMgmtPDUTableHumidity2Max OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "Maximum humidity detected in this PM unit.
+         If the humidity measurement  is not installed  or the PDU does not have support for maximum value this 
+         value will be 0.
+         Set with Zero value to clear the max. temperature." 
+::= {  pmPowerMgmtPDUTableEntry 27 }
+
+pmPowerMgmtPDUTableHumidity3Value OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Humidity of this PM unit .
+         If the humidity measurement is not installed this 
+         value will be 0." 
+::= {  pmPowerMgmtPDUTableEntry 28 }
+
+pmPowerMgmtPDUTableHumidity3Max OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "Maximum humidity detected in this PM unit.
+         If the humidity measurement  is not installed  or the PDU does not have support for maximum value this 
+         value will be 0.
+         Set with Zero value to clear the max. temperature." 
+::= {  pmPowerMgmtPDUTableEntry 29 }
+
+pmPowerMgmtPDUTableVoltageNOS OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of voltage sensors in the PDU."
+::= { pmPowerMgmtPDUTableEntry 30 }
+
+pmPowerMgmtPDUTableVoltage1Value OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Voltage of this sensor in this PDU unit. 
+         This OID is obsoleted. The value can be retrieved
+         from pmPowerMgmtPDUTableVoltageValue, 
+         pmPowerMgmtPhasesTableVoltageValue, or 
+         pmPowerMgmtOutletsTableVoltageValue"
+::= { pmPowerMgmtPDUTableEntry 31 }
+
+pmPowerMgmtPDUTableVoltage1Max OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "Maximum voltage of this sensor in this PDU unit.
+         Set with Zero value to clear the maximum voltage. 
+         This OID is obsoleted. The value can be retrieved
+         from pmPowerMgmtPDUTableVoltageMax, 
+         pmPowerMgmtPhasesTableVoltageMax, or 
+         pmPowerMgmtOutletsTableVoltageMax"
+::= { pmPowerMgmtPDUTableEntry 32 }
+
+pmPowerMgmtPDUTableVoltage2Value OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Voltage of this sensor in this PDU unit. 
+         This OID is obsoleted. The value can be retrieved
+         from pmPowerMgmtPDUTableVoltageValue, 
+         pmPowerMgmtPhasesTableVoltageValue, or 
+         pmPowerMgmtOutletsTableVoltageValue"
+::= { pmPowerMgmtPDUTableEntry 33 }
+
+pmPowerMgmtPDUTableVoltage2Max OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "Maximum voltage of this sensor in this PDU unit.
+         Set with Zero value to clear the maximum voltage. 
+         This OID is obsoleted. The value can be retrieved
+         from pmPowerMgmtPDUTableVoltageMax, 
+         pmPowerMgmtPhasesTableVoltageMax, or 
+         pmPowerMgmtOutletsTableVoltageMax"
+::= { pmPowerMgmtPDUTableEntry 34 }
+
+pmPowerMgmtPDUTableVoltage3Value OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Voltage of this sensor in this PDU unit. 
+         This OID is obsoleted. The value can be retrieved
+         from pmPowerMgmtPDUTableVoltageValue, 
+         pmPowerMgmtPhasesTableVoltageValue, or 
+         pmPowerMgmtOutletsTableVoltageValue"
+::= { pmPowerMgmtPDUTableEntry 35 }
+
+pmPowerMgmtPDUTableVoltage3Max OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "Maximum voltage of this sensor in this PDU unit.
+         Set with Zero value to clear the maximum voltage. 
+         This OID is obsoleted. The value can be retrieved
+         from pmPowerMgmtPDUTableVoltageMax, 
+         pmPowerMgmtPhasesTableVoltageMax, or 
+         pmPowerMgmtOutletsTableVoltageMax"
+::= { pmPowerMgmtPDUTableEntry 36 }
+
+pmPowerMgmtPDUTableNumberOfPhases OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of phases of the PDU."
+::= { pmPowerMgmtPDUTableEntry 37 }
+
+pmPowerMgmtPDUTableNumberOfBanks OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of banks in the PDU."
+::= { pmPowerMgmtPDUTableEntry 38 }
+
+pmPowerMgmtPDUTableNumberOfSensors OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of sensors in the PDU."
+::= { pmPowerMgmtPDUTableEntry 40 }
+
+
+
+--@ Note: Intentionally left space for future expansion (thanks!)
+pmPowerMgmtPDUTableCurrentValue        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of current in the PDU (A x 10)."
+::= { pmPowerMgmtPDUTableEntry 50 }
+
+pmPowerMgmtPDUTableCurrentMax        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of current in the PDU (A x 10)."
+::= { pmPowerMgmtPDUTableEntry 51 }
+
+pmPowerMgmtPDUTableCurrentMin        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of current in the PDU (A x 10)."
+::= { pmPowerMgmtPDUTableEntry 52 }
+
+pmPowerMgmtPDUTableCurrentAvg        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of current in the PDU (A x 10)."
+::= { pmPowerMgmtPDUTableEntry 53 }
+
+pmPowerMgmtPDUTableCurrentReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtPDUTableEntry 54 }
+
+pmPowerMgmtPDUTablePowerValue        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of power in the PDU (W x 10)."
+::= { pmPowerMgmtPDUTableEntry 60 }
+
+pmPowerMgmtPDUTablePowerMax        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of power in the PDU (W x 10)."
+::= { pmPowerMgmtPDUTableEntry 61 }
+
+pmPowerMgmtPDUTablePowerMin        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of power in the PDU (W x 10)."
+::= { pmPowerMgmtPDUTableEntry 62 }
+
+pmPowerMgmtPDUTablePowerAvg        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of power in the PDU (W x 10)."
+::= { pmPowerMgmtPDUTableEntry 63 }
+
+pmPowerMgmtPDUTablePowerReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtPDUTableEntry 64 }
+
+pmPowerMgmtPDUTableVoltageValue        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of voltage in the PDU (V)."
+::= { pmPowerMgmtPDUTableEntry 70 }
+
+pmPowerMgmtPDUTableVoltageMax        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of voltage in the PDU (V)."
+::= { pmPowerMgmtPDUTableEntry 71 }
+
+pmPowerMgmtPDUTableVoltageMin        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of voltage in the PDU (V)."
+::= { pmPowerMgmtPDUTableEntry 72 }
+
+pmPowerMgmtPDUTableVoltageAvg        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of voltage in the PDU (V)."
+::= { pmPowerMgmtPDUTableEntry 73 }
+
+pmPowerMgmtPDUTableVoltageReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtPDUTableEntry 74 }
+
+pmPowerMgmtPDUTablePowerFactorValue        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of power factor in the PDU (Pf x 100)."
+::= { pmPowerMgmtPDUTableEntry 80 }
+
+pmPowerMgmtPDUTablePowerFactorMax        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of power factor in the PDU (Pf x 100)."
+::= { pmPowerMgmtPDUTableEntry 81 }
+
+pmPowerMgmtPDUTablePowerFactorMin        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of power factor in the PDU (Pf x 100)."
+::= { pmPowerMgmtPDUTableEntry 82 }
+
+pmPowerMgmtPDUTablePowerFactorAvg        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of power factor in the PDU (Pf x 100)."
+::= { pmPowerMgmtPDUTableEntry 83 }
+
+pmPowerMgmtPDUTablePowerFactorReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtPDUTableEntry 84 }
+
+pmPowerMgmtPDUTablePowerControl OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                powerOn(2),
+                powerOff(3),
+                powerCycle(4)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "A set value of power*(2-4) will send command to PDU.
+         noAction(1) = always returned in a GET. Does nothing if SET.
+         powerOn(2)  = when SET the power On command is sent to PDU.
+         powerOff(3) = when SET the power Off command is sent to PDU.
+         powerCycle(4)=when SET the power cycle command is sent to PDU."
+::= { pmPowerMgmtPDUTableEntry 90 }
+
+pmPowerMgmtPDUTableResetOCP OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "A set value of power*(2) will send command to PDU.
+         noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtPDUTableEntry 91 }
+
+pmPowerMgmtPDUTableReboot OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reboot(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "A set value of power*(2) will send command to PDU.
+         noAction(1) = always returned in a GET. Does nothing if SET.
+         reboot(2)  = when SET the reboot command is sent to PDU."
+::= { pmPowerMgmtPDUTableEntry 100 }
+
+pmPowerMgmtTotalNumberOfOutlets OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of outlets managed by the appliance."
+::= { pmPowerMgmt 4 }
+
+pmPowerMgmtOutletsTable OBJECT-TYPE
+        SYNTAX             SEQUENCE OF PmPowerMgmtOutletsTableEntry
+        MAX-ACCESS         not-accessible
+        STATUS             current
+        DESCRIPTION
+        "This table contains the information about outlets."
+::= { pmPowerMgmt 5 }
+ 
+pmPowerMgmtOutletsTableEntry  OBJECT-TYPE
+        SYNTAX            PmPowerMgmtOutletsTableEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION                
+        "each entry has the information about the outlet."
+        INDEX             { pmPowerMgmtOutletsTablePortNumber,
+                            pmPowerMgmtOutletsTablePduNumber,
+                            pmPowerMgmtOutletsTableNumber }
+::= { pmPowerMgmtOutletsTable 1 }
+
+PmPowerMgmtOutletsTableEntry ::= SEQUENCE  {
+        pmPowerMgmtOutletsTablePortNumber   InterfaceIndex,   -- serial port #
+        pmPowerMgmtOutletsTablePduNumber    InterfaceIndex,     
+        pmPowerMgmtOutletsTableNumber       InterfaceIndex,   -- outlet number in PDU
+        pmPowerMgmtOutletsTableName         DisplayString,    -- outlet name
+        pmPowerMgmtOutletsTableStatus       INTEGER,          -- outlet status
+        pmPowerMgmtOutletsTablePowerControl INTEGER,          -- manage the outlet
+        pmPowerMgmtOutletsTablePortName     DisplayString,    -- serial port name
+        pmPowerMgmtOutletsTablePduId        DisplayString,     -- PDU ID
+        pmPowerMgmtOutletsTableCurrentValue Integer32,    -- actual value for current of the sensor
+        pmPowerMgmtOutletsTableCurrentMax   Integer32,    -- max value for current
+        pmPowerMgmtOutletsTableCurrentMin   Integer32,    -- min value for current
+        pmPowerMgmtOutletsTableCurrentAvg   Integer32,    -- average value for current
+        pmPowerMgmtOutletsTableCurrentReset   INTEGER,    -- reset the current stats
+        pmPowerMgmtOutletsTablePowerValue   Integer32,    -- actual value for power
+        pmPowerMgmtOutletsTablePowerMax     Integer32,    -- max value for power
+        pmPowerMgmtOutletsTablePowerMin     Integer32,    -- min value for power
+        pmPowerMgmtOutletsTablePowerAvg     Integer32,    -- average value for power
+        pmPowerMgmtOutletsTablePowerReset     INTEGER,    -- reset the power stats
+        pmPowerMgmtOutletsTableVoltageValue Integer32,    -- actual value for voltage
+        pmPowerMgmtOutletsTableVoltageMax   Integer32,    -- max value for voltage
+        pmPowerMgmtOutletsTableVoltageMin   Integer32,    -- min value for voltage
+        pmPowerMgmtOutletsTableVoltageAvg   Integer32,    -- average value for voltage
+        pmPowerMgmtOutletsTableVoltageReset   INTEGER,    -- reset the voltage stats
+        pmPowerMgmtOutletsTablePowerFactorValue  Integer32,    -- actual value for powerfactor
+        pmPowerMgmtOutletsTablePowerFactorMax    Integer32,    -- max value for powerfactor
+        pmPowerMgmtOutletsTablePowerFactorMin    Integer32,    -- min value for powerfactor
+        pmPowerMgmtOutletsTablePowerFactorAvg    Integer32,    -- average value for powerfactor
+        pmPowerMgmtOutletsTablePowerFactorReset    INTEGER    -- reset the powerfactor stats
+}
+
+pmPowerMgmtOutletsTablePortNumber OBJECT-TYPE
+        SYNTAX             InterfaceIndex
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Serial Port number."
+::= { pmPowerMgmtOutletsTableEntry 1 }
+
+pmPowerMgmtOutletsTablePduNumber OBJECT-TYPE
+        SYNTAX             InterfaceIndex
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Index."
+::= { pmPowerMgmtOutletsTableEntry 2 }
+
+pmPowerMgmtOutletsTableNumber OBJECT-TYPE
+        SYNTAX             InterfaceIndex
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of the outlet in the PDU."
+::= { pmPowerMgmtOutletsTableEntry 3 }
+
+pmPowerMgmtOutletsTableName OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Name of the outlet." 
+::= { pmPowerMgmtOutletsTableEntry 4 }
+
+pmPowerMgmtOutletsTableStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                off(1),
+                on(2),
+                offLocked(3),
+                onLocked(4),
+                offCycle(5),
+                onPendingOff(6),
+                offPendingOn(7),
+                onPendingCycle(8),
+                notSet(9),
+                onFixed(10),
+                offShutdown(11),
+                tripped(12)
+        }
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Status of the outlet."
+::= { pmPowerMgmtOutletsTableEntry 5 }
+
+pmPowerMgmtOutletsTablePowerControl OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                powerOn(2),
+                powerOff(3),
+                powerCycle(4),
+                powerLock(5),
+                powerUnlock(6)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION 
+        "A set value of power*(2-6) will send command to PDU.
+         noAction(1) = always returned in a GET. Does nothing if SET.
+         powerOn(2)  = when SET the power On command is sent to PDU.
+         powerOff(3) = when SET the power Off command is sent to PDU.
+         powerCycle(4)=when SET the power cycle command is sent to PDU.
+         powerLock(5)= when SET the power lock command is sent to PDU.
+         powerUnlock(6)=when SET the power unlock command is sent to PDU.
+        The powerLock and powerUnlock are valid only for Cyclades-PM PDUs"
+::= { pmPowerMgmtOutletsTableEntry 6 }
+
+pmPowerMgmtOutletsTablePortName OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Serial Port Name where the PDU is connected."
+::= { pmPowerMgmtOutletsTableEntry 7 }
+
+pmPowerMgmtOutletsTablePduId        OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "PDU identification."
+::= { pmPowerMgmtOutletsTableEntry 8 }
+
+--@ Note: Intentionally left space for future expansion
+pmPowerMgmtOutletsTableCurrentValue        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of current in the outlet (A x 10)."
+::= { pmPowerMgmtOutletsTableEntry 50 }
+
+pmPowerMgmtOutletsTableCurrentMax        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of current in the outlet (A x 10)."
+::= { pmPowerMgmtOutletsTableEntry 51 }
+
+pmPowerMgmtOutletsTableCurrentMin        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of current in the outlet (A x 10)."
+::= { pmPowerMgmtOutletsTableEntry 52 }
+
+pmPowerMgmtOutletsTableCurrentAvg        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of current in the outlet (A x 10)."
+::= { pmPowerMgmtOutletsTableEntry 53 }
+
+pmPowerMgmtOutletsTableCurrentReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtOutletsTableEntry 54 }
+
+pmPowerMgmtOutletsTablePowerValue        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of power in the outlet (W x 10)."
+::= { pmPowerMgmtOutletsTableEntry 60 }
+
+pmPowerMgmtOutletsTablePowerMax        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of power in the outlet (W x 10)."
+::= { pmPowerMgmtOutletsTableEntry 61 }
+
+pmPowerMgmtOutletsTablePowerMin        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of power in the outlet (W x 10)."
+::= { pmPowerMgmtOutletsTableEntry 62 }
+
+pmPowerMgmtOutletsTablePowerAvg        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of power in the outlet (W x 10)."
+::= { pmPowerMgmtOutletsTableEntry 63 }
+
+pmPowerMgmtOutletsTablePowerReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtOutletsTableEntry 64 }
+
+pmPowerMgmtOutletsTableVoltageValue        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of voltage in the outlet (V)."
+::= { pmPowerMgmtOutletsTableEntry 70 }
+
+pmPowerMgmtOutletsTableVoltageMax        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of voltage in the outlet (V)."
+::= { pmPowerMgmtOutletsTableEntry 71 }
+
+pmPowerMgmtOutletsTableVoltageMin        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of voltage in the outlet (V)."
+::= { pmPowerMgmtOutletsTableEntry 72 }
+
+pmPowerMgmtOutletsTableVoltageAvg        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of voltage in the outlet (V)."
+::= { pmPowerMgmtOutletsTableEntry 73 }
+
+pmPowerMgmtOutletsTableVoltageReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtOutletsTableEntry 74 }
+
+pmPowerMgmtOutletsTablePowerFactorValue        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of power factor in the outlet (Pf x 100)."
+::= { pmPowerMgmtOutletsTableEntry 80 }
+
+pmPowerMgmtOutletsTablePowerFactorMax        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of power factor in the outlet (Pf x 100)."
+::= { pmPowerMgmtOutletsTableEntry 81 }
+
+pmPowerMgmtOutletsTablePowerFactorMin        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of power factor in the outlet (Pf x 100)."
+::= { pmPowerMgmtOutletsTableEntry 82 }
+
+pmPowerMgmtOutletsTablePowerFactorAvg        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of power factor in the outlet (Pf x 100)."
+::= { pmPowerMgmtOutletsTableEntry 83 }
+
+pmPowerMgmtOutletsTablePowerFactorReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtOutletsTableEntry 84 }
+
+pmPowerMgmtNumberOfOutletGroup OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of configured group of outlets."
+::= { pmPowerMgmt 6 }
+
+pmPowerMgmtGroupTable OBJECT-TYPE
+        SYNTAX             SEQUENCE OF PmPowerMgmtGroupTableEntry
+        MAX-ACCESS         not-accessible
+        STATUS             current
+        DESCRIPTION
+        "This table contains the information about group of outlets."
+::= { pmPowerMgmt 7 }
+ 
+pmPowerMgmtGroupTableEntry  OBJECT-TYPE
+        SYNTAX            PmPowerMgmtGroupTableEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION                
+        "each entry has the information about group of outlets."
+        INDEX             { pmPowerMgmtGroupTableIndex }
+::= { pmPowerMgmtGroupTable 1 }
+
+PmPowerMgmtGroupTableEntry ::= SEQUENCE  {
+        pmPowerMgmtGroupTableIndex           InterfaceIndexOrZero,      
+        pmPowerMgmtGroupTableName            DisplayString, -- group name
+        pmPowerMgmtGroupTableStatus          INTEGER,       -- group status
+        pmPowerMgmtGroupTablePowerControl    INTEGER        -- manage the group        
+}
+
+pmPowerMgmtGroupTableIndex OBJECT-TYPE
+        SYNTAX             InterfaceIndexOrZero
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Index of the group."
+::= { pmPowerMgmtGroupTableEntry 1 }
+
+pmPowerMgmtGroupTableName OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Name of the group of outlets." 
+::= { pmPowerMgmtGroupTableEntry 2 }
+
+pmPowerMgmtGroupTableStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+                off(1),
+                on(2)
+                }
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Status of the group of outlet."
+::= { pmPowerMgmtGroupTableEntry 3 }
+
+pmPowerMgmtGroupTablePowerControl OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                powerOn(2),
+                powerOff(3),
+                powerCycle(4)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION 
+        "A set value of power*(2-6) will send command to PDU.
+         noAction(1) = always returned in a GET. Does nothing if SET.
+         powerOn(2)  = when SET the power On command is sent to PDU.
+         powerOff(3) = when SET the power Off command is sent to PDU.
+         powerCycle(4)=when SET the power cycle command is sent to PDU."
+::= { pmPowerMgmtGroupTableEntry 4 }
+
+pmPowerMgmtTotalNumberOfPhases OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of phases managed by the appliance."
+::= { pmPowerMgmt 8 }
+
+pmPowerMgmtPhasesTable OBJECT-TYPE
+        SYNTAX             SEQUENCE OF PmPowerMgmtPhasesTableEntry
+        MAX-ACCESS         not-accessible
+        STATUS             current
+        DESCRIPTION
+        "This table contains the information about phases."
+::= { pmPowerMgmt 9 }
+ 
+pmPowerMgmtPhasesTableEntry  OBJECT-TYPE
+        SYNTAX            PmPowerMgmtPhasesTableEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION                
+        "each entry has the information about the phases."
+        INDEX             { pmPowerMgmtPhasesTablePortNumber,
+                            pmPowerMgmtPhasesTablePduNumber,
+                            pmPowerMgmtPhasesTableNumber }
+::= { pmPowerMgmtPhasesTable 1 }
+
+PmPowerMgmtPhasesTableEntry ::= SEQUENCE  {
+        pmPowerMgmtPhasesTablePortNumber   InterfaceIndex,   -- serial port #
+        pmPowerMgmtPhasesTablePduNumber    InterfaceIndex,     
+        pmPowerMgmtPhasesTableNumber       InterfaceIndex,   -- phase number in PDU
+        pmPowerMgmtPhasesTableName         DisplayString,    -- phase sysname
+        pmPowerMgmtPhasesTablePortName     DisplayString,    -- serial port name
+        pmPowerMgmtPhasesTablePduId        DisplayString,    -- PDU ID
+        pmPowerMgmtPhasesTableCurrentValue Integer32,    -- actual value for current of the sensor
+        pmPowerMgmtPhasesTableCurrentMax   Integer32,    -- max value for current
+        pmPowerMgmtPhasesTableCurrentMin   Integer32,    -- min value for current
+        pmPowerMgmtPhasesTableCurrentAvg   Integer32,    -- average value for current
+        pmPowerMgmtPhasesTableCurrentReset   INTEGER,    -- reset the current stats
+        pmPowerMgmtPhasesTablePowerValue   Integer32,    -- actual value for power
+        pmPowerMgmtPhasesTablePowerMax     Integer32,    -- max value for power
+        pmPowerMgmtPhasesTablePowerMin     Integer32,    -- min value for power
+        pmPowerMgmtPhasesTablePowerAvg     Integer32,    -- average value for power
+        pmPowerMgmtPhasesTablePowerReset     INTEGER,    -- reset the power stats
+        pmPowerMgmtPhasesTableVoltageValue Integer32,    -- actual value for voltage
+        pmPowerMgmtPhasesTableVoltageMax   Integer32,    -- max value for voltage
+        pmPowerMgmtPhasesTableVoltageMin   Integer32,    -- min value for voltage
+        pmPowerMgmtPhasesTableVoltageAvg   Integer32,    -- average value for voltage
+        pmPowerMgmtPhasesTableVoltageReset   INTEGER,    -- reset the voltage stats
+        pmPowerMgmtPhasesTablePowerFactorValue  Integer32,    -- actual value for powerfactor
+        pmPowerMgmtPhasesTablePowerFactorMax    Integer32,    -- max value for powerfactor
+        pmPowerMgmtPhasesTablePowerFactorMin    Integer32,    -- min value for powerfactor
+        pmPowerMgmtPhasesTablePowerFactorAvg    Integer32,    -- average value for powerfactor
+        pmPowerMgmtPhasesTablePowerFactorReset    INTEGER    -- reset the powerfactor stats
+}
+
+pmPowerMgmtPhasesTablePortNumber OBJECT-TYPE
+        SYNTAX             InterfaceIndex
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Serial Port number."
+::= { pmPowerMgmtPhasesTableEntry 1 }
+
+pmPowerMgmtPhasesTablePduNumber OBJECT-TYPE
+        SYNTAX             InterfaceIndex
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Index."
+::= { pmPowerMgmtPhasesTableEntry 2 }
+
+pmPowerMgmtPhasesTableNumber OBJECT-TYPE
+        SYNTAX             InterfaceIndex
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of the phase in the PDU."
+::= { pmPowerMgmtPhasesTableEntry 3 }
+
+pmPowerMgmtPhasesTableName OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Name of the phase." 
+::= { pmPowerMgmtPhasesTableEntry 4 }
+
+pmPowerMgmtPhasesTablePortName OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Serial Port Name where the PDU is connected."
+::= { pmPowerMgmtPhasesTableEntry 5 }
+
+pmPowerMgmtPhasesTablePduId        OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "PDU identification."
+::= { pmPowerMgmtPhasesTableEntry 6 }
+
+--@ Note: Intentionally left space for future expansion
+pmPowerMgmtPhasesTableCurrentValue        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of current in the phase (A x 10)."
+::= { pmPowerMgmtPhasesTableEntry 50 }
+
+pmPowerMgmtPhasesTableCurrentMax        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of current in the phase (A x 10)."
+::= { pmPowerMgmtPhasesTableEntry 51 }
+
+pmPowerMgmtPhasesTableCurrentMin        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of current in the phase (A x 10)."
+::= { pmPowerMgmtPhasesTableEntry 52 }
+
+pmPowerMgmtPhasesTableCurrentAvg        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of current in the phase (A x 10)."
+::= { pmPowerMgmtPhasesTableEntry 53 }
+
+pmPowerMgmtPhasesTableCurrentReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtPhasesTableEntry 54 }
+
+pmPowerMgmtPhasesTablePowerValue        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of power in the phase (W x 10)."
+::= { pmPowerMgmtPhasesTableEntry 60 }
+
+pmPowerMgmtPhasesTablePowerMax        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of power in the phase (W x 10)."
+::= { pmPowerMgmtPhasesTableEntry 61 }
+
+pmPowerMgmtPhasesTablePowerMin        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of power in the phase (W x 10)."
+::= { pmPowerMgmtPhasesTableEntry 62 }
+
+pmPowerMgmtPhasesTablePowerAvg        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of power in the phase (W x 10)."
+::= { pmPowerMgmtPhasesTableEntry 63 }
+
+pmPowerMgmtPhasesTablePowerReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtPhasesTableEntry 64 }
+
+pmPowerMgmtPhasesTableVoltageValue        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of voltage in the phase (V)."
+::= { pmPowerMgmtPhasesTableEntry 70 }
+
+pmPowerMgmtPhasesTableVoltageMax        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of voltage in the phase (V)."
+::= { pmPowerMgmtPhasesTableEntry 71 }
+
+pmPowerMgmtPhasesTableVoltageMin        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of voltage in the phase (V)."
+::= { pmPowerMgmtPhasesTableEntry 72 }
+
+pmPowerMgmtPhasesTableVoltageAvg        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of voltage in the phase (V)."
+::= { pmPowerMgmtPhasesTableEntry 73 }
+
+pmPowerMgmtPhasesTableVoltageReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtPhasesTableEntry 74 }
+
+pmPowerMgmtPhasesTablePowerFactorValue        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of power factor in the phase (Pf x 100)."
+::= { pmPowerMgmtPhasesTableEntry 80 }
+
+pmPowerMgmtPhasesTablePowerFactorMax        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of power factor in the phase (Pf x 100)."
+::= { pmPowerMgmtPhasesTableEntry 81 }
+
+pmPowerMgmtPhasesTablePowerFactorMin        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of power factor in the phase (Pf x 100)."
+::= { pmPowerMgmtPhasesTableEntry 82 }
+
+pmPowerMgmtPhasesTablePowerFactorAvg        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of power factor in the phase (Pf x 100)."
+::= { pmPowerMgmtPhasesTableEntry 83 }
+
+pmPowerMgmtPhasesTablePowerFactorReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtPhasesTableEntry 84 }
+
+--@ BANKS
+
+pmPowerMgmtTotalNumberOfBanks OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of banks managed by the appliance."
+::= { pmPowerMgmt 10 }
+
+pmPowerMgmtBanksTable OBJECT-TYPE
+        SYNTAX             SEQUENCE OF PmPowerMgmtBanksTableEntry
+        MAX-ACCESS         not-accessible
+        STATUS             current
+        DESCRIPTION
+        "This table contains the information about banks."
+::= { pmPowerMgmt 11 }
+ 
+pmPowerMgmtBanksTableEntry  OBJECT-TYPE
+        SYNTAX            PmPowerMgmtBanksTableEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION                
+        "each entry has the information about the banks."
+        INDEX             { pmPowerMgmtBanksTablePortNumber,
+                            pmPowerMgmtBanksTablePduNumber,
+                            pmPowerMgmtBanksTableNumber }
+::= { pmPowerMgmtBanksTable 1 }
+
+PmPowerMgmtBanksTableEntry ::= SEQUENCE  {
+        pmPowerMgmtBanksTablePortNumber   InterfaceIndex,   -- serial port #
+        pmPowerMgmtBanksTablePduNumber    InterfaceIndex,     
+        pmPowerMgmtBanksTableNumber       InterfaceIndex,   -- bank number in PDU
+        pmPowerMgmtBanksTableName         DisplayString,    -- bank sysname
+        pmPowerMgmtBanksTablePortName     DisplayString,    -- serial port name
+        pmPowerMgmtBanksTablePduId        DisplayString,    -- PDU ID
+        pmPowerMgmtBanksTableCurrentValue Integer32,    -- actual value for current of the sensor
+        pmPowerMgmtBanksTableCurrentMax   Integer32,    -- max value for current
+        pmPowerMgmtBanksTableCurrentMin   Integer32,    -- min value for current
+        pmPowerMgmtBanksTableCurrentAvg   Integer32,    -- average value for current
+        pmPowerMgmtBanksTableCurrentReset   INTEGER,    -- reset current stats
+        pmPowerMgmtBanksTablePowerValue   Integer32,    -- actual value for power
+        pmPowerMgmtBanksTablePowerMax     Integer32,    -- max value for power
+        pmPowerMgmtBanksTablePowerMin     Integer32,    -- min value for power
+        pmPowerMgmtBanksTablePowerAvg     Integer32,    -- average value for power
+        pmPowerMgmtBanksTablePowerReset     INTEGER,    -- reset power stats
+        pmPowerMgmtBanksTableVoltageValue Integer32,    -- actual value for voltage
+        pmPowerMgmtBanksTableVoltageMax   Integer32,    -- max value for voltage
+        pmPowerMgmtBanksTableVoltageMin   Integer32,    -- min value for voltage
+        pmPowerMgmtBanksTableVoltageAvg   Integer32,    -- average value for voltage
+        pmPowerMgmtBanksTableVoltageReset   INTEGER,    -- reset voltage stats
+        pmPowerMgmtBanksTablePowerFactorValue  Integer32,    -- actual value for powerfactor
+        pmPowerMgmtBanksTablePowerFactorMax    Integer32,    -- max value for powerfactor
+        pmPowerMgmtBanksTablePowerFactorMin    Integer32,    -- min value for powerfactor
+        pmPowerMgmtBanksTablePowerFactorAvg    Integer32,    -- average value for powerfactor
+        pmPowerMgmtBanksTablePowerFactorReset    INTEGER    -- reset powerfactor stats
+}
+
+pmPowerMgmtBanksTablePortNumber OBJECT-TYPE
+        SYNTAX             InterfaceIndex
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Serial Port number."
+::= { pmPowerMgmtBanksTableEntry 1 }
+
+pmPowerMgmtBanksTablePduNumber OBJECT-TYPE
+        SYNTAX             InterfaceIndex
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Index."
+::= { pmPowerMgmtBanksTableEntry 2 }
+
+pmPowerMgmtBanksTableNumber OBJECT-TYPE
+        SYNTAX             InterfaceIndex
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of the bank in the PDU."
+::= { pmPowerMgmtBanksTableEntry 3 }
+
+pmPowerMgmtBanksTableName OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Name of the bank." 
+::= { pmPowerMgmtBanksTableEntry 4 }
+
+pmPowerMgmtBanksTablePortName OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Serial Port Name where the PDU is connected."
+::= { pmPowerMgmtBanksTableEntry 5 }
+
+pmPowerMgmtBanksTablePduId        OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "PDU identification."
+::= { pmPowerMgmtBanksTableEntry 6 }
+
+--@ Note: Intentionally left space for future expansion
+pmPowerMgmtBanksTableCurrentValue        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of current in the bank (A x 10)."
+::= { pmPowerMgmtBanksTableEntry 50 }
+
+pmPowerMgmtBanksTableCurrentMax        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of current in the bank (A x 10)."
+::= { pmPowerMgmtBanksTableEntry 51 }
+
+pmPowerMgmtBanksTableCurrentMin        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of current in the bank (A x 10)."
+::= { pmPowerMgmtBanksTableEntry 52 }
+
+pmPowerMgmtBanksTableCurrentAvg        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of current in the bank (A x 10)."
+::= { pmPowerMgmtBanksTableEntry 53 }
+
+pmPowerMgmtBanksTableCurrentReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtBanksTableEntry 54 }
+
+pmPowerMgmtBanksTablePowerValue        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of power in the bank (W x 10)."
+::= { pmPowerMgmtBanksTableEntry 60 }
+
+pmPowerMgmtBanksTablePowerMax        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of power in the bank (W x 10)."
+::= { pmPowerMgmtBanksTableEntry 61 }
+
+pmPowerMgmtBanksTablePowerMin        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of power in the bank (W x 10)."
+::= { pmPowerMgmtBanksTableEntry 62 }
+
+pmPowerMgmtBanksTablePowerAvg        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of power in the bank (W x 10)."
+::= { pmPowerMgmtBanksTableEntry 63 }
+
+pmPowerMgmtBanksTablePowerReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtBanksTableEntry 64 }
+
+pmPowerMgmtBanksTableVoltageValue        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of voltage in the bank (V)."
+::= { pmPowerMgmtBanksTableEntry 70 }
+
+pmPowerMgmtBanksTableVoltageMax        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of voltage in the bank (V)."
+::= { pmPowerMgmtBanksTableEntry 71 }
+
+pmPowerMgmtBanksTableVoltageMin        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of voltage in the bank (V)."
+::= { pmPowerMgmtBanksTableEntry 72 }
+
+pmPowerMgmtBanksTableVoltageAvg        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of voltage in the bank (V)."
+::= { pmPowerMgmtBanksTableEntry 73 }
+
+pmPowerMgmtBanksTableVoltageReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtBanksTableEntry 74 }
+
+pmPowerMgmtBanksTablePowerFactorValue        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of power factor in the bank (Pf x 100)."
+::= { pmPowerMgmtBanksTableEntry 80 }
+
+pmPowerMgmtBanksTablePowerFactorMax        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of power factor in the bank (Pf x 100)."
+::= { pmPowerMgmtBanksTableEntry 81 }
+
+pmPowerMgmtBanksTablePowerFactorMin        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of power factor in the bank (Pf x 100)."
+::= { pmPowerMgmtBanksTableEntry 82 }
+
+pmPowerMgmtBanksTablePowerFactorAvg        OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of power factor in the bank (Pf x 100)."
+::= { pmPowerMgmtBanksTableEntry 83 }
+
+pmPowerMgmtBanksTablePowerFactorReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to PDU."
+::= { pmPowerMgmtBanksTableEntry 84 }
+
+
+--@ Sensors
+
+pmPowerMgmtTotalNumberOfSensors OBJECT-TYPE
+        SYNTAX             Integer32
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of Sensors managed by the appliance."
+::= { pmPowerMgmt 12 }
+
+pmPowerMgmtSensorsTable OBJECT-TYPE
+        SYNTAX             SEQUENCE OF PmPowerMgmtSensorsTableEntry
+        MAX-ACCESS         not-accessible
+        STATUS             current
+        DESCRIPTION
+        "This table contains the information about sensors."
+::= { pmPowerMgmt 13 }
+ 
+pmPowerMgmtSensorsTableEntry  OBJECT-TYPE
+        SYNTAX            PmPowerMgmtSensorsTableEntry
+        MAX-ACCESS        not-accessible
+        STATUS            current
+        DESCRIPTION                
+        "each entry has the information about the sensors."
+        INDEX             { pmPowerMgmtSensorsTablePortNumber,
+                            pmPowerMgmtSensorsTablePduNumber,
+                            pmPowerMgmtSensorsTableNumber }
+::= { pmPowerMgmtSensorsTable 1 }
+
+PmPowerMgmtSensorsTableEntry ::= SEQUENCE  {
+        pmPowerMgmtSensorsTablePortNumber   InterfaceIndex,   -- serial port #
+        pmPowerMgmtSensorsTablePduNumber    InterfaceIndex,     
+        pmPowerMgmtSensorsTableNumber       InterfaceIndex,   -- sensor number in PDU
+        pmPowerMgmtSensorsTableName         DisplayString,    -- sensor sysname
+        pmPowerMgmtSensorsTablePortName     DisplayString,    -- serial port name
+        pmPowerMgmtSensorsTablePduId        DisplayString,    -- PDU ID
+        pmPowerMgmtSensorsTableValue DisplayString,    	  -- actual value for current of the sensor
+        pmPowerMgmtSensorsTableValueMax   DisplayString,    -- max value for current
+        pmPowerMgmtSensorsTableValueMin   DisplayString,    -- min value for current
+        pmPowerMgmtSensorsTableValueAvg   DisplayString,    -- average value for current
+        pmPowerMgmtSensorsTableValueReset   INTEGER    -- reset current stats
+}
+
+pmPowerMgmtSensorsTablePortNumber OBJECT-TYPE
+        SYNTAX             InterfaceIndex
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Serial Port number."
+::= { pmPowerMgmtSensorsTableEntry 1 }
+
+pmPowerMgmtSensorsTablePduNumber OBJECT-TYPE
+        SYNTAX             InterfaceIndex
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Index."
+::= { pmPowerMgmtSensorsTableEntry 2 }
+
+pmPowerMgmtSensorsTableNumber OBJECT-TYPE
+        SYNTAX             InterfaceIndex
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Number of the sensor in the PDU."
+::= { pmPowerMgmtSensorsTableEntry 3 }
+
+pmPowerMgmtSensorsTableName OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Name of the sensor." 
+::= { pmPowerMgmtSensorsTableEntry 4 }
+
+pmPowerMgmtSensorsTablePortName OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Serial Port Name where the PDU is connected."
+::= { pmPowerMgmtSensorsTableEntry 5 }
+
+pmPowerMgmtSensorsTablePduId        OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "PDU identification."
+::= { pmPowerMgmtSensorsTableEntry 6 }
+
+--@ Note: Intentionally left space for future expansion
+pmPowerMgmtSensorsTableValue        OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Actual value of the sensor"
+::= { pmPowerMgmtSensorsTableEntry 20 }
+
+pmPowerMgmtSensorsTableValueMax        OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Maximum value of the sensor"
+::= { pmPowerMgmtSensorsTableEntry 21 }
+
+pmPowerMgmtSensorsTableValueMin        OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Minimum value of the sensor"
+::= { pmPowerMgmtSensorsTableEntry 22 }
+
+pmPowerMgmtSensorsTableValueAvg        OBJECT-TYPE
+        SYNTAX             DisplayString
+        MAX-ACCESS         read-only
+        STATUS             current
+        DESCRIPTION
+        "Average value of the sensor"
+::= { pmPowerMgmtSensorsTableEntry 23 }
+
+pmPowerMgmtSensorsTableValueReset OBJECT-TYPE
+        SYNTAX INTEGER {
+                noAction(1),
+                reset(2)
+        }
+        MAX-ACCESS         read-write
+        STATUS             current
+        DESCRIPTION
+        "noAction(1) = always returned in a GET. Does nothing if SET.
+         reset(2)  = when SET the reset command is sent to sensor."
+::= { pmPowerMgmtSensorsTableEntry 30 }
+
+END

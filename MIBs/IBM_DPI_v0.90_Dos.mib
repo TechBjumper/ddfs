@@ -1,0 +1,3102 @@
+-- IBM DPI MIB
+--
+-- { iso org(3) dod(6) internet(1) private(4) enterprises(1) powerware(534)
+-- product(6) pduAgent(6) pdu(2)
+-- ==============================================================================================
+---
+---     Revision History
+---
+---     v0.80   Nov 03, 2005	Johnny Lin
+---                             Initial
+---
+---     v0.81   Dec 03, 2005	Kenneth
+---                             Draft Modified
+---
+---     v0.82   Dec 12, 2005	Kenneth
+---                             Draft Modified & Fixed errors form NMS compiler (SNMPc, HPOV, MG-Soft, Op-Manger)
+---
+---     v0.83   Dec 16, 2005	KevinLee
+---                             Modified & Fixed errors form EMP
+---
+---     v0.84   Jan 03, 2006	KevinLee
+---                             Moved accessControlPassword object.
+---
+---     v0.85   Feb 11, 2006	Kenneth
+---                             1. Change MIB Tree to "powerware(534).product(6).pduAgent(6)"
+---                                
+---                             2. Remove the extra comma at the end of the statement "reject(2)"
+---
+---     v0.86   Feb 16, 2006	Kenneth
+---                             1. Remove the all of CR(0x0D) characters.
+---                             2. Change to "IBM DPI" 
+---
+---     v0.87   Feb 24, 2006	Kenneth
+---                             1. Add gMT0430, gMT0545, gMT0630, gMT0930 and gMT1300 into pduAgentNtpTimeZone.
+---                             2. Add accessControlDesc into pduAgentAccessControlTable
+---
+---     v0.88   Jan 05, 2007	Kevin
+---                             1. MOdified MIB error issuse for http://www.simpleweb.org/ietf/mibs/validate/ web site.
+---
+---     v0.89   Mar 06, 2007	Kevin
+---                             1. Added load group table.
+---     v0.90   July 17, 2007	Kevin
+---                             1. Modified Outlet name J1-J12 string length 32 to 250 bytes.
+---
+---
+---
+IBM-DPI-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+  enterprises
+    FROM RFC1155-SMI
+  OBJECT-TYPE
+    FROM RFC-1212
+  DisplayString
+    FROM RFC1213-MIB
+  TRAP-TYPE
+    FROM RFC-1215;
+
+PositiveInteger ::=
+    INTEGER
+
+NonNegativeInteger ::=
+    INTEGER
+
+powerware         OBJECT IDENTIFIER ::= { enterprises 534 }
+product           OBJECT IDENTIFIER ::= { powerware 6 }
+pduAgent          OBJECT IDENTIFIER ::= { product 6 }
+pdu               OBJECT IDENTIFIER ::= { pduAgent  2 }
+pduObjects        OBJECT IDENTIFIER ::= { pdu 1 }
+pduTraps          OBJECT IDENTIFIER ::= { pdu 2 }
+
+pduIdent          OBJECT IDENTIFIER ::= { pduObjects 1 }
+pduAgentGroup	  OBJECT IDENTIFIER ::= { pduObjects 2 }
+pduDevice         OBJECT IDENTIFIER ::= { pduObjects 3 }
+pduEnv            OBJECT IDENTIFIER ::= { pduObjects 4 }
+
+-- ===========================================================================
+--
+-- pduIdent
+--
+--	IBM DPI Identification Group
+--
+-- ===========================================================================
+pduIdentManufacturer OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The name of manufacturer."
+       ::= { pduIdent 1 }
+
+pduIdentModel OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (0..31))
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+          "The Model designation of the device."
+      ::= { pduIdent 2 }
+
+pduIdentDeviceSoftwareVersion OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..63))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The firmware version of the IBM DPI device."
+      ::= { pduIdent 3 }
+
+pduIdentAgentSoftwareVersion OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The firmware version of the network agent device."
+      ::= { pduIdent 4 }
+
+pduIdentName OBJECT-TYPE
+      SYNTAX DisplayString (SIZE(0..31))
+      ACCESS read-only
+      STATUS mandatory
+      DESCRIPTION
+               "A description of this IBM DPI device."
+      ::= { pduIdent 5 }
+
+pduAgentConfig    OBJECT IDENTIFIER ::= { pduAgentGroup 1 }
+-- ===========================================================================
+--
+-- pduConfig
+--
+--	IBM DPI Configuration Group, configure the secific features of IBM DPI
+--
+-- ===========================================================================
+pduAgentMibVersion OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The Mib Version implemented on this device."
+        ::= { pduAgentConfig 1 }
+
+pduAgentTime    OBJECT IDENTIFIER ::= { pduAgentGroup 2 }
+-- ===========================================================================
+--
+-- pduConfigTime
+--
+--	Date/Time Configuration Group of the device.
+--
+-- ===========================================================================
+pduAgentTimeDate OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (10..10))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The date in agent, format is (dd/mm/yyyy)"
+        ::= { pduAgentTime 1 }
+
+pduAgentTimeTime OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (8..8))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The time in agent, format is (hh:mm:ss)"
+        ::= { pduAgentTime 2 }
+
+pduAgentTimerFromNtp OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable or disable the agent to synchronize date/time with NTP server."
+        ::= { pduAgentTime 3 }
+
+pduAgentNtpServer OBJECT-TYPE
+       SYNTAX DisplayString
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The NTP server."
+       ::= { pduAgentTime 4 }
+
+pduAgentNtpTimeZone OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    gMT-1200(1),
+                    gMT-1100(2),
+                    gMT-1000(3),
+                    gMT-0900(4),
+                    gMT-0800(5),
+                    gMT-0700(6),
+                    gMT-0600(7),
+                    gMT-0500(8),
+                    gMT-0400(9),
+                    gMT-0330(10),
+                    gMT-0300(11),
+                    gMT-0200(12),
+                    gMT-0100(13),
+                    gMT-0000(14),
+                    gMT0100(15),
+                    gMT0200(16),
+                    gMT0300(17),
+                    gMT0330(18),
+                    gMT0400(19),
+                    gMT0430(20),
+                    gMT0500(21),
+                    gMT0530(22),
+                    gMT0545(23),
+                    gMT0600(24),
+                    gMT0630(25),
+                    gMT0700(26),
+                    gMT0800(27),
+                    gMT0900(28),
+                    gMT0930(29),
+                    gMT1000(30),
+                    gMT1100(31),
+                    gMT1200(32),
+                    gMT1300(33)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Time Zone to use when synchronize with NTP server."
+        ::= { pduAgentTime 5 }
+
+pduAgentDayLightSaving OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the Day Light Saving when synchronize with NTP server."
+        ::= { pduAgentTime 6 }
+
+pduAgentNetwork    OBJECT IDENTIFIER ::= { pduAgentGroup 3 }
+-- ===========================================================================
+--
+-- pduConfigNetwork
+--
+--	Network Configuration Group of the device.
+--
+-- ===========================================================================
+
+pduAgentNetworkIp    OBJECT IDENTIFIER ::= { pduAgentNetwork 1 }
+-- ===========================================================================
+--
+-- pduAgentNetworkIp
+--
+--	Ip address Configuration Group of the device.
+--
+-- ===========================================================================
+pduAgentNetworkIpAdress OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The ip address that NMS can identify the managed device."
+        ::= { pduAgentNetworkIp 1}
+
+pduAgentNetworkIpGateway OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The default gateway that allow device managed through routers."
+        ::= { pduAgentNetworkIp 2}
+
+pduAgentNetworkIpSubnet OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Internet address subnet mask"
+        ::= { pduAgentNetworkIp 3}
+
+pduAgentNetworkDhcpControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable DHCP protocol"
+        ::= { pduAgentNetwork 2 }
+
+pduAgentNetworkPingControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable to response to PING request."
+        ::= { pduAgentNetwork 3 }
+
+pduAgentNetworkTftpControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable TFTP protocol"
+        ::= { pduAgentNetwork 4 }
+
+pduAgentNetworkTelnet    OBJECT IDENTIFIER ::= { pduAgentNetwork 5 }
+-- ===========================================================================
+--
+-- pduConfigNetworkTelnet
+--
+--	Telnet Configuration Group of the device.
+--
+-- ===========================================================================
+pduAgentTelnetControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable Telnet protocol."
+        ::= { pduAgentNetworkTelnet 1 }
+
+pduAgentTelnetPort OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The TCP port for telnet"
+        ::= { pduAgentNetworkTelnet 2}
+
+pduAgentNetworkHttp    OBJECT IDENTIFIER ::= { pduAgentNetwork 6 }
+-- ===========================================================================
+--
+-- pduConfigNetworkHttp
+--
+--	HTTP Configuration Group of the device.
+--
+-- ===========================================================================
+pduAgentHttpControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable HTTP protocol."
+        ::= { pduAgentNetworkHttp 1 }
+
+pduAgentHttpPort OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The TCP port for HTTP."
+        ::= { pduAgentNetworkHttp 2}
+
+pduAgentNetworkSnmp    OBJECT IDENTIFIER ::= { pduAgentNetwork 7 }
+-- ===========================================================================
+--
+-- pduAgentNetworkSnmp
+--
+--	SNMP Configuration Group of the device.
+--
+-- ===========================================================================
+pduAgentSnmpControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable SNMP protocol."
+        ::= { pduAgentNetworkSnmp 1 }
+
+pduAgentSnmpPort OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The UDP port for SNMP."
+        ::= { pduAgentNetworkSnmp 2}
+
+pduAgentLog    OBJECT IDENTIFIER ::= { pduAgentConfig 4 }
+-- ===========================================================================
+--
+-- pduConfigLog
+--
+--	Log Configuration Group of the device.
+--
+-- ===========================================================================
+pduAgentDataLogInterval OBJECT-TYPE
+        SYNTAX INTEGER (5..28800) -- in seconds
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The interval of the updation of the data log. The value
+                 is in seconds"
+        ::= { pduAgentLog 1 }
+
+pduAgentControl    OBJECT IDENTIFIER ::= { pduAgentConfig 5 }
+-- ===========================================================================
+--
+-- pduAgentAgentControl
+--
+--	Agent Control Configuration Group of the device.
+--
+-- ===========================================================================
+pduAgentControlDefault OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset(1),
+                nothing(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset all parameters of the agent to default value."
+        ::= { pduAgentControl 1}
+
+pduAgentControlRestart OBJECT-TYPE
+        SYNTAX  INTEGER {
+                restart(1),
+                nothing(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Restart the agent."
+        ::= { pduAgentControl 2}
+
+pduAgentTrap    OBJECT IDENTIFIER ::= { pduAgentConfig 6 }
+-- ===========================================================================
+--
+-- pduAgentTrap
+--
+--	Trap Configuration Group of the agent.
+--
+-- ===========================================================================
+pduAgentTrapRetryCount OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The count of repeat traps send to NMS before trap
+                 acknowledgement received."
+        ::= { pduAgentTrap 1}
+
+pduAgentTrapRetryTime OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The time interval in seconds between retry traps sned to NMS."
+        ::= { pduAgentTrap 2}
+
+pduAgentTrapAckSignature OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The signature of trap acknowledgement."
+        ::= { pduAgentTrap 3}
+
+
+-- ===========================================================================
+--
+-- pduAgentTrapsReceiversTable
+--
+-- ===========================================================================
+
+pduAgentTrapsReceiversTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF PduAgentTrapsReceiversEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of managers to send traps to.  The number of
+                 entries is given by the value of agentConfigNumTrapReceivers"
+        ::= { pduAgentConfig 7}
+
+pduAgentTrapsReceiversEntry OBJECT-TYPE
+        SYNTAX PduAgentTrapsReceiversEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The managers to send traps to."
+        INDEX  { trapsIndex}
+        ::= { pduAgentTrapsReceiversTable 1 }
+
+PduAgentTrapsReceiversEntry ::=
+        SEQUENCE {
+                trapsIndex
+                        INTEGER,
+                trapsReceiverAddr
+                        IpAddress,
+                receiverCommunityString
+                         DisplayString,
+                receiverNmsType
+                        INTEGER,
+                receiverSeverityLevel
+                        INTEGER,
+                receiverDescription
+                         DisplayString
+        }
+
+trapsIndex OBJECT-TYPE
+        SYNTAX INTEGER (0..65535)
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a trap receiver entry."
+        ::= { pduAgentTrapsReceiversEntry 1 }
+
+trapsReceiverAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The IP address of the manager to send a trap to."
+        ::= { pduAgentTrapsReceiversEntry 2 }
+
+receiverCommunityString OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..19))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The community name to use in the trap when
+                 sent to the manager."
+        ::= { pduAgentTrapsReceiversEntry 3 }
+
+receiverNmsType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                none(1),
+                mib-trap(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The trap group that NMS desired."
+        ::= { pduAgentTrapsReceiversEntry 4 }
+
+receiverSeverityLevel OBJECT-TYPE
+        SYNTAX  INTEGER {
+                none(1),
+                critical(2),
+                major(3),
+                minor(4),
+                allTraps(5)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The severity level of traps to be received by this manager."
+        ::= { pduAgentTrapsReceiversEntry 5 }
+
+receiverDescription OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..31))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Description of trap receivers"
+        ::= { pduAgentTrapsReceiversEntry 6 }
+
+
+-- ===========================================================================
+--
+-- pduAgentAccessControlTable
+--
+-- ===========================================================================
+pduAgentAccessControlTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF PduAgentAccessControlEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of managers which can access the device with private
+                community string."
+        ::= { pduAgentConfig 8}
+
+pduAgentAccessControlEntry OBJECT-TYPE
+        SYNTAX PduAgentAccessControlEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The managers."
+        INDEX  { accessIndex}
+        ::= { pduAgentAccessControlTable 1 }
+
+PduAgentAccessControlEntry ::=
+        SEQUENCE {
+                accessIndex
+                        INTEGER,
+                accessControlAddr
+                        IpAddress,
+                accessControlDesc
+                        DisplayString,
+                accessControlMode
+                        INTEGER
+        }
+
+accessIndex OBJECT-TYPE
+        SYNTAX INTEGER (0..65535)
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a access control entry."
+        ::= { pduAgentAccessControlEntry 1 }
+
+accessControlAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The IP address of the manager to access the device."
+        ::= { pduAgentAccessControlEntry 2 }
+
+accessControlDesc OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..31))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The description of the manager to access the device."
+        ::= { pduAgentAccessControlEntry 3 }
+
+accessControlMode OBJECT-TYPE
+        SYNTAX  INTEGER {
+                accept(1),
+                reject(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Access type, only read/Write access type can change parameter
+                 of the device."
+        ::= { pduAgentAccessControlEntry 4 }
+
+pduDeviceInput	    OBJECT IDENTIFIER ::= { pduDevice 1 }
+-- ===========================================================================
+--
+-- pduDeviceInput
+--
+--	Input  Group
+--
+-- ===========================================================================
+pduDeviceInputLineNumber OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+               "The number of input lines utilized in this device.
+               This variable indicates the number of rows in the
+               input table."
+        ::= { pduDeviceInput 1}
+
+pduDeviceInputFrequency OBJECT-TYPE
+        SYNTAX     NonNegativeInteger
+        UNITS      "0.1 Hertz"
+        ACCESS read-only
+        STATUS     mandatory
+        DESCRIPTION
+              "The present input frequency."
+        ::= { pduDeviceInput 2}
+
+pduDeviceInputTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF PduDeviceInputEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+               "A list of input table entries.  The number of entries
+               is given by the value of pduDeviceInputLineNumber."
+        ::= { pduDeviceInput 3}
+
+pduDeviceInputEntry OBJECT-TYPE
+        SYNTAX PduDeviceInputEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+               "An entry containing information applicable to a
+               particular input line."
+        INDEX  { pduInputLineIndex}
+        ::= { pduDeviceInputTable 1 }
+
+PduDeviceInputEntry ::=
+        SEQUENCE {
+       pduInputLineIndex   PositiveInteger,
+       pduInputVoltage     NonNegativeInteger,
+       pduInputCurrent     NonNegativeInteger
+        }
+
+   pduInputLineIndex OBJECT-TYPE
+       SYNTAX     PositiveInteger (0..65535)
+       ACCESS not-accessible
+       STATUS     mandatory
+       DESCRIPTION
+               "The input line identifier."
+       ::= { pduDeviceInputEntry 1 }
+
+   pduInputVoltage OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 RMS Volts"
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The magnitude of the present input voltage."
+       ::= { pduDeviceInputEntry 2 }
+
+   pduInputCurrent OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "0.1 RMS Amp"
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The magnitude of the present input current."
+       ::= { pduDeviceInputEntry 3 }
+
+pduDeviceOutput	    OBJECT IDENTIFIER ::= { pduDevice 2 }
+-- ===========================================================================
+--
+-- pduDeviceOutput
+--
+--	Output  Group
+--
+-- ===========================================================================
+pduDeviceOutputVARating OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+               "Extended VA Rating."
+        ::= { pduDeviceOutput 1}
+
+pduDeviceOutputPhaseAngle OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+               "Phase angle of output phases."
+        ::= { pduDeviceOutput 2}
+
+pduDeviceOutputLineNumber OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+               "The number of output lines utilized in this device.
+               This variable indicates the number of rows in the
+               output table."
+        ::= { pduDeviceOutput 3}
+
+pduDeviceOutputFrequency OBJECT-TYPE
+        SYNTAX     NonNegativeInteger
+        UNITS      "0.1 Hertz"
+        ACCESS read-only
+        STATUS     mandatory
+        DESCRIPTION
+              "The present output frequency."
+        ::= { pduDeviceOutput 4}
+
+pduDeviceOutputTotalPower OBJECT-TYPE
+        SYNTAX     NonNegativeInteger
+        UNITS      "watts"
+        ACCESS read-only
+        STATUS     mandatory
+        DESCRIPTION
+              "The present output power."
+        ::= { pduDeviceOutput 5}
+
+pduDeviceOutputVA OBJECT-TYPE
+        SYNTAX     NonNegativeInteger
+        UNITS      "volt-amps"
+        ACCESS read-only
+        STATUS     mandatory
+        DESCRIPTION
+              "The present output VA."
+        ::= { pduDeviceOutput 6}
+
+pduDeviceOutputTable    OBJECT IDENTIFIER ::= { pduDeviceOutput 7 }
+
+-- Overall PDU
+pduDeviceOutputOverall    OBJECT IDENTIFIER ::= { pduDeviceOutputTable 1 }
+
+pduOutputVoltageAPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output voltage."
+   ::= { pduDeviceOutputOverall 1 }
+
+pduOutputVoltageAMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output voltage."
+   ::= { pduDeviceOutputOverall 2 }
+
+pduOutputVoltageAMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output voltage."
+   ::= { pduDeviceOutputOverall 3 }
+
+pduOutputVoltageBPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output voltage."
+   ::= { pduDeviceOutputOverall 4 }
+
+pduOutputVoltageBMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output voltage."
+   ::= { pduDeviceOutputOverall 5 }
+
+pduOutputVoltageBMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output voltage."
+   ::= { pduDeviceOutputOverall 6 }
+
+pduOutputVoltageCPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output voltage."
+   ::= { pduDeviceOutputOverall 7 }
+
+pduOutputVoltageCMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output voltage."
+   ::= { pduDeviceOutputOverall 8 }
+
+pduOutputVoltageCMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output voltage."
+   ::= { pduDeviceOutputOverall 9 }
+
+pduOutputFrequencyPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Hz"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output voltage."
+   ::= { pduDeviceOutputOverall 10 }
+
+pduOutputFrequencyMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Hz"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output voltage."
+   ::= { pduDeviceOutputOverall 11 }
+
+pduOutputFrequencyMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Hz"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output voltage."
+   ::= { pduDeviceOutputOverall 12 }
+
+pduOutputCurrentAPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output current."
+   ::= { pduDeviceOutputOverall 13 }
+
+pduOutputCurrentAMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output current."
+   ::= { pduDeviceOutputOverall 14 }
+
+pduOutputCurrentAMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output current."
+   ::= { pduDeviceOutputOverall 15 }
+
+pduOutputCurrentBPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output current."
+   ::= { pduDeviceOutputOverall 16 }
+
+pduOutputCurrentBMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output current."
+   ::= { pduDeviceOutputOverall 17 }
+
+pduOutputCurrentBMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output current."
+   ::= { pduDeviceOutputOverall 18 }
+
+pduOutputCurrentCPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output current."
+   ::= { pduDeviceOutputOverall 19 }
+
+pduOutputCurrentCMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output current."
+   ::= { pduDeviceOutputOverall 20 }
+
+pduOutputCurrentCMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output current."
+   ::= { pduDeviceOutputOverall 21 }
+
+pduOutputPowerfactorAPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output power factor."
+   ::= { pduDeviceOutputOverall 22 }
+
+pduOutputPowerfactorAMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output power factor."
+   ::= { pduDeviceOutputOverall 23 }
+
+pduOutputPowerfactorAMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output power factor."
+   ::= { pduDeviceOutputOverall 24 }
+
+pduOutputPowerfactorBPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output power factor."
+   ::= { pduDeviceOutputOverall 25 }
+
+pduOutputPowerfactorBMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output power factor."
+   ::= { pduDeviceOutputOverall 26 }
+
+pduOutputPowerfactorBMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output power factor."
+   ::= { pduDeviceOutputOverall 27 }
+
+pduOutputPowerfactorCPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output power factor."
+   ::= { pduDeviceOutputOverall 28 }
+
+pduOutputPowerfactorCMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output power factor."
+   ::= { pduDeviceOutputOverall 29 }
+
+pduOutputPowerfactorCMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output power factor."
+   ::= { pduDeviceOutputOverall 30 }
+
+pduOutputWattsHoursUsagePresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present watts hours."
+   ::= { pduDeviceOutputOverall 31 }
+
+pduOutputWattsHoursUsageMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min watts hours."
+   ::= { pduDeviceOutputOverall 32 }
+
+pduOutputWattsHoursUsageMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max watts hours."
+   ::= { pduDeviceOutputOverall 33 }
+
+pduOutputAmbientTemperaturePresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "degree C"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present pdu ambient temperature."
+   ::= { pduDeviceOutputOverall 34 }
+
+pduOutputAmbientTemperatureMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "degree C"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min pdu ambient temperature."
+   ::= { pduDeviceOutputOverall 35 }
+
+pduOutputAmbientTemperatureMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "degree C"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max pdu ambient temperature."
+   ::= { pduDeviceOutputOverall 36 }
+
+pduOutputEmpAmbientTemperaturePresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "degree C"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present emp ambient temperature."
+   ::= { pduDeviceOutputOverall 37 }
+
+pduOutputEmpAmbientTemperatureMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "degree C"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min emp ambient temperature."
+   ::= { pduDeviceOutputOverall 38 }
+
+pduOutputEmpAmbientTemperatureMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "degree C"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max emp ambient temperature."
+   ::= { pduDeviceOutputOverall 39 }
+
+pduOutputEmpHumidityPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "%"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present emp humidity."
+   ::= { pduDeviceOutputOverall 40 }
+
+pduOutputEmpHumidityMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "%"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min emp humidity."
+   ::= { pduDeviceOutputOverall 41 }
+
+pduOutputEmpHumidityMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "%"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max emp humidity."
+   ::= { pduDeviceOutputOverall 42 }
+
+pduOutputTotalPowerPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output total power."
+   ::= { pduDeviceOutputOverall 43 }
+
+pduOutputTotalPowerMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output total power."
+   ::= { pduDeviceOutputOverall 44 }
+
+pduOutputTotalPowerMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output total power."
+   ::= { pduDeviceOutputOverall 45 }
+
+pduOutputTotalVaPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "VA"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output total VA."
+   ::= { pduDeviceOutputOverall 46 }
+
+pduOutputTotalVaMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "VA"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output total VA."
+   ::= { pduDeviceOutputOverall 47 }
+
+pduOutputTotalVaMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "VA"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output total VA."
+   ::= { pduDeviceOutputOverall 48 }
+
+pduTotalOutputCurrentPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present total output current."
+   ::= { pduDeviceOutputOverall 49 }
+
+pduTotalOutputCurrentMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min total output current."
+   ::= { pduDeviceOutputOverall 50 }
+
+pduTotalOutputCurrentMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max total output current."
+   ::= { pduDeviceOutputOverall 51 }
+
+pduOutputResetMin OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset-Min(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Min."
+        ::= { pduDeviceOutputOverall 52 }
+
+pduOutputResetMax OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset-Max(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Max."
+        ::= { pduDeviceOutputOverall 53 }
+
+pduOutputCumulativeKiloWattHoursValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Kilo-Watt Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the Cumulative Kilo-Watt Hours."
+   ::= { pduDeviceOutputOverall 54 }
+
+pduOutputCumulativeKiloWattHoursDate OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours date."
+       ::= { pduDeviceOutputOverall 55 }
+
+pduOutputCumulativeKiloWattHoursTime OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours Time."
+       ::= { pduDeviceOutputOverall 56 }
+
+pduOutputCumulativeKiloWattHoursReset OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Cumulative Kilo-Watt Hours."
+        ::= { pduDeviceOutputOverall 57 }
+
+-- Load Goroup 1
+pduDeviceOutputLoadGroup1    OBJECT IDENTIFIER ::= { pduDeviceOutputTable 2 }
+
+pduOutputVoltagePresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output voltage."
+   ::= { pduDeviceOutputLoadGroup1 1 }
+
+pduOutputVoltageMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output voltage."
+   ::= { pduDeviceOutputLoadGroup1 2 }
+
+pduOutputVoltageMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output voltage."
+   ::= { pduDeviceOutputLoadGroup1 3 }
+
+pduOutputCurrentPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output current."
+   ::= { pduDeviceOutputLoadGroup1 4 }
+
+pduOutputCurrentMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output current."
+   ::= { pduDeviceOutputLoadGroup1 5 }
+
+pduOutputCurrentMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output current."
+   ::= { pduDeviceOutputLoadGroup1 6 }
+
+pduOutputPowerfactorPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output power factor."
+   ::= { pduDeviceOutputLoadGroup1 7 }
+
+pduOutputPowerfactorMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output power factor."
+   ::= { pduDeviceOutputLoadGroup1 8 }
+
+pduOutputPowerfactorMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output power factor."
+   ::= { pduDeviceOutputLoadGroup1 9 }
+
+pduOutputTruePowerPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output true power."
+   ::= { pduDeviceOutputLoadGroup1 10 }
+
+pduOutputTruePowerMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output true power."
+   ::= { pduDeviceOutputLoadGroup1 11 }
+
+pduOutputTruePowerMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output true power."
+   ::= { pduDeviceOutputLoadGroup1 12 }
+
+pduOutputWattsHoursPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present watts hours."
+   ::= { pduDeviceOutputLoadGroup1 13 }
+
+pduOutputWattsHoursMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min watts hours."
+   ::= { pduDeviceOutputLoadGroup1 14 }
+
+pduOutputWattsHoursMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max watts hours."
+   ::= { pduDeviceOutputLoadGroup1 15 }
+
+pduOutputResetMin OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset-Min(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Min."
+        ::= { pduDeviceOutputLoadGroup1 16 }
+
+pduOutputResetMax OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset-Max(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Max."
+        ::= { pduDeviceOutputLoadGroup1 17 }
+
+pduOutputCumulativeKiloWattHoursValue OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "Kilo-Watt Hours"
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours."
+       ::= { pduDeviceOutputLoadGroup1 18 }
+    
+pduOutputCumulativeKiloWattHoursDate OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours date."
+       ::= { pduDeviceOutputLoadGroup1 19 }
+
+pduOutputCumulativeKiloWattHoursTime OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours Time."
+       ::= { pduDeviceOutputLoadGroup1 20 }
+
+pduOutputCumulativeKiloWattHoursReset OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Cumulative Kilo-Watt Hours."
+        ::= { pduDeviceOutputLoadGroup1 21 }
+
+-- Load Goroup 2
+pduDeviceOutputLoadGroup2    OBJECT IDENTIFIER ::= { pduDeviceOutputTable 3 }
+
+pduOutputVoltagePresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output voltage."
+   ::= { pduDeviceOutputLoadGroup2 1 }
+
+pduOutputVoltageMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output voltage."
+   ::= { pduDeviceOutputLoadGroup2 2 }
+
+pduOutputVoltageMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output voltage."
+   ::= { pduDeviceOutputLoadGroup2 3 }
+
+pduOutputCurrentPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output current."
+   ::= { pduDeviceOutputLoadGroup2 4 }
+
+pduOutputCurrentMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output current."
+   ::= { pduDeviceOutputLoadGroup2 5 }
+
+pduOutputCurrentMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output current."
+   ::= { pduDeviceOutputLoadGroup2 6 }
+
+pduOutputPowerfactorPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output power factor."
+   ::= { pduDeviceOutputLoadGroup2 7 }
+
+pduOutputPowerfactorMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output power factor."
+   ::= { pduDeviceOutputLoadGroup2 8 }
+
+pduOutputPowerfactorMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output power factor."
+   ::= { pduDeviceOutputLoadGroup2 9 }
+
+pduOutputTruePowerPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output true power."
+   ::= { pduDeviceOutputLoadGroup2 10 }
+
+pduOutputTruePowerMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output true power."
+   ::= { pduDeviceOutputLoadGroup2 11 }
+
+pduOutputTruePowerMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output true power."
+   ::= { pduDeviceOutputLoadGroup2 12 }
+
+pduOutputWattsHoursPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present watts hours."
+   ::= { pduDeviceOutputLoadGroup2 13 }
+
+pduOutputWattsHoursMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min watts hours."
+   ::= { pduDeviceOutputLoadGroup2 14 }
+
+pduOutputWattsHoursMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max watts hours."
+   ::= { pduDeviceOutputLoadGroup2 15 }
+
+pduOutputResetMin OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset-Min(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Min."
+        ::= { pduDeviceOutputLoadGroup2 16 }
+
+pduOutputResetMax OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset-Max(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Max."
+        ::= { pduDeviceOutputLoadGroup2 17 }
+
+pduOutputCumulativeKiloWattHoursValue OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "Kilo-Watt Hours"
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours."
+       ::= { pduDeviceOutputLoadGroup2 18 }
+    
+pduOutputCumulativeKiloWattHoursDate OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours date."
+       ::= { pduDeviceOutputLoadGroup2 19 }
+
+pduOutputCumulativeKiloWattHoursTime OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours Time."
+       ::= { pduDeviceOutputLoadGroup2 20 }
+
+pduOutputCumulativeKiloWattHoursReset OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Cumulative Kilo-Watt Hours."
+        ::= { pduDeviceOutputLoadGroup2 21 }
+
+-- Load Goroup 3
+pduDeviceOutputLoadGroup3    OBJECT IDENTIFIER ::= { pduDeviceOutputTable 4 }
+
+pduOutputVoltagePresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output voltage."
+   ::= { pduDeviceOutputLoadGroup3 1 }
+
+pduOutputVoltageMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output voltage."
+   ::= { pduDeviceOutputLoadGroup3 2 }
+
+pduOutputVoltageMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output voltage."
+   ::= { pduDeviceOutputLoadGroup3 3 }
+
+pduOutputCurrentPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output current."
+   ::= { pduDeviceOutputLoadGroup3 4 }
+
+pduOutputCurrentMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output current."
+   ::= { pduDeviceOutputLoadGroup3 5 }
+
+pduOutputCurrentMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output current."
+   ::= { pduDeviceOutputLoadGroup3 6 }
+
+pduOutputPowerfactorPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output power factor."
+   ::= { pduDeviceOutputLoadGroup3 7 }
+
+pduOutputPowerfactorMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output power factor."
+   ::= { pduDeviceOutputLoadGroup3 8 }
+
+pduOutputPowerfactorMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output power factor."
+   ::= { pduDeviceOutputLoadGroup3 9 }
+
+pduOutputTruePowerPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output true power."
+   ::= { pduDeviceOutputLoadGroup3 10 }
+
+pduOutputTruePowerMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output true power."
+   ::= { pduDeviceOutputLoadGroup3 11 }
+
+pduOutputTruePowerMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output true power."
+   ::= { pduDeviceOutputLoadGroup3 12 }
+
+pduOutputWattsHoursPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present watts hours."
+   ::= { pduDeviceOutputLoadGroup3 13 }
+
+pduOutputWattsHoursMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min watts hours."
+   ::= { pduDeviceOutputLoadGroup3 14 }
+
+pduOutputWattsHoursMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max watts hours."
+   ::= { pduDeviceOutputLoadGroup3 15 }
+
+pduOutputResetMin OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset-Min(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Min."
+        ::= { pduDeviceOutputLoadGroup3 16 }
+
+pduOutputResetMax OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset-Max(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Max."
+        ::= { pduDeviceOutputLoadGroup3 17 }
+
+pduOutputCumulativeKiloWattHoursValue OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "Kilo-Watt Hours"
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours."
+       ::= { pduDeviceOutputLoadGroup3 18 }
+    
+pduOutputCumulativeKiloWattHoursDate OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours date."
+       ::= { pduDeviceOutputLoadGroup3 19 }
+
+pduOutputCumulativeKiloWattHoursTime OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours Time."
+       ::= { pduDeviceOutputLoadGroup3 20 }
+
+pduOutputCumulativeKiloWattHoursReset OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Cumulative Kilo-Watt Hours."
+        ::= { pduDeviceOutputLoadGroup3 21 }
+
+-- Load Goroup 4
+pduDeviceOutputLoadGroup4    OBJECT IDENTIFIER ::= { pduDeviceOutputTable 5 }
+
+pduOutputVoltagePresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output voltage."
+   ::= { pduDeviceOutputLoadGroup4 1 }
+
+pduOutputVoltageMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output voltage."
+   ::= { pduDeviceOutputLoadGroup4 2 }
+
+pduOutputVoltageMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output voltage."
+   ::= { pduDeviceOutputLoadGroup4 3 }
+
+pduOutputCurrentPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output current."
+   ::= { pduDeviceOutputLoadGroup4 4 }
+
+pduOutputCurrentMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output current."
+   ::= { pduDeviceOutputLoadGroup4 5 }
+
+pduOutputCurrentMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output current."
+   ::= { pduDeviceOutputLoadGroup4 6 }
+
+pduOutputPowerfactorPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output power factor."
+   ::= { pduDeviceOutputLoadGroup4 7 }
+
+pduOutputPowerfactorMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output power factor."
+   ::= { pduDeviceOutputLoadGroup4 8 }
+
+pduOutputPowerfactorMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output power factor."
+   ::= { pduDeviceOutputLoadGroup4 9 }
+
+pduOutputTruePowerPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output true power."
+   ::= { pduDeviceOutputLoadGroup4 10 }
+
+pduOutputTruePowerMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output true power."
+   ::= { pduDeviceOutputLoadGroup4 11 }
+
+pduOutputTruePowerMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output true power."
+   ::= { pduDeviceOutputLoadGroup4 12 }
+
+pduOutputWattsHoursPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present watts hours."
+   ::= { pduDeviceOutputLoadGroup4 13 }
+
+pduOutputWattsHoursMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min watts hours."
+   ::= { pduDeviceOutputLoadGroup4 14 }
+
+pduOutputWattsHoursMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max watts hours."
+   ::= { pduDeviceOutputLoadGroup4 15 }
+
+pduOutputResetMin OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset-Min(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Min."
+        ::= { pduDeviceOutputLoadGroup4 16 }
+
+pduOutputResetMax OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset-Max(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Max."
+        ::= { pduDeviceOutputLoadGroup4 17 }
+
+pduOutputCumulativeKiloWattHoursValue OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "Kilo-Watt Hours"
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours."
+       ::= { pduDeviceOutputLoadGroup4 18 }
+    
+pduOutputCumulativeKiloWattHoursDate OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours date."
+       ::= { pduDeviceOutputLoadGroup4 19 }
+
+pduOutputCumulativeKiloWattHoursTime OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours Time."
+       ::= { pduDeviceOutputLoadGroup4 20 }
+
+pduOutputCumulativeKiloWattHoursReset OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Cumulative Kilo-Watt Hours."
+        ::= { pduDeviceOutputLoadGroup4 21 }
+
+-- Load Goroup 5
+pduDeviceOutputLoadGroup5    OBJECT IDENTIFIER ::= { pduDeviceOutputTable 6 }
+
+pduOutputVoltagePresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output voltage."
+   ::= { pduDeviceOutputLoadGroup5 1 }
+
+pduOutputVoltageMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output voltage."
+   ::= { pduDeviceOutputLoadGroup5 2 }
+
+pduOutputVoltageMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output voltage."
+   ::= { pduDeviceOutputLoadGroup5 3 }
+
+pduOutputCurrentPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output current."
+   ::= { pduDeviceOutputLoadGroup5 4 }
+
+pduOutputCurrentMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output current."
+   ::= { pduDeviceOutputLoadGroup5 5 }
+
+pduOutputCurrentMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output current."
+   ::= { pduDeviceOutputLoadGroup5 6 }
+
+pduOutputPowerfactorPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output power factor."
+   ::= { pduDeviceOutputLoadGroup5 7 }
+
+pduOutputPowerfactorMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output power factor."
+   ::= { pduDeviceOutputLoadGroup5 8 }
+
+pduOutputPowerfactorMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output power factor."
+   ::= { pduDeviceOutputLoadGroup5 9 }
+
+pduOutputTruePowerPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output true power."
+   ::= { pduDeviceOutputLoadGroup5 10 }
+
+pduOutputTruePowerMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output true power."
+   ::= { pduDeviceOutputLoadGroup5 11 }
+
+pduOutputTruePowerMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output true power."
+   ::= { pduDeviceOutputLoadGroup5 12 }
+
+pduOutputWattsHoursPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present watts hours."
+   ::= { pduDeviceOutputLoadGroup5 13 }
+
+pduOutputWattsHoursMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min watts hours."
+   ::= { pduDeviceOutputLoadGroup5 14 }
+
+pduOutputWattsHoursMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max watts hours."
+   ::= { pduDeviceOutputLoadGroup5 15 }
+
+pduOutputResetMin OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset-Min(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Min."
+        ::= { pduDeviceOutputLoadGroup5 16 }
+
+pduOutputResetMax OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset-Max(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Max."
+        ::= { pduDeviceOutputLoadGroup5 17 }
+
+pduOutputCumulativeKiloWattHoursValue OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "Kilo-Watt Hours"
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours."
+       ::= { pduDeviceOutputLoadGroup5 18 }
+    
+pduOutputCumulativeKiloWattHoursDate OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours date."
+       ::= { pduDeviceOutputLoadGroup5 19 }
+
+pduOutputCumulativeKiloWattHoursTime OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours Time."
+       ::= { pduDeviceOutputLoadGroup5 20 }
+
+pduOutputCumulativeKiloWattHoursReset OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Cumulative Kilo-Watt Hours."
+        ::= { pduDeviceOutputLoadGroup5 21 }
+
+-- Load Goroup 6
+pduDeviceOutputLoadGroup6    OBJECT IDENTIFIER ::= { pduDeviceOutputTable 7 }
+
+pduOutputVoltagePresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output voltage."
+   ::= { pduDeviceOutputLoadGroup6 1 }
+
+pduOutputVoltageMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output voltage."
+   ::= { pduDeviceOutputLoadGroup6 2 }
+
+pduOutputVoltageMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Volts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output voltage."
+   ::= { pduDeviceOutputLoadGroup6 3 }
+
+pduOutputCurrentPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output current."
+   ::= { pduDeviceOutputLoadGroup6 4 }
+
+pduOutputCurrentMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output current."
+   ::= { pduDeviceOutputLoadGroup6 5 }
+
+pduOutputCurrentMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.1 RMS Amp"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output current."
+   ::= { pduDeviceOutputLoadGroup6 6 }
+
+pduOutputPowerfactorPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output power factor."
+   ::= { pduDeviceOutputLoadGroup6 7 }
+
+pduOutputPowerfactorMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output power factor."
+   ::= { pduDeviceOutputLoadGroup6 8 }
+
+pduOutputPowerfactorMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "0.01"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output power factor."
+   ::= { pduDeviceOutputLoadGroup6 9 }
+
+pduOutputTruePowerPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present output true power."
+   ::= { pduDeviceOutputLoadGroup6 10 }
+
+pduOutputTruePowerMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min output true power."
+   ::= { pduDeviceOutputLoadGroup6 11 }
+
+pduOutputTruePowerMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max output true power."
+   ::= { pduDeviceOutputLoadGroup6 12 }
+
+pduOutputWattsHoursPresentValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the present watts hours."
+   ::= { pduDeviceOutputLoadGroup6 13 }
+
+pduOutputWattsHoursMinValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the min watts hours."
+   ::= { pduDeviceOutputLoadGroup6 14 }
+
+pduOutputWattsHoursMaxValue OBJECT-TYPE
+   SYNTAX     NonNegativeInteger
+   UNITS      "Watts-Hours"
+   ACCESS read-only
+   STATUS     mandatory
+   DESCRIPTION
+           "The magnitude of the max watts hours."
+   ::= { pduDeviceOutputLoadGroup6 15 }
+
+pduOutputResetMin OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset-Min(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Min."
+        ::= { pduDeviceOutputLoadGroup6 16 }
+
+pduOutputResetMax OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset-Max(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Max."
+        ::= { pduDeviceOutputLoadGroup6 17 }
+
+pduOutputCumulativeKiloWattHoursValue OBJECT-TYPE
+       SYNTAX     NonNegativeInteger
+       UNITS      "Kilo-Watt Hours"
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours."
+       ::= { pduDeviceOutputLoadGroup6 18 }
+    
+pduOutputCumulativeKiloWattHoursDate OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours date."
+       ::= { pduDeviceOutputLoadGroup6 19 }
+
+pduOutputCumulativeKiloWattHoursTime OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The magnitude of the Cumulative Kilo-Watt Hours Time."
+       ::= { pduDeviceOutputLoadGroup6 20 }
+
+pduOutputCumulativeKiloWattHoursReset OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset(1)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset Cumulative Kilo-Watt Hours."
+        ::= { pduDeviceOutputLoadGroup6 21 }
+
+pduDeviceOutputConfigOutletName    OBJECT IDENTIFIER ::= { pduDeviceOutput 8 }
+
+pduDeviceOutputConfigSystemName OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..31))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The description of the device system name."
+        ::= { pduDeviceOutputConfigOutletName 1 }
+
+pduDeviceOutputConfigOutletnameJ1 OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..249))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The description of the device outlet name J1."
+        ::= { pduDeviceOutputConfigOutletName 2 }
+
+pduDeviceOutputConfigOutletnameJ2 OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..249))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The description of the device outlet name J2."
+        ::= { pduDeviceOutputConfigOutletName 3 }
+
+pduDeviceOutputConfigOutletnameJ3 OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..249))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The description of the device outlet name J3."
+        ::= { pduDeviceOutputConfigOutletName 4 }
+
+pduDeviceOutputConfigOutletnameJ4 OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..249))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The description of the device outlet name J4."
+        ::= { pduDeviceOutputConfigOutletName 5 }
+
+pduDeviceOutputConfigOutletnameJ5 OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..249))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The description of the device outlet name J5."
+        ::= { pduDeviceOutputConfigOutletName 6 }
+
+pduDeviceOutputConfigOutletnameJ6 OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..249))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The description of the device outlet name J6."
+        ::= { pduDeviceOutputConfigOutletName 7 }
+
+pduDeviceOutputConfigOutletnameJ7OrJ1A OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..249))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The description of the device outlet name J7 or J1A."
+        ::= { pduDeviceOutputConfigOutletName 8 }
+
+pduDeviceOutputConfigOutletnameJ8OrJ3A OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..249))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The description of the device outlet name J8 or J3A."
+        ::= { pduDeviceOutputConfigOutletName 9 }
+
+pduDeviceOutputConfigOutletnameJ9OrJ5A OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..249))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The description of the device outlet name J9 or J5A."
+        ::= { pduDeviceOutputConfigOutletName 10 }
+
+pduDeviceOutputConfigOutletnameJ10 OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..249))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The description of the device outlet name J10."
+        ::= { pduDeviceOutputConfigOutletName 11 }
+
+pduDeviceOutputConfigOutletnameJ11 OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..249))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The description of the device outlet name J11."
+        ::= { pduDeviceOutputConfigOutletName 12 }
+
+pduDeviceOutputConfigOutletnameJ12 OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..249))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The description of the device outlet name J12."
+        ::= { pduDeviceOutputConfigOutletName 13 }
+
+pduEnvEmp	    OBJECT IDENTIFIER ::= { pduEnv 1 }
+-- ===========================================================================
+--
+-- pduEnvEmp
+--
+--	Environmental Monitor Device Group
+--
+-- ===========================================================================
+
+pduEnvEmpStatus	    OBJECT IDENTIFIER ::= { pduEnvEmp 1 }
+-- ===========================================================================
+--
+-- pduEnvEmp
+--
+--	Environmental Monitor Device Status Group
+--
+-- ===========================================================================
+
+pduEnvEmpStatusEmpType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknown(1),
+                disabled(2),
+                eMP-HT(3)
+                }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "EMP Type."
+        ::= { pduEnvEmpStatus 1 }
+
+pduEnvEmpStatusTemperature OBJECT-TYPE
+        SYNTAX INTEGER (1..10000) --
+        UNITS      "degree C"
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "EMP Temperature."
+        ::= { pduEnvEmpStatus  2 }
+
+pduEnvEmpStatusHumidity OBJECT-TYPE
+        SYNTAX INTEGER (1..10000) --
+        UNITS      "%"
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "EMP Humidity."
+        ::= { pduEnvEmpStatus  3 }
+
+pduEnvEmpStatusAlarm1 OBJECT-TYPE
+        SYNTAX  INTEGER {
+                active(1),
+                inactive(2),
+                disabled(3)
+                }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "EMP Alarm-1 state."
+        ::= { pduEnvEmpStatus 4 }
+
+pduEnvEmpStatusAlarm2 OBJECT-TYPE
+        SYNTAX  INTEGER {
+                active(1),
+                inactive(2),
+                disabled(3)
+                }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "EMP Alarm-2 state."
+        ::= { pduEnvEmpStatus 5 }
+
+pduEnvEmpConfig	    OBJECT IDENTIFIER ::= { pduEnvEmp 2 }
+-- ===========================================================================
+--
+-- pduEnvEmp
+--
+--	Environmental Monitor Device Configuration Group
+--
+-- ===========================================================================
+
+pduEnvEmpConfigTemp	    OBJECT IDENTIFIER ::= { pduEnvEmpConfig 1 }
+-- ===========================================================================
+--
+-- pduEnvEmpConfigTemp
+--
+--	Environmental Monitor Device Temperature Configuration Group
+--
+-- ===========================================================================
+pduEnvEmpConfigTempUpperLimit OBJECT-TYPE
+        SYNTAX INTEGER (0..70) --
+        UNITS      "degree C"
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "This setting defines the upper temperature limit that causes an
+                 event to be logged to the Event Log, as well as (optionally) emails,
+                 SNMP traps and shutdown notification to be sent. Settings are in Celsius
+                 and range from 0 to 70 degrees. The default is 70 degrees."
+        ::= { pduEnvEmpConfigTemp  1 }
+
+pduEnvEmpConfigTempLowerLimit OBJECT-TYPE
+        SYNTAX INTEGER (0..70) --
+        UNITS      "degree C"
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "This setting defines the lower temperature limit that causes an event
+                 to be logged to the Event Log, as well as (optionally) emails, SNMP
+                 traps and shutdown notification to be sent. Settings are in Celsius and
+                 range from 0 to 70 degrees. The default is 0 degrees."
+        ::= { pduEnvEmpConfigTemp  2 }
+
+pduEnvEmpConfigTempHysteresis OBJECT-TYPE
+        SYNTAX INTEGER (0..10) --
+        UNITS      "degree C"
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The temperature value may drift when it approaches the upper or
+                 lower limit as set by the user. Without hysteresis, when the
+                 temperature fluctuates around the set limit, it may trigger the
+                 generation of multiple alarm notifications. The hysteresis setting
+                 defines the number of degrees the measured value must change before
+                 the alarm clears. For example, if the temperature upper limit is set
+                 to 60 degrees and the hysteresis is set at 2 degrees, then the alarm
+                 will trigger at 60 degrees, but will not clear until the temperature
+                 drops below 58 degrees. The default hysteresis setting is 2 degrees Celsius."
+        ::= { pduEnvEmpConfigTemp  3 }
+
+
+pduEnvEmpConfigHumi	    OBJECT IDENTIFIER ::= { pduEnvEmpConfig 2 }
+-- ===========================================================================
+--
+-- pduEnvEmpConfigHumi
+--
+--	Environmental Monitor Device Humidity Configuration Group
+--
+-- ===========================================================================
+pduEnvEmpConfigHumiUpperLimit OBJECT-TYPE
+        SYNTAX INTEGER (0..90) --
+        UNITS      "%"
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "This setting defines the upper humidity limit that causes an event to be logged
+                 to the Event Log, as well as (optionally) emails, SNMP traps and shutdown
+                 notification to be sent. Settings range from 0 to 90%. The default is 90%."
+        ::= { pduEnvEmpConfigHumi  1 }
+
+pduEnvEmpConfigHumiLowerLimit OBJECT-TYPE
+        SYNTAX INTEGER (0..90) --
+        UNITS      "%"
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "This setting defines the lower humidity limit that causes as event to be logged
+                 to the Event Log, as well as (optionally) emails, SNMP traps and shutdown
+                 notification to be sent. Settings range from 0 to 90%. The default is 0%."
+        ::= { pduEnvEmpConfigHumi  2 }
+
+pduEnvEmpConfigHumiHysteresis OBJECT-TYPE
+        SYNTAX INTEGER (0..20) --
+        UNITS      "%"
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The humidity value may drift when it approaches the upper or lower limit as set by
+                 the user. Without hysteresis, when the humidity fluctuates around the set limit, it
+                 may trigger the generation of multiple alarm notifications. The hysteresis setting
+                 defines the number of percentage points the measured value must change before the
+                 alarm clears. For example, if the humidity upper limit is 80% and the hysteresis is
+                 set at 2%, then the alarm will trigger at 80% but will not clear until the humidity
+                 drops below 78%. The default hysteresis setting is 2%."
+        ::= { pduEnvEmpConfigHumi  3 }
+
+pduEnvEmpConfigAlarm1	    OBJECT IDENTIFIER ::= { pduEnvEmpConfig 3 }
+-- ===========================================================================
+--
+-- pduEnvEmpConfigAlarm1
+--
+--	Environmental Monitor Device Alarm-1 Configuration Group
+--
+-- ===========================================================================
+pduEnvEmpConfigAlarm1Name OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The name of EMP Alarm-1."
+       ::= { pduEnvEmpConfigAlarm1 1 }
+
+pduEnvEmpConfigAlarm1Type OBJECT-TYPE
+        SYNTAX  INTEGER {
+                 disabled(1),
+                 normallyOpen(2),
+                 normallyClosed(3)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "EMP Alarm-1 type"
+        ::= { pduEnvEmpConfigAlarm1 2 }
+
+pduEnvEmpConfigAlarm2	    OBJECT IDENTIFIER ::= { pduEnvEmpConfig 4 }
+-- ===========================================================================
+--
+-- pduEnvEmpConfigAlarm2
+--
+--	Environmental Monitor Device Alarm-2 Configuration Group
+--
+-- ===========================================================================
+pduEnvEmpConfigAlarm2Name OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The name of EMP Alarm-2."
+       ::= { pduEnvEmpConfigAlarm2 1 }
+
+pduEnvEmpConfigAlarm2Type OBJECT-TYPE
+        SYNTAX  INTEGER {
+                 disabled(1),
+                 normallyOpen(2),
+                 normallyClosed(3)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "EMP Alarm-2 type"
+        ::= { pduEnvEmpConfigAlarm2 2 }
+
+
+-- ===========================================================================
+-- pduTraps
+--
+-- IBM DPI Trap group
+-- ===========================================================================
+
+   -- This section defines the well-known notifications sent by
+   -- IBM DPI agents.
+
+pduInputACOverVoltage TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: Input AC is > 133v for LV or 245 for HV model."
+        ::= 1
+
+pduInputACUnderVoltage TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: Input AC is <95v for LV or <195v for HV model."
+        ::= 2
+
+pduInputACVoltageNormal TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: Input AC return to normal range from an over or under status."
+        ::= 3
+
+pduInputBadFrequency TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: The input frequency is outside of +/- hHz of nominal frequency."
+        ::= 4
+
+pduInputFrequencyNormal TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: Input frequency return to normal range from an over or under status."
+        ::= 5
+
+pduBuildingAlarm1 TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "MINOR: Humidity has exceeded acceptable limits."
+        ::= 6
+
+pduBuildingAlarm1Normal TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: Humidity is within limits."
+        ::= 7
+
+pduOutputCurrentExceed TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: The output current has exceeded maximum limit."
+        ::= 8
+
+pduOutputCurrentNormal TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: The output current no longer over the maximum limit."
+        ::= 9
+
+pduOutputShorted TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: The output is shorted."
+        ::= 10
+
+pduOutputNotShorted TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: The output isn't shorted."
+        ::= 11
+
+pduInternalCommFailure TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: Internal Communication Failure."
+        ::= 12
+
+pduInternalCommNormal TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: Internal Communication within PDU is functional."
+        ::= 13
+
+pduHeatsinkOverTemperature TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: The internal heatsink temperature is above 80 degree C."
+        ::= 14
+
+pduHeatsinkNotOverTemperature TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: The internal heatsink temperature is below 80 degree C."
+        ::= 15
+
+pduMemChecksumFailure TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: EEPROM checksum failure detected."
+        ::= 16
+
+pduMemChecksumNormal TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: No checksum failure detected."
+        ::= 17
+
+pduCurrentOverLimitPhaseA TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: Phase A current draw is >= 100% of nominal."
+        ::= 18
+
+pduCurrentNotOverLimitPhaseA TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: Phase A current draw is less than 100% of nominal."
+        ::= 19
+
+pduCurrentOverLimitPhaseB TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: Phase B current draw is >= 100% of nominal."
+        ::= 20
+
+pduCurrentNotOverLimitPhaseB TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: Phase B current draw is less than 100% of nominal."
+        ::= 21
+
+pduCurrentOverLimitPhaseC TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: Phase C current draw is >= 100% of nominal."
+        ::= 22
+
+pduCurrentNotOverLimitPhaseC TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: Phase C current draw is less than 100% of nominal."
+        ::= 23
+
+pduOutputLoadOverLevel2 TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: The output load is greater than 112%."
+        ::= 24
+
+pduOutputLoadNotOverLevel2 TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: The output load is less than 112%."
+        ::= 25
+
+pduOutputLoadOverLevel3 TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: The output load is greater than 130%."
+        ::= 26
+
+pduOutputLoadNotOverLevel3 TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: The output load is less than 130%."
+        ::= 27
+
+pduOutputLoadOverLevel4 TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: The output load is greater than 150%."
+        ::= 28
+
+pduOutputLoadNotOverLevel4 TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: The output load is less than 150%."
+        ::= 29
+
+pduSWIncompatibilityDetected TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: Processor F/W Revisions are NOT compatible."
+        ::= 30
+
+pduSWcompatibilityDetectedNormal TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: Processor F/W Revisions are compatible."
+        ::= 31
+
+pduAmbientOverTemperature TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: The airflow temperature inside the UPS/PDU is above 40 C."
+        ::= 32
+
+pduAmbientNotOverTemperature TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: The airflow temperature inside the UPS/PDU is below 40 C."
+        ::= 33
+
+pduConfigurationError TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "CRITICAL: UPS/PDU detected an abnormal, unrecognized or out of range configuration setting."
+        ::= 34
+
+pduConfigurationNoError TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage }
+        DESCRIPTION
+                "INFORMATION: UPS/PDU configuration is normal."
+        ::= 35
+
+pduEmpContactActiveNotice TRAP-TYPE
+    ENTERPRISE pduTraps
+--    VARIABLES   { pduContactIndex, pduContactType, pduContactState, pduContactDescr }
+    DESCRIPTION
+        "MAJOR: The Contact indicated by pduContactIndex is in its Active state."
+        ::= 36
+
+pduEmpContactInactiveNotice TRAP-TYPE
+    ENTERPRISE pduTraps
+--    VARIABLES   { pduContactIndex, pduContactType, pduContactState, pduContactDescr }
+    DESCRIPTION
+        "INFORMATIONAL: The Contact indicated by pduContactIndex has changed to its Inactive state."
+        ::= 37
+
+pduEmpTempBad         TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage,
+--              pduEnvEmpStatusTemperature, pduEnvEmpConfigTempLowerLimit,
+--              pduEnvEmpConfigTempUpperLimit }
+        DESCRIPTION
+           "MAJOR: EMP Temperature is Too High or Too Low."
+        ::= 38
+
+pduEmpTempNormal         TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage,
+--              pduEnvEmpStatusTemperature, pduEnvEmpConfigTempLowerLimit,
+--              pduEnvEmpConfigTempUpperLimit }
+        DESCRIPTION
+           "INFORMATIONAL: EMP Temperature is Normal."
+        ::= 39
+
+pduEmpHumidityBad     TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage,
+--              pduEnvEmpStatusHumidity, pduEnvEmpConfigHumiLowerLimit,
+--              pduEnvEmpConfigHumiUpperLimit }
+        DESCRIPTION
+                "MINOR: EMP Humidity is Too High or Too Low"
+        ::= 40
+
+pduEmpHumidityNormal     TRAP-TYPE
+        ENTERPRISE pduTraps
+--        VARIABLES   { pduAlarmID,  pduAlarmDescr, pduTrapMessage,
+--              pduEnvEmpStatusHumidity, pduEnvEmpConfigHumiLowerLimit,
+--              pduEnvEmpConfigHumiUpperLimit }
+        DESCRIPTION
+                "INFORMATIONAL: EMP Humidity is Normal."
+        ::= 41
+
+   END

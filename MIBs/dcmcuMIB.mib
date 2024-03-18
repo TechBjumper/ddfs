@@ -1,0 +1,1601 @@
+-- DC-MCU-MIB { iso org(3) dod(6) internet(1) private(4) enterprises(1) benning(27383) }
+--
+-- Title: dcmcuMIB.mib
+-- (C) Copyright 2010 Benning GmbH
+-- All Rights Reserved.
+--
+--
+-- Last Edit: 09.08.2010
+--
+--
+
+DCMCUMIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+       enterprises, Integer32, MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, OBJECT-IDENTITY
+           FROM SNMPv2-SMI
+       DisplayString, TimeStamp, AutonomousType, TEXTUAL-CONVENTION
+           FROM SNMPv2-TC;
+
+dcmcuMIB MODULE-IDENTITY
+         LAST-UPDATED "201008090000Z"
+         ORGANIZATION "Theo Benning GmbH & Co KG"
+         CONTACT-INFO
+              "         Ulrich Borkers
+
+                Postal: Theo Benning GmbH & Co KG
+                        Muensterstr. 135-137 
+                        D-46397 Bocholt 
+                        Germany
+
+                E-mail: u.borkers@benning.de"
+         DESCRIPTION
+               "The MIB module to describe DC-Power Systems."
+         REVISION     "201008090000Z"
+         DESCRIPTION
+	           "Added new well known alarms (66 and 67)."
+         REVISION     "201001220000Z"
+         DESCRIPTION
+	           "Added new well known alarms (22..65)."
+         REVISION     "200907220000Z"
+         DESCRIPTION
+	           "Added missing imports, added missing MODULE-IDENTITY
+	            and removed unnecessary auxiliary component elements."
+         REVISION     "200902030000Z"
+         DESCRIPTION
+               "Initial version for dcmcuMIB."
+        ::= { benning 1 }
+
+benning   OBJECT IDENTIFIER ::=  { enterprises 27383 }
+dcObjects OBJECT IDENTIFIER ::=  { dcmcuMIB 1 }
+
+   PositiveInteger ::= TEXTUAL-CONVENTION
+       DISPLAY-HINT "d"
+       STATUS       current
+       DESCRIPTION
+               "This data type is a non-zero and non-negative value."
+       SYNTAX       INTEGER (1..2147483647)
+
+   NonNegativeInteger ::= TEXTUAL-CONVENTION
+       DISPLAY-HINT "d"
+       STATUS       current
+       DESCRIPTION  "This data type is a non-negative value."
+       SYNTAX       INTEGER (0..2147483647)
+
+-- dcIdent              OBJECT IDENTIFIER ::= { dcObjects 1 }
+-- dcPowerSystem        OBJECT IDENTIFIER ::= { dcObjects 2 }
+-- dcController         OBJECT IDENTIFIER ::= { dcObjects 3 }
+-- dcRectifier          OBJECT IDENTIFIER ::= { dcObjects 4 }
+-- dcBattery            OBJECT IDENTIFIER ::= { dcObjects 5 }
+-- dcLoadDistribution   OBJECT IDENTIFIER ::= { dcObjects 6 }
+-- dcACBackup           OBJECT IDENTIFIER ::= { dcObjects 7 }
+-- dcBatteryTest        OBJECT IDENTIFIER ::= { dcObjects 8 }
+-- dcControl            OBJECT IDENTIFIER ::= { dcObjects 9 }
+-- dcConfig             OBJECT IDENTIFIER ::= { dcObjects 10 }
+-- dcAlarm              OBJECT IDENTIFIER ::= { dcObjects 11 }
+-- dcAuxiliary          OBJECT IDENTIFIER ::= { dcObjects 12 }
+-- dcTraps              OBJECT IDENTIFIER ::= { dcmcuMIB 2 }
+
+--
+-- Device Identification Group
+--
+-- All objects in this group except for dcIdentName, dcIdentDescription, dcIdentSystemInstallationDate
+-- and dcIdentNominalValues are set at device initialization and remain static.
+
+dcIdent     OBJECT IDENTIFIER ::= { dcObjects 1 }
+
+dcIdentManufacturer    OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE (0..31))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The name of the DC-power system manufacturer."
+   ::=       { dcIdent 1 }
+
+dcIdentModel       OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE (0..63))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The DC-power system model description."
+   ::=       { dcIdent 2 }
+
+dcIdentSerialNumber    OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE (0..31))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The serial number of the DC-power system."
+   ::=       { dcIdent 3 }
+
+dcIdentName       OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE(0..63))
+   MAX-ACCESS  read-write
+   STATUS      current
+   DESCRIPTION "A string identifying the DC-power system.
+               This object should be set by the administrator."
+   ::=       { dcIdent 4 }
+
+dcIdentDescription    OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE(0..127))
+   MAX-ACCESS  read-write
+   STATUS      current
+   DESCRIPTION "A possibility for the administrator to describe the power system."
+   ::=       { dcIdent 5 }
+
+dcIdentSystemInstallationDate OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE(0..15))
+   MAX-ACCESS  read-write
+   STATUS      current
+   DESCRIPTION "A string containing either the date of system installation or acceptance date (YYYY-MM-DD).
+               This string can be set by the administrator."
+   ::=       { dcIdent 6 }
+
+dcIdentNominalValues OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE(0..127))
+   MAX-ACCESS  read-write
+   STATUS      current
+   DESCRIPTION "A string containing nominal output power values of the system, e.g. 48 Volts / 3000 Amps / 3000 Ah.
+               This string can be set by the administrator."
+   ::=       { dcIdent 7 }
+
+
+--
+-- Power System Group
+--
+
+dcPowerSystem         OBJECT IDENTIFIER ::= { dcObjects 2 }
+
+-- UBBR
+dcPowerSystemBusbarVoltage OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "0.01 Volt DC"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the busbar voltage."
+   ::=       { dcPowerSystem 1 }
+
+-- IRECTOT
+dcPowerSystemTotalRectCurrent OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "0.1 Amp DC"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the total rectifier current."
+   ::=       { dcPowerSystem 2 }
+
+-- IBATTOT
+dcPowerSystemTotalBatteryCurrent OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "0.1 Amp DC"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the total battery current."
+   ::=       { dcPowerSystem 3 }
+
+-- ILOATOT (DC-Load Amp.)
+dcPowerSystemTotalOutputCurrent OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "0.1 Amp DC"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the total system output current."
+   ::=       { dcPowerSystem 4 }
+
+-- PLOACUR (DC-Load Watt)
+dcPowerSystemTotalOutputPower OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "Watts"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the present total system output true power."
+   ::=       { dcPowerSystem 5 }
+
+-- RECFCH:1 RECCHG:2 VOD:4 BATDISACT:5 SES:6
+dcPowerSystemStatus OBJECT-TYPE
+   SYNTAX      INTEGER
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The status of the power system describing the rectifiers and the batteries.
+                 Bit 1: Float
+                 Bit 2: Boost
+                 Bit 4: Battery Test
+                 Bit 5: Discharging
+                 Bit 6: Maintenance"
+   ::=       { dcPowerSystem 6 }
+
+-- NURERR:2 URGERR:3 GRS:4 else:1
+dcPowerSystemFault OBJECT-TYPE
+   SYNTAX      INTEGER
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The fault of the power system. The most important fault level is displayed.
+                 Bit 1: Normal
+                 Bit 2: Minor
+                 Bit 3: Major
+                 Bit 4: Information"
+   ::=       { dcPowerSystem 7 }
+
+-- TPLA (°F nicht °C)
+dcPowerSystemTemperature OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "0.1 degrees Centigrade/Fahrenheit"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The power system ambient temperature."
+   ::=       { dcPowerSystem 8 }
+
+
+--
+-- Controller Group
+--
+
+dcController         OBJECT IDENTIFIER ::= { dcObjects 3 }
+
+dcControllerSerialNumber OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE (0..15))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The DC-power system's controller serial number."
+   ::=       { dcController 1 }
+
+dcControllerSoftwareVersion OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE (0..15))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The DC-power system software version(s). This variable can be different from
+                the dcControllerFirmwareVersion. This variable may or may not have the same
+                value as dcControllerAgentSoftwareVersion in some implementations."
+ ::=       { dcController 2 }
+
+dcControllerAgentSerialNumber OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE (0..15))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The DC-power system's (snmp) agent serial number."
+   ::=       { dcController 3 }
+
+dcControllerAgentSoftwareVersion OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE (0..15))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The DC-power system agent software version. This variable can be different
+                from the dcControllerAgentFirmwareVersion. This variable may or may not have
+                the same value as dcControllerSoftwareVersion in some implementations."
+   ::=       { dcController 4 }
+
+
+--
+-- Rectifier Group
+--
+
+dcRectifier          OBJECT IDENTIFIER ::= { dcObjects 4 }
+
+dcRectifierNumRectifiers OBJECT-TYPE
+   SYNTAX      NonNegativeInteger
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The number of rectifers or rectifier-shelfs utilized in this system.
+                This variable indicates the number of rows in the rectifier table."
+   ::=       { dcRectifier 1 }
+
+dcRectifierTable    OBJECT-TYPE
+   SYNTAX      SEQUENCE OF DCRectifierEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "A list of rectifier table entries.
+                The number of entries is given by the value of dcRectifierNumRectifiers."
+   ::=       { dcRectifier 2 }
+
+dcRectifierEntry  OBJECT-TYPE
+   SYNTAX      DCRectifierEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "An entry containing information applicable to a particular rectifier."
+   INDEX    { dcRectifierIndex }
+   ::=       { dcRectifierTable 1 }
+
+DCRectifierEntry ::= SEQUENCE {
+   dcRectifierIndex               PositiveInteger,
+   dcRectifierFirmwareVersion     DisplayString,
+   dcRectifierStatus              INTEGER,
+   dcRectifierFault               INTEGER,
+   dcRectifierVoltage             INTEGER,
+   dcRectifierCurrent             INTEGER,
+   dcRectifierAddress             NonNegativeInteger
+}
+
+dcRectifierIndex OBJECT-TYPE
+   SYNTAX      PositiveInteger
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "The rectifier identifier."
+   ::=       { dcRectifierEntry 1 }
+
+dcRectifierFirmwareVersion OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE (0..15))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The rectifier's firmware version."
+   ::=       { dcRectifierEntry 2 }
+
+-- RECxxOFF:1 else:2
+dcRectifierStatus    OBJECT-TYPE
+   SYNTAX        INTEGER {
+      off(1),
+      on(2)
+   }
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The current state of the rectifier. Rectifiers can be on or off. "
+   ::=       { dcRectifierEntry 3 }
+
+-- MAIRECxx:0 SATxx:2 FANRECxx:3 RECxx:7
+dcRectifierFault    OBJECT-TYPE
+   SYNTAX      INTEGER
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "This integer holds a bitmask for the retifier faults:
+                  Bit 0: Low Input
+                  Bit 2: Communication
+                  Bit 3: Temperature Fan
+                  Bit 7: Rectifier Failure"
+   ::=       { dcRectifierEntry 4 }
+
+-- UBBRxx
+dcRectifierVoltage    OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "0.01 Volt DC"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the rectifier voltage."
+   ::=       { dcRectifierEntry 5 }
+
+-- IRECxx
+dcRectifierCurrent    OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "0.1 Amp DC"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the present rectifier current."
+   ::=       { dcRectifierEntry 6 }
+
+dcRectifierAddress    OBJECT-TYPE
+   SYNTAX      NonNegativeInteger
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The address of the rectifier in the system."
+   ::=       { dcRectifierEntry 7 }
+
+
+--
+-- Battery Group
+--
+
+dcBattery            OBJECT IDENTIFIER ::= { dcObjects 5 }
+
+-- FUSBAT:0 DDC:1 FAN:2
+dcBatteryMainFault    OBJECT-TYPE
+   SYNTAX      INTEGER
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "This object indicates a fault of the main components affecting more than one
+                battery string, e.g. deep discharge contactor.
+                 Bit 0: Main Fuse Fault
+                 Bit 1: Main Contactor Fault
+                 Bit 2: Batteryroom Fan Fault"
+   ::=       { dcBattery 1 }
+
+dcBatteryNumBatteries OBJECT-TYPE
+   SYNTAX      NonNegativeInteger
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The number of batteries.
+                This variable indicates the number of rows in the battery table."
+   ::=       { dcBattery 2 }
+
+dcBatteryTable    OBJECT-TYPE
+   SYNTAX      SEQUENCE OF DCBatteryEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "A list of battery table entries.
+                The number of entries is given by the value of dcBatteryNumBatteries."
+   ::=       { dcBattery 3 }
+
+dcBatteryEntry    OBJECT-TYPE
+   SYNTAX      DCBatteryEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "An entry containing information applicable to a particular string of batteries."
+   INDEX    { dcBatteryIndex }
+   ::=       { dcBatteryTable 1 }
+
+DCBatteryEntry ::= SEQUENCE {
+   dcBatteryIndex                PositiveInteger,
+   dcBatteryFault                INTEGER,
+   dcBatteryVoltage              INTEGER,
+   dcBatteryCurrent              INTEGER,
+   dcBatteryTemperature          INTEGER,
+   dcBatteryModel                DisplayString,
+   dcBatteryAddress              NonNegativeInteger
+}
+
+dcBatteryIndex OBJECT-TYPE
+   SYNTAX      PositiveInteger
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "The battery identifier."
+   ::=       { dcBatteryEntry 1 }
+
+-- TBAT>XX,TBAT<XX:1 VODNEG:3 FUSBATxx:4 DDCxx:5 BCI,BATEXD,BATSYMMON:7
+dcBatteryFault OBJECT-TYPE
+   SYNTAX      INTEGER
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The fault of the battery string.
+                 Bit 1: Temperature Fault
+                 Bit 3: Test Fault
+                 Bit 4: Fuse Fault
+                 Bit 5: Contactor Fault
+                 Bit 7: Other Fault"
+   ::=       { dcBatteryEntry 2 }
+
+-- UBATxx
+dcBatteryVoltage    OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "0.01 Volt DC"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the battery voltage."
+   ::=       { dcBatteryEntry 3 }
+
+-- IBATxx
+dcBatteryCurrent    OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "0.1 Amp DC"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the present battery current."
+   ::=       { dcBatteryEntry 4 }
+
+-- TBATxx°C (Achtung °F statt°C)
+dcBatteryTemperature OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "0.1 degrees Centigrade/Fahrenheit"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The battery temperature."
+   ::=       { dcBatteryEntry 5 }
+
+-- Eingabe
+dcBatteryModel    OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE(0..15))
+   MAX-ACCESS  read-write
+   STATUS      current
+   DESCRIPTION "A string identifying the battery string, e.g. VHB/4/300Ah."
+   ::=       { dcBatteryEntry 6 }
+
+dcBatteryAddress    OBJECT-TYPE
+   SYNTAX      NonNegativeInteger
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The address of the battery in the system."
+   ::=       { dcBatteryEntry 7 }
+
+
+--
+-- LoadDistribution Group
+--
+
+dcLoadDistribution      OBJECT IDENTIFIER ::= { dcObjects 6 }
+
+dcLoadDistributionNumLD OBJECT-TYPE
+   SYNTAX      NonNegativeInteger
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The number of load distributions.
+                This variable indicates the number of rows in the load distribution table."
+   ::=       { dcLoadDistribution 1 }
+
+
+dcLoadDistributionTable    OBJECT-TYPE
+   SYNTAX      SEQUENCE OF DCLoadDistributionEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "A list of load distribution table entries."
+   ::=       { dcLoadDistribution 2 }
+
+dcLoadDistributionEntry OBJECT-TYPE
+   SYNTAX      DCLoadDistributionEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "An entry containing information applicable to a particular load string."
+   INDEX    { dcLoadDistributionIndex }
+   ::=      { dcLoadDistributionTable 1 }
+
+DCLoadDistributionEntry ::= SEQUENCE {
+   dcLoadDistributionIndex           PositiveInteger,
+   dcLoadDistributionVoltage         INTEGER,
+   dcLoadDistributionCurrent         INTEGER,
+   dcLoadDistributionPower           INTEGER,
+   dcLoadDistributionDescription     DisplayString,
+   dcLoadDistributionStatus          INTEGER,
+   dcLoadDistributionAddress         NonNegativeInteger
+}
+
+dcLoadDistributionIndex OBJECT-TYPE
+   SYNTAX      PositiveInteger
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "The load distribution identifier."
+   ::=       { dcLoadDistributionEntry 1 }
+
+-- ULOAXX
+dcLoadDistributionVoltage OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "0.01 Volt DC"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the particular load voltage."
+   ::=      { dcLoadDistributionEntry 2 }
+
+-- ILOAXX
+dcLoadDistributionCurrent OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "0.1 Amp DC"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the particular load current."
+   ::=      { dcLoadDistributionEntry 3 }
+
+-- WELEXX
+dcLoadDistributionPower OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "Watts"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The particular load power."
+   ::=      { dcLoadDistributionEntry 4 }
+
+-- Eingabe
+dcLoadDistributionDescription OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE(0..15))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The description of the particular load string."
+   ::=      { dcLoadDistributionEntry 5 }
+
+-- 2:FUSLOAXXDC 4:LOAXXOFF 1:sonst
+dcLoadDistributionStatus OBJECT-TYPE
+   SYNTAX      INTEGER
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The status of the particular load fuse.
+                 Bit 1: OK
+                 Bit 2: Fuse Blown
+                 Bit 4: Contactor Open"
+   ::=      { dcLoadDistributionEntry 6 }
+
+dcLoadDistributionAddress    OBJECT-TYPE
+   SYNTAX      NonNegativeInteger
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The address of the load distribution in the system."
+   ::=       { dcLoadDistributionEntry 7 }
+
+
+--
+-- ACBackup Group
+--
+
+dcACBackup           OBJECT IDENTIFIER ::= { dcObjects 7 }
+
+
+--
+-- Bypass Group
+--
+
+dcBypass      OBJECT IDENTIFIER ::= { dcACBackup 1 }
+
+dcBypassNumBypass OBJECT-TYPE
+   SYNTAX      NonNegativeInteger
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The number of bypasses.
+                This variable indicates the number of rows in the bypass table."
+   ::=       { dcBypass 1 }
+
+dcBypassTable    OBJECT-TYPE
+   SYNTAX      SEQUENCE OF DCBypassEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "A list of bypass table entries."
+   ::=       { dcBypass 2 }
+
+dcBypassEntry  OBJECT-TYPE
+   SYNTAX      DCBypassEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "An entry containing information applicable to a particular bypass."
+   INDEX    { dcBypassIndex }
+   ::=      { dcBypassTable 1 }
+
+DCBypassEntry ::= SEQUENCE {
+   dcBypassIndex               PositiveInteger,
+   dcBypassHardwareVersion     DisplayString,
+   dcBypassStatus              INTEGER,
+   dcBypassFault               INTEGER,
+   dcBypassInputVoltageSource1 INTEGER,
+   dcBypassInputVoltageSource2 INTEGER,
+   dcBypassOutputVoltage       INTEGER,
+   dcBypassOutputCurrent       INTEGER,
+   dcBypassFrequency           INTEGER,
+   dcBypassActivePower         INTEGER,
+   dcBypassReactivePower       INTEGER,
+   dcBypassComplexPower        INTEGER,
+   dcBypassAddress             NonNegativeInteger
+}
+
+dcBypassIndex OBJECT-TYPE
+   SYNTAX      PositiveInteger
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "The bypass identifier."
+   ::=       { dcBypassEntry 1 }
+
+-- Eingabe
+dcBypassHardwareVersion OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE (0..15))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The bypass hardware version."
+   ::=      { dcBypassEntry 2 }
+
+-- 1:MAIOPEXX 2:INVOPEXX 3:BYSXXON
+dcBypassStatus    OBJECT-TYPE
+   SYNTAX     INTEGER
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The current operation mode of the bypass.
+                 Bit 1: Mains Operation
+                 Bit 2: Inverter Operation
+                 Bit 3: Service Bypass Operation"
+   ::=      { dcBypassEntry 3 }
+
+-- 1:SBPXX 2:SBPXXWAR 3:SBPXXSOVBL 0:sonst
+dcBypassFault     OBJECT-TYPE
+   SYNTAX      INTEGER
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "This object indicates a fault of the bypass.
+                 Bit 1: Major Fault
+                 Bit 2: Minor Fault
+                 Bit 3: Switchover Blocked"
+   ::=      { dcBypassEntry 4 }
+
+-- UINVOUTXX
+dcBypassInputVoltageSource1 OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "RMS Volts"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the bypass input voltage of the primary source."
+   ::=      { dcBypassEntry 5 }
+
+-- UMAIXX
+dcBypassInputVoltageSource2 OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "RMS Volts"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the bypass input voltage of the secondary source."
+   ::=      { dcBypassEntry 6 }
+
+-- USBPOUTXX
+dcBypassOutputVoltage OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "RMS Volts"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the bypass output voltage."
+   ::=      { dcBypassEntry 7 }
+
+-- ISBPOUTXX
+dcBypassOutputCurrent OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "RMS Amps"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the present bypass output current."
+   ::=      { dcBypassEntry 8 }
+
+-- FSBPXX
+dcBypassFrequency    OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "0.1 Hertz"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The present bypass frequency."
+   ::=      { dcBypassEntry 9 }
+
+--  PSBPXX
+dcBypassActivePower OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "Watts"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the present active bypass power."
+   ::=      { dcBypassEntry 10 }
+
+-- QSBPXX
+dcBypassReactivePower OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "VAR"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the present reactive bypass power."
+   ::=      { dcBypassEntry 11 }
+
+-- SSBPXX
+dcBypassComplexPower OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "VA"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the present complex bypass power."
+   ::=      { dcBypassEntry 12 }
+
+dcBypassAddress    OBJECT-TYPE
+   SYNTAX      NonNegativeInteger
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The address of the bypass in the system."
+   ::=       { dcBypassEntry 13 }
+
+--
+-- Inverter Group
+--
+
+dcInverter      OBJECT IDENTIFIER ::= { dcACBackup 2 }
+
+-- ???
+dcInverterNumInverter OBJECT-TYPE
+   SYNTAX      NonNegativeInteger
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The number of inverters in the power system. This variable indicates the number of rows in the inverter table."
+   ::=      { dcInverter 1 }
+
+dcInverterTable   OBJECT-TYPE
+   SYNTAX      SEQUENCE OF DCInverterEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "A list of inverter table entries.  The number of entries is given by the value of dcInverterNumInverter."
+   ::=      { dcInverter 2 }
+
+dcInverterEntry   OBJECT-TYPE
+   SYNTAX      DCInverterEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "An entry containing information applicable to a particular inverter."
+   INDEX    { dcInverterIndex }
+   ::=      { dcInverterTable 1 }
+
+DCInverterEntry ::= SEQUENCE {
+   dcInverterIndex               PositiveInteger,
+   dcInverterFirmwareVersion     DisplayString,
+   dcInverterStatus              INTEGER,
+   dcInverterFault               INTEGER,
+   dcInverterOutputVoltage       INTEGER,
+   dcInverterOutputCurrent       INTEGER,
+   dcInverterAddress             NonNegativeInteger
+}
+
+dcInverterIndex OBJECT-TYPE
+   SYNTAX      PositiveInteger
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "The inverter identifier."
+   ::=       { dcInverterEntry 1 }
+
+-- Eingabe
+dcInverterFirmwareVersion OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE (0..15))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The inverter's firmware version."
+   ::=      { dcInverterEntry 2 }
+
+-- 1:INVXXOFF 2:sonst
+dcInverterStatus  OBJECT-TYPE
+   SYNTAX      INTEGER {
+         off(1),
+         on(2)
+   }
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The current state of the inverter. ..."
+   ::=      { dcInverterEntry 3 }
+
+-- 1:INVXX 6:???(currently unused) 8:???(currently unused) 11:FUSLOAXXAC 12:SBPOVL
+dcInverterFault   OBJECT-TYPE
+   SYNTAX      INTEGER
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "This object indicates the fault of the inverter.
+                 Bit 1: Inverter Failure
+                 Bit 6: Overtemperature Fan
+                 Bit 8: Output out of Tolerance
+                 Bit 11: Output Fuse Fault
+                 Bit 12: Overload"
+   ::=      { dcInverterEntry 4 }
+
+-- UWRAXX
+dcInverterOutputVoltage OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "RMS Volts"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the inverter output voltage."
+   ::=      { dcInverterEntry 5 }
+
+-- IINVOUTXX, IINVXX
+dcInverterOutputCurrent OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "RMS Amps"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The magnitude of the present inverter output current."
+   ::=      { dcInverterEntry 6 }
+
+dcInverterAddress    OBJECT-TYPE
+   SYNTAX      NonNegativeInteger
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The address of the inverter in the system."
+   ::=       { dcInverterEntry 7 }
+
+
+--
+-- Battery Test Group.
+--
+
+dcBatteryTest          OBJECT IDENTIFIER ::= { dcObjects 8 }
+
+dcBatteryTestNumBatteries OBJECT-TYPE
+   SYNTAX      NonNegativeInteger
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The number of batteries.
+                This variable indicates the number of rows in the battery test table."
+   ::=       { dcBatteryTest 1 }
+
+dcBatteryTestTable   OBJECT-TYPE
+   SYNTAX      SEQUENCE OF DCBatteryTestEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "A list of battery table entries."
+   ::=      { dcBatteryTest 2 }
+
+dcBatteryTestEntry OBJECT-TYPE
+   SYNTAX      DCBatteryTestEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "An entry containing information applicable to a particular battery-string test."
+   INDEX    { dcBatteryTestIndex }
+   ::=      { dcBatteryTestTable 1 }
+
+DCBatteryTestEntry ::= SEQUENCE {
+   dcBatteryTestIndex               PositiveInteger,
+   dcBatteryTestEndVoltage          INTEGER,
+   dcBatteryTestDuration            INTEGER,
+   dcBatteryTestDischargedEnergy    INTEGER,
+   dcBatteryTestType                INTEGER,
+   dcBatteryTestResult              INTEGER,
+   dcBatteryTestDate                DisplayString,
+   dcBatteryTestTime                DisplayString,
+   dcBatteryTestAddress             NonNegativeInteger
+}
+
+dcBatteryTestIndex OBJECT-TYPE
+   SYNTAX      PositiveInteger
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "The battery test identifier."
+   ::=       { dcBatteryTestEntry 1 }
+
+-- UVODXX
+dcBatteryTestEndVoltage OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "0.01 Volt DC"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The battery string voltage at the end of the battery test."
+   ::=      { dcBatteryTestEntry 2 }
+
+-- ZVOD
+dcBatteryTestDuration OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "minutes"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The duration of the last battery test in minutes."
+   ::=      { dcBatteryTestEntry 3 }
+
+-- CBATXX
+dcBatteryTestDischargedEnergy OBJECT-TYPE
+   SYNTAX      INTEGER
+   UNITS       "Ah"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "This discharged energy during the last battery test."
+   ::=      { dcBatteryTestEntry 4 }
+
+dcBatteryTestType    OBJECT-TYPE
+   SYNTAX      INTEGER {
+         timeBased(1)
+   }
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The type of the last battery test."
+   ::=      { dcBatteryTestEntry 5 }
+
+-- 2:VODNEG 1:sonst
+dcBatteryTestResult  OBJECT-TYPE
+   SYNTAX      INTEGER {
+         ok(1),
+         failed(2)
+   }
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The result of the last battery test."
+   ::=      { dcBatteryTestEntry 6 }
+
+-- Klären das Datum des nächsten B-Tests ist von der MCU abfragbar (Einzelabfrage), nicht das des letzten.
+-- ?2595030000471
+dcBatteryTestDate    OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE(0..15))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "A string containing the date of battery test start
+   (YYYY-MM-DD)."
+   ::=      { dcBatteryTestEntry 7 }
+
+-- Klären wie oben, nur für den nächsten Test möglich.
+-- ?2595030000471
+dcBatteryTestTime    OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE(0..7))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "A string containing the time of battery test start (HH:MM)."
+   ::=      { dcBatteryTestEntry 8 }
+
+dcBatteryTestAddress    OBJECT-TYPE
+   SYNTAX      NonNegativeInteger
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The address of the battery in the system."
+   ::=       { dcBatteryTestEntry 9 }
+
+
+--
+-- Control Group
+--
+
+dcControl              OBJECT IDENTIFIER ::= { dcObjects 9 }
+
+-- 1:DL 2:LA 3:TB
+dcControlMode     OBJECT-TYPE
+   SYNTAX      INTEGER {
+         float(1),
+         boost(2),
+         startBatteryTest(3)
+   }
+   MAX-ACCESS  read-write
+   STATUS      current
+   DESCRIPTION "This object controls the system mode. batteryTest(3) starts a battery test and
+            setting the mode to float(1) or boost(2) will manually stop a battery test."
+   ::=      { dcControl 1 }
+
+-- 1:EN
+dcControlRestartFaultyUnits OBJECT-TYPE
+   SYNTAX      INTEGER { restartFaultyUnits(1)}
+   MAX-ACCESS  read-write
+   STATUS      current
+   DESCRIPTION "This object restarts all faulty units in the system. After setting this object (1), the
+             agent responses with 0 if executed."
+   ::=      { dcControl 2 }
+
+
+--
+-- Configuration Group
+--
+
+dcConfig      OBJECT IDENTIFIER ::= { dcObjects 10 }
+
+-- Klären abfragbar vom Mastergleichrichter durch Einzelbefehl.
+dcConfigFloatVoltage OBJECT-TYPE
+   SYNTAX      NonNegativeInteger
+   UNITS       "0.01 Volt DC"
+   MAX-ACCESS  read-write
+   STATUS      current
+   DESCRIPTION "The float voltage of the system."
+   ::=      { dcConfig 1 }
+
+-- Klären abfragbar vom Mastergleichrichter durch Einzelbefehl.
+dcConfigBoostVoltage OBJECT-TYPE
+   SYNTAX      NonNegativeInteger
+   UNITS       "0.01 Volt DC"
+   MAX-ACCESS  read-write
+   STATUS      current
+   DESCRIPTION "The boost voltage of the system."
+   ::=      { dcConfig 2 }
+
+-- Klären abfragbar vom Mastergleichrichter durch Einzelbefehl.
+dcConfigStandByVoltage OBJECT-TYPE
+   SYNTAX      NonNegativeInteger
+   UNITS       "0.01 Volt DC"
+   MAX-ACCESS  read-write
+   STATUS      current
+   DESCRIPTION "The stand by-voltage of the system. E.g. during a battery test."
+   ::=      { dcConfig 3 }
+
+
+--
+-- Alarm Group
+--
+
+dcAlarm              OBJECT IDENTIFIER ::= { dcObjects 11 }
+
+dcAlarmsPresent   OBJECT-TYPE
+   SYNTAX      Integer32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The present number of active alarm conditions."
+   ::=      { dcAlarm 1 }
+
+dcAlarmTable   OBJECT-TYPE
+   SYNTAX      SEQUENCE OF DcAlarmEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "A list of alarm entries."
+   ::=      { dcAlarm 2 }
+
+dcAlarmEntry   OBJECT-TYPE
+   SYNTAX      DcAlarmEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "An entry containing information applicable to a particular alarm."
+   INDEX    { dcAlarmId }
+   ::=      { dcAlarmTable 1 }
+
+DcAlarmEntry ::= SEQUENCE {
+   dcAlarmId          PositiveInteger,
+   dcAlarmDescr       AutonomousType,
+   dcAlarmTime        TimeStamp,
+   dcAlarmDevice      PositiveInteger
+}
+
+dcAlarmId      OBJECT-TYPE
+   SYNTAX      PositiveInteger
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "A unique identifier for an alarm condition. This value must remain constant."
+   ::=      { dcAlarmEntry 1 }
+
+dcAlarmDescr      OBJECT-TYPE
+   SYNTAX      AutonomousType
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "A reference to an alarm description object. The object referenced should not be
+             	accessible, but rather be used to provide a unique description of the alarm   condition."
+   ::=      { dcAlarmEntry 2 }
+
+dcAlarmTime       OBJECT-TYPE
+   SYNTAX      TimeStamp
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The value of sysUpTime when the alarm condition was detected. If the alarm
+            condition was detected at the time of agent startup and presumably existed before
+            agent startup, the value of dcAlarmTime shall equal 0."
+   ::=      { dcAlarmEntry 3 }
+
+dcAlarmDevice      OBJECT-TYPE
+   SYNTAX      PositiveInteger
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "This value shows the device that causes the alarm or the value of a threshold level that caused the alarm."
+   ::=      { dcAlarmEntry 4 }
+
+
+--
+-- Well known alarms
+--
+
+dcWellKnownAlarms    OBJECT IDENTIFIER ::= { dcAlarm 3 }
+
+dcAlarmAgentCommunication OBJECT-IDENTITY
+STATUS      current
+   DESCRIPTION "This object indicates a communication problem from the agent to the DC-power
+            system."
+   ::=      { dcWellKnownAlarms  1 }
+
+-- MAIRECXX
+dcAlarmACInputFault  OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates an alarm in the AC-input, e.g. ac input fuse blown, ac input
+            breaker tripped or mains failure."
+   ::=      { dcWellKnownAlarms  2 }
+
+-- RECXX, REC
+dcAlarmRectifierFault OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates an alarm of rectifiers, e.g. broken rectifier, fan or
+            temperature alarm."
+   ::=      { dcWellKnownAlarms  3 }
+
+-- BAT, BATXX
+dcAlarmBatteryFault  OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates an alarm of batteries, e.g. fuse blown, symmetry or
+              temperature."
+   ::=      { dcWellKnownAlarms  4 }
+
+-- INV, INVXX
+dcAlarmInverterFault OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates an alarm of inverters, e.g. input fuse, fan."
+   ::=      { dcWellKnownAlarms  5 }
+
+-- SBP, SBPXX, SBPWAR, SBPWARXX
+dcAlarmBypassFault   OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates an alarm of bypasses, e.g. switch-over blocked."
+   ::=      { dcWellKnownAlarms  6 }
+
+-- BATDISACT, BATDIS
+dcAlarmBattDischarge OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates that the battery is in discharge mode."
+   ::=      { dcWellKnownAlarms  7 }
+
+-- UBATLOW, UBAT<UU.U
+dcAlarmBatteryLow    OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates a low battery voltage."
+   ::=      { dcWellKnownAlarms  8 }
+
+-- UBATHIG, ULOAXXHIG, UBAT>UU.U, UBBR>UU.U, ULOAHIG
+dcAlarmBusbarVoltageHigh OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates a high busbar voltage."
+   ::=      { dcWellKnownAlarms  9 }
+
+-- TBAT<TT, TBAT>TT
+dcAlarmBatteryTemperature OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates that the battery temperature is abnormal."
+   ::=      { dcWellKnownAlarms  10 }
+
+-- LOAXXOFF, COTLOA
+dcAlarmLoadDisconnected OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates a disconnected load."
+   ::=      { dcWellKnownAlarms  11 }
+
+-- RECOFF
+dcAlarmAllRectifierOff OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates that all rectifiers are off."
+   ::=      { dcWellKnownAlarms  12 }
+
+-- N+1, N+1REC
+dcAlarmNoRedundancy  OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates a loss of rectifier redundancy."
+   ::=      { dcWellKnownAlarms  13 }
+
+-- FID(Brand), TEXT(Ex. Temp.), OBP(Objektschutz), DOORAC(Schranktür), SMD(Rauchmelder), DOOROO(Raumtür), WAD(Wassermelder)
+dcAlarmExternalFault OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates an external fault. External faults are e.g. door open, smoke detector."
+   ::=      { dcWellKnownAlarms  14 }
+
+-- DEVEXT, DEVXXEXT, AIC(Klima)
+dcAlarmAuxiliaryFault OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates an auxiliary fault. Auxiliary faults are e.g. air condition, generator."
+   ::=      { dcWellKnownAlarms  15 }
+
+-- FUSBAT, FUSBATXX
+dcAlarmBatteryFuseTripped OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates that a battery fuse has tripped."
+   ::=      { dcWellKnownAlarms  16 }
+
+-- FUSLOADC, FUSLOAXXDC
+dcAlarmDCLoadFuseTripped OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates that a dc load fuse has tripped."
+   ::=      { dcWellKnownAlarms  17 }
+
+-- VOD
+dcAlarmBatteryTestInProgress OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates that the system is in battery test mode."
+   ::=      { dcWellKnownAlarms  18 }
+
+-- VODNEG
+dcAlarmBatteryTestFailed OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates that the battery test has failed."
+   ::=      { dcWellKnownAlarms  19 }
+
+-- RECCHG
+dcAlarmBoost      OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates that the system is in boost mode."
+   ::=      { dcWellKnownAlarms  20 }
+
+-- GRS, GRSXX
+dcAlarmGeneral    OBJECT-IDENTITY
+   STATUS      current
+   DESCRIPTION "This object indicates a general alarm."
+   ::=      { dcWellKnownAlarms  21 }
+
+-- NURERR
+dcAlarmNonUrgentError    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a non urgent error."
+    ::=      { dcWellKnownAlarms 22 }
+
+-- URGERR
+dcAlarmUrgentError    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates an urgent error."
+    ::=      { dcWellKnownAlarms 23 }
+
+-- MCUBUS
+dcAlarmMcuHasNoSatbusContact    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that the MCU unit has no contact to the SATBUS."
+    ::=      { dcWellKnownAlarms 24 }
+
+-- MOD
+dcAlarmModemNotResponsing    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that the modem does not respond."
+    ::=      { dcWellKnownAlarms 25 }
+
+-- UBBR<UU.U, ULOAXXLOW, ULOALOW
+dcAlarmBusbarVoltageLow    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a low busbar voltage."
+    ::=      { dcWellKnownAlarms 26 }
+
+-- DDC, DDCXX
+dcAlarmDeepDischargeContactorDropped    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a dropped deep discharge contactor."
+    ::=      { dcWellKnownAlarms 27 }
+
+-- FANRECXX
+dcAlarmFanRectifierFault    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that a rectifier fan failed.
+                  The device id is given in the dcAlarmDevice field."
+    ::=      { dcWellKnownAlarms 28 }
+
+-- FUSLOA, FUSLOAXX
+dcAlarmLoadFuseTripped    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a tripped load fuse."
+    ::=      { dcWellKnownAlarms 29 }
+
+-- FUS
+dcAlarmFuseTripped    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a tripped fuse."
+    ::=      { dcWellKnownAlarms 30 }
+
+-- FUSLOAAC, FUSLOAXXAC
+dcAlarmLoadFuseAcTripped    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a tripped AC load fuse."
+    ::=      { dcWellKnownAlarms 31 }
+
+-- FUSBATOFF, FUSBATXXOF
+dcAlarmBatteryFuseOff    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a switched off battery fuse."
+    ::=      { dcWellKnownAlarms 32 }
+
+-- FUSLOAOFF, FUSLOAXXOF
+dcAlarmLoadFuseOff    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a switched off load fuse."
+    ::=      { dcWellKnownAlarms 33 }
+
+-- FUSRECXX
+dcAlarmFuseRectifierTripped    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that the fuse of the rectifier given
+                  in field dcAlarmDevice has tripped."
+    ::=      { dcWellKnownAlarms 34 }
+
+-- RECXXOFF
+dcAlarmRectifierOff    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that the rectifier given as dcAlarmDevice is off."
+    ::=      { dcWellKnownAlarms 35 }
+
+-- SVP
+dcAlarmSurgeVoltageProtectionTripped    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a tripped surge voltage protection."
+    ::=      { dcWellKnownAlarms 36 }
+
+-- THIG
+dcAlarmTemperatureHigh    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates the temperature is high."
+    ::=      { dcWellKnownAlarms 37 }
+
+-- TSEFAU
+dcAlarmTemperatureSensorFault    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a fault of the temperature sensor."
+    ::=      { dcWellKnownAlarms 38 }
+
+-- MAI, MAIXX
+dcAlarmMainsError    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a mains error."
+    ::=      { dcWellKnownAlarms 39 }
+
+-- DEV
+dcAlarmDeviceFault    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a device fault."
+    ::=      { dcWellKnownAlarms 40 }
+
+-- BATSYMMON
+dcAlarmBatterySymmetryMonitoring    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates an alarm in the batter symmetry monitoring."
+    ::=      { dcWellKnownAlarms 41 }
+
+-- EFA
+dcAlarmEarthFault    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates an earth fault."
+    ::=      { dcWellKnownAlarms 42 }
+
+-- EFA(-)
+dcAlarmEarthFaultMinusCircuit    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates an earth fault in the minus circuit."
+    ::=      { dcWellKnownAlarms 43 }
+
+-- EFA(+)
+dcAlarmEarthFaultPlusCircuit    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates an earth fault in the plus circuit."
+    ::=      { dcWellKnownAlarms 44 }
+
+-- CONXX
+dcAlarmDcDcConverterFault    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a DC-DC converter fault."
+    ::=      { dcWellKnownAlarms 45 }
+
+-- VODERR
+dcAlarmBatteryTestError    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a failed battery test."
+    ::=      { dcWellKnownAlarms 46 }
+
+-- BCI
+dcAlarmBatteryCircuitFault    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a battery circuit fault."
+    ::=      { dcWellKnownAlarms 47 }
+
+-- BATEXD
+dcAlarmBatteryExhaustivelyDischarged    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that the battery was discharged exhaustively."
+    ::=      { dcWellKnownAlarms 48 }
+
+-- BATNOA
+dcAlarmBatteryNotAvailable    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that the battery is not available."
+    ::=      { dcWellKnownAlarms 49 }
+
+-- RESXX
+dcAlarmReserve    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a reserved error."
+    ::=      { dcWellKnownAlarms 50 }
+
+-- DOO
+dcAlarmDoorContact    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a door contact alarm."
+    ::=      { dcWellKnownAlarms 51 }
+
+-- BYSON
+dcAlarmBypassSwitchOn    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that the bypass switch is on."
+    ::=      { dcWellKnownAlarms 52 }
+
+-- SBPSOVBLO
+dcAlarmStaticBypassSwitchoverBlocked    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that the static bypass switchover is blocked."
+    ::=      { dcWellKnownAlarms 53 }
+
+-- SBPOVL, SBPXXSOVBL
+dcAlarmStaticBypassOverload    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates an overload of the static bypass."
+    ::=      { dcWellKnownAlarms 54 }
+
+-- UOUTSBP
+dcAlarmStaticBypassOutputVoltageFault    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a fault of the static bypass output voltage."
+    ::=      { dcWellKnownAlarms 55 }
+
+-- FAN
+dcAlarmFanFault    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a fan fault."
+    ::=      { dcWellKnownAlarms 56 }
+
+-- EMS
+dcAlarmEmergencyStop    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that an emergency stop was executed."
+    ::=      { dcWellKnownAlarms 57 }
+
+-- ILOAHIG
+dcAlarmLoadCurrentHigh    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that the load current is high."
+    ::=      { dcWellKnownAlarms 58 }
+
+-- SWIMAIOFF
+dcAlarmMainsSwitchOff    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that the mains switch is turned off."
+    ::=      { dcWellKnownAlarms 59 }
+
+-- UOUTHIG
+dcAlarmOutputVoltageHigh    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that the output voltage is high."
+    ::=      { dcWellKnownAlarms 60 }
+
+-- COTCOC
+dcAlarmCounterCellContactorAktiv    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that the counter cell contactor is active."
+    ::=      { dcWellKnownAlarms 61 }
+
+-- SES
+dcAlarmServiceSwitch    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates an activated service switch."
+    ::=      { dcWellKnownAlarms 62 }
+
+-- UPS
+dcAlarmUpsFault    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a fault of the UPS."
+    ::=      { dcWellKnownAlarms 63 }
+
+-- UOUTLOW
+dcAlarmOutputVoltageLow    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that the output voltage is low."
+    ::=      { dcWellKnownAlarms 64 }
+
+-- WHIG
+dcAlarmRippleHigh    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates a high ripple."
+    ::=      { dcWellKnownAlarms 65 }
+
+-- TROO<XX
+dcAlarmRoomTemperatureLow    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that the room temperature is too low."
+    ::=      { dcWellKnownAlarms 66 }
+
+-- TROO>XX
+dcAlarmRoomTemperatureHigh    OBJECT-IDENTITY
+    STATUS      current
+    DESCRIPTION  "This object indicates that the room temperature is too high."
+    ::=      { dcWellKnownAlarms 67 }
+
+--
+-- Auxiliary Group
+--
+
+dcAuxiliary            OBJECT IDENTIFIER ::= { dcObjects 12 }
+
+dcAuxiliaryNumAux OBJECT-TYPE
+   SYNTAX      NonNegativeInteger
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The number of Auxiliaries.
+                This variable indicates the number of rows in the auxiliary table."
+   ::=       { dcAuxiliary 1 }
+
+dcAuxiliaryTable  OBJECT-TYPE
+   SYNTAX      SEQUENCE OF DCAuxiliaryEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "A list of auxiliary table entries.
+                The number of entries is given by the value of dcAuxiliaryNumAux."
+   ::=       { dcAuxiliary 2 }
+
+dcAuxiliaryEntry  OBJECT-TYPE
+   SYNTAX      DCAuxiliaryEntry
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "An entry containing information applicable to a particular auxiliary component."
+   INDEX    { dcAuxiliaryIndex }
+   ::=   { dcAuxiliaryTable 1 }
+
+DCAuxiliaryEntry ::= SEQUENCE {
+   dcAuxiliaryIndex          PositiveInteger,
+   dcAuxiliaryDescription    DisplayString,
+   dcAuxiliaryStatus         INTEGER
+}
+
+dcAuxiliaryIndex OBJECT-TYPE
+   SYNTAX      PositiveInteger
+   MAX-ACCESS  not-accessible
+   STATUS      current
+   DESCRIPTION "The auxiliary identifier."
+   ::=       { dcAuxiliaryEntry 1 }
+
+dcAuxiliaryDescription OBJECT-TYPE
+   SYNTAX      DisplayString (SIZE (0..31))
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "A string describing the auxiliary component, e.g. fuel level, configured in the agent."
+   ::=      { dcAuxiliaryEntry 2 }
+
+-- 1:ok 2:fault
+dcAuxiliaryStatus OBJECT-TYPE
+   SYNTAX      INTEGER {
+      ok(1),
+      fault(2)
+   }
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The current state of the component."
+   ::=      { dcAuxiliaryEntry 3 }
+
+
+
+dcTraps         OBJECT IDENTIFIER ::=  { dcmcuMIB 2 }
+
+dcTrapAlarmEntryAdded NOTIFICATION-TYPE
+   OBJECTS  { dcAlarmId, dcAlarmDescr, dcAlarmDevice }
+   STATUS   current
+   DESCRIPTION "This trap is sent upon a alarm in the system appears. Binding in the trap is
+            description of alarm and the device that causes the alarm."
+   ::=      { dcTraps 1 }
+
+dcTrapAlarmEntryRemoved NOTIFICATION-TYPE
+   OBJECTS  { dcAlarmId, dcAlarmDescr, dcAlarmDevice }
+   STATUS   current
+   DESCRIPTION "This trap is sent upon a alarm in the system disappears. Binding in the trap is
+            description of alarm and the device that causes the alarm."
+   ::=      { dcTraps 2 }
+
+
+END

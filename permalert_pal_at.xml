@@ -1,0 +1,244 @@
+<?xml version="1.0"?>
+<!-- Test Modbus related information -->
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+         ddfid="permalert_pal_at" ddfname="Permalert PAL-AT" ddfversion="2" canremove="yes">
+  <schemaVersion>1.6</schemaVersion>
+
+  <device deviceid="permalert_pal_at">
+      <oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+      <setProductData ruleid="vendordata" field="vendor">Permalert</setProductData>
+      <setProductData ruleid="modeldata" field="model">PAL-AT</setProductData>
+
+      <!-- Leak Detection Device - seems appropriate for Environmental Monitoring -->
+      <setProductData ruleid="typedata" field="type">Environmental Monitor</setProductData>
+
+      <setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+      
+      <stateSensor ruleid="device-status">
+          <type>state</type>
+          <sensorId>DEVICE_STATUS</sensorId>
+          <value>
+              <mapValue mapid="status-vm">
+                  <getOid>devicestatus</getOid>
+              </mapValue>
+          </value>
+          <label>Device Status</label>
+          <enum>status-em</enum>
+          <sensorSet>State Sensors</sensorSet>
+      </stateSensor>  
+
+      <stateSensor ruleid="cable-status" index="CABLE_STATUS_TABLE" >
+          <type>state</type>
+          <sensorId>CABLE_STATUS_<mapValue mapid="cable_index_map"><rowNumber/></mapValue></sensorId>
+          <value>
+              <mapValue mapid="cable-status-vm">
+                  <getRowOid>CABLE_STATUS_TABLE</getRowOid>
+              </mapValue>
+          </value>
+          <label>Cable Status <mapValue mapid="cable_index_map"><rowNumber/></mapValue></label>
+          <enum>cable-status-em</enum>
+          <sensorSet>State Sensors</sensorSet>
+      </stateSensor>  
+
+      <numSensor ruleid="cable-distance" index="CABLE_DISTANCE_TABLE" >
+          <type>num</type>
+          <sensorId>CABLE_DISTANCE_<mapValue mapid="cable_index_map"><rowNumber/></mapValue></sensorId>
+          <value>
+              <getRowOid>CABLE_DISTANCE_TABLE</getRowOid>
+          </value>
+          <label>Cable Distance or Probe Number <mapValue mapid="cable_index_map"><rowNumber/></mapValue></label>
+          <sensorSet>I/O Sensors</sensorSet>
+      </numSensor>
+
+      <!-- Device Status Enums -->
+      <valueMap ruleid="status-vm">
+          <valueIn>0</valueIn><valueOut>1</valueOut>
+          <valueIn>1</valueIn><valueOut>2</valueOut>
+          <valueIn>*</valueIn><valueOut>0</valueOut>
+      </valueMap>
+      <enumMap ruleid="status-em">
+          <label>Unknown</label>
+          <label>Ok</label>
+          <label>Problem</label>
+      </enumMap>
+
+      <!-- Cable Status Enums -->
+      <valueMap ruleid="cable-status-vm">
+          <valueIn>0</valueIn><valueOut>1</valueOut>
+          <valueIn>1</valueIn><valueOut>2</valueOut>
+          <valueIn>2</valueIn><valueOut>3</valueOut>
+          <valueIn>3</valueIn><valueOut>4</valueOut>
+          <valueIn>4</valueIn><valueOut>5</valueOut>
+          <valueIn>5</valueIn><valueOut>6</valueOut>
+          <valueIn>6</valueIn><valueOut>7</valueOut>
+          <valueIn>7</valueIn><valueOut>8</valueOut>
+          <valueIn>8</valueIn><valueOut>9</valueOut>
+          <valueIn>9</valueIn><valueOut>10</valueOut>
+          <valueIn>*</valueIn><valueOut>0</valueOut>
+      </valueMap>
+      <enumMap ruleid="cable-status-em">
+          <label>Unknown</label>
+          <label>Not Installed</label>
+          <label>Offline</label>
+          <label>Normal</label>
+          <label>Leak</label>
+          <label>Break</label>
+          <label>Short</label>
+          <label>Probe Active</label>
+          <label>Probe Reset</label>
+          <label>Drying</label>
+          <label>No End/Fault 1st 50ft</label>
+      </enumMap>
+
+      <!-- Map table entries 0-7 to Cable numbers 1-8 -->
+      <valueMap ruleid="cable_index_map">
+          <valueIn>0</valueIn><valueOut>1</valueOut>
+          <valueIn>1</valueIn><valueOut>2</valueOut>
+          <valueIn>2</valueIn><valueOut>3</valueOut>
+          <valueIn>3</valueIn><valueOut>4</valueOut>
+          <valueIn>4</valueIn><valueOut>5</valueOut>
+          <valueIn>5</valueIn><valueOut>6</valueOut>
+          <valueIn>6</valueIn><valueOut>7</valueOut>
+          <valueIn>7</valueIn><valueOut>8</valueOut>
+      </valueMap>
+  </device>
+
+  <protocol>
+    <modbus> 
+        <!-- Cable Status Table -->
+        <table_ref_id indexid="CABLE_STATUS_TABLE">
+            <entry num="0">cable_status_1</entry>
+            <entry num="1">cable_status_2</entry>
+            <entry num="2">cable_status_3</entry>
+            <entry num="3">cable_status_4</entry>
+            <entry num="4">cable_status_5</entry>
+            <entry num="5">cable_status_6</entry>
+            <entry num="6">cable_status_7</entry>
+            <entry num="7">cable_status_8</entry>
+        </table_ref_id>
+
+        <!-- Cable distance or probe number Table -->
+        <table_ref_id indexid="CABLE_DISTANCE_TABLE">
+            <entry num="0">cable_distance_1</entry>
+            <entry num="1">cable_distance_2</entry>
+            <entry num="2">cable_distance_3</entry>
+            <entry num="3">cable_distance_4</entry>
+            <entry num="4">cable_distance_5</entry>
+            <entry num="5">cable_distance_6</entry>
+            <entry num="6">cable_distance_7</entry>
+            <entry num="7">cable_distance_8</entry>
+        </table_ref_id>
+   
+        <value_ref_id valid="devicestatus">
+            <function>3</function>
+            <start_addr>0</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="cable_status_1">
+            <function>3</function>
+            <start_addr>1</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="cable_status_2">
+            <function>3</function>
+            <start_addr>3</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="cable_status_3">
+            <function>3</function>
+            <start_addr>5</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="cable_status_4">
+            <function>3</function>
+            <start_addr>7</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="cable_status_5">
+            <function>3</function>
+            <start_addr>9</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="cable_status_6">
+            <function>3</function>
+            <start_addr>11</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="cable_status_7">
+            <function>3</function>
+            <start_addr>13</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="cable_status_8">
+            <function>3</function>
+            <start_addr>15</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="cable_distance_1">
+            <function>3</function>
+            <start_addr>2</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="cable_distance_2">
+            <function>3</function>
+            <start_addr>4</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="cable_distance_3">
+            <function>3</function>
+            <start_addr>6</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="cable_distance_4">
+            <function>3</function>
+            <start_addr>8</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="cable_distance_5">
+            <function>3</function>
+            <start_addr>10</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="cable_distance_6">
+            <function>3</function>
+            <start_addr>12</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="cable_distance_7">
+            <function>3</function>
+            <start_addr>14</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="cable_distance_8">
+            <function>3</function>
+            <start_addr>16</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+
+        <!-- Bulk read for performance. -->
+        <packet>
+            <function>3</function>
+            <start_addr>0</start_addr>
+            <quantity>17</quantity>
+        </packet>
+    </modbus>
+  </protocol>
+</APC_DDF>    

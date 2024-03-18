@@ -1,0 +1,1787 @@
+<?xml version="1.0"?>
+<APC_DDF
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+    ddfid="powerlogic_ion6200"
+	ddfname="PowerLogic 6200"
+	ddfversion="6">
+	<schemaVersion>1.6</schemaVersion>
+	<!--
+		SOURCE
+		\modbus\register_maps\powerlogic\ION6200.pdf
+		Powerlogic ION6200 Register Map | 31 January 2020
+	-->
+	<device deviceid="powerlogic_ion_6200">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+		
+		<setProductData ruleid="vendordata" field="vendor">PowerLogic</setProductData>
+		<setProductData ruleid="modeldata" field="model">PowerLogic ION6200</setProductData>
+		<setProductData ruleid="typedata" field="type">Power Meter</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+		<!--
+		     NOTE: This device breaks with modbus standard byte ordering for
+		     32 bit integer quantities.  32 bit integer quantities are in LE
+		     format. To satisfy the scanner's expectations, the values are
+		     reordered to modbus standard BE format using the expression syntax.
+		-->
+		<valueMap ruleid="sensor_exists_int16-vm">
+			<valueIn>-1</valueIn><valueOut>[false]</valueOut>
+			<valueIn>*</valueIn><valueOut>[true]</valueOut>
+		</valueMap>
+		
+		<valueMap ruleid="sensor_exists_uint16-vm">
+			<valueIn>65535</valueIn><valueOut>[false]</valueOut>
+			<valueIn>*</valueIn><valueOut>[true]</valueOut>
+		</valueMap>
+		
+		<valueMap ruleid="sensor_exists_uint32-vm">
+			<valueIn>4294967295</valueIn><valueOut>[false]</valueOut>
+			<valueIn>*</valueIn><valueOut>[true]</valueOut>
+		</valueMap>
+		
+		<numSensor ruleid="meter_on_time">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>meterontime</getOid>
+				</mapValue>
+			</rowTest>
+			<type>timeinsec</type>
+			<sensorId>METER_ON_TIME</sensorId>
+			<value>
+				<getOid>meterontime</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Meter On Time</label>
+			<sensorSet>Other Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="vln_a">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>vlna</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>VOLTAGE_LN_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>vlna</getOid></op>
+					<op><mapValue mapid="pvs_scale_map"><getOid>pvs</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pvs</getOid></mapValue></valueInc>
+			<label>Voltage L1-N</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="vln_b">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>vlnb</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>VOLTAGE_LN_2</sensorId>
+			<value>
+				<div>
+					<op><getOid>vlnb</getOid></op>
+					<op><mapValue mapid="pvs_scale_map"><getOid>pvs</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pvs</getOid></mapValue></valueInc>
+			<label>Voltage L2-N</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="vln_c">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>vlnc</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>VOLTAGE_LN_3</sensorId>
+			<value>
+				<div>
+					<op><getOid>vlnc</getOid></op>
+					<op><mapValue mapid="pvs_scale_map"><getOid>pvs</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pvs</getOid></mapValue></valueInc>
+			<label>Voltage L3-N</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="vln_avg">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>vlnavg</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>AVERAGE_VOLTAGE_LN_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>vlnavg</getOid></op>
+					<op><mapValue mapid="pvs_scale_map"><getOid>pvs</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pvs</getOid></mapValue></valueInc>
+			<label>Voltage L-N Average</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="vll_ab">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>vllab</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>VOLTAGE_LL_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>vllab</getOid></op>
+					<op><mapValue mapid="pvs_scale_map"><getOid>pvs</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pvs</getOid></mapValue></valueInc>
+			<label>Voltage L1-L2</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="vll_bc">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>vllbc</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>VOLTAGE_LL_2</sensorId>
+			<value>
+				<div>
+					<op><getOid>vllbc</getOid></op>
+					<op><mapValue mapid="pvs_scale_map"><getOid>pvs</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pvs</getOid></mapValue></valueInc>
+			<label>Voltage L2-L3</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="vll_ca">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>vllca</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>VOLTAGE_LL_3</sensorId>
+			<value>
+				<div>
+					<op><getOid>vllca</getOid></op>
+					<op><mapValue mapid="pvs_scale_map"><getOid>pvs</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pvs</getOid></mapValue></valueInc>
+			<label>Voltage L3-L1</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="vll_avg">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>vllavg</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>AVERAGE_VOLTAGE_LL_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>vllavg</getOid></op>
+					<op><mapValue mapid="pvs_scale_map"><getOid>pvs</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pvs</getOid></mapValue></valueInc>
+			<label>Voltage L-L Average</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="i_a">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>ia</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>CURRENT_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>ia</getOid></op>
+					<op><mapValue mapid="pis_scale_map"><getOid>pis</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pis</getOid></mapValue></valueInc>
+			<label>Current L1</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="i_b">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>ib</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>CURRENT_2</sensorId>
+			<value>
+				<div>
+					<op><getOid>ib</getOid></op>
+					<op><mapValue mapid="pis_scale_map"><getOid>pis</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pis</getOid></mapValue></valueInc>
+			<label>Current L2</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="i_c">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>ic</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>CURRENT_3</sensorId>
+			<value>
+				<div>
+					<op><getOid>ic</getOid></op>
+					<op><mapValue mapid="pis_scale_map"><getOid>pis</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pis</getOid></mapValue></valueInc>
+			<label>Current L3</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="i_avg">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>iavg</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>AVERAGE_CURRENT_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>iavg</getOid></op>
+					<op><mapValue mapid="pis_scale_map"><getOid>pis</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pis</getOid></mapValue></valueInc>
+			<label>Current Average</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="i_demand">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>idemand</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>TOTAL_CURRENT_DEMAND_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>idemand</getOid></op>
+					<op><mapValue mapid="pis_scale_map"><getOid>pis</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pis</getOid></mapValue></valueInc>
+			<label>Current Demand</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="i_peak_demand">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>ipeakdemand</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>TOTAL_CURRENT_PEAK_DEMAND_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>ipeakdemand</getOid></op>
+					<op><mapValue mapid="pis_scale_map"><getOid>pis</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pis</getOid></mapValue></valueInc>
+			<label>Current Peak Demand</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="i_4">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>i4</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>CURRENT_6</sensorId>
+			<value>
+				<div>
+					<op><getOid>i4</getOid></op>
+					<op><mapValue mapid="pns_scale_map"><getOid>pns</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pis</getOid></mapValue></valueInc>
+			<label>Current 4</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kw_a">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kwa</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKW</type>
+			<sensorId>POWER_KW_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>kwa</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Active Power L1</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kw_b">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kwb</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKW</type>
+			<sensorId>POWER_KW_2</sensorId>
+			<value>
+				<div>
+					<op><getOid>kwb</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Active Power L2</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kw_c">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kwc</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKW</type>
+			<sensorId>POWER_KW_3</sensorId>
+			<value>
+				<div>
+					<op><getOid>kwc</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Active Power L3</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kw_tot">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kwtot</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKW</type>
+			<sensorId>TOTAL_POWER_KW_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>kwtot</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Active Power Total</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="frequency">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>freq</getOid>
+				</mapValue>
+			</rowTest>
+			<type>frequency</type>
+			<sensorId>FREQUENCY_1</sensorId>
+			<value>
+				<mult>
+					<op><getOid>freq</getOid></op>
+					<op>0.01</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Frequency</label>
+			<sensorSet>Other Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="powerfactor_sign_total">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>pfsigntot</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerfactor</type>
+			<sensorId>TOTAL_POWER_FACTOR_2</sensorId>
+			<value>
+				<mult>
+					<op><getOid>pfsigntot</getOid></op>
+					<op>0.01</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Power Factor Total</label>
+			<sensorSet>Other Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="powerfactor_sign_a">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>pfsigna</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerfactor</type>
+			<sensorId>POWER_FACTOR_1</sensorId>
+			<value>
+				<mult>
+					<op><getOid>pfsigna</getOid></op>
+					<op>0.01</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Power Factor L1</label>
+			<sensorSet>Other Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="powerfactor_sign_b">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>pfsignb</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerfactor</type>
+			<sensorId>POWER_FACTOR_2</sensorId>
+			<value>
+				<mult>
+					<op><getOid>pfsignb</getOid></op>
+					<op>0.01</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Power Factor L2</label>
+			<sensorSet>Other Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="powerfactor_sign_c">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>pfsignc</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerfactor</type>
+			<sensorId>POWER_FACTOR_3</sensorId>
+			<value>
+				<mult>
+					<op><getOid>pfsignc</getOid></op>
+					<op>0.01</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Power Factor L3</label>
+			<sensorSet>Other Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvar_total">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kvartotal</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKVAR</type>
+			<sensorId>TOTAL_POWER_KVAR_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>kvartotal</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Reactive Power Total</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kva_total">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kvatotal</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>TOTAL_POWER_KVA_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>kvatotal</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Apparent Power Total</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvar_a">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kvara</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKVAR</type>
+			<sensorId>POWER_KVAR_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>kvara</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Reactive Power L1</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvar_c">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kvarc</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKVAR</type>
+			<sensorId>POWER_KVAR_3</sensorId>
+			<value>
+				<div>
+					<op><getOid>kvarc</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Reactive Power L3</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvar_b">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kvarb</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKVAR</type>
+			<sensorId>POWER_KVAR_2</sensorId>
+			<value>
+				<div>
+					<op><getOid>kvarb</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Reactive Power L2</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kva_a">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kvaa</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>POWER_KVA_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>kvaa</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Apparent Power L1</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kva_c">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kvac</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>POWER_KVA_3</sensorId>
+			<value>
+				<div>
+					<op><getOid>kvac</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Apparent Power L3</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kva_b">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kvab</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>POWER_KVA_2</sensorId>
+			<value>
+				<div>
+					<op><getOid>kvab</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Apparent Power L2</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kw_demand">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kwdemand</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKW</type>
+			<sensorId>TOTAL_POWER_KW_2</sensorId>
+			<value>
+				<div>
+					<op><getOid>kwdemand</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Active Power Demand</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kw_peak_demand">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kwpeakdemand</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKW</type>
+			<sensorId>TOTAL_PEAK_POWER_KW_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>kwpeakdemand</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Active Power Peak Demand</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvar_demand">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kvardemand</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKVAR</type>
+			<sensorId>TOTAL_POWER_KVAR_2</sensorId>
+			<value>
+				<div>
+					<op><getOid>kvardemand</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Reactive Power Demand</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvar_peak_demand">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kvarpeakdemand</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKVAR</type>
+			<sensorId>TOTAL_PEAK_POWER_KVAR_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>kvarpeakdemand</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Reactive Power Peak Demand</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kva_demand">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kvademand</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>TOTAL_POWER_KVA_2</sensorId>
+			<value>
+				<div>
+					<op><getOid>kvademand</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Apparent Power Demand</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kva_peak_demand">
+			<rowTest>
+				<mapValue mapid="sensor_exists_int16-vm">
+					<getOid>kvapeakdemand</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>TOTAL_PEAK_POWER_KVA_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>kvapeakdemand</getOid></op>
+					<op><mapValue mapid="pps_scale_map"><getOid>pps</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pps</getOid></mapValue></valueInc>
+			<label>Apparent Power Peak Demand</label>
+			<sensorSet>Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kwh_del">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kwhdel</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kwatthr</type>
+			<sensorId>TOTAL_ENERGY_DEL_KWH_1</sensorId>
+			<value>
+				<getOid>kwhdel</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Energy DEL</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kwh_rec">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kwhrec</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kwatthr</type>
+			<sensorId>TOTAL_ENERGY_REC_KWH_1</sensorId>
+			<value>
+				<getOid>kwhrec</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Energy REC</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvarh_del">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kvarhdel</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kVARhr</type>
+			<sensorId>TOTAL_ENERGY_DEL_KVARH_1</sensorId>
+			<value>
+				<getOid>kvarhdel</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Reactive Energy DEL</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvarh_rec">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kvarhrec</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kVARhr</type>
+			<sensorId>TOTAL_ENERGY_REC_KVARH_1</sensorId>
+			<value>
+				<getOid>kvarhrec</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Reactive Energy REC</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvah_del_rec">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kvahdelrec</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kVAhr</type>
+			<sensorId>TOTAL_ENERGY_DEL_REC_KVAH_1</sensorId>
+			<value>
+				<getOid>kvahdelrec</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Apparent Energy DEL+REC</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="v1_thd">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>v1thd</getOid>
+				</mapValue>
+			</rowTest>
+			<type>pctofcapacity</type>
+			<sensorId>VOLTAGE_THD_1</sensorId>
+			<value>
+				<mult>
+					<op><getOid>v1thd</getOid></op>
+					<op>.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Voltage 1 THD</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="v2_thd">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>v2thd</getOid>
+				</mapValue>
+			</rowTest>
+			<type>pctofcapacity</type>
+			<sensorId>VOLTAGE_THD_2</sensorId>
+			<value>
+				<mult>
+					<op><getOid>v2thd</getOid></op>
+					<op>.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Voltage 2 THD</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="v3_thd">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>v3thd</getOid>
+				</mapValue>
+			</rowTest>
+			<type>pctofcapacity</type>
+			<sensorId>VOLTAGE_THD_3</sensorId>
+			<value>
+				<mult>
+					<op><getOid>v3thd</getOid></op>
+					<op>.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Voltage 3 THD</label>
+			<sensorSet>Voltage Sensors</sensorSet>
+		</numSensor>
+		<!-- Current Harmonics Sensors -->
+		<numSensor ruleid="i1_thd">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>i1thd</getOid>
+				</mapValue>
+			</rowTest>
+			<type>pctofcapacity</type>
+			<sensorId>CURRENT_THD_1</sensorId>
+			<value>
+				<mult>
+					<op><getOid>i1thd</getOid></op>
+					<op>.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Current 1 THD</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="i2_thd">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>i2thd</getOid>
+				</mapValue>
+			</rowTest>
+			<type>pctofcapacity</type>
+			<sensorId>CURRENT_THD_2</sensorId>
+			<value>
+				<mult>
+					<op><getOid>i2thd</getOid></op>
+					<op>.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Current 2 THD</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="i3_thd">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>i3thd</getOid>
+				</mapValue>
+			</rowTest>
+			<type>pctofcapacity</type>
+			<sensorId>CURRENT_THD_3</sensorId>
+			<value>
+				<mult>
+					<op><getOid>i3thd</getOid></op>
+					<op>.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Current 3 THD</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="i_a_demand">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>iademand</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>CURRENT_DEMAND_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>iademand</getOid></op>
+					<op><mapValue mapid="pis_scale_map"><getOid>pis</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pis</getOid></mapValue></valueInc>
+			<label>Current L1 Demand</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="i_a_peak_demand">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>iapeakdemand</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>CURRENT_DEMAND_PK_1</sensorId>
+			<value>
+				<div>
+					<op><getOid>iapeakdemand</getOid></op>
+					<op><mapValue mapid="pis_scale_map"><getOid>pis</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pis</getOid></mapValue></valueInc>
+			<label>Current L1 Peak Demand</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="i_b_demand">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>ibdemand</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>CURRENT_DEMAND_2</sensorId>
+			<value>
+				<div>
+					<op><getOid>ibdemand</getOid></op>
+					<op><mapValue mapid="pis_scale_map"><getOid>pis</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pis</getOid></mapValue></valueInc>
+			<label>Current L2 Demand</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="i_b_peak_demand">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>ibpeakdemand</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>CURRENT_DEMAND_PK_2</sensorId>
+			<value>
+				<div>
+					<op><getOid>ibpeakdemand</getOid></op>
+					<op><mapValue mapid="pis_scale_map"><getOid>pis</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pis</getOid></mapValue></valueInc>
+			<label>Current L2 Peak Demand</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="i_c_demand">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>icdemand</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>CURRENT_DEMAND_3</sensorId>
+			<value>
+				<div>
+					<op><getOid>icdemand</getOid></op>
+					<op><mapValue mapid="pis_scale_map"><getOid>pis</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pis</getOid></mapValue></valueInc>
+			<label>Current L3 Demand</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="i_c_peak_demand">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint16-vm">
+					<getOid>icpeakdemand</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>CURRENT_DEMAND_PK_3</sensorId>
+			<value>
+				<div>
+					<op><getOid>icpeakdemand</getOid></op>
+					<op><mapValue mapid="pis_scale_map"><getOid>pis</getOid></mapValue></op>
+				</div>
+			</value>
+			<valueInc><mapValue mapid="valInc_scale_map"><getOid>pis</getOid></mapValue></valueInc>
+			<label>Current L3 Peak Demand</label>
+			<sensorSet>Current Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kwh_a_del">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kwhadel</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kwatthr</type>
+			<sensorId>ENERGY_DEL_KWH_1</sensorId>
+			<value>
+				<getOid>kwhadel</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Energy L1 DEL</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kwh_b_del">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kwhbdel</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kwatthr</type>
+			<sensorId>ENERGY_DEL_KWH_2</sensorId>
+			<value>
+				<getOid>kwhbdel</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Energy L2 DEL</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kwh_c_del">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kwhcdel</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kwatthr</type>
+			<sensorId>ENERGY_DEL_KWH_3</sensorId>
+			<value>
+				<getOid>kwhcdel</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Energy L3 DEL</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kwh_a_rec">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kwharec</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kwatthr</type>
+			<sensorId>ENERGY_REC_KWH_1</sensorId>
+			<value>
+				<getOid>kwharec</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Energy L1 REC</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kwh_b_rec">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kwhbrec</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kwatthr</type>
+			<sensorId>ENERGY_REC_KWH_2</sensorId>
+			<value>
+				<getOid>kwhbrec</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Energy L2 REC</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kwh_c_rec">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kwhcrec</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kwatthr</type>
+			<sensorId>ENERGY_REC_KWH_3</sensorId>
+			<value>
+				<getOid>kwhcrec</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Energy L3 REC</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvarh_a_del">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kvarhadel</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kVARhr</type>
+			<sensorId>ENERGY_DEL_KVARH_1</sensorId>
+			<value>
+				<getOid>kvarhadel</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Reactive Energy L1 DEL</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvarh_b_del">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kvarhbdel</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kVARhr</type>
+			<sensorId>ENERGY_DEL_KVARH_2</sensorId>
+			<value>
+				<getOid>kvarhbdel</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Reactive Energy L2 DEL</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvarh_c_del">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kvarhcdel</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kVARhr</type>
+			<sensorId>ENERGY_DEL_KVARH_3</sensorId>
+			<value>
+				<getOid>kvarhcdel</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Reactive Energy L3 DEL</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvarh_a_rec">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kvarharec</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kVARhr</type>
+			<sensorId>ENERGY_REC_KVARH_1</sensorId>
+			<value>
+				<getOid>kvarharec</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Reactive Energy L1 REC</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvarh_b_rec">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kvarhbrec</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kVARhr</type>
+			<sensorId>ENERGY_REC_KVARH_2</sensorId>
+			<value>
+				<getOid>kvarhbrec</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Reactive Energy L2 REC</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvarh_c_rec">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kvarhcrec</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kVARhr</type>
+			<sensorId>ENERGY_REC_KVARH_3</sensorId>
+			<value>
+				<getOid>kvarhcrec</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Reactive Energy L3 REC</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvah_a">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kvaha</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kVAhr</type>
+			<sensorId>ENERGY_KVAH_1</sensorId>
+			<value>
+				<getOid>kvaha</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Apparent Energy L1</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvah_b">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kvahb</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kVAhr</type>
+			<sensorId>ENERGY_KVAH_2</sensorId>
+			<value>
+				<getOid>kvahb</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Apparent Energy L2</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="kvah_c">
+			<rowTest>
+				<mapValue mapid="sensor_exists_uint32-vm">
+					<getOid>kvahc</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kVAhr</type>
+			<sensorId>ENERGY_KVAH_3</sensorId>
+			<value>
+				<getOid>kvahc</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Apparent Energy L3</label>
+			<sensorSet>Energy Sensors</sensorSet>
+		</numSensor>
+		
+		<valueMap ruleid="pvs_scale_map">
+			<valueIn>0</valueIn><valueOut>.001</valueOut>
+			<valueIn>1</valueIn><valueOut>.01</valueOut>
+			<valueIn>2</valueIn><valueOut>.1</valueOut>
+			<valueIn>3</valueIn><valueOut>1</valueOut>
+			<valueIn>4</valueIn><valueOut>10</valueOut>
+			<valueIn>5</valueIn><valueOut>100</valueOut>
+			<valueIn>6</valueIn><valueOut>1000</valueOut>
+			<valueIn>*</valueIn><valueOut>10</valueOut>
+		</valueMap>
+		
+		<valueMap ruleid="pis_scale_map">
+			<valueIn>0</valueIn><valueOut>.001</valueOut>
+			<valueIn>1</valueIn><valueOut>.01</valueOut>
+			<valueIn>2</valueIn><valueOut>.1</valueOut>
+			<valueIn>3</valueIn><valueOut>1</valueOut>
+			<valueIn>4</valueIn><valueOut>10</valueOut>
+			<valueIn>5</valueIn><valueOut>100</valueOut>
+			<valueIn>6</valueIn><valueOut>1000</valueOut>
+			<valueIn>*</valueIn><valueOut>10</valueOut>
+		</valueMap>
+		
+		<valueMap ruleid="pns_scale_map">
+			<valueIn>0</valueIn><valueOut>.001</valueOut>
+			<valueIn>1</valueIn><valueOut>.01</valueOut>
+			<valueIn>2</valueIn><valueOut>.1</valueOut>
+			<valueIn>3</valueIn><valueOut>1</valueOut>
+			<valueIn>4</valueIn><valueOut>10</valueOut>
+			<valueIn>5</valueIn><valueOut>100</valueOut>
+			<valueIn>6</valueIn><valueOut>1000</valueOut>
+			<valueIn>*</valueIn><valueOut>10</valueOut>
+		</valueMap>
+		
+		<valueMap ruleid="pps_scale_map">
+			<valueIn>0</valueIn><valueOut>.001</valueOut>
+			<valueIn>1</valueIn><valueOut>.01</valueOut>
+			<valueIn>2</valueIn><valueOut>.1</valueOut>
+			<valueIn>3</valueIn><valueOut>1</valueOut>
+			<valueIn>4</valueIn><valueOut>10</valueOut>
+			<valueIn>5</valueIn><valueOut>100</valueOut>
+			<valueIn>6</valueIn><valueOut>1000</valueOut>
+			<valueIn>*</valueIn><valueOut>1</valueOut>
+		</valueMap>
+		
+		<valueMap ruleid="valInc_scale_map">
+			<valueIn>4</valueIn><valueOut>0.1</valueOut>
+			<valueIn>5</valueIn><valueOut>0.01</valueOut>
+			<valueIn>6</valueIn><valueOut>0.001</valueOut>
+			<valueIn>*</valueIn><valueOut>1</valueOut>
+		</valueMap>
+		
+	</device>
+	<protocol>
+		<modbus>
+			<type_definition type_name="swapped_uint32">
+				<type>uint_32</type>                 <!-- must be one of our 'normal' modbus types -->
+				<byte_order>1,0,3,2</byte_order>     <!-- mapping of device's byte string into the order which we want -->
+			</type_definition>
+			
+			<value_ref_id valid="meterontime">
+				<function>3</function>
+				<start_addr>8</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="vlna">
+				<function>3</function>
+				<start_addr>99</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="vlnb">
+				<function>3</function>
+				<start_addr>100</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="vlnc">
+				<function>3</function>
+				<start_addr>101</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="vlnavg">
+				<function>3</function>
+				<start_addr>102</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="vllab">
+				<function>3</function>
+				<start_addr>103</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="vllbc">
+				<function>3</function>
+				<start_addr>104</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="vllca">
+				<function>3</function>
+				<start_addr>105</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="vllavg">
+				<function>3</function>
+				<start_addr>106</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="ia">
+				<function>3</function>
+				<start_addr>107</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="ib">
+				<function>3</function>
+				<start_addr>108</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="ic">
+				<function>3</function>
+				<start_addr>109</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="iavg">
+				<function>3</function>
+				<start_addr>110</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="idemand">
+				<function>3</function>
+				<start_addr>111</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="ipeakdemand">
+				<function>3</function>
+				<start_addr>112</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="i4">
+				<function>3</function>
+				<start_addr>113</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="freq">
+				<function>3</function>
+				<start_addr>114</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="pfsigntot">
+				<function>3</function>
+				<start_addr>115</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="pfsigna">
+				<function>3</function>
+				<start_addr>116</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="pfsignb">
+				<function>3</function>
+				<start_addr>117</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="pfsignc">
+				<function>3</function>
+				<start_addr>118</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kwtot">
+				<function>3</function>
+				<start_addr>119</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kvartotal">
+				<function>3</function>
+				<start_addr>120</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kvatotal">
+				<function>3</function>
+				<start_addr>121</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kwa">
+				<function>3</function>
+				<start_addr>122</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kwb">
+				<function>3</function>
+				<start_addr>123</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kwc">
+				<function>3</function>
+				<start_addr>124</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kvara">
+				<function>3</function>
+				<start_addr>125</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kvarb">
+				<function>3</function>
+				<start_addr>126</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kvarc">
+				<function>3</function>
+				<start_addr>127</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kvaa">
+				<function>3</function>
+				<start_addr>128</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kvab">
+				<function>3</function>
+				<start_addr>129</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kvac">
+				<function>3</function>
+				<start_addr>130</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kwdemand">
+				<function>3</function>
+				<start_addr>131</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kwpeakdemand">
+				<function>3</function>
+				<start_addr>132</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kvardemand">
+				<function>3</function>
+				<start_addr>133</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kvademand">
+				<function>3</function>
+				<start_addr>134</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kvarpeakdemand">
+				<function>3</function>
+				<start_addr>135</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kvapeakdemand">
+				<function>3</function>
+				<start_addr>136</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kwhdel">
+				<function>3</function>
+				<start_addr>137</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kwhrec">
+				<function>3</function>
+				<start_addr>139</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kvarhdel">
+				<function>3</function>
+				<start_addr>141</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kvarhrec">
+				<function>3</function>
+				<start_addr>143</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kvahdelrec">
+				<function>3</function>
+				<start_addr>145</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="v1thd">
+				<function>3</function>
+				<start_addr>147</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="v2thd">
+				<function>3</function>
+				<start_addr>148</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="v3thd">
+				<function>3</function>
+				<start_addr>149</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="i1thd">
+				<function>3</function>
+				<start_addr>150</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="i2thd">
+				<function>3</function>
+				<start_addr>151</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="i3thd">
+				<function>3</function>
+				<start_addr>152</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="iademand">
+				<function>3</function>
+				<start_addr>153</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="ibdemand">
+				<function>3</function>
+				<start_addr>154</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="icdemand">
+				<function>3</function>
+				<start_addr>155</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="iapeakdemand">
+				<function>3</function>
+				<start_addr>156</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="ibpeakdemand">
+				<function>3</function>
+				<start_addr>157</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="icpeakdemand">
+				<function>3</function>
+				<start_addr>158</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="kwhadel">
+				<function>3</function>
+				<start_addr>159</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kwhbdel">
+				<function>3</function>
+				<start_addr>161</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kwhcdel">
+				<function>3</function>
+				<start_addr>163</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kwharec">
+				<function>3</function>
+				<start_addr>165</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kwhbrec">
+				<function>3</function>
+				<start_addr>167</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kwhcrec">
+				<function>3</function>
+				<start_addr>169</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kvarhadel">
+				<function>3</function>
+				<start_addr>171</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kvarhbdel">
+				<function>3</function>
+				<start_addr>173</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kvarhcdel">
+				<function>3</function>
+				<start_addr>175</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kvarharec">
+				<function>3</function>
+				<start_addr>177</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kvarhbrec">
+				<function>3</function>
+				<start_addr>179</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kvarhcrec">
+				<function>3</function>
+				<start_addr>181</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kvaha">
+				<function>3</function>
+				<start_addr>183</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kvahb">
+				<function>3</function>
+				<start_addr>185</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="kvahc">
+				<function>3</function>
+				<start_addr>187</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="pvs">
+				<function>3</function>
+				<start_addr>4011</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="pis">
+				<function>3</function>
+				<start_addr>4012</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="pns">
+				<function>3</function>
+				<start_addr>4013</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="pps">
+				<function>3</function>
+				<start_addr>4014</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			
+			<packet>
+				<function>3</function>
+				<start_addr>8</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>99</start_addr>
+				<quantity>90</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>4011</start_addr>
+				<quantity>4</quantity>
+			</packet>
+			
+		</modbus>
+	</protocol>
+</APC_DDF>

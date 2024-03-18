@@ -1,0 +1,4353 @@
+-- ----------------------------------------------------------------------------
+--                  LIEBERT NXa UPS MIB
+--                  LIEBERT-NXa-UPS-MIB
+--
+--      Copyright (c) 2000-2001 AVANSYS POWER CO., LTD., SHENZHEN.
+--      Copyright (c) 2001-2004 EMERSON NETWORK POWER CO., LTD.
+--      All rights reserved.
+--
+--      Created    by: Zheng Chunhua
+--      Created  date: 2004-03-01       
+--		Fixed      by: Suchunlei 2004-12-17
+-- ----------------------------------------------------------------------------
+
+LIEBERT-NXa-UPS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE
+        FROM RFC-1212
+
+    TRAP-TYPE
+        FROM RFC-1215
+
+    enterprises, IpAddress
+        FROM RFC1155-SMI;
+
+    DisplayString ::= OCTET STRING
+
+
+    -- ------------------------------------------------------------------------
+    -- the location of UPS group in ENP enterprise.
+    -- ------------------------------------------------------------------------ 
+    emersonNetworkPower     OBJECT IDENTIFIER ::= { enterprises 13400 }
+    products                OBJECT IDENTIFIER ::= { emersonNetworkPower 2 }
+    emersonUps              OBJECT IDENTIFIER ::= { products 1 }
+    liebertNXaUps           OBJECT IDENTIFIER ::= { products 3 }
+    
+    -- ------------------------------------------------------------------------
+    -- the main objects about UPS
+    -- ------------------------------------------------------------------------ 
+    upsAgent        OBJECT IDENTIFIER ::= { emersonUps 1 }
+    upsCommon       OBJECT IDENTIFIER ::= { emersonUps 2 }
+    upsSpecial      OBJECT IDENTIFIER ::= { liebertNXaUps 3 }
+    upsAlarm        OBJECT IDENTIFIER ::= { emersonUps 4 }
+
+    upsIdent        OBJECT IDENTIFIER ::= { upsCommon 1 }
+    
+    -- ------------------------------------------------------------------------
+    -- the common objects about a  UPS
+    -- ------------------------------------------------------------------------ 
+    upsBaseIdent    OBJECT IDENTIFIER ::=  { upsIdent 1 }
+    upsSmartIdent   OBJECT IDENTIFIER ::=  { upsIdent 2 }
+
+    upsBaseAlaram   OBJECT IDENTIFIER ::=  { upsAlarm 1 }
+    upsSmartAlarm   OBJECT IDENTIFIER ::=  { upsAlarm 2 }
+
+    -- ------------------------------------------------------------------------
+    -- the detail objects about a special UPS
+    -- ------------------------------------------------------------------------ 
+    upsBattery      OBJECT IDENTIFIER ::=  { upsSpecial 2 }
+    upsInput        OBJECT IDENTIFIER ::=  { upsSpecial 3 }
+    upsOutput       OBJECT IDENTIFIER ::=  { upsSpecial 4 }
+    upsStatus       OBJECT IDENTIFIER ::=  { upsSpecial 5 }
+    upsTest         OBJECT IDENTIFIER ::=  { upsSpecial 6 }
+    upsControl      OBJECT IDENTIFIER ::=  { upsSpecial 7 }
+    upsConfig       OBJECT IDENTIFIER ::=  { upsSpecial 8 }
+
+    upsBaseBattery  OBJECT IDENTIFIER ::=  { upsBattery 1 }
+    upsSmartBattery OBJECT IDENTIFIER ::=  { upsBattery 2 }
+    
+    upsBaseInput    OBJECT IDENTIFIER ::=  { upsInput 1 }
+    upsSmartInput   OBJECT IDENTIFIER ::=  { upsInput 2 }
+    upsSmartBypass  OBJECT IDENTIFIER ::=  { upsInput 3 }
+    
+    upsBaseOutput   OBJECT IDENTIFIER ::=  { upsOutput 1 }
+    upsSmartOutput  OBJECT IDENTIFIER ::=  { upsOutput 2 }
+
+    upsBaseStatus   OBJECT IDENTIFIER ::=  { upsStatus 1 }
+    upsSmartStatus  OBJECT IDENTIFIER ::=  { upsStatus 2 }
+    
+    upsBaseControl  OBJECT IDENTIFIER ::=  { upsControl 1 }
+    upsSmartControl OBJECT IDENTIFIER ::=  { upsControl 2 }
+    
+    upsBaseTest     OBJECT IDENTIFIER ::=  { upsTest 1 }
+    upsSmartTest    OBJECT IDENTIFIER ::=  { upsTest 2 }
+    
+    upsBaseConfig   OBJECT IDENTIFIER ::=  { upsConfig 1 }
+    upsSmartConfig  OBJECT IDENTIFIER ::=  { upsConfig 2 }
+    upsPlanConfig   OBJECT IDENTIFIER ::=  { upsConfig 3 }
+
+    -- ------------------------------------------------------------------------
+    -- 1. upsAgent group
+    -- ------------------------------------------------------------------------ 
+   
+    agentRevision OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The software version of the agent."
+        ::= { upsAgent 1 }
+
+    agentManagersNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of managers that can manage the agent. "
+        ::= { upsAgent 2 }
+ 
+    agentManagersTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF AgentManagersEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of managers of the agent.  The number of
+            entries is given by the value of agentManagersNum."
+        ::= { upsAgent 3 }
+ 
+    agentManagersEntry OBJECT-TYPE
+        SYNTAX AgentManagersEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The managers of the agent."
+        INDEX  { managerIndex}
+        ::= { agentManagersTable 1 }
+ 
+    AgentManagersEntry ::=
+        SEQUENCE {
+            managerIndex
+                INTEGER,
+            managerAddr
+                IpAddress,
+            publicCommunityString
+                 DisplayString,
+            privateCommunityString
+                 DisplayString,
+            managerPrivilege
+                INTEGER,
+            acceptTrapLevel
+                INTEGER,
+            managerAccept
+                INTEGER
+        }
+ 
+    managerIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the managers entry."
+        ::= { agentManagersEntry 1 }
+    
+    managerAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The IP address of the manager."
+        ::= { agentManagersEntry 2 }
+
+    publicCommunityString OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "The public community name to use in the query request."
+        ::= { agentManagersEntry 3 }
+ 
+    privateCommunityString OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "The private community name to use int the control request."
+        ::= { agentManagersEntry 4 }
+ 
+    managerPrivilege OBJECT-TYPE
+        SYNTAX INTEGER {
+            forbidden(0),
+            query(1),
+            control(2),
+            administrator(3)
+       }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The privilege of the manager to access the agent.
+            setting forbidden(0) indicates the manager have no any privilege to access the agent,
+            setting query(1) indicates the manager can GET information from agent only,
+            setting control(2) indicates the manager can GET information from agent and 
+            send control command to the agent.
+            setting administrator(3) indicates the manager has all management privilege
+            including set or modify this managers table."
+       ::= { agentManagersEntry 5 }
+
+    acceptTrapLevel OBJECT-TYPE
+         SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3),
+            noTraps(4)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The severity threshold of traps to send to the manager.
+            traps are labeled in severity as informational(1), warning(2),
+            severe(3).  Only traps of equal or greater severity than
+            this value are sent to the manager. setting noTraps(4) indicates
+            agent do not send any traps to the manager."
+       ::= { agentManagersEntry 6 }
+
+    managerAccept OBJECT-TYPE
+        SYNTAX INTEGER   {
+            view(0),
+            new(1),
+            modify(2),
+            delete(3)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "An entry will be added if new(1), will be modified if modify(2), 
+           and will be removed if delete(3)."
+        ::= { agentManagersEntry 7 }
+
+    -- ------------------------------------------------------------------------
+    -- 2. upsCommon group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------
+    -- 2.1 upsIdent group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------ 
+    -- 2.1.1 the upsBaseIdent group
+    -- ------------------------------------------------------------------------ 
+
+    upsBaseIdentModel OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The UPS model name (e.g. 'Liebert NXa UPS 6KVA')."
+        ::= { upsBaseIdent 1 }
+
+    upsBaseIdentUpsName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "An 8 byte ID string identifying the UPS.  This object
+             can be set by the administrator."
+        ::= { upsBaseIdent 2 }
+                
+    
+    -- ------------------------------------------------------------------------ 
+    -- 2.1.2 the upsSmartIdent group
+    -- ------------------------------------------------------------------------ 
+            
+    upsSmartIdentFirmwareRevision OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The firmware revision of the UPS system."
+        ::= { upsSmartIdent 1 }
+        
+    -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    -- IMPORTANT: Liebert NXa UPS does NOT support manu-date and product-serial
+    --            to read these variables will get 'reserved'
+    upsSmartIdentDateOfManufacture OBJECT-TYPE
+        SYNTAX DisplayString
+       ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The date when the UPS was manufactured in yyyy/mm/dd format."
+        ::= { upsSmartIdent 2 }
+
+    upsSmartIdentUpsSerialNumber OBJECT-TYPE
+         SYNTAX DisplayString
+        ACCESS read-only
+         STATUS mandatory
+         DESCRIPTION
+            "An 8-character string identifying the serial number of
+              the UPS internal microprocessor.  This number is set at
+              the factory.  NOTE: This number does NOT correspond to
+             the serial number on the rear of the UPS."
+        ::= { upsSmartIdent 3 }
+    
+    upsSmartIdentUpsFactory OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The name of the factory that manufactured this UPS."
+        ::= { upsSmartIdent 4 }
+    
+    -- ------------------------------------------------------------------------
+    -- 3. upsSpecial group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------
+    -- 3.2. the upsBattery group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.2.1 the upsBaseBattery group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.2.2 the upsSmartBattery group
+    ------------------------------------------------------------------------
+    upsSmartBatteryVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartBattery 1 }
+
+    upsSmartBatteryCurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Current of the UPS system in 1/10 A."
+        ::= { upsSmartBattery 2 }
+
+    upsSmartBatteryRemainsTime OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Remains Time of the UPS system in 1/10 min."
+        ::= { upsSmartBattery 3 }
+
+    upsSmartBatteryTemperature OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Temperature of the UPS system in 1/10 °C."
+        ::= { upsSmartBattery 4 }
+
+    upsSmartRoomTemperature OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Room Temperature of the UPS system in 1/10 °C."
+        ::= { upsSmartBattery 5 }
+
+
+    -- ------------------------------------------------------------------------
+    -- 3.3. the upsInout group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.3.1 the upsBaseInput group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.3.2 the upsSmartInput group
+    -- ------------------------------------------------------------------------
+    upsSmartInputLineABVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Line AB Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartInput 1 }
+
+    upsSmartInputLineBCVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Line BC Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartInput 2 }
+
+    upsSmartInputLineCAVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Line CA Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartInput 3 }
+
+    upsSmartInputPhaseACurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Phase A Current of the UPS system in 1/10 A."
+        ::= { upsSmartInput 4 }
+
+    upsSmartInputPhaseBCurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Phase B Current of the UPS system in 1/10 A."
+        ::= { upsSmartInput 5 }
+
+    upsSmartInputPhaseCCurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Phase C Current of the UPS system in 1/10 A."
+        ::= { upsSmartInput 6 }
+
+    upsSmartInputFrequency OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Frequency of the UPS system in 1/10 Hz."
+        ::= { upsSmartInput 7 }
+
+    upsSmartInputPhaseAPowerFactor OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input PhaseA Power Factor of the UPS system in 1/100."
+        ::= { upsSmartInput 8 }
+
+    upsSmartInputPhaseBPowerFactor OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input PhaseB Power Factor of the UPS system in 1/100."
+        ::= { upsSmartInput 9 }
+
+    upsSmartInputPhaseCPowerFactor OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input PhaseC Power Factor of the UPS system in 1/100."
+        ::= { upsSmartInput 10 }
+
+    upsSmartInputPhaseAVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input PhaseA Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartInput 11 }
+
+    upsSmartInputPhaseBVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input PhaseB Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartInput 12 }
+
+    upsSmartInputPhaseCVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input PhaseC Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartInput 13 }
+
+    -- ------------------------------------------------------------------------
+    -- 3.3.3. the upsSmartBypass group
+    -- ------------------------------------------------------------------------
+    upsSmartBypassPhaseAVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Phase A Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartBypass 1 }
+
+    upsSmartBypassPhaseBVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Phase B Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartBypass 2 }
+
+    upsSmartBypassPhaseCVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Phase C Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartBypass 3 }
+
+    upsSmartBypassFrequency OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Frequency of the UPS system in 1/10 Hz."
+        ::= { upsSmartBypass 4 }
+
+    -- ------------------------------------------------------------------------
+    -- 3.4. the upsOutput group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.4.1 the upsBaseOutput group
+    -- ------------------------------------------------------------------------
+    -- ------------------------------------------------------------------------
+    -- 3.4.2 the upsSmartOutput group
+    ------------------------------------------------------------------------
+    upsSmartOutputPhaseAVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase A Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartOutput 1 }
+
+    upsSmartOutputPhaseBVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase B Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartOutput 2 }
+
+    upsSmartOutputPhaseCVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase C Voltage of the UPS system in 1/10 V."
+        ::= { upsSmartOutput 3 }
+
+    upsSmartOutputPhaseACurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase A Current of the UPS system in 1/10 A."
+        ::= { upsSmartOutput 4 }
+
+    upsSmartOutputPhaseBCurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase B Current of the UPS system in 1/10 A."
+        ::= { upsSmartOutput 5 }
+
+    upsSmartOutputPhaseCCurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase C Current of the UPS system in 1/10 A."
+        ::= { upsSmartOutput 6 }
+
+    upsSmartOutputFrequency OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Frequency of the UPS system in 1/10 Hz."
+        ::= { upsSmartOutput 7 }
+
+    upsSmartOutputPhaseAPowerFactor OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase A Power Factor of the UPS system in 1/100."
+        ::= { upsSmartOutput 8 }
+
+    upsSmartOutputPhaseBPowerFactor OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase B Power Factor of the UPS system in 1/100."
+        ::= { upsSmartOutput 9 }
+
+    upsSmartOutputPhaseCPowerFactor OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase C Power Factor of the UPS system in 1/100."
+        ::= { upsSmartOutput 10 }
+
+    upsSmartOutputPhaseAPowerkW OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase A Power(kW) of the UPS system in 1/10 kW."
+        ::= { upsSmartOutput 11 }
+
+    upsSmartOutputPhaseBPowerkW OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase B Power(kW) of the UPS system in 1/10 kW."
+        ::= { upsSmartOutput 12 }
+
+    upsSmartOutputPhaseCPowerkW OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase C Power(kW) of the UPS system in 1/10 kW."
+        ::= { upsSmartOutput 13 }
+
+    upsSmartOutputPhaseAPowerkVA OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase A Power(kVA) of the UPS system in 1/10 kVA."
+        ::= { upsSmartOutput 14 }
+
+    upsSmartOutputPhaseBPowerkVA OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase B Power(kVA) of the UPS system in 1/10 kVA."
+        ::= { upsSmartOutput 15 }
+
+    upsSmartOutputPhaseCPowerkVA OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase C Power(kVA) of the UPS system in 1/10 kVA."
+        ::= { upsSmartOutput 16 }
+
+    upsSmartOutputPhaseALoad OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase A Load of the UPS system in 1/1000."
+        ::= { upsSmartOutput 17 }
+
+    upsSmartOutputPhaseBLoad OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase B Load of the UPS system in 1/1000."
+        ::= { upsSmartOutput 18 }
+
+    upsSmartOutputPhaseCLoad OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase C Load of the UPS system in 1/1000."
+        ::= { upsSmartOutput 19 }
+
+    upsSmartOutputPhaseACrestFactor OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase A Crest Factor of the UPS system in 1/10."
+        ::= { upsSmartOutput 20 }
+
+    upsSmartOutputPhaseBCrestFactor OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase B Crest Factor of the UPS system in 1/10."
+        ::= { upsSmartOutput 21 }
+
+    upsSmartOutputPhaseCCrestFactor OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase C Crest Factor of the UPS system in 1/10."
+        ::= { upsSmartOutput 22 }
+
+    upsSmartOutputPhaseAReactivePowerkVAR OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase A Reactive Power(kVAR) of the UPS system in 1/10 kVAR."
+        ::= { upsSmartOutput 23 }
+
+    upsSmartOutputPhaseBReactivePowerkVAR OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase B Reactive Power(kVAR) of the UPS system in 1/10 kVAR."
+        ::= { upsSmartOutput 24 }
+
+    upsSmartOutputPhaseCReactivePowerkVAR OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Phase C Reactive Power(kVAR) of the UPS system in 1/10 kVAR."
+        ::= { upsSmartOutput 25 }
+
+    -- ---------------------------------------------------------------------
+    -- 3.5. the upsStatus group
+    ------------------------------------------------------------------------
+    -- ---------------------------------------------------------------------
+    -- 3.5.1 the upsBaseStatus group
+    ------------------------------------------------------------------------
+    upsBaseStatusCommunication OBJECT-TYPE
+        SYNTAX INTEGER {
+            unknown(1),
+            ok(2),
+            lostCommunication(3),
+            notEstablished(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The status of communication to UPS. lostCommunication(3) indicates
+            some errors occurred between UPS and agent. notEstablished(4) indicates
+            agent can not connect to UPS, maybe error on communication port or port
+            settings error."
+        ::= { upsBaseStatus 1 }
+
+    -- ---------------------------------------------------------------------
+    -- 3.5.2 the upsSmartStatus group
+    ------------------------------------------------------------------------
+    upsSmartStatusUPSOperatingMode OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            uPSShutdown(2),
+            onLine(3),
+            onBattery(4),
+            onBypass(5),
+            onUtilityandBattery(6),
+            state(7)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "UPS Operating Mode."
+        ::= { upsSmartStatus 1 }
+
+
+    upsSmartStatusBatterySelftestStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            testCompleted(2),
+            testStarting(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Self test Status."
+        ::= { upsSmartStatus 2 }
+
+
+    upsSmartStatusBatteryChargeMode OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            notbeingcharged(2),
+            floatcharging(3),
+            boostCharging(4),
+            state(5)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Charge Mode."
+        ::= { upsSmartStatus 3 }
+
+
+    upsSmartStatusInverterONOFFStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            turnedOn(2),
+            turnedOff(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Inverter ON/OFF Status."
+        ::= { upsSmartStatus 4 }
+
+
+    upsSmartStatusGeneratorConnectStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            disconnected(2),
+            connected(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Generator Connect Status."
+        ::= { upsSmartStatus 5 }
+
+
+    upsSmartStatusInputBreakerStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            open(2),
+            closed(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Breaker Status."
+        ::= { upsSmartStatus 6 }
+
+
+    upsSmartStatusMaintenanceBreakerStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            open(2),
+            closed(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Maintenance Breaker Status."
+        ::= { upsSmartStatus 7 }
+
+
+    upsSmartStatusBypassBreakerStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            open(2),
+            closed(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Breaker Status."
+        ::= { upsSmartStatus 8 }
+
+
+    upsSmartStatusOutputBreakerStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            open(2),
+            closed(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Breaker Status."
+        ::= { upsSmartStatus 9 }
+
+
+    upsSmartStatusRotarySwitchStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            off(2),
+            test(3),
+            normal(4),
+            bypass(5),
+            maintain(6),
+            state(7)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Rotary Switch Status."
+        ::= { upsSmartStatus 10 }
+
+
+    upsSmartStatusParallelSystemOperatingMode OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            onLine(2),
+            onBattery(3),
+            onBypass(4),
+            uPSShutdown(5),
+            state(6)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Parallel System Operating Mode."
+        ::= { upsSmartStatus 11 }
+
+
+    upsSmartStatusSynchronizationStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            synchronous(2),
+            asynchronous(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Synchronization Status."
+        ::= { upsSmartStatus 12 }
+
+
+    upsSmartStatusUtilityStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            abnormal(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Utility Status."
+        ::= { upsSmartStatus 13 }
+
+
+    upsSmartStatusRectifierStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Rectifier Status."
+        ::= { upsSmartStatus 14 }
+
+
+    upsSmartStatusInverterStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Inverter Status."
+        ::= { upsSmartStatus 15 }
+
+
+    upsSmartStatusBypassStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            abnormal(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Status."
+        ::= { upsSmartStatus 16 }
+
+
+    upsSmartStatusBatteryVoltageStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            undervoltage(3),
+            overvoltage(4),
+            noBattery(5),
+            lowPrewarning(6),
+            batteryReverse(7),
+            state(8)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Voltage Status."
+        ::= { upsSmartStatus 17 }
+
+
+    upsSmartStatusUtilityFrequencyStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            abnormal(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Utility Frequency Status."
+        ::= { upsSmartStatus 18 }
+
+
+    upsSmartStatusBalancerTemperatureStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overtemperature(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Balancer Temperature Status."
+        ::= { upsSmartStatus 19 }
+
+
+    upsSmartStatusInputInductanceStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overHeated(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Inductance Status."
+        ::= { upsSmartStatus 20 }
+
+
+    upsSmartStatusTransRadiatorTemperatureStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overHeated(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Trans. Radiator Temperature Status."
+        ::= { upsSmartStatus 21 }
+
+
+    upsSmartStatusBalancerStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Balancer Status."
+        ::= { upsSmartStatus 22 }
+
+
+    upsSmartStatusBalancerOvercurrentStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overcurrent(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Balancer Overcurrent Status."
+        ::= { upsSmartStatus 23 }
+
+
+    upsSmartStatusBatteryContactorStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Contactor Status."
+        ::= { upsSmartStatus 24 }
+
+
+    upsSmartStatusBatteryConverterStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Converter Status."
+        ::= { upsSmartStatus 25 }
+
+
+    upsSmartStatusBatteryConverterOvercurrentStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overcurrent(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Converter Overcurrent Status."
+        ::= { upsSmartStatus 26 }
+
+
+    upsSmartStatusBatteryConverterTemperatureStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overHeated(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Converter Temperature Status."
+        ::= { upsSmartStatus 27 }
+
+
+    upsSmartStatusInputFuseStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Fuse Status."
+        ::= { upsSmartStatus 28 }
+
+
+    upsSmartStatusControlPower1Status OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Control Power 1 Status."
+        ::= { upsSmartStatus 29 }
+
+
+    upsSmartStatusMainsPhaseStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            reversed(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Mains Phase Status."
+        ::= { upsSmartStatus 30 }
+
+
+    upsSmartStatusRectifierOvercurrentStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overcurrent(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Rectifier Overcurrent Status."
+        ::= { upsSmartStatus 31 }
+
+
+    upsSmartStatusSoftStartStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Soft Start Status."
+        ::= { upsSmartStatus 32 }
+
+
+    upsSmartStatusBypassOvercurrentStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overcurrent(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Overcurrent Status."
+        ::= { upsSmartStatus 33 }
+
+
+    upsSmartStatusInverterInductorTemperatureStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overHeated(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Inverter Inductor Temperature Status."
+        ::= { upsSmartStatus 34 }
+
+
+    upsSmartStatusInverterTemperatureStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overHeated(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Inverter Temperature Status."
+        ::= { upsSmartStatus 35 }
+
+
+    upsSmartStatusFanStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Fan Status."
+        ::= { upsSmartStatus 36 }
+
+
+    upsSmartStatusInvSTSStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Inv. STS Status."
+        ::= { upsSmartStatus 37 }
+
+
+    upsSmartStatusBypassSTSStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass STS Status."
+        ::= { upsSmartStatus 38 }
+
+
+    upsSmartStatusOperationStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Operation Status."
+        ::= { upsSmartStatus 39 }
+
+
+    upsSmartStatusOutputFuseStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Fuse Status."
+        ::= { upsSmartStatus 40 }
+
+
+    upsSmartStatusControlPower2Status OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Control Power 2 Status."
+        ::= { upsSmartStatus 41 }
+
+
+    upsSmartStatusUnitOverloadStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overload(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Unit Overload Status."
+        ::= { upsSmartStatus 42 }
+
+
+    upsSmartStatusSystemOverloadStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overload(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "System Overload Status."
+        ::= { upsSmartStatus 43 }
+
+
+    upsSmartStatusUnitOverloadTimeoutAlarmStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            alarm(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Unit Overload Timeout Alarm Status."
+        ::= { upsSmartStatus 44 }
+
+
+    upsSmartStatusBypassAbnormalShutdownAlarmStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            alarm(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Abnormal Shutdown Alarm Status."
+        ::= { upsSmartStatus 45 }
+
+
+    upsSmartStatusOutputOvervoltageStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overvoltage(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Overvoltage Status."
+        ::= { upsSmartStatus 46 }
+
+
+    upsSmartStatusInverterOvercurrentStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overcurrent(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Inverter Overcurrent Status."
+        ::= { upsSmartStatus 47 }
+
+
+    upsSmartStatusBypassPhaseStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            reversed(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Phase Status."
+        ::= { upsSmartStatus 48 }
+
+
+    upsSmartStatusLoadImpactTransferAlarmStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            alarm(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Load Impact Transfer Alarm Status."
+        ::= { upsSmartStatus 49 }
+
+
+    upsSmartStatusSwitchTimesLimitedStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Switch Times Limited Status."
+        ::= { upsSmartStatus 50 }
+
+
+    upsSmartStatusLoadSharingFaultStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            fault(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Load Sharing Fault Status."
+        ::= { upsSmartStatus 51 }
+
+
+    upsSmartStatusShutoffinverterduetoabnormalDCbusvoltageAlarm OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            alarm(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Shut off inverter due to abnormal DC bus voltage Alarm."
+        ::= { upsSmartStatus 52 }
+
+
+    upsSmartStatusUPSTransfertobypassduetosystemrequestAlarm OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            alarm(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "UPS Transfer to bypass due to system request Alarm."
+        ::= { upsSmartStatus 53 }
+
+
+    upsSmartStatusParallelBoardStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Parallel Board Status."
+        ::= { upsSmartStatus 54 }
+
+
+    upsSmartStatusDCBusVoltageStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overvoltage(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "DC Bus Voltage Status."
+        ::= { upsSmartStatus 55 }
+
+
+    upsSmartStatusParallelConnectStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            fault(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Parallel Connect Status."
+        ::= { upsSmartStatus 56 }
+
+
+    upsSmartStatusAmbientTemperatureStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overheated(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Ambient Temperature Status."
+        ::= { upsSmartStatus 57 }
+
+
+    upsSmartStatusRectiferCommunicationStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Rectifer Communication Status."
+        ::= { upsSmartStatus 58 }
+
+
+    upsSmartStatusInverterCommunicationStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Inverter Communication Status."
+        ::= { upsSmartStatus 59 }
+
+
+    upsSmartStatusParallelCommunicationStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            failure(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Parallel Communication Status."
+        ::= { upsSmartStatus 60 }
+
+
+    upsSmartStatusOutputDCOffsetAlarm OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            alarm(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output DC Offset Alarm."
+        ::= { upsSmartStatus 61 }
+
+
+    upsSmartStatusSystemBatteryLowAlarm OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            alarm(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "System Battery Low Alarm."
+        ::= { upsSmartStatus 62 }
+
+
+    upsSmartStatusMainsNeutralAlarm OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            alarm(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Mains Neutral Alarm."
+        ::= { upsSmartStatus 63 }
+
+
+    upsSmartStatusInverterContatorAlarm OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            alarm(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Inverter Contator Alarm."
+        ::= { upsSmartStatus 64 }
+
+
+    upsSmartStatusChargerFaultAlarm OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            alarm(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Charger Fault Alarm."
+        ::= { upsSmartStatus 65 }
+
+
+    upsSmartStatusBatteryStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            needReplace(3),
+            bad(4),
+            state(5)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Status."
+        ::= { upsSmartStatus 66 }
+
+
+    upsSmartStatusEmergencyPowerOffStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            canceled(2),
+            powerOff(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Emergency Power Off Status."
+        ::= { upsSmartStatus 67 }
+
+
+    upsSmartStatusBatteryTemperatureStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            overheated(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Temperature Status."
+        ::= { upsSmartStatus 68 }
+
+
+    upsSmartStatusBCBStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            notConnected(2),
+            closed(3),
+            open(4),
+            state(5)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "BCB Status."
+        ::= { upsSmartStatus 69 }
+
+
+    upsSmartStatusBatteryGroundStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            fault(3),
+            state(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Ground Status."
+        ::= { upsSmartStatus 70 }
+
+
+
+    -- ------------------------------------------------------------------------
+    -- 4. the upsAlarm group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 4.1 the upsBaseAlaram group
+    -- ------------------------------------------------------------------------
+
+    -- no upsBaseAlaram variables
+
+
+    -- ------------------------------------------------------------------------
+    -- 4.2 the upsSmartAlarm group
+    -- ------------------------------------------------------------------------
+    upsSmartAlarmPresentNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The present number of active alarams."
+        ::= { upsSmartAlarm 1 }
+
+    upsSmartAlarmPresentTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UpsSmartAlarmPresentEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of current UPS alarms, The number of entries is given
+            by the value of upsSmartAlarmPresentNum."
+        ::= { upsSmartAlarm 2 }
+
+    upsSmartAlarmPresentEntry OBJECT-TYPE
+        SYNTAX UpsSmartAlarmPresentEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The present alarms list."
+        INDEX  { presentAlarmIndex}
+        ::= { upsSmartAlarmPresentTable 1 }
+
+    UpsSmartAlarmPresentEntry ::=
+        SEQUENCE {
+            presentAlarmIndex
+                INTEGER,
+            presentAlarmTime
+                DisplayString,
+            presentAlarmId
+                INTEGER,
+            presentAlarmName
+                DisplayString,
+            presentAlaramLevel
+                INTEGER
+        }
+
+    presentAlarmIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the present alaram entry."
+        ::= { upsSmartAlarmPresentEntry 1 }
+
+    presentAlarmTime OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The time of the alarm generated, format as yyyy/mm/dd hh:mm:ss."
+        ::= { upsSmartAlarmPresentEntry 2 }
+
+    presentAlarmId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm ID."
+       ::= { upsSmartAlarmPresentEntry 3 }
+
+    presentAlarmName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The name of the alarm."
+        ::= { upsSmartAlarmPresentEntry 4 }
+
+    presentAlaramLevel OBJECT-TYPE
+        SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm level."
+       ::= { upsSmartAlarmPresentEntry 5 }
+
+    -- historical alarms
+    upsSmartAlarmHistoryNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of historical alarms."
+        ::= { upsSmartAlarm 3 }
+
+    upsSmartAlarmHistoryTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UpsSmartAlarmHistoryEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of historical UPS alarms, The number of entries is given
+            by the value of upsSmartAlarmHistoryNum."
+        ::= { upsSmartAlarm 4 }
+
+    upsSmartAlarmHistoryEntry OBJECT-TYPE
+        SYNTAX UpsSmartAlarmHistoryEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The historical alarms list."
+        INDEX  { historyAlarmIndex}
+        ::= { upsSmartAlarmHistoryTable 1 }
+
+    UpsSmartAlarmHistoryEntry ::=
+        SEQUENCE {
+            historyAlarmIndex
+                INTEGER,
+            historyAlarmTime
+                DisplayString,
+            historyAlarmId
+                INTEGER,
+            historyAlarmName
+                DisplayString,
+            historyAlaramLevel
+                INTEGER
+        }
+
+    historyAlarmIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the historical alaram entry."
+        ::= { upsSmartAlarmHistoryEntry 1 }
+
+    historyAlarmTime OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The time of the alarm generated, format as yyyy/mm/dd hh:mm:ss."
+        ::= { upsSmartAlarmHistoryEntry 2 }
+
+    historyAlarmId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm ID."
+       ::= { upsSmartAlarmHistoryEntry 3 }
+
+    historyAlarmName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The name of the alarm."
+        ::= { upsSmartAlarmHistoryEntry 4 }
+
+    historyAlaramLevel OBJECT-TYPE
+        SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm level."
+       ::= { upsSmartAlarmHistoryEntry 5 }
+
+
+
+    -- ------------------------------------------------------------------------
+    -- Traps
+    -- ------------------------------------------------------------------------
+
+    --
+    -- trap args
+    --
+    trapArgsString OBJECT-TYPE
+        SYNTAX  DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "This OID allows Liebert NXa UPS traps to be sent with an octet string argument
+             that may not be defined in the Liebert NXa UPS MIB.
+
+             A get of this OID will return a NULL string."
+        ::= { upsAlarm 2002 }
+
+    upsShutdown TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: UPS Shutdown."
+       --#TYPE "liebert NXa UPS: UPS Shutdown"
+       --#SUMMARY "UPS Shutdown."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 1
+
+
+    upsinNormalMode TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: UPS in Normal Mode."
+       --#TYPE "liebert NXa UPS: UPS in Normal Mode"
+       --#SUMMARY "UPS in Normal Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 2
+
+
+    upsinBatteryMode TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: UPS in Battery Mode."
+       --#TYPE "liebert NXa UPS: UPS in Battery Mode"
+       --#SUMMARY "UPS in Battery Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 3
+
+
+    upsinBypassMode TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: UPS in Bypass Mode."
+       --#TYPE "liebert NXa UPS: UPS in Bypass Mode"
+       --#SUMMARY "UPS in Bypass Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 4
+
+
+    upsinSourceShareMode TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: UPS in Source Share Mode."
+       --#TYPE "liebert NXa UPS: UPS in Source Share Mode"
+       --#SUMMARY "UPS in Source Share Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 5
+
+
+    batterySelfTestCompleted TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Self Test Completed."
+       --#TYPE "liebert NXa UPS: Battery Self Test Completed"
+       --#SUMMARY "Battery Self Test Completed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 6
+
+
+    upsBatteryTesting TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS Battery Testing."
+       --#TYPE "liebert NXa UPS: UPS Battery Testing"
+       --#SUMMARY "UPS Battery Testing."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 7
+
+
+    batteryNotCharging TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Not Charging."
+       --#TYPE "liebert NXa UPS: Battery Not Charging"
+       --#SUMMARY "Battery Not Charging."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 8
+
+
+    batteryFloatCharging TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Float Charging."
+       --#TYPE "liebert NXa UPS: Battery Float Charging"
+       --#SUMMARY "Battery Float Charging."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 9
+
+
+    batteryBoostCharging TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Boost Charging."
+       --#TYPE "liebert NXa UPS: Battery Boost Charging"
+       --#SUMMARY "Battery Boost Charging."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 10
+
+
+    upsInverterOn TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: UPS Inverter On ."
+       --#TYPE "liebert NXa UPS: UPS Inverter On "
+       --#SUMMARY "UPS Inverter On ."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 11
+
+
+    upsInverterOff TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: UPS Inverter Off ."
+       --#TYPE "liebert NXa UPS: UPS Inverter Off "
+       --#SUMMARY "UPS Inverter Off ."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 12
+
+
+    generatorDisconnected TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Generator Disconnected ."
+       --#TYPE "liebert NXa UPS: Generator Disconnected "
+       --#SUMMARY "Generator Disconnected ."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 13
+
+
+    generatorConnected TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Generator Connected."
+       --#TYPE "liebert NXa UPS: Generator Connected"
+       --#SUMMARY "Generator Connected."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 14
+
+
+    inputDisconnectOpen TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Disconnect Open."
+       --#TYPE "liebert NXa UPS: Input Disconnect Open"
+       --#SUMMARY "Input Disconnect Open."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 15
+
+
+    inputDisconnectClosed TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Disconnect Closed."
+       --#TYPE "liebert NXa UPS: Input Disconnect Closed"
+       --#SUMMARY "Input Disconnect Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 16
+
+
+    maintenanceDisconnectOpen TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Maintenance Disconnect Open."
+       --#TYPE "liebert NXa UPS: Maintenance Disconnect Open"
+       --#SUMMARY "Maintenance Disconnect Open."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 17
+
+
+    maintenanceDisconnectClosed TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Maintenance Disconnect Closed."
+       --#TYPE "liebert NXa UPS: Maintenance Disconnect Closed"
+       --#SUMMARY "Maintenance Disconnect Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 18
+
+
+    bypassDisconnectOpen TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass Disconnect Open."
+       --#TYPE "liebert NXa UPS: Bypass Disconnect Open"
+       --#SUMMARY "Bypass Disconnect Open."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 19
+
+
+    bypassDisconnectClosed TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass Disconnect Closed."
+       --#TYPE "liebert NXa UPS: Bypass Disconnect Closed"
+       --#SUMMARY "Bypass Disconnect Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 20
+
+
+    outputDisconnectOpen TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Output Disconnect Open."
+       --#TYPE "liebert NXa UPS: Output Disconnect Open"
+       --#SUMMARY "Output Disconnect Open."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 21
+
+
+    outputDisconnectClosed TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Output Disconnect Closed."
+       --#TYPE "liebert NXa UPS: Output Disconnect Closed"
+       --#SUMMARY "Output Disconnect Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 22
+
+
+    rotarySwitchinOffPosition TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Rotary Switch in Off Position."
+       --#TYPE "liebert NXa UPS: Rotary Switch in Off Position"
+       --#SUMMARY "Rotary Switch in Off Position."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 23
+
+
+    rotarySwitchinTestPosition TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Rotary Switch in Test Position."
+       --#TYPE "liebert NXa UPS: Rotary Switch in Test Position"
+       --#SUMMARY "Rotary Switch in Test Position."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 24
+
+
+    rotarySwitchinNormalPosition TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Rotary Switch in Normal Position."
+       --#TYPE "liebert NXa UPS: Rotary Switch in Normal Position"
+       --#SUMMARY "Rotary Switch in Normal Position."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 25
+
+
+    rotarySwitchinBypassPosition TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Rotary Switch in Bypass Position."
+       --#TYPE "liebert NXa UPS: Rotary Switch in Bypass Position"
+       --#SUMMARY "Rotary Switch in Bypass Position."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 26
+
+
+    rotarySwitchinMaintainPosition TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Rotary Switch in Maintain Position."
+       --#TYPE "liebert NXa UPS: Rotary Switch in Maintain Position"
+       --#SUMMARY "Rotary Switch in Maintain Position."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 27
+
+
+    systeminNormalMode TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: System in Normal Mode."
+       --#TYPE "liebert NXa UPS: System in Normal Mode"
+       --#SUMMARY "System in Normal Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 28
+
+
+    systeminBatteryMode TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: System in Battery Mode."
+       --#TYPE "liebert NXa UPS: System in Battery Mode"
+       --#SUMMARY "System in Battery Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 29
+
+
+    systeminBypassMode TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: System in Bypass Mode."
+       --#TYPE "liebert NXa UPS: System in Bypass Mode"
+       --#SUMMARY "System in Bypass Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 30
+
+
+    systemShutdown TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: System Shutdown."
+       --#TYPE "liebert NXa UPS: System Shutdown"
+       --#SUMMARY "System Shutdown."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 31
+
+
+    inverterResumedtobeSynchronous TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Inverter Resumed to be Synchronous."
+       --#TYPE "liebert NXa UPS: Inverter Resumed to be Synchronous"
+       --#SUMMARY "Inverter Resumed to be Synchronous."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 32
+
+
+    inverterAsynchronous TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Inverter Asynchronous."
+       --#TYPE "liebert NXa UPS: Inverter Asynchronous"
+       --#SUMMARY "Inverter Asynchronous."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 33
+
+
+    mainsVoltageRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Mains Voltage Recovered."
+       --#TYPE "liebert NXa UPS: Mains Voltage Recovered"
+       --#SUMMARY "Mains Voltage Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 34
+
+
+    mainsVoltageAbnormal TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Mains Voltage Abnormal."
+       --#TYPE "liebert NXa UPS: Mains Voltage Abnormal"
+       --#SUMMARY "Mains Voltage Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 35
+
+
+    upsRectifierRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: UPS Rectifier Recovered."
+       --#TYPE "liebert NXa UPS: UPS Rectifier Recovered"
+       --#SUMMARY "UPS Rectifier Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 36
+
+
+    upsRectifierFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS Rectifier Fault."
+       --#TYPE "liebert NXa UPS: UPS Rectifier Fault"
+       --#SUMMARY "UPS Rectifier Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 37
+
+
+    upsInverterRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: UPS Inverter Recovered."
+       --#TYPE "liebert NXa UPS: UPS Inverter Recovered"
+       --#SUMMARY "UPS Inverter Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 38
+
+
+    upsInverterFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS Inverter Fault."
+       --#TYPE "liebert NXa UPS: UPS Inverter Fault"
+       --#SUMMARY "UPS Inverter Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 39
+
+
+    bypassRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass Recovered."
+       --#TYPE "liebert NXa UPS: Bypass Recovered"
+       --#SUMMARY "Bypass Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 40
+
+
+    bypassAbnormal TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass Abnormal."
+       --#TYPE "liebert NXa UPS: Bypass Abnormal"
+       --#SUMMARY "Bypass Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 41
+
+
+    batteryVoltageRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Voltage Recovered."
+       --#TYPE "liebert NXa UPS: Battery Voltage Recovered"
+       --#SUMMARY "Battery Voltage Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 42
+
+
+    batteryUndervoltage TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Undervoltage."
+       --#TYPE "liebert NXa UPS: Battery Undervoltage"
+       --#SUMMARY "Battery Undervoltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 43
+
+
+    batteryOvervoltage TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Overvoltage."
+       --#TYPE "liebert NXa UPS: Battery Overvoltage"
+       --#SUMMARY "Battery Overvoltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 44
+
+
+    noBattery TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: No Battery."
+       --#TYPE "liebert NXa UPS: No Battery"
+       --#SUMMARY "No Battery."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 45
+
+
+    batteryLowPrewarning TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Low Pre-warning."
+       --#TYPE "liebert NXa UPS: Battery Low Pre-warning"
+       --#SUMMARY "Battery Low Pre-warning."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 46
+
+
+    upsBatteryReverse TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS Battery Reverse."
+       --#TYPE "liebert NXa UPS: UPS Battery Reverse"
+       --#SUMMARY "UPS Battery Reverse."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 47
+
+
+    mainsFrequencyRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Mains Frequency Recovered."
+       --#TYPE "liebert NXa UPS: Mains Frequency Recovered"
+       --#SUMMARY "Mains Frequency Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 48
+
+
+    mainsFrequencyAbnormal TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Mains Frequency Abnormal."
+       --#TYPE "liebert NXa UPS: Mains Frequency Abnormal"
+       --#SUMMARY "Mains Frequency Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 49
+
+
+    balancerTemperatureRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Balancer Temperature Recovered."
+       --#TYPE "liebert NXa UPS: Balancer Temperature Recovered"
+       --#SUMMARY "Balancer Temperature Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 50
+
+
+    balancerOvertemperature TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Balancer Overtemperature."
+       --#TYPE "liebert NXa UPS: Balancer Overtemperature"
+       --#SUMMARY "Balancer Overtemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 51
+
+
+    inputInductanceRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Inductance Recovered."
+       --#TYPE "liebert NXa UPS: Input Inductance Recovered"
+       --#SUMMARY "Input Inductance Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 52
+
+
+    inputInductanceOvertemperature TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Input Inductance Overtemperature."
+       --#TYPE "liebert NXa UPS: Input Inductance Overtemperature"
+       --#SUMMARY "Input Inductance Overtemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 53
+
+
+    rectifierTemperatureRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Rectifier Temperature Recovered."
+       --#TYPE "liebert NXa UPS: Rectifier Temperature Recovered"
+       --#SUMMARY "Rectifier Temperature Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 54
+
+
+    rectifierOvertemperature TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Rectifier Overtemperature."
+       --#TYPE "liebert NXa UPS: Rectifier Overtemperature"
+       --#SUMMARY "Rectifier Overtemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 55
+
+
+    balancerRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Balancer Recovered."
+       --#TYPE "liebert NXa UPS: Balancer Recovered"
+       --#SUMMARY "Balancer Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 56
+
+
+    balancerFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Balancer Fault."
+       --#TYPE "liebert NXa UPS: Balancer Fault"
+       --#SUMMARY "Balancer Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 57
+
+
+    balancerOvercurrentRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Balancer Overcurrent Recovered."
+       --#TYPE "liebert NXa UPS: Balancer Overcurrent Recovered"
+       --#SUMMARY "Balancer Overcurrent Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 58
+
+
+    balancerOvercurrent TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Balancer Overcurrent."
+       --#TYPE "liebert NXa UPS: Balancer Overcurrent"
+       --#SUMMARY "Balancer Overcurrent."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 59
+
+
+    batteryContactorRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Contactor Recovered."
+       --#TYPE "liebert NXa UPS: Battery Contactor Recovered"
+       --#SUMMARY "Battery Contactor Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 60
+
+
+    batteryContactorFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Contactor Fault."
+       --#TYPE "liebert NXa UPS: Battery Contactor Fault"
+       --#SUMMARY "Battery Contactor Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 61
+
+
+    batteryConverterRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Converter Recovered."
+       --#TYPE "liebert NXa UPS: Battery Converter Recovered"
+       --#SUMMARY "Battery Converter Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 62
+
+
+    batteryConverterFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Converter Fault."
+       --#TYPE "liebert NXa UPS: Battery Converter Fault"
+       --#SUMMARY "Battery Converter Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 63
+
+
+    batteryConverterCurrentRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Converter Current Recovered."
+       --#TYPE "liebert NXa UPS: Battery Converter Current Recovered"
+       --#SUMMARY "Battery Converter Current Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 64
+
+
+    batteryConverterOvercurrent TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Converter Overcurrent."
+       --#TYPE "liebert NXa UPS: Battery Converter Overcurrent"
+       --#SUMMARY "Battery Converter Overcurrent."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 65
+
+
+    batteryConverterTemperatureRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Converter Temperature Recovered."
+       --#TYPE "liebert NXa UPS: Battery Converter Temperature Recovered"
+       --#SUMMARY "Battery Converter Temperature Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 66
+
+
+    batteryConverterOvertemperature TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Converter Overtemperature."
+       --#TYPE "liebert NXa UPS: Battery Converter Overtemperature"
+       --#SUMMARY "Battery Converter Overtemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 67
+
+
+    inputFuseRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Input Fuse Recovered."
+       --#TYPE "liebert NXa UPS: Input Fuse Recovered"
+       --#SUMMARY "Input Fuse Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 68
+
+
+    inputFuseFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Input Fuse Fault."
+       --#TYPE "liebert NXa UPS: Input Fuse Fault"
+       --#SUMMARY "Input Fuse Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 69
+
+
+    controlPower1Recovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Control Power 1 Recovered."
+       --#TYPE "liebert NXa UPS: Control Power 1 Recovered"
+       --#SUMMARY "Control Power 1 Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 70
+
+
+    controlPower1Fail TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Control Power 1 Fail."
+       --#TYPE "liebert NXa UPS: Control Power 1 Fail"
+       --#SUMMARY "Control Power 1 Fail."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 71
+
+
+    mainsPhaseRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Mains Phase Recovered."
+       --#TYPE "liebert NXa UPS: Mains Phase Recovered"
+       --#SUMMARY "Mains Phase Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 72
+
+
+    mainsPhaseReversed TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Mains Phase Reversed."
+       --#TYPE "liebert NXa UPS: Mains Phase Reversed"
+       --#SUMMARY "Mains Phase Reversed."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 73
+
+
+    rectifierOvercurrentRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Rectifier Overcurrent Recovered."
+       --#TYPE "liebert NXa UPS: Rectifier Overcurrent Recovered"
+       --#SUMMARY "Rectifier Overcurrent Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 74
+
+
+    rectifierOvercurrent TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Rectifier Overcurrent."
+       --#TYPE "liebert NXa UPS: Rectifier Overcurrent"
+       --#SUMMARY "Rectifier Overcurrent."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 75
+
+
+    softStartFail TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Soft Start Fail."
+       --#TYPE "liebert NXa UPS: Soft Start Fail"
+       --#SUMMARY "Soft Start Fail."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 76
+
+
+    bypassOverCurrentRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass OverCurrent Recovered."
+       --#TYPE "liebert NXa UPS: Bypass OverCurrent Recovered"
+       --#SUMMARY "Bypass OverCurrent Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 77
+
+
+    bypassOverCurrent TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass OverCurrent."
+       --#TYPE "liebert NXa UPS: Bypass OverCurrent"
+       --#SUMMARY "Bypass OverCurrent."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 78
+
+
+    inverterInductorTemperatureRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Inverter Inductor Temperature Recovered."
+       --#TYPE "liebert NXa UPS: Inverter Inductor Temperature Recovered"
+       --#SUMMARY "Inverter Inductor Temperature Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 79
+
+
+    inverterInductorOvertemperature TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Inverter Inductor Overtemperature."
+       --#TYPE "liebert NXa UPS: Inverter Inductor Overtemperature"
+       --#SUMMARY "Inverter Inductor Overtemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 80
+
+
+    inverterTemperatureRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Inverter Temperature Recovered."
+       --#TYPE "liebert NXa UPS: Inverter Temperature Recovered"
+       --#SUMMARY "Inverter Temperature Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 81
+
+
+    inverterOvertemperature TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Inverter Overtemperature."
+       --#TYPE "liebert NXa UPS: Inverter Overtemperature"
+       --#SUMMARY "Inverter Overtemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 82
+
+
+    fanRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Fan Recovered."
+       --#TYPE "liebert NXa UPS: Fan Recovered"
+       --#SUMMARY "Fan Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 83
+
+
+    fanFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Fan Fault."
+       --#TYPE "liebert NXa UPS: Fan Fault"
+       --#SUMMARY "Fan Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 84
+
+
+    inverterSTSRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Inverter STS Recovered."
+       --#TYPE "liebert NXa UPS: Inverter STS Recovered"
+       --#SUMMARY "Inverter STS Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 85
+
+
+    inverterSTSFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Inverter STS Fault."
+       --#TYPE "liebert NXa UPS: Inverter STS Fault"
+       --#SUMMARY "Inverter STS Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 86
+
+
+    bypassSTSRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass STS Recovered."
+       --#TYPE "liebert NXa UPS: Bypass STS Recovered"
+       --#SUMMARY "Bypass STS Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 87
+
+
+    bypassSTSFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass STS Fault."
+       --#TYPE "liebert NXa UPS: Bypass STS Fault"
+       --#SUMMARY "Bypass STS Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 88
+
+
+    operationInvalid TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Operation Invalid."
+       --#TYPE "liebert NXa UPS: Operation Invalid"
+       --#SUMMARY "Operation Invalid."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 89
+
+
+    outputFuseRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Output Fuse Recovered."
+       --#TYPE "liebert NXa UPS: Output Fuse Recovered"
+       --#SUMMARY "Output Fuse Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 90
+
+
+    outputFuseFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Output Fuse Fault."
+       --#TYPE "liebert NXa UPS: Output Fuse Fault"
+       --#SUMMARY "Output Fuse Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 91
+
+
+    controlPower2Recovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Control Power 2 Recovered."
+       --#TYPE "liebert NXa UPS: Control Power 2 Recovered"
+       --#SUMMARY "Control Power 2 Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 92
+
+
+    controlPower2Fail TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Control Power 2 Fail."
+       --#TYPE "liebert NXa UPS: Control Power 2 Fail"
+       --#SUMMARY "Control Power 2 Fail."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 93
+
+
+    unitOverloadRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Unit Overload Recovered."
+       --#TYPE "liebert NXa UPS: Unit Overload Recovered"
+       --#SUMMARY "Unit Overload Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 94
+
+
+    unitOverload TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Unit Overload."
+       --#TYPE "liebert NXa UPS: Unit Overload"
+       --#SUMMARY "Unit Overload."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 95
+
+
+    systemOverloadRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: System Overload Recovered."
+       --#TYPE "liebert NXa UPS: System Overload Recovered"
+       --#SUMMARY "System Overload Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 96
+
+
+    systemOverload TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: System Overload."
+       --#TYPE "liebert NXa UPS: System Overload"
+       --#SUMMARY "System Overload."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 97
+
+
+    unitOverloadTimeoutRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Unit Overload Timeout Recovered."
+       --#TYPE "liebert NXa UPS: Unit Overload Timeout Recovered"
+       --#SUMMARY "Unit Overload Timeout Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 98
+
+
+    unitOverloadTimeout TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Unit Overload Timeout."
+       --#TYPE "liebert NXa UPS: Unit Overload Timeout"
+       --#SUMMARY "Unit Overload Timeout."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 99
+
+
+    bypassAbnormalShutdown TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass Abnormal Shutdown."
+       --#TYPE "liebert NXa UPS: Bypass Abnormal Shutdown"
+       --#SUMMARY "Bypass Abnormal Shutdown."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 100
+
+
+    outputOvervoltageRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Output Overvoltage Recovered."
+       --#TYPE "liebert NXa UPS: Output Overvoltage Recovered"
+       --#SUMMARY "Output Overvoltage Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 101
+
+
+    outputOvervoltage TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Output Overvoltage."
+       --#TYPE "liebert NXa UPS: Output Overvoltage"
+       --#SUMMARY "Output Overvoltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 102
+
+
+    inverterOvercurrentRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Inverter Overcurrent Recovered."
+       --#TYPE "liebert NXa UPS: Inverter Overcurrent Recovered"
+       --#SUMMARY "Inverter Overcurrent Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 103
+
+
+    inverterOvercurrent TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Inverter Overcurrent."
+       --#TYPE "liebert NXa UPS: Inverter Overcurrent"
+       --#SUMMARY "Inverter Overcurrent."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 104
+
+
+    bypassPhaseRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass Phase Recovered."
+       --#TYPE "liebert NXa UPS: Bypass Phase Recovered"
+       --#SUMMARY "Bypass Phase Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 105
+
+
+    bypassPhaseReversed TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass Phase Reversed."
+       --#TYPE "liebert NXa UPS: Bypass Phase Reversed"
+       --#SUMMARY "Bypass Phase Reversed."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 106
+
+
+    loadImpactTransfe TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Load Impact Transfe."
+       --#TYPE "liebert NXa UPS: Load Impact Transfe"
+       --#SUMMARY "Load Impact Transfe."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 107
+
+
+    transferTimeoutCanceled TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Transfer Time-out Canceled."
+       --#TYPE "liebert NXa UPS: Transfer Time-out Canceled"
+       --#SUMMARY "Transfer Time-out Canceled."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 108
+
+
+    transferTimeout TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Transfer Time-out."
+       --#TYPE "liebert NXa UPS: Transfer Time-out"
+       --#SUMMARY "Transfer Time-out."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 109
+
+
+    loadSharingFaultRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Load Sharing Fault Recovered."
+       --#TYPE "liebert NXa UPS: Load Sharing Fault Recovered"
+       --#SUMMARY "Load Sharing Fault Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 110
+
+
+    loadSharingFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Load Sharing Fault."
+       --#TYPE "liebert NXa UPS: Load Sharing Fault"
+       --#SUMMARY "Load Sharing Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 111
+
+    shutoffinverterduetoabnormalDCbusvoltage TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Shut off inverter due to abnormal DC bus voltage."
+       --#TYPE "liebert NXa UPS: Shut off inverter due to abnormal DC bus voltage"
+       --#SUMMARY "Shut off inverter due to abnormal DC bus voltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 112
+
+
+    upsTransfertobypassduetosystemrequest TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS Transfer to bypass due to system request."
+       --#TYPE "liebert NXa UPS: UPS Transfer to bypass due to system request"
+       --#SUMMARY "UPS Transfer to bypass due to system request."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 113
+
+
+    parallelBoardFaultRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Parallel Board Fault Recovered."
+       --#TYPE "liebert NXa UPS: Parallel Board Fault Recovered"
+       --#SUMMARY "Parallel Board Fault Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 114
+
+
+    parallelBoardFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Parallel Board Fault."
+       --#TYPE "liebert NXa UPS: Parallel Board Fault"
+       --#SUMMARY "Parallel Board Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 115
+
+
+    dCBusVoltageRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: DC Bus Voltage Recovered."
+       --#TYPE "liebert NXa UPS: DC Bus Voltage Recovered"
+       --#SUMMARY "DC Bus Voltage Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 116
+
+
+    dCBusOverVoltage TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: DC Bus Over Voltage."
+       --#TYPE "liebert NXa UPS: DC Bus Over Voltage"
+       --#SUMMARY "DC Bus Over Voltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 117
+
+
+    parallelConnectRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Parallel Connect Recovered."
+       --#TYPE "liebert NXa UPS: Parallel Connect Recovered"
+       --#SUMMARY "Parallel Connect Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 118
+
+
+    parallelConnectFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Parallel Connect Fault."
+       --#TYPE "liebert NXa UPS: Parallel Connect Fault"
+       --#SUMMARY "Parallel Connect Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 119
+
+
+    ambientTemperatureRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Ambient Temperature Recovered."
+       --#TYPE "liebert NXa UPS: Ambient Temperature Recovered"
+       --#SUMMARY "Ambient Temperature Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 120
+
+
+    ambientOvertemperature TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Ambient Overtemperature."
+       --#TYPE "liebert NXa UPS: Ambient Overtemperature"
+       --#SUMMARY "Ambient Overtemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 121
+
+
+    rectiferCommunicationRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Rectifer Communication Recovered."
+       --#TYPE "liebert NXa UPS: Rectifer Communication Recovered"
+       --#SUMMARY "Rectifer Communication Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 122
+
+
+    rectiferCommunicationFail TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Rectifer Communication Fail."
+       --#TYPE "liebert NXa UPS: Rectifer Communication Fail"
+       --#SUMMARY "Rectifer Communication Fail."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 123
+
+
+    inverterCommunicationRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Inverter Communication Recovered."
+       --#TYPE "liebert NXa UPS: Inverter Communication Recovered"
+       --#SUMMARY "Inverter Communication Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 124
+
+
+    inverterCommunicationFail TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Inverter Communication Fail."
+       --#TYPE "liebert NXa UPS: Inverter Communication Fail"
+       --#SUMMARY "Inverter Communication Fail."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 125
+
+
+    parallelCommunicationRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Parallel Communication Recovered."
+       --#TYPE "liebert NXa UPS: Parallel Communication Recovered"
+       --#SUMMARY "Parallel Communication Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 126
+
+
+    parallelCommunicationFail TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Parallel Communication Fail."
+       --#TYPE "liebert NXa UPS: Parallel Communication Fail"
+       --#SUMMARY "Parallel Communication Fail."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 127
+
+
+    outputDCOffsetRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Output DC Offset Recovered."
+       --#TYPE "liebert NXa UPS: Output DC Offset Recovered"
+       --#SUMMARY "Output DC Offset Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 128
+
+
+    outputDCOffset TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Output DC Offset."
+       --#TYPE "liebert NXa UPS: Output DC Offset"
+       --#SUMMARY "Output DC Offset."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 129
+
+
+    systemBatteryLowFaultRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: System Battery Low Fault Recovered."
+       --#TYPE "liebert NXa UPS: System Battery Low Fault Recovered"
+       --#SUMMARY "System Battery Low Fault Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 130
+
+
+    systemBatteryLowFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: System Battery Low Fault."
+       --#TYPE "liebert NXa UPS: System Battery Low Fault"
+       --#SUMMARY "System Battery Low Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 131
+
+
+    mainsNeutralRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Mains Neutral Recovered."
+       --#TYPE "liebert NXa UPS: Mains Neutral Recovered"
+       --#SUMMARY "Mains Neutral Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 132
+
+
+    mainsNeutralLost TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Mains Neutral Lost."
+       --#TYPE "liebert NXa UPS: Mains Neutral Lost"
+       --#SUMMARY "Mains Neutral Lost."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 133
+
+
+    inverterContatorRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Inverter Contator Recovered."
+       --#TYPE "liebert NXa UPS: Inverter Contator Recovered"
+       --#SUMMARY "Inverter Contator Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 134
+
+
+    inverterContatorFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Inverter Contator Fault."
+       --#TYPE "liebert NXa UPS: Inverter Contator Fault"
+       --#SUMMARY "Inverter Contator Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 135
+
+
+    chargerRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Charger Recovered."
+       --#TYPE "liebert NXa UPS: Charger Recovered"
+       --#SUMMARY "Charger Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 136
+
+
+    chargerFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Charger Fault."
+       --#TYPE "liebert NXa UPS: Charger Fault"
+       --#SUMMARY "Charger Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 137
+
+
+    batteryRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Recovered."
+       --#TYPE "liebert NXa UPS: Battery Recovered"
+       --#SUMMARY "Battery Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 138
+
+
+    batteryNeedReplace TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Need Replace."
+       --#TYPE "liebert NXa UPS: Battery Need Replace"
+       --#SUMMARY "Battery Need Replace."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 139
+
+
+    batteryBad TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Bad."
+       --#TYPE "liebert NXa UPS: Battery Bad"
+       --#SUMMARY "Battery Bad."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 140
+
+
+    emergencyPowerOffCanceled TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Emergency Power Off Canceled."
+       --#TYPE "liebert NXa UPS: Emergency Power Off Canceled"
+       --#SUMMARY "Emergency Power Off Canceled."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 141
+
+
+    emergencyPowerOff TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Emergency Power Off."
+       --#TYPE "liebert NXa UPS: Emergency Power Off"
+       --#SUMMARY "Emergency Power Off."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 142
+
+
+    batteryTemperatureRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Temperature Recovered."
+       --#TYPE "liebert NXa UPS: Battery Temperature Recovered"
+       --#SUMMARY "Battery Temperature Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 143
+
+
+    batteryOvertemperature TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Overtemperature."
+       --#TYPE "liebert NXa UPS: Battery Overtemperature"
+       --#SUMMARY "Battery Overtemperature."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 144
+
+
+    bCBNotConnected TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: BCB Not Connected."
+       --#TYPE "liebert NXa UPS: BCB Not Connected"
+       --#SUMMARY "BCB Not Connected."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 145
+
+
+    bCBClosed TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: BCB Closed."
+       --#TYPE "liebert NXa UPS: BCB Closed"
+       --#SUMMARY "BCB Closed."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 146
+
+
+    bCBOpen TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: BCB Open."
+       --#TYPE "liebert NXa UPS: BCB Open"
+       --#SUMMARY "BCB Open."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 147
+
+
+    batteryGroundRecovered TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Ground Recovered."
+       --#TYPE "liebert NXa UPS: Battery Ground Recovered"
+       --#SUMMARY "Battery Ground Recovered."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 148
+
+
+    batteryGroundFault TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Ground Fault."
+       --#TYPE "liebert NXa UPS: Battery Ground Fault"
+       --#SUMMARY "Battery Ground Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 149
+
+    communicationLost TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+             "SEVERE: Communication to the UPS has been lost.  Steps
+              to reestablish communication are in progress."
+       --#TYPE "liebert NXa UPS: Communication failure"
+       --#SUMMARY "Communication to the UPS has been lost."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 150
+   
+    communicationEstablished TRAP-TYPE
+        ENTERPRISE liebertNXaUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Communication with the UPS has been established."
+       --#TYPE "liebert NXa UPS: Communication established"
+       --#SUMMARY "Communication with the UPS has been established."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 151
+
+END -- end of EMERSON-NETWORK-POWER-UPS-MIB

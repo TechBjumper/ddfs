@@ -1,0 +1,2608 @@
+--
+-- 05/27/2009 - v1.0b Dell rPDU
+--
+-- **********************************************************************
+-- **********************************************************************
+-- dellrPDU-MIB { iso org(3) dod(6) internet(1) private(4) enterprises(1)
+--                dell(674) }
+
+DellrPDU-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   enterprises, IpAddress, Gauge, TimeTicks FROM RFC1155-SMI
+   DisplayString                            FROM RFC1213-MIB
+   OBJECT-TYPE                              FROM RFC-1212
+   TRAP-TYPE                                FROM RFC-1215;
+
+dell                             OBJECT IDENTIFIER ::=  { enterprises 674 }
+pdu                              OBJECT IDENTIFIER ::=  { dell 10903 }
+pdusub                           OBJECT IDENTIFIER ::=  { pdu 200 }
+
+-- 1.3.6.1.4.1.674.10903.200
+
+software                         OBJECT IDENTIFIER ::=  { pdusub 1 }
+hardware                         OBJECT IDENTIFIER ::=  { pdusub 2 }
+
+-- Common rPDU values
+
+RpduEnableDisableType ::= INTEGER {
+      disabled (1),
+      enabled  (2)
+    }
+
+RpduNormalAlarmType ::= INTEGER {
+      normal (1),
+      alarm  (2)
+    }
+
+RpduCommNoneOKLostType ::= INTEGER {
+      notInstalled (1),
+      commsOK      (2),
+      commsLost    (3)
+    }
+
+RpduLowNormalNearOverloadType ::= INTEGER {
+      lowLoad      (1),
+      normal       (2),
+      nearOverload (3),
+      overload     (4)
+    }
+
+RpduOtherToNonrecoverableType ::= INTEGER {
+      other           (1),
+      unknown         (2),
+      ok              (3),
+      non-critical    (4),
+      critical        (5),
+      non-recoverable (6)
+    }
+
+RpduOutletPhaseLayoutType ::= INTEGER {
+      seqPhase1ToNeutral (1),
+      seqPhase2ToNeutral (2),
+      seqPhase3ToNeutral (3),
+      seqPhase1ToPhase2  (4),
+      seqPhase2ToPhase3  (5),
+      seqPhase3ToPhase1  (6)
+   }
+
+productID                        OBJECT IDENTIFIER ::=  { hardware 100 }
+
+productIDDisplayName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Name of this product for display purposes."
+   ::= { productID  1 }
+
+productIDDescription OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "A short description of this product."
+   ::= { productID  2 }
+
+productIDVendor OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The name of the product manufacturer."
+   ::= { productID  3 }
+
+productIDVersion OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The hardware version of this product."
+   ::= { productID  4 }
+
+productIDBuildNumber OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The software build number of the product populating the MIB."
+   ::= { productID  5 }
+
+productIDURL OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The URL of the Web-based application to manage this device, should
+       the device provide one."
+   ::= { productID  6 }
+
+productIDDeviceNetworkName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Operating system-specific computer name if product SNMP service is
+       hosted."
+   ::= { productID  7 }
+
+productStatus                    OBJECT IDENTIFIER ::=  { hardware 110 }
+
+productStatusGlobalStatus OBJECT-TYPE
+   SYNTAX RpduOtherToNonrecoverableType
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The current status of the product. This is a summary of the status 
+       for the entire product including any metered devices. The SNMP
+       monitor performs a get to retrieve additional data when this status
+       is abnormal. Valid values 1: Other 2: Unknown 3: OK 4: Non-critical
+       5: Critical 6: Non-recoverable."
+   ::= { productStatus  1}
+
+productStatusLastGlobalStatus OBJECT-TYPE
+   SYNTAX RpduOtherToNonrecoverableType
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The status before the current status which induced an initiative to
+       issue a global status change trap."
+   ::= { productStatus  2}
+
+productStatusTimeStamp OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The last time that the SNMP table geometries changed or attribute
+       data was significantly updated. Management applications use this OID
+       to trigger a refresh of data acquired from the MIB. This time should
+       be a relative timestamp, for example, the value of MIB II SysUpTime
+       when the values are updated."
+   ::= { productStatus  3}
+
+rPDU                             OBJECT IDENTIFIER ::=  { hardware 200 }
+
+rPDUIdent                        OBJECT IDENTIFIER ::=  { rPDU 100 }
+
+-- rPDU Ident Table   
+
+rPDUIdentTableSize OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The number of connected Rack PDUs."
+   ::= { rPDUIdent  1 }
+
+rPDUIdentTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUIdentEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of Rack PDU identification data."
+   ::= { rPDUIdent  2 }
+
+rPDUIdentEntry OBJECT-TYPE
+   SYNTAX RPDUIdentEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Identification data from the Rack PDU being queried."
+   INDEX { rPDUIdentIndex }
+   ::= { rPDUIdentTable  1 }
+
+RPDUIdentEntry ::=
+   SEQUENCE {
+      rPDUIdentIndex               INTEGER,
+      rPDUIdentName                DisplayString,
+      rPDUIdentLocation            DisplayString,
+      rPDUIdentHardwareRev         DisplayString,
+      rPDUIdentFirmwareRev         DisplayString,
+      rPDUIdentDateOfManufacture   DisplayString,
+      rPDUIdentModelNumber         DisplayString,
+      rPDUIdentSerialNumber        DisplayString
+   }
+
+rPDUIdentIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the Rack PDU identification table entry."
+   ::= { rPDUIdentEntry  1 }
+
+rPDUIdentName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "A user-defined string identifying the Rack PDU."
+   ::= { rPDUIdentEntry  2 }
+
+rPDUIdentLocation OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "A user-defined string identifying the location of the Rack PDU."
+   ::= { rPDUIdentEntry  3 }
+
+rPDUIdentHardwareRev OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The Rack PDU hardware version."
+   ::= { rPDUIdentEntry  4 }
+
+rPDUIdentFirmwareRev OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The Rack PDU firmware version."
+   ::= { rPDUIdentEntry  5 }
+
+rPDUIdentDateOfManufacture OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The date the Rack PDU was manufactured in mm/dd/yyyy format."
+   ::= { rPDUIdentEntry  6 }
+
+rPDUIdentModelNumber OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The Rack PDU model number."
+   ::= { rPDUIdentEntry  7 }
+
+rPDUIdentSerialNumber OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The Rack PDU serial number."
+   ::= { rPDUIdentEntry  8 }
+
+rPDUDevice                       OBJECT IDENTIFIER ::=  { rPDU 110 }
+
+-- rPDU Device Data
+
+rPDUDeviceTableSize OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The number of connected Rack PDUs."
+   ::= { rPDUDevice  1 }
+
+-- rPDU Device Status
+
+rPDUDeviceStatusTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUDeviceStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of Rack PDU status information."
+   ::= { rPDUDevice  2 }
+
+rPDUDeviceStatusEntry OBJECT-TYPE
+   SYNTAX RPDUDeviceStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Status information from the Rack PDU being queried."
+   INDEX { rPDUDeviceStatusIndex }
+   ::= { rPDUDeviceStatusTable  1 }
+
+   RPDUDeviceStatusEntry ::=
+    SEQUENCE {
+      rPDUDeviceStatusIndex            INTEGER,
+      rPDUDeviceStatusName             DisplayString,
+      rPDUDeviceStatusPowerWatts       INTEGER,
+      rPDUDeviceStatusEnergy           INTEGER,
+      rPDUDeviceStatusCommandPending   INTEGER,
+      rPDUDeviceStatusdeviceAlarmState INTEGER
+   }
+
+rPDUDeviceStatusIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the Rack PDU status table entry."
+   ::= { rPDUDeviceStatusEntry  1 }
+
+rPDUDeviceStatusName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "A user-defined string identifying the Rack PDU."
+   ::= { rPDUDeviceStatusEntry  2 }
+
+rPDUDeviceStatusPowerWatts OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The power consumption of the Rack PDU load in Watts."
+   ::= { rPDUDeviceStatusEntry  3 }
+
+rPDUDeviceStatusEnergy OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "A user resettable energy meter measuring Rack PDU load energy
+       consumption in kilowatt-hours."
+   ::= { rPDUDeviceStatusEntry  4 }
+
+rPDUDeviceStatusCommandPending OBJECT-TYPE
+   SYNTAX INTEGER {
+      commandPending          (1),
+      noCommandPending        (2),
+      commandPendingUnknown   (3)
+    }
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Indicates whether the device is processing a pending command.
+       If the commandPendingUnknown (3) value is returned, all devices
+       receiving power from the Rack PDU should be shut down.
+       The Rack PDU's power should then be cycled to clear this condition."
+   ::= { rPDUDeviceStatusEntry  5 }
+
+rPDUDeviceStatusdeviceAlarmState OBJECT-TYPE
+   SYNTAX RpduNormalAlarmType
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Device Alarm State."
+   ::= { rPDUDeviceStatusEntry 6 }
+
+-- rPDU Device Config
+
+rPDUDeviceConfigTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUDeviceConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of Rack PDU configuration data."
+   ::= { rPDUDevice  3 }
+
+rPDUDeviceConfigEntry OBJECT-TYPE
+   SYNTAX RPDUDeviceConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Configuration data from the Rack PDU being queried."
+   INDEX { rPDUDeviceConfigIndex }
+   ::= { rPDUDeviceConfigTable  1 }
+
+   RPDUDeviceConfigEntry ::=
+    SEQUENCE {
+      rPDUDeviceConfigIndex                      INTEGER,
+      rPDUDeviceConfigName                       DisplayString,
+      rPDUDeviceConfigLocation                   DisplayString,
+      rPDUDeviceConfigColdstartDelay             INTEGER,
+      rPDUDeviceConfigLowLoadPowerThreshold      INTEGER,
+      rPDUDeviceConfigNearOverloadPowerThreshold INTEGER,
+      rPDUDeviceConfigOverloadPowerThreshold     INTEGER,
+      rPDUDeviceConfigPowerHeadroom              INTEGER,
+      rPDUDeviceConfigPeakPower                  INTEGER,
+      rPDUDeviceConfigPeakPowerStartTime         DisplayString,
+      rPDUDeviceConfigPeakPowerCaptureTime       DisplayString,
+      rPDUDeviceConfigPeakPowerHeadroom          INTEGER,
+      rPDUDeviceConfigEnergyStartTime            DisplayString
+   }
+
+rPDUDeviceConfigIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the Rack PDU table entry."
+   ::= { rPDUDeviceConfigEntry  1 }
+
+rPDUDeviceConfigName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "A user-defined string identifying the Rack PDU."
+   ::= { rPDUDeviceConfigEntry  2 }
+
+rPDUDeviceConfigLocation OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The Location of the Rack PDU."
+   ::= { rPDUDeviceConfigEntry  3 }
+
+rPDUDeviceConfigColdstartDelay OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The amount of delay, measured in seconds, between when power is
+       provided to the Rack PDU and when the Rack PDU provides basic
+       master power to the outlets."
+   ::= { rPDUDeviceConfigEntry  4 }
+
+rPDUDeviceConfigLowLoadPowerThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined low power draw alarm threshold, measured in tenths
+       of kilowatts."
+   ::= { rPDUDeviceConfigEntry  5 }
+
+rPDUDeviceConfigNearOverloadPowerThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined near power overload threshold, measured in tenths
+       of kilowatts."
+   ::= { rPDUDeviceConfigEntry  6 }
+
+rPDUDeviceConfigOverloadPowerThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined power overload threshold, measured in tenths of
+       kilowatts."
+   ::= { rPDUDeviceConfigEntry  7 }
+
+rPDUDeviceConfigPowerHeadroom OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The amount of input power that is available to the connected
+       devices in kilowatts."
+   ::= { rPDUDeviceConfigEntry  8 }
+
+rPDUDeviceConfigPeakPower OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The highest input power level recorded by the connected
+       devices in kilowatts."
+   ::= { rPDUDeviceConfigEntry  9 }
+
+rPDUDeviceConfigPeakPowerStartTime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The time, in hh:mm:ss, when the device started recording the highest
+       input power level."
+   ::= { rPDUDeviceConfigEntry  10 }
+
+rPDUDeviceConfigPeakPowerCaptureTime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The time, in hh:mm:ss, when the highest input power level was
+       recorded by the device."
+   ::= { rPDUDeviceConfigEntry  11 }
+
+rPDUDeviceConfigPeakPowerHeadroom OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The highest level of input power that is available to the connected
+       devices in kilowatts."
+   ::= { rPDUDeviceConfigEntry  12 }
+
+rPDUDeviceConfigEnergyStartTime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The time, in hh:mm:ss, when the device started recording the input
+       energy level."
+   ::= { rPDUDeviceConfigEntry  13 }
+
+-- rPDU Device Properties
+
+rPDUDevicePropertiesTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUDevicePropertiesEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of Rack PDU properties."
+   ::= { rPDUDevice  4 }
+
+rPDUDevicePropertiesEntry OBJECT-TYPE
+   SYNTAX RPDUDevicePropertiesEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Properties of the Rack PDU being queried."
+   INDEX { rPDUDevicePropertiesIndex }
+   ::= { rPDUDevicePropertiesTable  1 }
+   
+   RPDUDevicePropertiesEntry ::=
+    SEQUENCE {
+      rPDUDevicePropertiesIndex               INTEGER,
+      rPDUDevicePropertiesName                DisplayString,
+      rPDUDevicePropertiesNumOutlets          INTEGER,
+      rPDUDevicePropertiesNumSwitchedOutlets  INTEGER,
+      rPDUDevicePropertiesNumMeteredOutlets   INTEGER,
+      rPDUDevicePropertiesNumPhases           INTEGER,
+      rPDUDevicePropertiesNumBreakers         INTEGER,
+      rPDUDevicePropertiesMaxCurrentRating    INTEGER,
+      rPDUDevicePropertiesOutletLayout        INTEGER
+   }
+
+rPDUDevicePropertiesIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the Rack PDU properties table entry."
+   ::= { rPDUDevicePropertiesEntry  1 }
+
+rPDUDevicePropertiesName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "A user-defined string identifying the Rack PDU."
+   ::= { rPDUDevicePropertiesEntry  2 }
+
+rPDUDevicePropertiesNumOutlets OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The number of outlets on the Rack PDU."
+   ::= { rPDUDevicePropertiesEntry  3 }
+
+rPDUDevicePropertiesNumSwitchedOutlets OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The number of switched outlets on the Rack PDU."
+   ::= { rPDUDevicePropertiesEntry  4 }
+
+rPDUDevicePropertiesNumMeteredOutlets OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The number of metered outlets on the Rack PDU."
+   ::= { rPDUDevicePropertiesEntry  5 }
+
+rPDUDevicePropertiesNumPhases OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The number of phases present in the Rack PDU."
+   ::= { rPDUDevicePropertiesEntry  6 }
+
+rPDUDevicePropertiesNumBreakers OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The number of breakers present in the Rack PDU."
+   ::= { rPDUDevicePropertiesEntry  7 }
+
+rPDUDevicePropertiesMaxCurrentRating OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The maximum current rating, measured in Amps, for the Rack PDU."
+   ::= { rPDUDevicePropertiesEntry  8 }
+
+rPDUDevicePropertiesOutletLayout OBJECT-TYPE
+   SYNTAX INTEGER {
+      l1-N (1),
+      l2-N (2),
+      l3-N (3),
+      l1-2 (4),
+      l2-3 (5),
+      l3-1 (6)
+    }
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The phase layout description of the currently queried Rack PDU
+       device."
+   ::= { rPDUDevicePropertiesEntry  9 }
+
+-- rPDU Device Control
+
+rPDUDeviceControlTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUDeviceControlEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of Rack PDU control data."
+   ::= { rPDUDevice  5 }
+
+rPDUDeviceControlEntry OBJECT-TYPE
+   SYNTAX RPDUDeviceControlEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Control data from the Rack PDU being queried."
+   INDEX { rPDUDeviceControlIndex }
+   ::= { rPDUDeviceControlTable  1 }
+
+   RPDUDeviceControlEntry ::=
+    SEQUENCE {
+      rPDUDeviceControlIndex    INTEGER,
+      rPDUDeviceControlName     DisplayString,
+      rPDUDeviceControlCommand  INTEGER
+   }
+
+rPDUDeviceControlIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the Rack PDU control table entry."
+   ::= { rPDUDeviceControlEntry  1 }
+
+rPDUDeviceControlName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "A user-defined string identifying the Rack PDU."
+   ::= { rPDUDeviceControlEntry  2 }
+
+rPDUDeviceControlCommand OBJECT-TYPE
+   SYNTAX INTEGER {
+      turnAllOnNow              (1),
+      turnAllOnSequence         (2),
+      turnAllOffNow             (3),
+      rebootAllNow              (4),
+      rebootAllSequence         (5),
+      noCommand                 (6),
+      turnAllOffSequence        (7)
+    }
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Setting this OID to turnAllOnNow (1) will turn all outlets on
+       immediately. Setting this OID to turnAllOnSequence (2) will turn
+       all outlets on as defined by each outlet's sPDUOutletPowerOnTime
+       OID value. Setting this OID to turnAllOff (3) will turn all outlets
+       off immediately. Setting this OID to rebootAllNow (4) will reboot
+       all outlets immediately. Setting this OID to rebootAllSequence (5)
+       reboots all outlets, with power returned to the outlets in the
+       sequence defined by each outlet's rPDUOutletSwitchedConfigPowerOnTime 
+       OID value. Setting this OID to rebootAllSequence (5) will cause a
+       turnAllOffSequence to be performed. Once all outlets are off, the
+       Rack PDU will then delay the rPDUOutletSwitchedConfigRebootDuration
+       OID time, and then perform a turnAllOnSequence. Setting this OID
+       to turnAllOffSequence (7) will turn all outlets off as defined by
+       each outlet's rPDUOutletSwitchedConfigPowerOffTime OID value.
+       Getting this OID will return the noCommand (6) value."
+   ::= { rPDUDeviceControlEntry  3 }
+
+rPDUPhase                        OBJECT IDENTIFIER ::=  { rPDU 120 }
+
+-- rPDU Phase Data
+
+rPDUPhaseTableSize OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The number of connected Rack PDU phases."
+   ::= { rPDUPhase  1 }
+
+-- rPDU Phase Status
+
+rPDUPhaseStatusTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUPhaseStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of Rack PDU phase status data."
+   ::= { rPDUPhase  2 }
+
+rPDUPhaseStatusEntry OBJECT-TYPE
+   SYNTAX RPDUPhaseStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Status data from the currently queried Rack PDU phase."
+   INDEX { rPDUPhaseStatusIndex }
+   ::= { rPDUPhaseStatusTable  1 }
+
+   RPDUPhaseStatusEntry ::=
+    SEQUENCE {
+      rPDUPhaseStatusIndex      INTEGER,
+      rPDUPhaseStatusNumber     INTEGER,
+      rPDUPhaseStatusLoadState  INTEGER,
+      rPDUPhaseStatusCurrent    INTEGER,
+      rPDUPhaseStatusVoltage    INTEGER,
+      rPDUPhaseStatusPower      INTEGER
+   }
+
+rPDUPhaseStatusIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the Rack PDU phase status table entry."
+   ::= { rPDUPhaseStatusEntry  1 }
+
+rPDUPhaseStatusNumber OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The numeric phase ID."
+   ::= { rPDUPhaseStatusEntry  2 }
+
+rPDUPhaseStatusLoadState OBJECT-TYPE
+   SYNTAX RpduLowNormalNearOverloadType
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Indicates the present load status of the Rack PDU phase being
+       queried."
+   ::= { rPDUPhaseStatusEntry  3 }
+
+rPDUPhaseStatusCurrent OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Indicates the current draw, in tenths of Amps, of the load on
+       the Rack PDU phase being queried."
+   ::= { rPDUPhaseStatusEntry  4 }
+
+rPDUPhaseStatusVoltage OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Indicates the Voltage, in tenths of Volts, of the Rack PDU
+       phase being queried."
+   ::= { rPDUPhaseStatusEntry  5 }
+
+rPDUPhaseStatusPower OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Indicates the load power, in tenths of kilowatts, consumed on
+       the Rack PDU phase being queried."
+   ::= { rPDUPhaseStatusEntry  6 }
+
+-- rPDU Phase Config
+
+rPDUPhaseConfigTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUPhaseConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of Rack PDU phase configuration data."
+   ::= { rPDUPhase  3 }
+
+rPDUPhaseConfigEntry OBJECT-TYPE
+   SYNTAX RPDUPhaseConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Configuration data from the currently queried Rack PDU phase."
+   INDEX { rPDUPhaseConfigIndex }
+   ::= { rPDUPhaseConfigTable  1 }
+
+   RPDUPhaseConfigEntry ::=
+    SEQUENCE {
+      rPDUPhaseConfigIndex                        INTEGER,
+      rPDUPhaseConfigNumber                       INTEGER,
+      rPDUPhaseConfigOverloadRestriction          INTEGER,
+      rPDUPhaseConfigLowLoadCurrentThreshold      INTEGER,
+      rPDUPhaseConfigNearOverloadCurrentThreshold INTEGER,
+      rPDUPhaseConfigOverloadCurrentThreshold     INTEGER
+   }
+
+rPDUPhaseConfigIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the Rack PDU phase configuration table entry."
+   ::= { rPDUPhaseConfigEntry  1 }
+
+rPDUPhaseConfigNumber OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The numeric phase ID."
+   ::= { rPDUPhaseConfigEntry  2 }
+
+rPDUPhaseConfigOverloadRestriction OBJECT-TYPE
+   SYNTAX INTEGER {
+      alwaysAllowTurnON         (1),
+      restrictOnNearOverload    (2),
+      restrictOnOverload        (3)
+    }
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "This OID controls the behavior of a Switched Rack PDU phase
+       when an overload condition is possible and additional outlets
+       are requested to be turned on. Setting this OID to
+       alwaysAllowTurnON (1) will always allow the outlets on the
+       corresponding phase to turn on. Setting this OID to 
+       restrictOnNearOverload (2) will not allow outlets on the
+       corresponding phase to turn on if the 
+       rPDULoadConfigNearOverloadThreshold OID is exceeded. Setting
+       this OID to restrictOnOverload (3) will not allow outlets on the
+       corresponding phase to turn on if the
+       rPDULoadConfigOverloadThreshold OID is exceeded."
+   ::= { rPDUPhaseConfigEntry  3 }
+
+rPDUPhaseConfigLowLoadCurrentThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined threshold for low phase current load, in Amps."
+   ::= { rPDUPhaseConfigEntry  4 }
+
+rPDUPhaseConfigNearOverloadCurrentThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined near phase overload warning threshold in Amps."
+   ::= { rPDUPhaseConfigEntry  5 }
+
+rPDUPhaseConfigOverloadCurrentThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined phase overload current threshold in Amps."
+   ::= { rPDUPhaseConfigEntry  6 }
+
+rPDUOutlet                       OBJECT IDENTIFIER ::=  { rPDU 130 }
+
+-- rPDU Outlet Data
+
+rPDUOutletSwitched               OBJECT IDENTIFIER ::=  { rPDUOutlet 1 }
+
+-- rPDU Switched Outlet Data
+
+rPDUOutletSwitchedTableSize OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The number of switched outlets on connected Rack PDUs."
+   ::= { rPDUOutletSwitched  1 }
+
+-- rPDU Switched Outlet Status
+
+rPDUOutletSwitchedStatusTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUOutletSwitchedStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of Rack PDU switched outlet status information."
+   ::= { rPDUOutletSwitched  2 }
+
+rPDUOutletSwitchedStatusEntry OBJECT-TYPE
+   SYNTAX RPDUOutletSwitchedStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Status information for the currently-queried Rack PDU switched
+       outlet."
+   INDEX { rPDUOutletSwitchedStatusIndex }
+   ::= { rPDUOutletSwitchedStatusTable  1 }
+
+   RPDUOutletSwitchedStatusEntry ::=
+    SEQUENCE {
+      rPDUOutletSwitchedStatusIndex           INTEGER,
+      rPDUOutletSwitchedStatusNumber          INTEGER,
+      rPDUOutletSwitchedStatusName            DisplayString,
+      rPDUOutletSwitchedStatusState           INTEGER,
+      rPDUOutletSwitchedStatusCommandPending  INTEGER,
+      rPDUOutletSwitchedStatusPhaseLayout     RpduOutletPhaseLayoutType
+   }
+
+rPDUOutletSwitchedStatusIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the Rack PDU switched outlet status information table
+       entry."
+   ::= { rPDUOutletSwitchedStatusEntry  1 }
+
+rPDUOutletSwitchedStatusNumber OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The numeric switched outlet ID."
+   ::= { rPDUOutletSwitchedStatusEntry  2 }
+
+rPDUOutletSwitchedStatusName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined switched outlet ID string."
+   ::= { rPDUOutletSwitchedStatusEntry  3 }
+
+rPDUOutletSwitchedStatusState OBJECT-TYPE
+   SYNTAX RpduLowNormalNearOverloadType
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Indicates the present load status of the Rack PDU switched outlet
+       being queried."
+   ::= { rPDUOutletSwitchedStatusEntry  4 }
+
+rPDUOutletSwitchedStatusCommandPending OBJECT-TYPE
+   SYNTAX INTEGER {
+      commandPending          (1),
+      noCommandPending        (2),
+      commandPendingUnknown   (3)
+    }
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Indicates whether the device is processing a command for this
+       outlet. If the commandPendingUnknown (3) value is returned,
+       all devices receiving power from the Rack PDU should be shut down.
+       The Rack PDU's power should then be cycled to clear this condition."
+   ::= { rPDUOutletSwitchedStatusEntry  5 }
+
+rPDUOutletSwitchedStatusPhaseLayout OBJECT-TYPE
+   SYNTAX RpduOutletPhaseLayoutType
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Phase description of the currently-queried Rack PDU switched outlet."
+   ::= { rPDUOutletSwitchedStatusEntry  6 }
+
+-- rPDU Switched Outlet Config
+
+rPDUOutletSwitchedConfigTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUOutletSwitchedConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of Rack PDU switched outlet configuration data."
+   ::= { rPDUOutletSwitched  3 }
+
+rPDUOutletSwitchedConfigEntry OBJECT-TYPE
+   SYNTAX RPDUOutletSwitchedConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Configuration data from the currently-queried Rack PDU switched
+       outlet."
+   INDEX { rPDUOutletSwitchedConfigIndex }
+   ::= { rPDUOutletSwitchedConfigTable  1 }
+
+   RPDUOutletSwitchedConfigEntry ::=
+    SEQUENCE {
+      rPDUOutletSwitchedConfigIndex          INTEGER,
+      rPDUOutletSwitchedConfigNumber         INTEGER,
+      rPDUOutletSwitchedConfigName           DisplayString,
+      rPDUOutletSwitchedConfigPowerOnTime    INTEGER,
+      rPDUOutletSwitchedConfigPowerOffTime   INTEGER,
+      rPDUOutletSwitchedConfigRebootDuration INTEGER
+   }
+
+rPDUOutletSwitchedConfigIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the Rack PDU switched outlet configuration table entry."
+   ::= { rPDUOutletSwitchedConfigEntry  1 }
+
+rPDUOutletSwitchedConfigNumber OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The numeric switched outlet ID."
+   ::= { rPDUOutletSwitchedConfigEntry  2 }
+
+rPDUOutletSwitchedConfigName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined switched outlet ID string."
+   ::= { rPDUOutletSwitchedConfigEntry  3 }
+
+rPDUOutletSwitchedConfigPowerOnTime OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The amount of time, in seconds, between when power is provided to
+       the Rack PDU and when this switched outlet starts providing power."
+   ::= { rPDUOutletSwitchedConfigEntry  4 }
+
+rPDUOutletSwitchedConfigPowerOffTime OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The amount of time, in seconds, this outlet will delay turning off."
+   ::= { rPDUOutletSwitchedConfigEntry  5 }
+
+rPDUOutletSwitchedConfigRebootDuration OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "After turning off power during a reboot sequence, the amount of
+       time, in seconds, to wait before turning on power to this outlet
+       again."
+   ::= { rPDUOutletSwitchedConfigEntry  6 }
+
+-- rPDU Switched Outlet Control
+
+rPDUOutletSwitchedControlTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUOutletSwitchedControlEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of Rack PDU switched outlet control data."
+   ::= { rPDUOutletSwitched  4 }
+
+rPDUOutletSwitchedControlEntry OBJECT-TYPE
+   SYNTAX RPDUOutletSwitchedControlEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Control data for the currently-queried Rack PDU switched outlet."
+   INDEX { rPDUOutletSwitchedControlIndex }
+   ::= { rPDUOutletSwitchedControlTable  1 }
+
+   RPDUOutletSwitchedControlEntry ::=
+    SEQUENCE {
+      rPDUOutletSwitchedControlIndex   INTEGER,
+      rPDUOutletSwitchedControlNumber  INTEGER,
+      rPDUOutletSwitchedControlName    DisplayString,
+      rPDUOutletSwitchedControlCommand INTEGER
+   }
+
+rPDUOutletSwitchedControlIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the Rack PDU switched outlet control data table entry."
+   ::= { rPDUOutletSwitchedControlEntry  1 }
+
+rPDUOutletSwitchedControlNumber OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The numeric switched outlet ID."
+   ::= { rPDUOutletSwitchedControlEntry  2 }
+
+rPDUOutletSwitchedControlName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined switched outlet ID string."
+   ::= { rPDUOutletSwitchedControlEntry  3 }
+
+rPDUOutletSwitchedControlCommand OBJECT-TYPE
+   SYNTAX INTEGER {
+      outletOn              (1),
+      outletOff             (2),
+      outletReboot          (3),
+      outletUnknown         (4),
+      outletOnWithDelay     (5),
+      outletOffWithDelay    (6),
+      outletRebootWithDelay (7)
+    }
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Getting this variable will return the outlet state. If the outlet is
+       on, the outletOn (1) value will be returned. If the outlet is off,
+       the outletOff (2) value will be returned. If the state of the outlet
+       cannot be determined, the outletUnknown (4) value will be returned.
+       If the outletUnknown condition should occur, all devices receiving
+       power from the PDU should be shut down. The PDU's power should then
+       be cycled to clear this condition. Setting this variable to
+       outletOn (1) will turn the outlet on. Setting this variable to 
+       outletOff (2) will turn the outlet off. Setting this variable to 
+       outletReboot (3) will reboot the outlet. Setting this variable to
+       outletOnWithDelay (5) will turn the outlet on after the 
+       rPDUOutletSwitchedConfigPowerOnTime OID has elapsed. Setting this
+       variable to outletOffWithDelay (6) will turn the outlet off after
+       the rPDUOutletSwitchedConfigPowerOffTime OID has elapsed. Setting
+       this variable to outletRebootWithDelay (7) will turn the outlet off
+       after the rPDUOutletSwitchedConfigPowerOffTime OID has elapsed,
+       wait the rPDUOutletSwitchedConfigRebootDuration OID time, then turn
+       the outlet back on."
+   ::= { rPDUOutletSwitchedControlEntry  4 }
+
+rPDUOutletMetered                OBJECT IDENTIFIER ::=  { rPDUOutlet 2 }
+
+-- rPDU Metered Outlet Data
+
+rPDUOutletMeteredTableSize OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The number of metered outlets on connected Rack PDUs."
+   ::= { rPDUOutletMetered  1 }
+
+-- rPDU Metered Outlet Status
+
+rPDUOutletMeteredStatusTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUOutletMeteredStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of Rack PDU metered outlet status data."
+   ::= { rPDUOutletMetered  2 }
+
+rPDUOutletMeteredStatusEntry OBJECT-TYPE
+   SYNTAX RPDUOutletMeteredStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Status data from the currently-queried Rack PDU metered outlet."
+   INDEX { rPDUOutletMeteredStatusIndex }
+   ::= { rPDUOutletMeteredStatusTable  1 }
+
+   RPDUOutletMeteredStatusEntry ::=
+    SEQUENCE {
+      rPDUOutletMeteredStatusIndex         INTEGER,
+      rPDUOutletMeteredStatusNumber        INTEGER,
+      rPDUOutletMeteredStatusName          DisplayString,
+      rPDUOutletMeteredStatusLayout        INTEGER,
+      rPDUOutletMeteredStatusPowerRating   INTEGER,
+      rPDUOutletMeteredStatusCurrent       INTEGER,
+      rPDUOutletMeteredStatusEnergy        INTEGER,
+      rPDUOutletMeteredStatusPower         INTEGER,
+      rPDUOutletMeteredStatusPeakPower     INTEGER,
+      rPDUOutletMeteredStatusPeakPowerTime INTEGER,
+      rPDUOutletMeteredStatusAlarmState    INTEGER
+   }
+
+rPDUOutletMeteredStatusIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the Rack PDU metered status table entry."
+   ::= { rPDUOutletMeteredStatusEntry  1 }
+
+rPDUOutletMeteredStatusNumber OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The numeric metered outlet ID."
+   ::= { rPDUOutletMeteredStatusEntry  2 }
+
+rPDUOutletMeteredStatusName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined metered outlet ID string."
+   ::= { rPDUOutletMeteredStatusEntry  3 }
+
+rPDUOutletMeteredStatusLayout OBJECT-TYPE
+   SYNTAX RpduOutletPhaseLayoutType
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Phase description of currently queried Rack PDU metered outlet."
+   ::= { rPDUOutletMeteredStatusEntry  4 }
+
+rPDUOutletMeteredStatusPowerRating OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The power rating for the currently queried Rack PDU metered outlet."
+   ::= { rPDUOutletMeteredStatusEntry  5 }
+
+rPDUOutletMeteredStatusCurrent OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Indicates the current draw, in Amps, of the load on the Rack PDU
+       outlet being queried."
+   ::= { rPDUOutletMeteredStatusEntry  6 }
+
+rPDUOutletMeteredStatusEnergy OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "A user resettable energy meter measuring Rack PDU load energy
+       consumption in kilowatt-hours."
+   ::= { rPDUOutletMeteredStatusEntry  7 }
+
+rPDUOutletMeteredStatusPower OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Indicates the power draw of the load on the Rack PDU outlet being
+       queried."
+   ::= { rPDUOutletMeteredStatusEntry  8 }
+
+rPDUOutletMeteredStatusPeakPower OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The highest power level recorded by the currently queried Rack PDU
+       metered outlet, in kilowatts."
+   ::= { rPDUOutletMeteredStatusEntry  9 }
+
+rPDUOutletMeteredStatusPeakPowerTime OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The time, in hh:mm:ss, when the highest power-usage level was
+       recorded at the currently queried Rack PDU metered outlet."
+   ::= { rPDUOutletMeteredStatusEntry  10 }
+
+rPDUOutletMeteredStatusAlarmState OBJECT-TYPE
+   SYNTAX RpduNormalAlarmType
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Outlet Alarm State."
+   ::= { rPDUOutletMeteredStatusEntry  11 }
+
+-- rPDU Metered Outlet Config
+
+rPDUOutletMeteredConfigTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUOutletMeteredConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of Rack PDU metered outlet configuration data."
+   ::= { rPDUOutletMetered  4 }
+
+rPDUOutletMeteredConfigEntry OBJECT-TYPE
+   SYNTAX RPDUOutletMeteredConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Configuration data from the currently queried Rack PDU metered
+       outlet."
+   INDEX { rPDUOutletMeteredConfigIndex }
+   ::= { rPDUOutletMeteredConfigTable  1 }
+
+   RPDUOutletMeteredConfigEntry ::=
+    SEQUENCE {
+      rPDUOutletMeteredConfigIndex                        INTEGER,
+      rPDUOutletMeteredConfigNumber                       INTEGER,
+      rPDUOutletMeteredConfigName                         DisplayString,
+      rPDUOutletMeteredConfigLowLoadCurrentThreshold      INTEGER,
+      rPDUOutletMeteredConfigNearOverloadCurrentThreshold INTEGER,
+      rPDUOutletMeteredConfigOverloadCurrentThreshold     INTEGER
+   }
+
+rPDUOutletMeteredConfigIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the Rack PDU metered outlet configuration table entry."
+   ::= { rPDUOutletMeteredConfigEntry  1 }
+
+rPDUOutletMeteredConfigNumber OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The numeric switched outlet ID."
+   ::= { rPDUOutletMeteredConfigEntry  2 }
+
+rPDUOutletMeteredConfigName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined metered outlet ID string."
+   ::= { rPDUOutletMeteredConfigEntry  3 }
+
+rPDUOutletMeteredConfigLowLoadCurrentThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined low load outlet current threshold, in Amps."
+   ::= { rPDUOutletMeteredConfigEntry  4 }
+
+rPDUOutletMeteredConfigNearOverloadCurrentThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined near outlet overload warning threshold, in Amps."
+   ::= { rPDUOutletMeteredConfigEntry  5 }
+
+rPDUOutletMeteredConfigOverloadCurrentThreshold OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined outlet overload current threshold, in Amps."
+   ::= { rPDUOutletMeteredConfigEntry  6 }
+
+rPDUOutletMeteredEnergyStartTime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The time, in hh:mm:ss, when the currently queried Rack PDU metered
+       outlet started recording the input energy level."
+   ::= { rPDUOutletMetered 5 }
+
+rPDUOutletMeteredPeakPowerStartTime OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The time, in hh:mm:ss, when the currently queried Rack PDU metered
+       outlet started recording the highest level of input power that is
+       available to the connected device."
+   ::= { rPDUOutletMetered 6 }
+
+rPDUPowerSupply                  OBJECT IDENTIFIER ::=  { rPDU 140 }
+
+-- the rPDU Power Supply group
+
+rPDUPowerSupplyAlarm OBJECT-TYPE
+   SYNTAX INTEGER {
+      allAvailablePowerSuppliesOK (1),
+      powerSupplyFailed           (2)
+    }
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Getting this OID will return the status of the power supply alarm."
+   ::= { rPDUPowerSupply  1 }
+
+rPDUPowerSupplyVoltage OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The voltage provided by the power supply."
+   ::= { rPDUPowerSupply  2 }
+
+rPDUSensor                       OBJECT IDENTIFIER ::=  { rPDU 150 }
+
+-- rPDU Sensor Data
+
+rPDUSensorStatus                 OBJECT IDENTIFIER ::=  { rPDUSensor 1 }
+
+-- rPDU Sensor Status Data
+
+rPDUSensorStatusTableSize OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The number of connected temperature sensors."
+   ::= { rPDUSensorStatus  1 }
+
+-- rPDU Temperature Sensor Status
+
+rPDUSensorStatusTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUSensorStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of temperature sensor status data."
+   ::= { rPDUSensorStatus  2 }
+
+rPDUSensorStatusEntry OBJECT-TYPE
+   SYNTAX RPDUSensorStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Status information from the temperature sensor being queried."
+   INDEX { rPDUSensorStatusIndex }
+   ::= { rPDUSensorStatusTable  1 }
+
+   RPDUSensorStatusEntry ::=
+    SEQUENCE {
+      rPDUSensorStatusIndex      INTEGER,
+      rPDUSensorStatusName       DisplayString,
+      rPDUSensorStatusType       INTEGER
+   }
+
+rPDUSensorStatusIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the status data table entry."
+   ::= { rPDUSensorStatusEntry  1 }
+
+rPDUSensorStatusName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined sensor ID string."
+   ::= { rPDUSensorStatusEntry  2 }
+
+rPDUSensorStatusType OBJECT-TYPE
+   SYNTAX INTEGER {
+      none                (1),
+      temperature         (2),
+      temperatureHumidity (3)
+    }
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The type of the sensor."
+   ::= { rPDUSensorStatusEntry  3 }
+
+rPDUSensorTemp                   OBJECT IDENTIFIER ::=  { rPDUSensor 2 }
+
+-- rPDU Temperature Sensor Data
+
+rPDUSensorTempTableSize OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The number of connected temperature sensors."
+   ::= { rPDUSensorTemp  1 }
+
+-- rPDU Temperature Sensor Status
+
+rPDUSensorTempStatusTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUSensorTempStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of temperature sensor status data."
+   ::= { rPDUSensorTemp  2 }
+
+rPDUSensorTempStatusEntry OBJECT-TYPE
+   SYNTAX RPDUSensorTempStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Status information from the temperature sensor being queried."
+   INDEX { rPDUSensorTempStatusIndex }
+   ::= { rPDUSensorTempStatusTable  1 }
+
+   RPDUSensorTempStatusEntry ::=
+    SEQUENCE {
+      rPDUSensorTempStatusIndex      INTEGER,
+      rPDUSensorTempStatusName       DisplayString,
+      rPDUSensorTempStatusCommStatus INTEGER,
+      rPDUSensorTempStatusTempF      INTEGER,
+      rPDUSensorTempStatusTempC      INTEGER
+   }
+
+rPDUSensorTempStatusIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the temperature status data table entry."
+   ::= { rPDUSensorTempStatusEntry  1 }
+
+rPDUSensorTempStatusName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined temperature-humidity sensor ID string."
+   ::= { rPDUSensorTempStatusEntry  2 }
+
+rPDUSensorTempStatusCommStatus OBJECT-TYPE
+   SYNTAX RpduCommNoneOKLostType
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The communications status of the sensor."
+   ::= { rPDUSensorTempStatusEntry  3 }
+
+rPDUSensorTempStatusTempF OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The sensor temperature reading in tenths of degrees Fahrenheit."
+   ::= { rPDUSensorTempStatusEntry  4 }
+
+rPDUSensorTempStatusTempC OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The sensor temperature reading in tenths of degrees Celsius."
+   ::= { rPDUSensorTempStatusEntry  5 }
+
+-- rPDU Temperature Sensor Config
+
+rPDUSensorTempConfigTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUSensorTempConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of temperature-humidity sensor configuration data."
+   ::= { rPDUSensorTemp  3 }
+
+rPDUSensorTempConfigEntry OBJECT-TYPE
+   SYNTAX RPDUSensorTempConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Configuration data from the temperature-humidity sensor being
+       queried."
+   INDEX { rPDUSensorTempConfigIndex }
+   ::= { rPDUSensorTempConfigTable  1 }
+
+   RPDUSensorTempConfigEntry ::=
+    SEQUENCE {
+      rPDUSensorTempConfigIndex           INTEGER,
+      rPDUSensorTempConfigName            DisplayString,
+      rPDUSensorTempConfigTempMaxThreshF  INTEGER,
+      rPDUSensorTempConfigTempHighThreshF INTEGER,
+      rPDUSensorTempConfigTempHysteresisF INTEGER,
+      rPDUSensorTempConfigTempMaxThreshC  INTEGER,
+      rPDUSensorTempConfigTempHighThreshC INTEGER,
+      rPDUSensorTempConfigTempHysteresisC INTEGER,
+      rPDUSensorTempConfigAlarmGeneration INTEGER
+   }
+
+rPDUSensorTempConfigIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the temperature-humidity sensor configuration data
+       table entry."
+   ::= { rPDUSensorTempConfigEntry  1 }
+
+rPDUSensorTempConfigName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined temperature-humidity sensor ID string."
+   ::= { rPDUSensorTempConfigEntry  2 }
+
+rPDUSensorTempConfigTempMaxThreshF OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The sensor maximum temperature alarm threshold in Fahrenheit."
+   ::= { rPDUSensorTempConfigEntry  3 }
+
+rPDUSensorTempConfigTempHighThreshF OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The sensor high temperature warning alarm threshold in Fahrenheit."
+   ::= { rPDUSensorTempConfigEntry  4 }
+
+rPDUSensorTempConfigTempHysteresisF OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The sensor temperature hysteresis setting in Fahrenheit."
+   ::= { rPDUSensorTempConfigEntry  5 }
+
+rPDUSensorTempConfigTempMaxThreshC OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The sensor maximum temperature alarm threshold in Celsius."
+   ::= { rPDUSensorTempConfigEntry  6 }
+
+rPDUSensorTempConfigTempHighThreshC OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The sensor high temperature warning alarm threshold in Celsius."
+   ::= { rPDUSensorTempConfigEntry  7 }
+
+rPDUSensorTempConfigTempHysteresisC OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The sensor temperature hysteresis setting in Celsius."
+   ::= { rPDUSensorTempConfigEntry  8 }
+
+rPDUSensorTempConfigAlarmGeneration OBJECT-TYPE
+   SYNTAX RpduEnableDisableType
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Indicates whether the Temp Alarm Generation is enabled."
+   ::= { rPDUSensorTempConfigEntry  9 }
+
+rPDUSensorHumidity               OBJECT IDENTIFIER ::=  { rPDUSensor 3 }
+
+-- rPDU Humidity Sensor 
+
+rPDUSensorHumidityTableSize OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The number of connected temperature-humidity sensors."
+   ::= { rPDUSensorHumidity  1 }
+
+-- rPDU Humidity Sensor Status
+
+rPDUSensorHumidityStatusTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUSensorHumidityStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of temperature-humidity sensor status data."
+   ::= { rPDUSensorHumidity  2 }
+
+rPDUSensorHumidityStatusEntry OBJECT-TYPE
+   SYNTAX RPDUSensorHumidityStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Status information from the temperature-humidity sensor being
+       queried."
+   INDEX { rPDUSensorHumidityStatusIndex }
+   ::= { rPDUSensorHumidityStatusTable  1 }
+
+   RPDUSensorHumidityStatusEntry ::=
+    SEQUENCE {
+      rPDUSensorHumidityStatusIndex            INTEGER,
+      rPDUSensorHumidityStatusName             DisplayString,
+      rPDUSensorHumidityStatusCommStatus       INTEGER,
+      rPDUSensorHumidityStatusRelativeHumidity INTEGER
+   }
+
+rPDUSensorHumidityStatusIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the temperature-humidity status data table entry."
+   ::= { rPDUSensorHumidityStatusEntry  1 }
+
+rPDUSensorHumidityStatusName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined temperature-humidity sensor ID string."
+   ::= { rPDUSensorHumidityStatusEntry  2 }
+
+rPDUSensorHumidityStatusCommStatus OBJECT-TYPE
+   SYNTAX RpduCommNoneOKLostType
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The communications status of the sensor."
+   ::= { rPDUSensorHumidityStatusEntry  3 }
+
+rPDUSensorHumidityStatusRelativeHumidity OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The sensor humidity reading in tenths of percent relative humidity."
+   ::= { rPDUSensorHumidityStatusEntry  4 }
+
+-- rPDU Humidity Sensor Config
+
+rPDUSensorHumidityConfigTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUSensorHumidityConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of temperature-humidity sensor configuration data."
+   ::= { rPDUSensorHumidity  3 }
+
+rPDUSensorHumidityConfigEntry OBJECT-TYPE
+   SYNTAX RPDUSensorHumidityConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Configuration data from the temperature-humidity sensor being
+       queried."
+   INDEX { rPDUSensorHumidityConfigIndex }
+   ::= { rPDUSensorHumidityConfigTable  1 }
+
+   RPDUSensorHumidityConfigEntry ::=
+    SEQUENCE {
+      rPDUSensorHumidityConfigIndex              INTEGER,
+      rPDUSensorHumidityConfigName               DisplayString,
+      rPDUSensorHumidityConfigHumidityLowThresh  INTEGER,
+      rPDUSensorHumidityConfigHumidityMinThresh  INTEGER,
+      rPDUSensorHumidityConfigHumidityHysteresis INTEGER,
+      rPDUSensorHumidityConfigAlarmGeneration    INTEGER
+   }
+
+rPDUSensorHumidityConfigIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the temperature-humidity sensor configuration data
+       table entry."
+   ::= { rPDUSensorHumidityConfigEntry  1 }
+
+rPDUSensorHumidityConfigName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined temperature-humidity sensor ID string."
+   ::= { rPDUSensorHumidityConfigEntry  2 }
+
+rPDUSensorHumidityConfigHumidityLowThresh OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The sensor low humidity warning alarm threshold in percent relative
+       humidity."
+   ::= { rPDUSensorHumidityConfigEntry  3 }
+
+rPDUSensorHumidityConfigHumidityMinThresh OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The sensor minimum humidity alarm threshold in percent relative
+       humidity."
+   ::= { rPDUSensorHumidityConfigEntry  4 }
+
+rPDUSensorHumidityConfigHumidityHysteresis OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The sensor humidity hysteresis setting in percent relative humidity."
+   ::= { rPDUSensorHumidityConfigEntry  5 }
+
+rPDUSensorHumidityConfigAlarmGeneration OBJECT-TYPE
+   SYNTAX RpduEnableDisableType
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Indicates whether the Humidity Alarm Generation is enabled."
+   ::= { rPDUSensorHumidityConfigEntry  6 }
+
+rPDUSensorDiscrete               OBJECT IDENTIFIER ::=  { rPDUSensor 4 }
+
+-- rPDU Discrete Sensor Data
+
+rPDUSensorDiscreteTableSize OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The number of connected discrete sensors."
+   ::= { rPDUSensorDiscrete  1 }
+
+-- rPDU Discrete Sensor Status
+
+rPDUSensorDiscreteStatusTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUSensorDiscreteStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of discrete sensor status data."
+   ::= { rPDUSensorDiscrete  2 }
+
+rPDUSensorDiscreteStatusEntry OBJECT-TYPE
+   SYNTAX RPDUSensorDiscreteStatusEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Status information from the discrete sensor being queried."
+   INDEX { rPDUSensorDiscreteStatusIndex }
+   ::= { rPDUSensorDiscreteStatusTable  1 }
+
+   RPDUSensorDiscreteStatusEntry ::=
+    SEQUENCE {
+      rPDUSensorDiscreteStatusIndex        INTEGER,
+      rPDUSensorDiscreteStatusName         DisplayString,
+      rPDUSensorDiscreteStatusCurrentState INTEGER,
+      rPDUSensorDiscreteStatusAlarmState   INTEGER
+   }
+
+rPDUSensorDiscreteStatusIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the discrete sensor status data table entry."
+   ::= { rPDUSensorDiscreteStatusEntry  1 }
+
+rPDUSensorDiscreteStatusName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined discrete sensor ID string."
+   ::= { rPDUSensorDiscreteStatusEntry  2 }
+
+rPDUSensorDiscreteStatusCurrentState OBJECT-TYPE
+   SYNTAX INTEGER {
+      open     (1),
+      closed   (2),
+      unknown  (3)
+    }
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The current state of the discrete sensor, open, closed, or unknown."
+   ::= { rPDUSensorDiscreteStatusEntry  3 }
+
+rPDUSensorDiscreteStatusAlarmState OBJECT-TYPE
+   SYNTAX RpduNormalAlarmType
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Indicates the alarm status of the discrete sensor input."
+   ::= { rPDUSensorDiscreteStatusEntry  4 }
+
+-- rPDU Discrete Sensor Config
+
+rPDUSensorDiscreteConfigTable OBJECT-TYPE
+   SYNTAX SEQUENCE OF RPDUSensorDiscreteConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "A table of discrete sensor configuration data."
+   ::= { rPDUSensorDiscrete  3 }
+
+rPDUSensorDiscreteConfigEntry OBJECT-TYPE
+   SYNTAX RPDUSensorDiscreteConfigEntry
+   ACCESS not-accessible
+   STATUS mandatory
+    DESCRIPTION
+      "Configuration data from the discrete sensor being queried."
+   INDEX { rPDUSensorDiscreteConfigIndex }
+   ::= { rPDUSensorDiscreteConfigTable  1 }
+
+   RPDUSensorDiscreteConfigEntry ::=
+    SEQUENCE {
+      rPDUSensorDiscreteConfigIndex       INTEGER,
+      rPDUSensorDiscreteConfigName        DisplayString,
+      rPDUSensorDiscreteConfigNormalState INTEGER,
+      rPDUSensorDiscreteAlarmGeneration   INTEGER
+   }
+
+rPDUSensorDiscreteConfigIndex OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The index to the discrete sensor configuration data table entry."
+   ::= { rPDUSensorDiscreteConfigEntry  1 }
+
+rPDUSensorDiscreteConfigName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "The user-defined discrete sensor ID string."
+   ::= { rPDUSensorDiscreteConfigEntry  2 }
+
+rPDUSensorDiscreteConfigNormalState OBJECT-TYPE
+   SYNTAX INTEGER {
+      open   (1),
+      closed (2)
+    }
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Indicates the normal state of the discrete input contact."
+   ::= { rPDUSensorDiscreteConfigEntry  3 }
+
+rPDUSensorDiscreteAlarmGeneration OBJECT-TYPE
+   SYNTAX RpduEnableDisableType
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "Indicates whether Discrete Alarm Generation is enabled."
+   ::= { rPDUSensorDiscreteConfigEntry  4 }
+
+mtrapargs                        OBJECT IDENTIFIER ::=  { rPDU 160 }
+
+-- The mtrapargs group
+-- These OIDs allows traps to be sent with additional arguments
+-- which may not be defined in the MIB.
+
+contactNumber  OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "This OID allows traps to be sent with an integer argument that
+       may not be defined in the MIB. A get of this OID will return 0."
+   ::= { mtrapargs  1 }
+
+outletNumber  OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "This OID allows traps to be sent with an integer argument that
+       may not be defined in the MIB. A get of this OID will return 0."
+   ::= { mtrapargs  2 }
+
+mtrapargsString OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "This OID allows traps to be sent with an octet string argument
+       that may not be defined in the MIB. A get of this OID will return
+       a NULL string."
+   ::= { mtrapargs  3 }
+
+phaseNumber  OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "This OID allows traps to be sent with an integer argument that
+       may not be defined in the MIB. A get of this OID will return 0."
+   ::= { mtrapargs  4 }
+
+sensorNumber  OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "This OID allows traps to be sent with an integer argument that
+       may not be defined in the MIB. A get of this OID will return 0."
+   ::= { mtrapargs  5 }
+
+deviceName OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "This OID allows traps to be sent with an octet string argument
+       that may not be defined in the MIB. A get of this OID will return
+       a NULL string."
+   ::= { mtrapargs  6 }
+
+serialNumber OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+    DESCRIPTION
+      "This OID allows traps to be sent with an octet string argument that
+       may not be defined in the MIB. A get of this OID will return a NULL
+       string."
+   ::= { mtrapargs  7 }
+
+
+events                           OBJECT IDENTIFIER ::=  { rPDU 500 }
+
+-- Traps
+-- Annotations are provided for Novell's NMS product
+--
+-- Each trap has at least one variable (mtrapargsString) which always
+-- appears as the last variable in the list. This variable contains either
+-- a static or dynamically-constructed string which provides an enhanced
+-- description of the trap's purpose and any pertinent information about
+-- the trap.
+
+communicationLostCleared TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: Lost communication with an on board component
+        has been re-established.
+        The first argument is the serial  number.
+        The second argument is the device name."
+   --#SUMMARY "%s communication with component was re-established."
+   --#ARGUMENTS {1}
+   --#SEVERITY INFORMATIONAL
+   ::= 1
+
+communicationLostSet TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, mtrapargsString }
+   DESCRIPTION
+       "SEVERE: Lost communication with an on board component.
+        The first argument is the serial  number.
+        The second argument is the device name."
+   --#SUMMARY "%s lost communication with an on board component."
+   --#ARGUMENTS {1}
+   --#SEVERITY   SEVERE
+   ::= 2
+
+deviceOverLoadCleared TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: Device load no longer exceeds the 'Over Load'
+        threshold value.  The first argument is the serial number.
+        The second argument is the device name."
+   --#SUMMARY "%s device not over the 'Over Load' threshold."
+   --#ARGUMENTS {1}
+   --#SEVERITY   INFORMATIONAL
+   ::= 3
+
+deviceOverLoadSet TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, mtrapargsString }
+   DESCRIPTION
+       "SEVERE: Device load has exceeded the 'Over Load' threshold value.
+        The first argument is the serial  number.
+        The second argument is the device name."
+   --#SUMMARY "%s device load is over the 'Over Load' threshold."
+   --#ARGUMENTS {1}
+   --#SEVERITY   SEVERE
+   ::= 4
+
+deviceNearOverLoadCleared TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: Device load no longer exceeds the 'Near Over Load'
+        threshold value.  The first argument is the serial number.
+        The second argument is the device name."
+   --#SUMMARY "%s device not over 'Near Over Load' threshold."
+   --#ARGUMENTS {1}
+   --#SEVERITY   INFORMATIONAL
+   ::= 5
+
+deviceNearOverLoadSet TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, mtrapargsString }
+   DESCRIPTION
+       "WARNING: Device load has exceeded the 'Near Over Load' threshold
+        value.  The first argument is the serial number.
+        The second argument is the device name."
+   --#SUMMARY "%s device is over the 'Near Over Load' threshold."
+   --#ARGUMENTS {1}
+   --#SEVERITY   WARNING
+   ::= 6
+
+deviceLowLoadCleared TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: Device load is no longer below the 'Low Load'
+        threshold value.  The first argument is the serial number.
+        The second argument is the device name."
+   --#SUMMARY "%s device is no longer below the 'Low Load' threshold."
+   --#ARGUMENTS {1}
+   --#SEVERITY   INFORMATIONAL
+   ::= 7
+
+deviceLowLoadSet TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, mtrapargsString }
+   DESCRIPTION
+       "WARNING: Device load has fallen below the 'Low Load' threshold
+        value.  The first argument is the serial number.
+        The second argument is the device name."
+   --#SUMMARY "%s device has fallen below the 'Low Load' threshold."
+   --#ARGUMENTS {1}
+   --#SEVERITY   WARNING
+   ::= 8
+
+phaseOverLoadCleared TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, phaseNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: Phase load no longer exceeds the 'Over Load'
+        threshold value.  The first argument is the serial number.
+        The second argument is the device name.
+        The third argument is the phase number."
+   --#SUMMARY "%s phase #%s load not over the 'Over Load' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 9
+
+phaseOverLoadSet TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, phaseNumber, mtrapargsString }
+   DESCRIPTION
+       "SEVERE: Phase load has exceeded the 'Over Load' threshold value.
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the phase number."
+   --#SUMMARY "%s phase #%s load is over the 'Over Load' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   SEVERE
+   ::= 10
+
+phaseNearOverLoadCleared TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, phaseNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: Phase load no longer exceeds the 'Near Over Load'
+        threshold value.  The first argument is the serial number.
+        The second argument is the device name.
+        The third argument is the phase number."
+   --#SUMMARY "%s phase #%s load not over 'Near Over Load' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 11
+
+phaseNearOverLoadSet TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, phaseNumber, mtrapargsString }
+   DESCRIPTION
+       "WARNING: Phase load has exceeded the 'Near Over Load' threshold
+        value.  The first argument is the serial number.
+        The second argument is the device name.
+        The third argument is the phase number."
+   --#SUMMARY "%s phase #%s load is over the 'Near Over Load' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   WARNING
+   ::= 12
+
+phaseLowLoadCleared TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, phaseNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: Phase load is no longer below the 'Low Load'
+        threshold value.  The first argument is the serial number.
+        The second argument is the device name.
+        The third argument is the phase number."
+   --#SUMMARY "%s phase #%s load is no longer below the 'Low Load' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 13
+
+phaseLowLoadSet TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, phaseNumber, mtrapargsString }
+   DESCRIPTION
+       "WARNING: Phase load has fallen below the 'Low Load' threshold value.
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the phase number."
+   --#SUMMARY "%s phase #%s load has fallen below the 'Low Load' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   WARNING
+   ::= 14
+
+outletOverLoadCleared TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, outletNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: Outlet load no longer exceeds the 'Over Load'
+        threshold value.  The first argument is the serial number.
+        The second argument is the device name.
+        The third argument is the outlet number."
+   --#SUMMARY "%s outlet #%s load not over the 'Over Load' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 15
+
+outletOverLoadSet TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, outletNumber, mtrapargsString }
+   DESCRIPTION
+       "SEVERE: Outlet load has exceeded the 'Over Load' threshold value.
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the outlet number."
+   --#SUMMARY "%s outlet #%s load is over the 'Over Load' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   SEVERE
+   ::= 16
+
+outletNearOverLoadCleared TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, outletNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: Outlet load no longer exceeds the 'Near Over Load'
+        threshold value.  The first argument is the serial number.
+        The second argument is the device name.
+        The third argument is the outlet number."
+   --#SUMMARY "%s outlet #%s load not over 'Near Over Load' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 17
+
+outletNearOverLoadSet TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, outletNumber, mtrapargsString }
+   DESCRIPTION
+       "WARNING: Outlet load has exceeded the 'Near Over Load'
+        threshold value.  The first argument is the serial number.
+        The second argument is the device name.
+        The third argument is the outlet number."
+   --#SUMMARY "%s outlet #%s load is over 'Near Over Load' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   WARNING
+   ::= 18
+
+outletLowLoadCleared TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, outletNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: Outlet load is no longer below the 'Low Load'
+        threshold value.  The first argument is the serial number.
+        The second argument is the device name.
+        The third argument is the outlet number."
+   --#SUMMARY "%s outlet #%s load is not below the 'Low Load' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 19
+
+outletLowLoadSet TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, outletNumber, mtrapargsString }
+   DESCRIPTION
+       "WARNING: Outlet load has fallen below the 'Low Load' threshold
+        value.  The first argument is the serial number.
+        The second argument is the device name.
+        The third argument is the outlet number."
+   --#SUMMARY "%s outlet #%s load has fallen below the 'Low Load' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   WARNING
+   ::= 20
+
+maxTemperatureExceededCleared TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, sensorNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: Sensor Temperature no longer exceeds the
+        'Max Temperature' threshold value.  The first argument is the
+        serial number.  The second argument is the device name.
+        The third argument is the sensor number."
+   --#SUMMARY "%s sensor #%s temp not over 'Max Temperature' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 21
+
+maxTemperatureExceededSet TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, sensorNumber, mtrapargsString }
+   DESCRIPTION
+       "SEVERE: Sensor Temperature has exceeded the 'Max Temperature'
+        threshold value.  The first argument is the serial number.
+        The second argument is the device name.
+        The third argument is the sensor number."
+   --#SUMMARY "%s sensor #%s temp is over 'Max Temperature' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   SEVERE
+   ::= 22
+
+highTemperatureExceededCleared TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, sensorNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: Sensor Temperature no longer exceeds the 'High
+        Temperature' threshold value.  
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the sensor number."
+   --#SUMMARY "%s sensor #%s temp below 'High Temperature' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 23
+
+highTemperatureExceededSet TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, sensorNumber, mtrapargsString }
+   DESCRIPTION
+       "WARNING: Sensor Temperature has exceeded the 'High Temperature'
+        threshold value.  The first argument is the serial number.
+        The second argument is the device name.
+        The third argument is the sensor number."
+   --#SUMMARY "%s sensor #%s temp over 'High Temperature' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   WARNING
+   ::= 24
+
+lowHumidityExceededCleared TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, sensorNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: Sensor Humidity is no longer below the 'Low
+        Humidity' threshold value.  The first argument is the serial
+        number. The second argument is the device name.
+        The third argument is the sensor number."
+   --#SUMMARY "%s sensor #%s humidity is above 'Low Humidity' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 25
+
+lowHumidityExceededSet TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, sensorNumber, mtrapargsString }
+   DESCRIPTION
+       "WARNING: Sensor Humidity has fallen below the 'Low Humidity'
+        threshold value.  The first argument is the serial number.
+        The second argument is the device name.
+        The third argument is the sensor number."
+   --#SUMMARY "%s sensor #%s humidity is below 'Low Humidity' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   WARNING
+   ::= 26
+
+minHumidityExceededCleared TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, sensorNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: Sensor Humidity is no longer below the 'Min
+        Humidity' threshold value.  The first argument is the serial
+        number. The second argument is the device name.
+        The third argument is the sensor number."
+   --#SUMMARY "%s sensor #%s humidity is above 'Min Humidity' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 27
+
+minHumidityExceededSet TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, sensorNumber, mtrapargsString }
+   DESCRIPTION
+       "SEVERE: Sensor Humidity has fallen below the 'Min Humidity'
+        threshold value.  The first argument is the serial number.
+        The second argument is the device name.
+        The third argument is the sensor number."
+   --#SUMMARY "%s sensor #%s humidity is below 'Min Humidity' threshold."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   SEVERE
+   ::= 28
+
+dryContactAbnormalCleared TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, contactNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: Dry Contact is no longer in an abnormal state.
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the contact number."
+   --#SUMMARY "%s dry contact #%s is no longer in an abnormal state."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 29
+
+dryContactAbnormalSet TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, contactNumber, mtrapargsString }
+   DESCRIPTION
+       "SEVERE: Dry Contact has moved to an abnormal state.
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the contact number."
+   --#SUMMARY "%s dry contact #%s has moved to an abnormal state."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   SEVERE
+   ::= 30
+
+powerSupplyFailureCleared TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: Unit's power supply voltage is no longer out of
+        tolerance. The first argument is the serial number.
+        The second argument is the device name."
+   --#SUMMARY "%s unit's power supply voltage is no longer out of tolerance."
+   --#ARGUMENTS {1}
+   --#SEVERITY   INFORMATIONAL
+   ::= 31
+
+powerSupplyFailureSet TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, mtrapargsString }
+   DESCRIPTION
+       "SEVERE: Unit's power supply voltage is out of tolerance.
+        The first argument is the serial  number.
+        The second argument is the device name."
+   --#SUMMARY "%s unit's power supply voltage is out of tolerance."
+   --#ARGUMENTS {1}
+   --#SEVERITY   SEVERE
+   ::= 32
+
+actionCancelled TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, outletNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: An outlet action has been cancelled.
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the outlet number."
+   --#SUMMARY "%s outlet #%s action has been cancelled."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 33
+
+actionInit TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, outletNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: An outlet action has been initialized.
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the outlet number."
+   --#SUMMARY "%s outlet #%s action has been initialized."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 34
+
+actionFailed TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, outletNumber, mtrapargsString }
+   DESCRIPTION
+       "WARNING: An outlet action has failed to complete.
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the outlet number."
+   --#SUMMARY "%s outlet #%s action has failed to complete."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   WARNING
+   ::= 35
+
+actionDeleted TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, outletNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: An outlet action has been deleted.
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the outlet number."
+   --#SUMMARY "%s outlet #%s action has been deleted."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 36
+
+syncCommandFailed TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, outletNumber, mtrapargsString }
+   DESCRIPTION
+       "WARNING: An outlet sync command to another unit has failed.
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the outlet number."
+   --#SUMMARY "%s outlet #%s sync command to another unit has failed."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   WARNING
+   ::= 37
+
+outletTurnOn TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, outletNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: An outlet has turned on.
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the outlet number."
+   --#SUMMARY "%s outlet #%s has turned on."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 38
+
+outletTurnOff TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, outletNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: An outlet has turned off.
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the outlet number."
+   --#SUMMARY "%s outlet #%s has turned off."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 39
+
+deviceconfigurationChange TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: A device configuration has been changed.
+        The first argument is the serial  number.
+        The second argument is the device name."
+   --#SUMMARY "%s device configuration has been changed."
+   --#ARGUMENTS {1}
+   --#SEVERITY   INFORMATIONAL
+   ::= 40
+
+phaseconfigurationChange TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, phaseNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: A phase configuration has been changed.
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the phase number."
+   --#SUMMARY "%s phase #%s configuration has been changed."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 41
+
+outletConfigurationChange TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, outletNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: An outlet configuration has been changed.
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the outlet number."
+   --#SUMMARY "%s outlet #%s configuration has been changed."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 42
+
+sensorConfigurationChange TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, sensorNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: A sensor configuration has been changed.
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the sensor number."
+   --#SUMMARY "%s sensor #%s configuration has been changed."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 43
+
+dryContactConfigurationChange TRAP-TYPE
+   ENTERPRISE events
+   VARIABLES { serialNumber, deviceName, contactNumber, mtrapargsString }
+   DESCRIPTION
+       "INFORMATIONAL: A dry contact configuration has been changed.
+        The first argument is the serial  number.
+        The second argument is the device name.
+        The third argument is the contact number."
+   --#SUMMARY "%s dry contact #%s configuration has been changed."
+   --#ARGUMENTS {1,2}
+   --#SEVERITY   INFORMATIONAL
+   ::= 44
+
+END
+

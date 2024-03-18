@@ -1,0 +1,380 @@
+-- BAY TECHNICAL ASSOCIATES (BAYTECH) MIB
+
+-- Copyright (c) Bay Technical Associates 2003.
+-- $Id: res2.mib,v 1.8 2004/03/01 11:46:19 devel Exp $
+
+-- Title: BAYTECH MIB for RES2 devices
+
+-- *************************************************************************
+-- ************************************************************************
+-- Baytech-MIB { iso org(3) dod(6) internet(1) private(4)
+--    enterprises(1) baytech(4779) }
+--
+
+Baytech-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   enterprises, IpAddress, Gauge, TimeTicks     FROM RFC1155-SMI
+   DisplayString                                FROM RFC1213-MIB
+   OBJECT-TYPE                                  FROM RFC-1212
+   TRAP-TYPE                                    FROM RFC-1215;
+
+
+	baytech		OBJECT IDENTIFIER ::= { enterprises 4779 }
+	resseries	OBJECT IDENTIFIER ::= { baytech 4 }
+	res2		OBJECT IDENTIFIER ::= { resseries 1 }
+	res2p2		OBJECT IDENTIFIER ::= { resseries 2 }
+	rs2		OBJECT IDENTIFIER ::= { resseries 3 }
+	rs4		OBJECT IDENTIFIER ::= { resseries 4 }
+	res2system	OBJECT IDENTIFIER ::= { res2 1 }
+	res2sensor	OBJECT IDENTIFIER ::= { res2 2 }
+
+
+	-- the res2 system information
+
+	-- the res2 sensor information
+
+	res2SensorNumber OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The number of online, connected sensors."
+		::= { res2sensor 1 }
+
+	res2SensorTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF RES2SensorEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"Table of sensors."
+		::= { res2sensor 2 }
+
+	res2SensorEntry OBJECT-TYPE
+		SYNTAX RES2SensorEntry
+		ACCESS not-accessible
+		STATUS mandatory
+		DESCRIPTION
+			"A sensor table entry."
+		INDEX { res2SensorIndex }
+		::= { res2SensorTable 1 }
+
+	RES2SensorEntry ::=
+		SEQUENCE {
+			res2SensorIndex			INTEGER,
+			res2SensorName			DisplayString,
+			res2SensorType			DisplayString,
+			res2SensorCurrentValue		INTEGER,
+			res2SensorOnlineStatus		INTEGER,
+			res2SensorState			INTEGER,
+			res2SensorHighCritical		INTEGER,
+			res2SensorHighWarning		INTEGER,
+			res2SensorLowWarning		INTEGER,
+			res2SensorLowCritical		INTEGER,
+			res2SensorGoOnline		INTEGER,
+			res2SensorRearm			INTEGER,
+			res2SensorTempScaleType		INTEGER,
+			res2SensorDCDirection		INTEGER,
+			res2SensorDCNormalState		INTEGER,
+			res2SensorDCOutputLevel		INTEGER,
+			res2SensorCalibration		INTEGER
+		}
+
+	res2SensorIndex OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The sensor port number."
+		::= { res2SensorEntry 1 }
+
+	res2SensorName OBJECT-TYPE
+		SYNTAX DisplayString (SIZE (0..12))
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The sensor name."
+		::= { res2SensorEntry 2 }
+
+	res2SensorType OBJECT-TYPE
+		SYNTAX DisplayString (SIZE (0..255))
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The sensor type."
+		::= { res2SensorEntry 3 }
+
+	res2SensorCurrentValue OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The sensor's current value."
+		::= { res2SensorEntry 4 }
+
+	res2SensorOnlineStatus OBJECT-TYPE
+		SYNTAX INTEGER {
+			online(1),
+			offline(2)
+		}
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"Status (online/offline) of the sensor."
+		::= { res2SensorEntry 5 }
+
+	res2SensorState OBJECT-TYPE
+		SYNTAX INTEGER {
+			highCritical(1),
+			highWarning(2),
+			lowWarning(3),
+			lowCritical(4),
+			normal(5),
+			notPresent(6)
+			}
+		ACCESS read-only
+		STATUS mandatory
+		DESCRIPTION
+			"The sensor state relative to the thresholds." 
+		::= { res2SensorEntry 6 }
+
+	res2SensorHighCritical OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The high critical threshold."
+		::= { res2SensorEntry 7 }
+
+	res2SensorHighWarning OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The high warning threshold."
+		::= { res2SensorEntry 8 }
+
+	res2SensorLowWarning OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The low warning threshold."
+		::= { res2SensorEntry 9 }
+
+	res2SensorLowCritical OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The low critical threshold."
+		::= { res2SensorEntry 10 }
+
+	res2SensorGoOnline OBJECT-TYPE
+		SYNTAX INTEGER {
+			online(1),
+			offline(2)
+		}
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"Set the sensor online or offline."
+		::= { res2SensorEntry 11 }
+
+	res2SensorRearm OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The rearm value."
+		::= { res2SensorEntry 12 }
+
+	res2SensorTempScaleType OBJECT-TYPE
+		SYNTAX INTEGER {
+			none(1),
+			fahrenheit(2),
+			celsius(3)
+			}
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The temperature scale type." 
+		::= { res2SensorEntry 13 }
+
+	res2SensorDCDirection OBJECT-TYPE
+		SYNTAX INTEGER {
+			none(1),
+			input(2),
+			output(3)
+			}
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The dry contact type." 
+		::= { res2SensorEntry 14 }
+
+	res2SensorDCNormalState OBJECT-TYPE
+		SYNTAX INTEGER {
+			closed(0),
+			open(1),
+			none(2)
+			}
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The dry contact normal state." 
+		::= { res2SensorEntry 15 }
+
+	res2SensorDCOutputLevel OBJECT-TYPE
+		SYNTAX INTEGER {
+			none(1),
+			low(2),
+			high(3)
+			}
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The dry contact output level." 
+		::= { res2SensorEntry 16 }
+
+	res2SensorCalibration OBJECT-TYPE
+		SYNTAX INTEGER
+		ACCESS read-write
+		STATUS mandatory
+		DESCRIPTION
+			"The offset value to add to the temperature or humidity reading."
+		::= { res2SensorEntry 17 }
+
+	-- traps
+
+	res2Sensor1HighCritical TRAP-TYPE
+		ENTERPRISE res2
+		VARIABLES {
+			sysDescr,
+			res2SensorName,
+			res2SensorType,
+			res2SensorCurrentValue,
+			res2SensorState
+			}
+		DESCRIPTION
+			"Sensor 1 is in the high critical state." 
+		::= 101
+
+	res2Sensor1HighWarning TRAP-TYPE
+		ENTERPRISE res2
+		VARIABLES {
+			sysDescr,
+			res2SensorName,
+			res2SensorType,
+			res2SensorCurrentValue,
+			res2SensorState
+			}
+		DESCRIPTION
+			"Sensor 1 is in the high warning state." 
+		::= 102
+
+	res2Sensor1LowWarning TRAP-TYPE
+		ENTERPRISE res2
+		VARIABLES {
+			sysDescr,
+			res2SensorName,
+			res2SensorType,
+			res2SensorCurrentValue,
+			res2SensorState
+			}
+		DESCRIPTION
+			"Sensor 1 is in the low warning state." 
+		::= 103
+
+	res2Sensor1LowCritical TRAP-TYPE
+		ENTERPRISE res2
+		VARIABLES {
+			sysDescr,
+			res2SensorName,
+			res2SensorType,
+			res2SensorCurrentValue,
+			res2SensorState
+			}
+		DESCRIPTION
+			"Sensor 1 is in the low critical state." 
+		::= 104
+
+	res2Sensor1Normal TRAP-TYPE
+		ENTERPRISE res2
+		VARIABLES {
+			sysDescr,
+			res2SensorName,
+			res2SensorType,
+			res2SensorCurrentValue,
+			res2SensorState
+			}
+		DESCRIPTION
+			"Sensor 1 is in the normal state." 
+		::= 105
+
+	res2Sensor2HighCritical TRAP-TYPE
+		ENTERPRISE res2
+		VARIABLES {
+			sysDescr,
+			res2SensorName,
+			res2SensorType,
+			res2SensorCurrentValue,
+			res2SensorState
+			}
+		DESCRIPTION
+			"Sensor 2 is in the high critical state." 
+		::= 106
+
+	res2Sensor2HighWarning TRAP-TYPE
+		ENTERPRISE res2
+		VARIABLES {
+			sysDescr,
+			res2SensorName,
+			res2SensorType,
+			res2SensorCurrentValue,
+			res2SensorState
+			}
+		DESCRIPTION
+			"Sensor 2 is in the high warning state." 
+		::= 107
+
+	res2Sensor2LowWarning TRAP-TYPE
+		ENTERPRISE res2
+		VARIABLES {
+			sysDescr,
+			res2SensorName,
+			res2SensorType,
+			res2SensorCurrentValue,
+			res2SensorState
+			}
+		DESCRIPTION
+			"Sensor 2 is in the low warning state." 
+		::= 108
+
+	res2Sensor2LowCritical TRAP-TYPE
+		ENTERPRISE res2
+		VARIABLES {
+			sysDescr,
+			res2SensorName,
+			res2SensorType,
+			res2SensorCurrentValue,
+			res2SensorState
+			}
+		DESCRIPTION
+			"Sensor 2 is in the low critical state." 
+		::= 109
+
+	res2Sensor2Normal TRAP-TYPE
+		ENTERPRISE res2
+		VARIABLES {
+			sysDescr,
+			res2SensorName,
+			res2SensorType,
+			res2SensorCurrentValue,
+			res2SensorState
+			}
+		DESCRIPTION
+			"Sensor 2 is in the normal state." 
+		::= 110
+
+END

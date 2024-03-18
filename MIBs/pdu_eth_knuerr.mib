@@ -1,0 +1,1130 @@
+-- -------------------------------------------------------------------------
+--
+--					Copyright (c) 2008 by Knuerr AG environments for electronics
+--
+-- Filename:    pdu_eth.mib
+--
+-- Author:      Knuerr AG
+--
+-- Description:	
+--
+-- -------------------------------------------------------------------------
+
+PDU-ETH-MIB DEFINITIONS ::= BEGIN
+
+
+
+-- {{{ Imports
+IMPORTS
+	MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, enterprises
+		FROM SNMPv2-SMI
+	sysDescr, sysName, sysLocation, DisplayString
+		FROM RFC1213-MIB
+	MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+		FROM SNMPv2-CONF
+	TEXTUAL-CONVENTION
+		FROM SNMPv2-TC
+	;
+-- }}}
+
+
+
+-- {{{ textual conventions
+   DisplayString ::= OCTET STRING
+   -- This data type is used to model textual information taken
+   -- from the NVT ASCII character set.  By convention, objects
+   -- with this syntax are declared as having
+
+
+pdus MODULE-IDENTITY
+       LAST-UPDATED "0407281455Z"  -- 07 February 2006
+       ORGANIZATION "Knuerr AG"
+       CONTACT-INFO "Knürr AG Headquarters
+                     Mariakirchener Straße 38
+							D-94424 Arnstorf
+							Tel: +49 (0) 87 23-27-0
+							Fax: +49 (0) 87 23-27-154
+
+                     Web: www.knuerr.com
+                     E-mail: info@knuerr.com"
+       DESCRIPTION
+               "The MIB module for the Knuerr PDU-Eth."
+       REVISION "0407281455Z"  -- 07 February 2006
+       DESCRIPTION
+               "Brought into compliance with SNMPv2."
+        ::= { knuerr 1 }
+
+knuerr              OBJECT IDENTIFIER ::= { enterprises 2769 }
+pdu-knuerr          OBJECT IDENTIFIER ::= { pdus 1 }
+
+-- {{{ pdu-knuerr
+pdu-system              OBJECT IDENTIFIER ::= { pdu-knuerr 1 }
+pdu-network             OBJECT IDENTIFIER ::= { pdu-knuerr 2 }
+pdu-modules             OBJECT IDENTIFIER ::= { pdu-knuerr 3 }
+-- }}}
+
+-- {{{ pdu-system
+pdu-SysHardwareRelease  OBJECT-TYPE
+	 SYNTAX        INTEGER
+	 MAX-ACCESS    read-only
+	 STATUS        current
+	 DESCRIPTION   "HardwareRelease of the PDU system"
+	 ::= { pdu-system 1 }
+
+pdu-SysFirmwareRelease  OBJECT-TYPE
+	 SYNTAX        INTEGER
+	 MAX-ACCESS    read-only
+	 STATUS        current
+	 DESCRIPTION   "FirmwareRelease of the PDU firmware"
+	 ::= { pdu-system 2 }
+	    
+pdu-SysDisplayInfoPageTime  OBJECT-TYPE
+    SYNTAX        INTEGER (1..60)
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION   "PowerUpTime in seconds of the DisplayInfoPage"
+    ::= { pdu-system 3 }
+
+pdu-SysGlobalAlarmStatus  OBJECT-TYPE
+    SYNTAX        INTEGER
+    MAX-ACCESS    read-only
+    STATUS        current
+    DESCRIPTION   "Global alarm status for whole PDU"
+    ::= { pdu-system 4 }
+-- }}}
+
+
+-- {{{ pdu-network
+pdu-NetWebEnable  OBJECT-TYPE
+    SYNTAX        INTEGER { disabled(0), enabled(1) }
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION   "Enable/disable Web access via HTML"
+    ::= { pdu-network 1 }
+
+pdu-NetSnmpEnable  OBJECT-TYPE
+    SYNTAX        INTEGER { disabled(0), enabled(1) }
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION   "Enable/disable SNMP"
+    ::= { pdu-network 2 }
+
+pdu-NetKeepAliveTrapTime  OBJECT-TYPE
+    SYNTAX        INTEGER ( 0..60 )
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION   "Time in seconds for KeepAliveTrap"
+    ::= { pdu-network 3 }
+       
+pdu-NetRepeatTrapTime  OBJECT-TYPE
+    SYNTAX        INTEGER ( 0..60 )
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION   "Time in seconds for repeating traps"
+    ::= { pdu-network 4 }
+
+pdu-NetRepeatTrapNbr  OBJECT-TYPE
+    SYNTAX        INTEGER ( 0..255 )
+    MAX-ACCESS    read-write
+    STATUS        current
+    DESCRIPTION   "Number of repeating traps"
+    ::= { pdu-network 5 }
+
+pdu-NetTrapKeepAlive  NOTIFICATION-TYPE
+    OBJECTS     { pdu-NetKeepAliveTrapTime }
+    STATUS      current
+    DESCRIPTION "KeepAlive for the system"
+    ::= { pdu-network 6 }
+
+pdu-NetTrapDead  NOTIFICATION-TYPE
+    OBJECTS     { pdu-NetRepeatTrapTime,
+                  pdu-NetRepeatTrapNbr }
+    STATUS      current
+    DESCRIPTION "System was powered down before Restart"
+    ::= { pdu-network 7 }
+-- }}}
+
+
+-- {{{ pdu-module
+pdu-M1         OBJECT IDENTIFIER ::= { pdu-modules 1 }
+pdu-M2         OBJECT IDENTIFIER ::= { pdu-modules 2 }
+pdu-M3         OBJECT IDENTIFIER ::= { pdu-modules 3 }
+pdu-M4         OBJECT IDENTIFIER ::= { pdu-modules 4 }
+-- }}}
+
+
+-- {{{ pdu-Module1
+pdu-M1Values      OBJECT IDENTIFIER ::= { pdu-M1 1 }
+pdu-M1Thresholds  OBJECT IDENTIFIER ::= { pdu-M1 2 }
+pdu-M1Traps       OBJECT IDENTIFIER ::= { pdu-M1 3 }
+
+	-- {{{ *** pdu-M1Values ************************
+	pdu-M1ValPh1    OBJECT-TYPE
+	    SYNTAX        INTEGER ( 0..500 )
+	    MAX-ACCESS    read-only
+	    STATUS        current
+	    DESCRIPTION   "Actual value of current (factor x10) for Phase1"
+	    ::= { pdu-M1Values 1 }
+
+	pdu-M1ValPh2  OBJECT-TYPE
+	    SYNTAX        INTEGER ( 0..500 )
+	    MAX-ACCESS    read-only
+	    STATUS        current
+	    DESCRIPTION   "Actual value of current (factor x10) for Phase2"
+	    ::= { pdu-M1Values 2 }
+
+	pdu-M1ValPh3  OBJECT-TYPE
+	    SYNTAX        INTEGER ( 0..500 )
+	    MAX-ACCESS    read-only
+	    STATUS        current
+	    DESCRIPTION   "Actual value of current (factor x10) for Phase3"
+	    ::= { pdu-M1Values 3 }
+	-- ********************************************* }}}
+
+
+	-- {{{ *** pdu-M1Thresholds ********************
+	pdu-M1ThreshInfo            OBJECT IDENTIFIER ::= { pdu-M1Thresholds 1 }
+	pdu-M1ThreshPreWarn         OBJECT IDENTIFIER ::= { pdu-M1Thresholds 2 }
+	pdu-M1ThreshAlarm           OBJECT IDENTIFIER ::= { pdu-M1Thresholds 3 }
+
+		--------------------------------------------------
+		pdu-M1ThreshInfoPh1  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Info low' (factor x10) for Phase1"
+		    ::= { pdu-M1ThreshInfo 1 }
+		
+		pdu-M1ThreshInfoPh2  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Info low' (factor x10) for Phase2"
+		    ::= { pdu-M1ThreshInfo 2 }
+		
+		pdu-M1ThreshInfoPh3  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Info low' (factor x10) for Phase3"
+		    ::= { pdu-M1ThreshInfo 3 }
+		--------------------------------------------------
+		
+		--------------------------------------------------		
+		pdu-M1ThreshPreWarnPh1  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Pre-Warning high' (factor x10) for Phase1"
+		    ::= { pdu-M1ThreshPreWarn 1 }
+		
+		pdu-M1ThreshPreWarnPh2  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Pre-Warning high' (factor x10) for Phase2"
+		    ::= { pdu-M1ThreshPreWarn 2 }
+		
+		pdu-M1ThreshPreWarnPh3  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Pre-Warning high' (factor x10) for Phase3"
+		    ::= { pdu-M1ThreshPreWarn 3 }
+		--------------------------------------------------
+		
+		--------------------------------------------------
+		pdu-M1ThreshAlarmPh1  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Alarm high' (factor x10) for Phase1"
+		    ::= { pdu-M1ThreshAlarm 1 }
+		
+		pdu-M1ThreshAlarmPh2  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Alarm high' (factor x10) for Phase2"
+		    ::= { pdu-M1ThreshAlarm 2 }
+		
+		pdu-M1ThreshAlarmPh3  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Alarm high' (factor x10) for Phase3"
+		    ::= { pdu-M1ThreshAlarm 3 }
+		--------------------------------------------------
+
+	pdu-M1ThreshOutOfBal  OBJECT-TYPE
+       SYNTAX        INTEGER ( 0..500 )
+       MAX-ACCESS    read-write
+       STATUS        current
+       DESCRIPTION   "Value 'OutOfBalance' (factor x10) for Module1"
+       ::= { pdu-M1Thresholds 4 }
+	-- ********************************************* }}}
+	
+		
+	-- {{{ *** pdu-M1Traps *************************
+	pdu-M1TrapEna  OBJECT-TYPE
+       SYNTAX        INTEGER { disabled(0), enabled(1) }
+       MAX-ACCESS    read-write
+       STATUS        current
+       DESCRIPTION   "Enable SNMP-Traps for Module1"
+       ::= { pdu-M1Traps 1 }
+	
+	pdu-M1TrapInfo            OBJECT IDENTIFIER ::= { pdu-M1Traps 2 }
+	pdu-M1TrapPreWarn         OBJECT IDENTIFIER ::= { pdu-M1Traps 3 }
+	pdu-M1TrapAlarm           OBJECT IDENTIFIER ::= { pdu-M1Traps 4 }
+	pdu-M1TrapRetToNorm       OBJECT IDENTIFIER ::= { pdu-M1Traps 5 }
+	
+      --------------------------------------------------
+	   pdu-M1TrapInfoPh1  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M1ThreshInfoPh1,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 1 is below the InfoLow limit"
+          ::= { pdu-M1TrapInfo 1 }
+
+	   pdu-M1TrapInfoPh2  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M1ThreshInfoPh2,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 2 is below the InfoLow limit"
+          ::= { pdu-M1TrapInfo 2 }
+          
+      pdu-M1TrapInfoPh3  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M1ThreshInfoPh3,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 3 is below the InfoLow limit"
+          ::= { pdu-M1TrapInfo 3 }
+      --------------------------------------------------
+      
+      --------------------------------------------------
+	   pdu-M1TrapPreWarnPh1  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M1ThreshPreWarnPh1,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 1 is above the PreWarningHigh limit"
+          ::= { pdu-M1TrapPreWarn 1 }
+      
+      pdu-M1TrapPreWarnPh2  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M1ThreshPreWarnPh2,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 2 is above the PreWarningHigh limit"
+          ::= { pdu-M1TrapPreWarn 2 }
+      
+      pdu-M1TrapPreWarnPh3  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M1ThreshPreWarnPh3,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 3 is above the PreWarningHigh limit"
+          ::= { pdu-M1TrapPreWarn 3 }
+      --------------------------------------------------
+      
+      --------------------------------------------------
+      pdu-M1TrapAlarmPh1  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M1ThreshAlarmPh1,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 1 is above the AlarmHigh limit"
+          ::= { pdu-M1TrapAlarm 1 }
+      
+      pdu-M1TrapAlarmPh2  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M1ThreshAlarmPh2,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 2 is above the AlarmHigh limit"
+          ::= { pdu-M1TrapAlarm 2 }
+       
+       pdu-M1TrapAlarmPh3  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M1ThreshAlarmPh3,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 3 is above the AlarmHigh limit"
+          ::= { pdu-M1TrapAlarm 3 }
+      --------------------------------------------------
+      
+      --------------------------------------------------
+      pdu-M1TrapRetToNormPh1  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M1ThreshInfoPh1,
+                        pdu-M1ThreshPreWarnPh1,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 1 is between the InfoLow limit and PreWarningHigh limit"
+          ::= { pdu-M1TrapRetToNorm 1 }
+      
+      pdu-M1TrapRetToNormPh2  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M1ThreshInfoPh2,
+                        pdu-M1ThreshPreWarnPh2,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 2 is between the InfoLow limit and PreWarningHigh limit"
+          ::= { pdu-M1TrapRetToNorm 2 }
+      
+      pdu-M1TrapRetToNormPh3  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M1ThreshInfoPh3,
+                        pdu-M1ThreshPreWarnPh3,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 3 is between the InfoLow limit and PreWarningHigh limit"
+          ::= { pdu-M1TrapRetToNorm 3 }
+      --------------------------------------------------
+      
+      pdu-M1TrapOutOfBal  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M1ThreshOutOfBal,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "OutOfBalance for Module1"
+          ::= { pdu-M1Traps 4 }
+
+	-- ********************************************* }}}	
+-- }}}
+
+
+-- {{{ pdu-Module2
+pdu-M2Values      OBJECT IDENTIFIER ::= { pdu-M2 1 }
+pdu-M2Thresholds  OBJECT IDENTIFIER ::= { pdu-M2 2 }
+pdu-M2Traps       OBJECT IDENTIFIER ::= { pdu-M2 3 }
+
+	-- {{{ *** pdu-M2Values ************************
+	pdu-M2ValPh1    OBJECT-TYPE
+	    SYNTAX        INTEGER ( 0..500 )
+	    MAX-ACCESS    read-only
+	    STATUS        current
+	    DESCRIPTION   "Actual value of current (factor x10) for Phase1"
+	    ::= { pdu-M2Values 1 }
+
+	pdu-M2ValPh2  OBJECT-TYPE
+	    SYNTAX        INTEGER ( 0..500 )
+	    MAX-ACCESS    read-only
+	    STATUS        current
+	    DESCRIPTION   "Actual value of current (factor x10) for Phase2"
+	    ::= { pdu-M2Values 2 }
+
+	pdu-M2ValPh3  OBJECT-TYPE
+	    SYNTAX        INTEGER ( 0..500 )
+	    MAX-ACCESS    read-only
+	    STATUS        current
+	    DESCRIPTION   "Actual value of current (factor x10) for Phase3"
+	    ::= { pdu-M2Values 3 }
+	-- ********************************************* }}}
+
+
+	-- {{{ *** pdu-M2Thresholds ********************
+	pdu-M2ThreshInfo            OBJECT IDENTIFIER ::= { pdu-M2Thresholds 1 }
+	pdu-M2ThreshPreWarn         OBJECT IDENTIFIER ::= { pdu-M2Thresholds 2 }
+	pdu-M2ThreshAlarm           OBJECT IDENTIFIER ::= { pdu-M2Thresholds 3 }
+
+		--------------------------------------------------
+		pdu-M2ThreshInfoPh1  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Info low' (factor x10) for Phase1"
+		    ::= { pdu-M2ThreshInfo 1 }
+		
+		pdu-M2ThreshInfoPh2  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Info low' (factor x10) for Phase2"
+		    ::= { pdu-M2ThreshInfo 2 }
+		
+		pdu-M2ThreshInfoPh3  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Info low' (factor x10) for Phase3"
+		    ::= { pdu-M2ThreshInfo 3 }
+		--------------------------------------------------
+		
+		--------------------------------------------------		
+		pdu-M2ThreshPreWarnPh1  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Pre-Warning high' (factor x10) for Phase1"
+		    ::= { pdu-M2ThreshPreWarn 1 }
+		
+		pdu-M2ThreshPreWarnPh2  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Pre-Warning high' (factor x10) for Phase2"
+		    ::= { pdu-M2ThreshPreWarn 2 }
+		
+		pdu-M2ThreshPreWarnPh3  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Pre-Warning high' (factor x10) for Phase3"
+		    ::= { pdu-M2ThreshPreWarn 3 }
+		--------------------------------------------------
+		
+		--------------------------------------------------
+		pdu-M2ThreshAlarmPh1  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Alarm high' (factor x10) for Phase1"
+		    ::= { pdu-M2ThreshAlarm 1 }
+		
+		pdu-M2ThreshAlarmPh2  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Alarm high' (factor x10) for Phase2"
+		    ::= { pdu-M2ThreshAlarm 2 }
+		
+		pdu-M2ThreshAlarmPh3  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Alarm high' (factor x10) for Phase3"
+		    ::= { pdu-M2ThreshAlarm 3 }
+		--------------------------------------------------
+
+	pdu-M2ThreshOutOfBal  OBJECT-TYPE
+       SYNTAX        INTEGER ( 0..500 )
+       MAX-ACCESS    read-write
+       STATUS        current
+       DESCRIPTION   "Value 'OutOfBalance' (factor x10) for Module2"
+       ::= { pdu-M2Thresholds 4 }
+	-- ********************************************* }}}
+	
+		
+	-- {{{ *** pdu-M2Traps *************************
+	pdu-M2TrapEna  OBJECT-TYPE
+       SYNTAX        INTEGER { disabled(0), enabled(1) }
+       MAX-ACCESS    read-write
+       STATUS        current
+       DESCRIPTION   "Enable SNMP-Traps for Module2"
+       ::= { pdu-M2Traps 1 }
+	
+	pdu-M2TrapInfo            OBJECT IDENTIFIER ::= { pdu-M2Traps 2 }
+	pdu-M2TrapPreWarn         OBJECT IDENTIFIER ::= { pdu-M2Traps 3 }
+	pdu-M2TrapAlarm           OBJECT IDENTIFIER ::= { pdu-M2Traps 4 }
+	pdu-M2TrapRetToNorm       OBJECT IDENTIFIER ::= { pdu-M2Traps 5 }
+	
+      --------------------------------------------------
+	   pdu-M2TrapInfoPh1  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M2ThreshInfoPh1,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 1 is below the InfoLow limit"
+          ::= { pdu-M2TrapInfo 1 }
+
+	   pdu-M2TrapInfoPh2  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M2ThreshInfoPh2,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 2 is below the InfoLow limit"
+          ::= { pdu-M2TrapInfo 2 }
+          
+      pdu-M2TrapInfoPh3  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M2ThreshInfoPh3,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 3 is below the InfoLow limit"
+          ::= { pdu-M2TrapInfo 3 }
+      --------------------------------------------------
+      
+      --------------------------------------------------
+	   pdu-M2TrapPreWarnPh1  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M2ThreshPreWarnPh1,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 1 is above the PreWarningHigh limit"
+          ::= { pdu-M2TrapPreWarn 1 }
+      
+      pdu-M2TrapPreWarnPh2  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M2ThreshPreWarnPh2,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 2 is above the PreWarningHigh limit"
+          ::= { pdu-M2TrapPreWarn 2 }
+      
+      pdu-M2TrapPreWarnPh3  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M2ThreshPreWarnPh3,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 3 is above the PreWarningHigh limit"
+          ::= { pdu-M2TrapPreWarn 3 }
+      --------------------------------------------------
+      
+      --------------------------------------------------
+      pdu-M2TrapAlarmPh1  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M2ThreshAlarmPh1,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 1 is above the AlarmHigh limit"
+          ::= { pdu-M2TrapAlarm 1 }
+      
+      pdu-M2TrapAlarmPh2  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M2ThreshAlarmPh2,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 2 is above the AlarmHigh limit"
+          ::= { pdu-M2TrapAlarm 2 }
+       
+       pdu-M2TrapAlarmPh3  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M2ThreshAlarmPh3,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 3 is above the AlarmHigh limit"
+          ::= { pdu-M2TrapAlarm 3 }
+      --------------------------------------------------
+      
+      --------------------------------------------------
+      pdu-M2TrapRetToNormPh1  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M2ThreshInfoPh1,
+                        pdu-M2ThreshPreWarnPh1,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 1 is between the InfoLow limit and PreWarningHigh limit"
+          ::= { pdu-M2TrapRetToNorm 1 }
+      
+      pdu-M2TrapRetToNormPh2  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M2ThreshInfoPh2,
+                        pdu-M2ThreshPreWarnPh2,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 2 is between the InfoLow limit and PreWarningHigh limit"
+          ::= { pdu-M2TrapRetToNorm 2 }
+      
+      pdu-M2TrapRetToNormPh3  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M2ThreshInfoPh3,
+                        pdu-M2ThreshPreWarnPh3,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 3 is between the InfoLow limit and PreWarningHigh limit"
+          ::= { pdu-M2TrapRetToNorm 3 }
+      --------------------------------------------------
+      
+      pdu-M2TrapOutOfBal  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M2ThreshOutOfBal,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "OutOfBalance for Module2"
+          ::= { pdu-M2Traps 4 }
+
+	-- ********************************************* }}}	
+-- }}}
+
+
+-- {{{ pdu-Module3
+pdu-M3Values      OBJECT IDENTIFIER ::= { pdu-M3 1 }
+pdu-M3Thresholds  OBJECT IDENTIFIER ::= { pdu-M3 2 }
+pdu-M3Traps       OBJECT IDENTIFIER ::= { pdu-M3 3 }
+
+	-- {{{ *** pdu-M3Values ************************
+	pdu-M3ValPh1    OBJECT-TYPE
+	    SYNTAX        INTEGER ( 0..500 )
+	    MAX-ACCESS    read-only
+	    STATUS        current
+	    DESCRIPTION   "Actual value of current (factor x10) for Phase1"
+	    ::= { pdu-M3Values 1 }
+
+	pdu-M3ValPh2  OBJECT-TYPE
+	    SYNTAX        INTEGER ( 0..500 )
+	    MAX-ACCESS    read-only
+	    STATUS        current
+	    DESCRIPTION   "Actual value of current (factor x10) for Phase2"
+	    ::= { pdu-M3Values 2 }
+
+	pdu-M3ValPh3  OBJECT-TYPE
+	    SYNTAX        INTEGER ( 0..500 )
+	    MAX-ACCESS    read-only
+	    STATUS        current
+	    DESCRIPTION   "Actual value of current (factor x10) for Phase3"
+	    ::= { pdu-M3Values 3 }
+	-- ********************************************* }}}
+
+
+	-- {{{ *** pdu-M3Thresholds ********************
+	pdu-M3ThreshInfo            OBJECT IDENTIFIER ::= { pdu-M3Thresholds 1 }
+	pdu-M3ThreshPreWarn         OBJECT IDENTIFIER ::= { pdu-M3Thresholds 2 }
+	pdu-M3ThreshAlarm           OBJECT IDENTIFIER ::= { pdu-M3Thresholds 3 }
+
+		--------------------------------------------------
+		pdu-M3ThreshInfoPh1  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Info low' (factor x10) for Phase1"
+		    ::= { pdu-M3ThreshInfo 1 }
+		
+		pdu-M3ThreshInfoPh2  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Info low' (factor x10) for Phase2"
+		    ::= { pdu-M3ThreshInfo 2 }
+		
+		pdu-M3ThreshInfoPh3  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Info low' (factor x10) for Phase3"
+		    ::= { pdu-M3ThreshInfo 3 }
+		--------------------------------------------------
+		
+		--------------------------------------------------		
+		pdu-M3ThreshPreWarnPh1  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Pre-Warning high' (factor x10) for Phase1"
+		    ::= { pdu-M3ThreshPreWarn 1 }
+		
+		pdu-M3ThreshPreWarnPh2  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Pre-Warning high' (factor x10) for Phase2"
+		    ::= { pdu-M3ThreshPreWarn 2 }
+		
+		pdu-M3ThreshPreWarnPh3  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Pre-Warning high' (factor x10) for Phase3"
+		    ::= { pdu-M3ThreshPreWarn 3 }
+		--------------------------------------------------
+		
+		--------------------------------------------------
+		pdu-M3ThreshAlarmPh1  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Alarm high' (factor x10) for Phase1"
+		    ::= { pdu-M3ThreshAlarm 1 }
+		
+		pdu-M3ThreshAlarmPh2  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Alarm high' (factor x10) for Phase2"
+		    ::= { pdu-M3ThreshAlarm 2 }
+		
+		pdu-M3ThreshAlarmPh3  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Alarm high' (factor x10) for Phase3"
+		    ::= { pdu-M3ThreshAlarm 3 }
+		--------------------------------------------------
+
+	pdu-M3ThreshOutOfBal  OBJECT-TYPE
+       SYNTAX        INTEGER ( 0..500 )
+       MAX-ACCESS    read-write
+       STATUS        current
+       DESCRIPTION   "Value 'OutOfBalance' (factor x10) for Module3"
+       ::= { pdu-M3Thresholds 4 }
+	-- ********************************************* }}}
+	
+		
+	-- {{{ *** pdu-M3Traps *************************
+	pdu-M3TrapEna  OBJECT-TYPE
+       SYNTAX        INTEGER { disabled(0), enabled(1) }
+       MAX-ACCESS    read-write
+       STATUS        current
+       DESCRIPTION   "Enable SNMP-Traps for Module3"
+       ::= { pdu-M3Traps 1 }
+	
+	pdu-M3TrapInfo            OBJECT IDENTIFIER ::= { pdu-M3Traps 2 }
+	pdu-M3TrapPreWarn         OBJECT IDENTIFIER ::= { pdu-M3Traps 3 }
+	pdu-M3TrapAlarm           OBJECT IDENTIFIER ::= { pdu-M3Traps 4 }
+	pdu-M3TrapRetToNorm       OBJECT IDENTIFIER ::= { pdu-M3Traps 5 }
+	
+      --------------------------------------------------
+	   pdu-M3TrapInfoPh1  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M3ThreshInfoPh1,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 1 is below the InfoLow limit"
+          ::= { pdu-M3TrapInfo 1 }
+
+	   pdu-M3TrapInfoPh2  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M3ThreshInfoPh2,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 2 is below the InfoLow limit"
+          ::= { pdu-M3TrapInfo 2 }
+          
+      pdu-M3TrapInfoPh3  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M3ThreshInfoPh3,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 3 is below the InfoLow limit"
+          ::= { pdu-M3TrapInfo 3 }
+      --------------------------------------------------
+      
+      --------------------------------------------------
+	   pdu-M3TrapPreWarnPh1  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M3ThreshPreWarnPh1,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 1 is above the PreWarningHigh limit"
+          ::= { pdu-M3TrapPreWarn 1 }
+      
+      pdu-M3TrapPreWarnPh2  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M3ThreshPreWarnPh2,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 2 is above the PreWarningHigh limit"
+          ::= { pdu-M3TrapPreWarn 2 }
+      
+      pdu-M3TrapPreWarnPh3  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M3ThreshPreWarnPh3,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 3 is above the PreWarningHigh limit"
+          ::= { pdu-M3TrapPreWarn 3 }
+      --------------------------------------------------
+      
+      --------------------------------------------------
+      pdu-M3TrapAlarmPh1  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M3ThreshAlarmPh1,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 1 is above the AlarmHigh limit"
+          ::= { pdu-M3TrapAlarm 1 }
+      
+      pdu-M3TrapAlarmPh2  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M3ThreshAlarmPh2,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 2 is above the AlarmHigh limit"
+          ::= { pdu-M3TrapAlarm 2 }
+       
+       pdu-M3TrapAlarmPh3  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M3ThreshAlarmPh3,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 3 is above the AlarmHigh limit"
+          ::= { pdu-M3TrapAlarm 3 }
+      --------------------------------------------------
+      
+      --------------------------------------------------
+      pdu-M3TrapRetToNormPh1  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M3ThreshInfoPh1,
+                        pdu-M3ThreshPreWarnPh1,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 1 is between the InfoLow limit and PreWarningHigh limit"
+          ::= { pdu-M3TrapRetToNorm 1 }
+      
+      pdu-M3TrapRetToNormPh2  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M3ThreshInfoPh2,
+                        pdu-M3ThreshPreWarnPh2,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 2 is between the InfoLow limit and PreWarningHigh limit"
+          ::= { pdu-M3TrapRetToNorm 2 }
+      
+      pdu-M3TrapRetToNormPh3  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M3ThreshInfoPh3,
+                        pdu-M3ThreshPreWarnPh3,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 3 is between the InfoLow limit and PreWarningHigh limit"
+          ::= { pdu-M3TrapRetToNorm 3 }
+      --------------------------------------------------
+      
+      pdu-M3TrapOutOfBal  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M3ThreshOutOfBal,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "OutOfBalance for Module3"
+          ::= { pdu-M3Traps 4 }
+
+	-- ********************************************* }}}	
+-- }}}
+
+
+-- {{{ pdu-Module4
+pdu-M4Values      OBJECT IDENTIFIER ::= { pdu-M4 1 }
+pdu-M4Thresholds  OBJECT IDENTIFIER ::= { pdu-M4 2 }
+pdu-M4Traps       OBJECT IDENTIFIER ::= { pdu-M4 3 }
+
+	-- {{{ *** pdu-M4Values ************************
+	pdu-M4ValPh1    OBJECT-TYPE
+	    SYNTAX        INTEGER ( 0..500 )
+	    MAX-ACCESS    read-only
+	    STATUS        current
+	    DESCRIPTION   "Actual value of current (factor x10) for Phase1"
+	    ::= { pdu-M4Values 1 }
+
+	pdu-M4ValPh2  OBJECT-TYPE
+	    SYNTAX        INTEGER ( 0..500 )
+	    MAX-ACCESS    read-only
+	    STATUS        current
+	    DESCRIPTION   "Actual value of current (factor x10) for Phase2"
+	    ::= { pdu-M4Values 2 }
+
+	pdu-M4ValPh3  OBJECT-TYPE
+	    SYNTAX        INTEGER ( 0..500 )
+	    MAX-ACCESS    read-only
+	    STATUS        current
+	    DESCRIPTION   "Actual value of current (factor x10) for Phase3"
+	    ::= { pdu-M4Values 3 }
+	-- ********************************************* }}}
+
+
+	-- {{{ *** pdu-M4Thresholds ********************
+	pdu-M4ThreshInfo            OBJECT IDENTIFIER ::= { pdu-M4Thresholds 1 }
+	pdu-M4ThreshPreWarn         OBJECT IDENTIFIER ::= { pdu-M4Thresholds 2 }
+	pdu-M4ThreshAlarm           OBJECT IDENTIFIER ::= { pdu-M4Thresholds 3 }
+
+		--------------------------------------------------
+		pdu-M4ThreshInfoPh1  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Info low' (factor x10) for Phase1"
+		    ::= { pdu-M4ThreshInfo 1 }
+		
+		pdu-M4ThreshInfoPh2  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Info low' (factor x10) for Phase2"
+		    ::= { pdu-M4ThreshInfo 2 }
+		
+		pdu-M4ThreshInfoPh3  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Info low' (factor x10) for Phase3"
+		    ::= { pdu-M4ThreshInfo 3 }
+		--------------------------------------------------
+		
+		--------------------------------------------------		
+		pdu-M4ThreshPreWarnPh1  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Pre-Warning high' (factor x10) for Phase1"
+		    ::= { pdu-M4ThreshPreWarn 1 }
+		
+		pdu-M4ThreshPreWarnPh2  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Pre-Warning high' (factor x10) for Phase2"
+		    ::= { pdu-M4ThreshPreWarn 2 }
+		
+		pdu-M4ThreshPreWarnPh3  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Pre-Warning high' (factor x10) for Phase3"
+		    ::= { pdu-M4ThreshPreWarn 3 }
+		--------------------------------------------------
+		
+		--------------------------------------------------
+		pdu-M4ThreshAlarmPh1  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Alarm high' (factor x10) for Phase1"
+		    ::= { pdu-M4ThreshAlarm 1 }
+		
+		pdu-M4ThreshAlarmPh2  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Alarm high' (factor x10) for Phase2"
+		    ::= { pdu-M4ThreshAlarm 2 }
+		
+		pdu-M4ThreshAlarmPh3  OBJECT-TYPE
+		    SYNTAX        INTEGER ( 0..500 )
+		    MAX-ACCESS    read-write
+		    STATUS        current
+		    DESCRIPTION   "Value 'Alarm high' (factor x10) for Phase3"
+		    ::= { pdu-M4ThreshAlarm 3 }
+		--------------------------------------------------
+
+	pdu-M4ThreshOutOfBal  OBJECT-TYPE
+	    SYNTAX        INTEGER ( 0..500 )
+       MAX-ACCESS    read-write
+       STATUS        current
+       DESCRIPTION   "Value 'OutOfBalance' (factor x10) for Module4"
+       ::= { pdu-M4Thresholds 4 }
+	-- ********************************************* }}}
+	
+		
+	-- {{{ *** pdu-M4Traps *************************
+	pdu-M4TrapEna  OBJECT-TYPE
+       SYNTAX        INTEGER { disabled(0), enabled(1) }
+       MAX-ACCESS    read-write
+       STATUS        current
+       DESCRIPTION   "Enable SNMP-Traps for Module4"
+       ::= { pdu-M4Traps 1 }
+	
+	pdu-M4TrapInfo            OBJECT IDENTIFIER ::= { pdu-M4Traps 2 }
+	pdu-M4TrapPreWarn         OBJECT IDENTIFIER ::= { pdu-M4Traps 3 }
+	pdu-M4TrapAlarm           OBJECT IDENTIFIER ::= { pdu-M4Traps 4 }
+	pdu-M4TrapRetToNorm       OBJECT IDENTIFIER ::= { pdu-M4Traps 5 }
+	
+      --------------------------------------------------
+	   pdu-M4TrapInfoPh1  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M4ThreshInfoPh1,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 1 is below the InfoLow limit"
+          ::= { pdu-M4TrapInfo 1 }
+
+	   pdu-M4TrapInfoPh2  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M4ThreshInfoPh2,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 2 is below the InfoLow limit"
+          ::= { pdu-M4TrapInfo 2 }
+          
+      pdu-M4TrapInfoPh3  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M4ThreshInfoPh3,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 3 is below the InfoLow limit"
+          ::= { pdu-M4TrapInfo 3 }
+      --------------------------------------------------
+      
+      --------------------------------------------------
+	   pdu-M4TrapPreWarnPh1  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M4ThreshPreWarnPh1,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 1 is above the PreWarningHigh limit"
+          ::= { pdu-M4TrapPreWarn 1 }
+      
+      pdu-M4TrapPreWarnPh2  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M4ThreshPreWarnPh2,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 2 is above the PreWarningHigh limit"
+          ::= { pdu-M4TrapPreWarn 2 }
+      
+      pdu-M4TrapPreWarnPh3  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M4ThreshPreWarnPh3,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 3 is above the PreWarningHigh limit"
+          ::= { pdu-M4TrapPreWarn 3 }
+      --------------------------------------------------
+      
+      --------------------------------------------------
+      pdu-M4TrapAlarmPh1  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M4ThreshAlarmPh1,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 1 is above the AlarmHigh limit"
+          ::= { pdu-M4TrapAlarm 1 }
+      
+      pdu-M4TrapAlarmPh2  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M4ThreshAlarmPh2,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 2 is above the AlarmHigh limit"
+          ::= { pdu-M4TrapAlarm 2 }
+       
+       pdu-M4TrapAlarmPh3  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M4ThreshAlarmPh3,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 3 is above the AlarmHigh limit"
+          ::= { pdu-M4TrapAlarm 3 }
+      --------------------------------------------------
+      
+      --------------------------------------------------
+      pdu-M4TrapRetToNormPh1  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M4ThreshInfoPh1,
+                        pdu-M4ThreshPreWarnPh1,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 1 is between the InfoLow limit and PreWarningHigh limit"
+          ::= { pdu-M4TrapRetToNorm 1 }
+      
+      pdu-M4TrapRetToNormPh2  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M4ThreshInfoPh2,
+                        pdu-M4ThreshPreWarnPh2,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 2 is between the InfoLow limit and PreWarningHigh limit"
+          ::= { pdu-M4TrapRetToNorm 2 }
+      
+      pdu-M4TrapRetToNormPh3  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M4ThreshInfoPh3,
+                        pdu-M4ThreshPreWarnPh3,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "Value of Phase 3 is between the InfoLow limit and PreWarningHigh limit"
+          ::= { pdu-M4TrapRetToNorm 3 }
+      --------------------------------------------------
+      
+      pdu-M4TrapOutOfBal  NOTIFICATION-TYPE
+          OBJECTS     { pdu-M4ThreshOutOfBal,
+          					pdu-NetRepeatTrapTime,
+          					pdu-NetRepeatTrapNbr }
+          STATUS      current
+          DESCRIPTION "OutOfBalance for Module4"
+          ::= { pdu-M4Traps 4 }
+
+	-- ********************************************* }}}	
+-- }}}
+END

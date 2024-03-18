@@ -1,0 +1,3166 @@
+
+-- Software 0104.01.002
+--
+-- Changes:
+--
+-- 2011-02-11 EE/Le 
+--   Descriptions reviewed.
+--
+-- 2011-01-11 EE/Le 
+--   Trap definitions redefined.
+--
+-- Copyright (c) 2010, 2011
+--
+-- WAGNER Group GmbH
+-- Schleswigstr. 1-5
+-- 30853 Langenhagen
+-- Germany
+--
+
+TOPSENS-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS 
+        enterprises     FROM RFC1155-SMI
+        OBJECT-TYPE     FROM RFC-1212
+        DisplayString   FROM RFC1213-MIB
+        TRAP-TYPE       FROM RFC-1215
+        Gauge           FROM RFC1155-SMI
+        Opaque          FROM RFC1155-SMI
+        TimeTicks       FROM RFC1155-SMI;
+
+    wagner      OBJECT IDENTIFIER ::= { enterprises 34187 }
+    topsens     OBJECT IDENTIFIER ::= { wagner      74195}
+    topsenstrap OBJECT IDENTIFIER ::= { topsens  3}
+
+    ----------------------------------------------------
+    -- Traps
+    ----------------------------------------------------
+
+   pswMainAlarmD1-trap   TRAP-TYPE
+        ENTERPRISE topsenstrap
+        VARIABLES { pswMainAlarmD1 }
+        DESCRIPTION
+            "Detector 1 fire alarm state changed."
+        ::= 1000
+
+    pswPreAlarmD1-trap   TRAP-TYPE
+        ENTERPRISE topsenstrap
+        VARIABLES { pswPreAlarmD1 }
+        DESCRIPTION
+            "Detector 1 action alarm state changed."
+        ::= 1001
+
+    pswInfAlarmD1-trap   TRAP-TYPE
+        ENTERPRISE topsenstrap
+        VARIABLES { pswInfAlarmD1 }
+        DESCRIPTION
+            "Detector 1 alert alarm state changed."
+        ::= 1002
+
+    pswMainAlarmD2-trap   TRAP-TYPE
+        ENTERPRISE topsenstrap
+        VARIABLES { pswMainAlarmD2 }
+        DESCRIPTION
+            "Detector 2 fire alarm state changed."
+        ::= 1003
+
+    pswPreAlarmD2-trap   TRAP-TYPE
+        ENTERPRISE topsenstrap
+        VARIABLES { pswPreAlarmD2 }
+        DESCRIPTION
+            "Detector 2 action alarm state changed."
+        ::= 1004
+
+    pswInfAlarmD2-trap   TRAP-TYPE
+        ENTERPRISE topsenstrap
+        VARIABLES { pswInfAlarmD2 }
+        DESCRIPTION
+            "Detector 2 alert alarm state changed."
+        ::= 1005
+
+    pswFailureDisplayOn-trap   TRAP-TYPE
+        ENTERPRISE topsenstrap
+        VARIABLES {pswFailureDisplayOn  }
+        DESCRIPTION
+            "Failure display state changed."
+        ::= 1006
+
+    pswAlternateSensitivityOn-trap   TRAP-TYPE
+        ENTERPRISE topsenstrap
+        VARIABLES { pswAlternateSensitivityOn }
+        DESCRIPTION
+            "Sensitivity changed."
+        ::= 1007
+
+    pswAirFlowInitD1-trap   TRAP-TYPE
+        ENTERPRISE topsenstrap
+        VARIABLES {pswAirFlowInitD1  }
+        DESCRIPTION
+            "Air flow initialization state of detector 1 changed."
+        ::= 1008
+
+    pswAirFlowInitD2-trap   TRAP-TYPE
+        ENTERPRISE topsenstrap
+        VARIABLES {pswAirFlowInitD2  }
+        DESCRIPTION
+            "Air flow initialization state of detector 2 changed."
+        ::= 1009
+
+--  pswBit10-trap   TRAP-TYPE
+--      ENTERPRISE topsenstrap
+--      VARIABLES {pswBit10 }
+--      DESCRIPTION
+--          "Normally unused state variable (bit 10) changed."
+--      ::= 1010
+
+--  pswBit11-trap   TRAP-TYPE
+--      ENTERPRISE topsenstrap
+--      VARIABLES { pswBit11  }
+--      DESCRIPTION
+--          "Normally unused state variable (bit 11) changed."
+--      ::= 1011
+
+    pswStoredMessagesResetD1-trap   TRAP-TYPE
+        ENTERPRISE topsenstrap
+        VARIABLES { pswStoredMessagesResetD1 }
+        DESCRIPTION
+            "Detector 1 stored messages reset / changed."
+        ::= 1012
+
+    pswStoredMessagesResetD2-trap   TRAP-TYPE
+        ENTERPRISE topsenstrap
+        VARIABLES { pswStoredMessagesResetD2 }
+        DESCRIPTION
+            "Detector 2 stored messages reset / changed."
+        ::= 1013
+
+    pswStoredMessagesResetUnit-trap   TRAP-TYPE
+        ENTERPRISE topsenstrap
+        VARIABLES { pswStoredMessagesResetUnit  }
+        DESCRIPTION
+            "Main board stored messages reset / changed."
+        ::= 1014
+
+--  pswBit15-trap   TRAP-TYPE
+--      ENTERPRISE topsenstrap
+--      VARIABLES { pswBit15 }
+--      DESCRIPTION
+--          "Normally unused state variable (bit 15) changed."
+--      ::= 1015
+
+    ----------------------------------------------------
+    ----------------------------------------------------
+
+    basicTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF BasicEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        ::= { topsens 1 }
+
+    basicEntry OBJECT-TYPE
+        SYNTAX BasicEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "This is the table for basic entries!"
+        INDEX { basicIndex }
+        ::= { basicTable 1 }
+
+    BasicEntry ::= SEQUENCE {
+        basicIndex                  INTEGER,
+        tsManufacturer              DisplayString,
+        tsUnitName                  DisplayString,
+        tsUnitVersion               DisplayString,
+        tsObjectTableLoadingState   INTEGER,
+        tsObjectTableEntries        INTEGER,
+        tsObjectDataValid           INTEGER,
+        tsProcessData               OCTET STRING,
+        
+        -- Process data bits
+        
+        pswMainAlarmD1              INTEGER,
+        pswPreAlarmD1               INTEGER,
+        pswInfAlarmD1               INTEGER,
+        pswMainAlarmD2              INTEGER,
+        pswPreAlarmD2               INTEGER,
+        pswInfAlarmD2               INTEGER,
+        pswFailureDisplayOn         INTEGER,
+        pswAlternateSensitivityOn   INTEGER,
+        pswAirFlowInitD1            INTEGER,
+        pswAirFlowInitD2            INTEGER,
+--      pswUnusedBit10              INTEGER,
+--      pswUnusedBit11              INTEGER,
+        pswStoredMessagesResetD1    INTEGER,
+        pswStoredMessagesResetD2    INTEGER,
+        pswStoredMessagesResetUnit  INTEGER
+--      pswUnusedBit15              INTEGER
+    }
+
+    ----------------------------------------------------
+    -- TopSens basic data
+    ----------------------------------------------------
+
+    basicIndex OBJECT-TYPE
+        SYNTAX  INTEGER (0..1)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "A unique value for each table."
+        ::= { basicEntry 99 } 
+
+    tsManufacturer OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The name of the TopSens manufacturer."
+        ::= { basicEntry  1}
+
+    tsUnitName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The name of the TopSens unit."
+        ::= { basicEntry 2}
+
+    tsUnitVersion OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The version of the TopSens object table."
+        ::= { basicEntry 3}
+
+    tsObjectTableLoadingState OBJECT-TYPE
+        SYNTAX INTEGER {
+          notloaded(0),
+          loading(1),
+          loaded(2)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The loading state of object table.
+             0=table in not loaded
+             1=table loading in process
+             2=table is loaded"
+        ::= { basicEntry 4}
+
+    tsObjectTableEntries OBJECT-TYPE
+        SYNTAX INTEGER 
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The no. of objects in the object table."
+        ::= { basicEntry 5}
+
+    tsObjectDataValid OBJECT-TYPE
+        SYNTAX INTEGER {
+          valid(0),
+          invalid(1)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The marker for invalid object data, set when object data is invalid."
+        ::= { basicEntry 6}
+
+    tsProcessData OBJECT-TYPE
+        SYNTAX OCTET STRING
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The actual state of the TopSens. It consists of 16 bit from which every
+             one of them can be examined under id 1000 to 1015."
+        ::= { basicEntry 100 }
+
+    ----------------------------------------------------
+    -- Bits from TopSens Process Data
+    ----------------------------------------------------
+
+    pswMainAlarmD1 OBJECT-TYPE
+        SYNTAX INTEGER {
+            idle(0),
+            alarm(1)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Detector 1 fire alarm state.
+             It is one (1) if the fire alarm is released."
+        ::= { basicEntry 1000 }
+
+    pswPreAlarmD1 OBJECT-TYPE
+        SYNTAX INTEGER {
+            idle(0),
+            alarm(1)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Detector 1 action alarm state.
+             It is one (1) if the action alarm is released."
+        ::= { basicEntry 1001 }
+
+    pswInfAlarmD1 OBJECT-TYPE
+        SYNTAX INTEGER {
+            idle(0),
+            alarm(1)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Detector 1 alert alarm state.
+             It is one (1) if the alert alarm is released."
+        ::= { basicEntry 1002 }
+
+    pswMainAlarmD2 OBJECT-TYPE
+        SYNTAX INTEGER {
+            idle(0),
+            alarm(1)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Detector 2 fire alarm state.
+             It is one (1) if the fire alarm is released."
+        ::= { basicEntry 1003 }
+
+    pswPreAlarmD2 OBJECT-TYPE
+        SYNTAX INTEGER {
+            idle(0),
+            alarm(1)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Detector 2 action alarm state.
+             It is one (1) if the action alarm is released."
+        ::= { basicEntry 1004 }
+
+    pswInfAlarmD2 OBJECT-TYPE
+        SYNTAX INTEGER {
+            idle(0),
+            alarm(1)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Detector 2 alert alarm state.
+             It is one (1) if the alert alarm is released."
+        ::= { basicEntry 1005 }
+
+    pswFailureDisplayOn OBJECT-TYPE
+        SYNTAX INTEGER {
+            off(0),
+            on(1)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "If one (1) the failure display is on."
+        ::= { basicEntry 1006 }
+
+    pswAlternateSensitivityOn OBJECT-TYPE
+        SYNTAX INTEGER {
+            off(0),
+            on(1)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "If one (1) the alternative sensitivity is switched on."
+        ::= { basicEntry 1007 }
+
+    pswAirFlowInitD1 OBJECT-TYPE
+        SYNTAX INTEGER {
+            off(0),
+            on(1)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "If one (1) the detector 1 is in air flow initialization state."
+        ::= { basicEntry 1008 }
+
+    pswAirFlowInitD2 OBJECT-TYPE
+        SYNTAX INTEGER {
+            off(0),
+            on(1)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "If one (1) the detector 2 is in air flow initialization state."
+        ::= { basicEntry 1009 }
+
+--  pswUnusedBit10 OBJECT-TYPE
+--      SYNTAX INTEGER { off(0), on(1) }
+--      ACCESS read-only
+--      STATUS mandatory
+--      DESCRIPTION
+--          "Unused bit 10."
+--      ::= { basicEntry 1010 }
+
+--  pswUnusedBit11 OBJECT-TYPE
+--      SYNTAX INTEGER { off(0), on(1) }
+--      ACCESS read-only
+--      STATUS mandatory
+--      DESCRIPTION
+--          "Unused bit 11."
+--      ::= { basicEntry 1011 }
+
+    pswStoredMessagesResetD1 OBJECT-TYPE
+        SYNTAX INTEGER {
+            idle(0),
+            reset(1)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "If one (1) the stored messages in detector 1 are reset."
+        ::= { basicEntry 1012 }
+
+    pswStoredMessagesResetD2 OBJECT-TYPE
+        SYNTAX INTEGER {
+            idle(0),
+            reset(1)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "If one (1) the stored messages in detector 2 are reset."
+        ::= { basicEntry 1013 }
+
+    pswStoredMessagesResetUnit OBJECT-TYPE
+        SYNTAX INTEGER {
+            idle(0),
+            reset(1)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "If one (1) the stored messages on the unit mainboard are reset."
+        ::= { basicEntry 1014 }
+
+--  pswUnusedBit15 OBJECT-TYPE
+--      SYNTAX INTEGER { off(0), on(1) }
+--      ACCESS read-only
+--      STATUS mandatory
+--      DESCRIPTION
+--          "Unused bit 15."
+--      ::= { basicEntry 1015 }
+
+    ----------------------------------------------------
+    -- Object table
+    ----------------------------------------------------
+
+    objectTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF ObjectEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        ::= { topsens 2 }
+
+    objectEntry OBJECT-TYPE
+        SYNTAX ObjectEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "This is the table for object entries!"
+        INDEX { objectIndex }
+        ::= { objectTable 1}
+
+    ObjectEntry ::= SEQUENCE {
+        objectIndex                     INTEGER,
+        tsUnitState                     OCTET STRING,
+        tsUnitSoftwareNumber            DisplayString,
+        tsNumberOfDetectors             INTEGER,
+        tsBargraphLevel1                Opaque,
+        tsBargraphLevel2                Opaque,
+        tsDisplayData                   OCTET STRING,
+        tsRelayData                     OCTET STRING,
+        tsActualSummarizedUnitFailures  OCTET STRING,
+        tsStoredSummarizedUnitFailures  OCTET STRING,
+        tsValidSummarizedUnitFailures   OCTET STRING,
+
+        tsD1SerialNumber                INTEGER,
+        tsD1SoftwareNumber              DisplayString,
+        tsD1DILSwitches                 OCTET STRING,
+        tsD1AlarmDelayTime              Opaque,
+        tsD1AirFlowFailureDelayTime     Opaque,
+        tsD1PreAlarmLevel               Opaque,
+        tsD1InfoAlarmLevel              Opaque,
+        tsD1Sensibility                 Opaque,
+        tsD1ChamberValue                Opaque,
+        tsD1AirFlowDeviation            Opaque,
+        tsD1AirTemperature              Opaque,
+        tsD1SummarizedFailures          OCTET STRING,
+
+        tsD2SerialNumber                INTEGER,
+        tsD2SoftwareNumber              DisplayString,
+        tsD2DILSwitches                 OCTET STRING,
+        tsD2AlarmDelayTime              Opaque,
+        tsD2AirFlowFailureDelayTime     Opaque,
+        tsD2PreAlarmLevel               Opaque,
+        tsD2InfoAlarmLevel              Opaque,
+        tsD2Sensibility                 Opaque,
+        tsD2ChamberValue                Opaque,
+        tsD2AirFlowDeviation            Opaque,
+        tsD2AirTemperature              Opaque,
+        tsD2SummarizedFailures          OCTET STRING,
+
+        -- Unit state bits
+
+        tsMainAlarmD1               INTEGER,
+        tsPreAlarmD1                INTEGER,
+        tsInfAlarmD1                INTEGER,
+        tsMainAlarmD2               INTEGER,
+        tsPreAlarmD2                INTEGER,
+        tsInfAlarmD2                INTEGER,
+        tsFailureDisplayIsOn        INTEGER,
+        tsAlternateSensitivityOn    INTEGER,
+        tsAirFlowInitD1             INTEGER,
+        tsAirFlowInitD2             INTEGER,
+--      tsUnusedBit10               INTEGER,
+--      tsUnusedBit11               INTEGER,
+        tsStoredMessagesResetD1     INTEGER,
+        tsStoredMessagesResetD2     INTEGER,
+        tsStoredMessagesResetUnit   INTEGER,
+--      tsUnusedBit15               INTEGER,
+
+        -- Display data bits
+
+        tsD2AlarmDisplayOn              INTEGER,
+        tsD2AlarmDisplayBlinking        INTEGER,
+        tsD2PreAlarmDisplayOn           INTEGER,
+        tsD2PreAlarmDisplayBlinking     INTEGER,
+        tsD2InfAlarmDisplayOn           INTEGER,
+        tsD2InfAlarmDisplayBlinking     INTEGER,
+        tsD1AlarmDisplayOn              INTEGER,
+        tsD1AlarmDisplayBlinking        INTEGER,
+        tsD1PreAlarmDisplayOn           INTEGER,
+        tsD1PreAlarmDisplayBlinking     INTEGER,
+        tsD1InfAlarmDisplayOn           INTEGER,
+        tsD1InfAlarmDisplayBlinking     INTEGER,
+        tsFailureDisplayOn              INTEGER,
+        tsFailureDisplayBlinking        INTEGER,
+        tsOperatingDisplayOn            INTEGER,
+        tsOperatingDisplayBlinking      INTEGER,
+
+        -- Relay data bits
+
+        tsFailureRelayD2                INTEGER,
+        tsInfAlarmRelayD2               INTEGER,
+        tsPreAlarmRelayD2               INTEGER,
+        tsMainAlarmRelayD2              INTEGER,
+        tsFailureRelayD1                INTEGER,
+        tsInfAlarmRelayD1               INTEGER,
+        tsPreAlarmRelayD1               INTEGER,
+        tsMainAlarmRelayD1              INTEGER,
+
+        -- Actual summarized unit failure data bits
+
+        tsD2StaticAirFlowHigh               INTEGER,
+        tsD2StaticAirFlowLow                INTEGER,
+        tsD1StaticAirFlowHigh               INTEGER,
+        tsD1StaticAirFlowLow                INTEGER,
+--      tsUnusedBit24583-04                 INTEGER,
+--      tsUnusedBit24583-05                 INTEGER,
+--      tsUnusedBit24583-06                 INTEGER,
+--      tsUnusedBit24583-07                 INTEGER,
+--      tsUnusedBit24583-08                 INTEGER,
+        tsCutOff                            INTEGER,
+        tsCutOffBoardFailure                INTEGER,
+        tsCutOffBoardConnected              INTEGER,
+        tsUnitFailure                       INTEGER,
+        tsI2CUnitCommunicationFailure       INTEGER,
+        tsI2CD2CommunicationFailure         INTEGER,
+        tsI2CD1CommunicationFailure         INTEGER,
+
+        -- Stored summarized unit failure data bits
+
+        tsD2StaticAirFlowHighStored         INTEGER,
+        tsD2StaticAirFlowLowStored          INTEGER,
+        tsD1StaticAirFlowHighStored         INTEGER,
+        tsD1StaticAirFlowLowStored          INTEGER,
+--      tsUnusedBit24583-04Stored           INTEGER,
+--      tsUnusedBit24583-05Stored           INTEGER,
+--      tsUnusedBit24583-06Stored           INTEGER,
+--      tsUnusedBit24583-07Stored           INTEGER,
+--      tsUnusedBit24583-08Stored           INTEGER,
+        tsCutOffStored                      INTEGER,
+        tsCutOffBoardFailureStored          INTEGER,
+        tsCutOffBoardConnectedStored        INTEGER,
+        tsUnitFailureStored                 INTEGER,
+        tsI2CUnitCommunicationFailureStored INTEGER,
+        tsI2CD2CommunicationFailureStored   INTEGER,
+        tsI2CD1CommunicationFailureStored   INTEGER,
+
+        -- Valid summarized unit failure data bits
+
+        tsD2StaticAirFlowHighValid          INTEGER,
+        tsD2StaticAirFlowLowValid           INTEGER,
+        tsD1StaticAirFlowHighValid          INTEGER,
+        tsD1StaticAirFlowLowValid           INTEGER,
+--      tsUnusedBit24583-04Valid            INTEGER,
+--      tsUnusedBit24583-05Valid            INTEGER,
+--      tsUnusedBit24583-06Valid            INTEGER,
+--      tsUnusedBit24583-07Valid            INTEGER,
+--      tsUnusedBit24583-08Valid            INTEGER,
+        tsCutOffValid                       INTEGER,
+        tsCutOffBoardFailureValid           INTEGER,
+        tsCutOffBoardConnectedValid         INTEGER,
+        tsUnitFailureValid                  INTEGER,
+        tsI2CUnitCommunicationFailureValid  INTEGER,
+        tsI2CD2CommunicationFailureValid    INTEGER,
+        tsI2CD1CommunicationFailureValid    INTEGER,
+
+        -- Detector 1 DIL switches
+
+        tsD1AltSensInput                    INTEGER,
+        tsD1ResetInput                      INTEGER,
+--      tsUnusedD1DILSwitchBit02            INTEGER,
+--      tsUnusedD1DILSwitchBit03            INTEGER,
+--      tsUnusedD1DILSwitchBit04            INTEGER,
+--      tsUnusedD1DILSwitchBit05            INTEGER,
+        tsD1DILSwitch-10                    INTEGER,
+        tsD1DILSwitch-09                    INTEGER,
+        tsD1DILSwitch-08                    INTEGER,
+        tsD1DILSwitch-07                    INTEGER,
+        tsD1DILSwitch-06                    INTEGER,
+        tsD1DILSwitch-05                    INTEGER,
+        tsD1DILSwitch-04                    INTEGER,
+        tsD1DILSwitch-03                    INTEGER,
+        tsD1DILSwitch-02                    INTEGER,
+        tsD1DILSwitch-01                    INTEGER,
+
+        -- Detector 1 summarized failures
+
+--      tsUnusedD1FailureBit00Stored        INTEGER,
+--      tsUnusedD1FailureBit01Stored        INTEGER,
+--      tsUnusedD1FailureBit02Stored        INTEGER,
+        tsD1AnemometerFailureStored         INTEGER,
+        tsD1PressureCompFailureStored       INTEGER,
+        tsD1DirtyStored                     INTEGER,
+        tsD1ProgramFailureStored            INTEGER,
+        tsD1FailureStored                   INTEGER,
+
+--      tsUnusedD1FailureBit00              INTEGER,
+--      tsUnusedD1FailureBit01              INTEGER,
+--      tsUnusedD1FailureBit02              INTEGER,
+        tsD1AnemometerFailure               INTEGER,
+        tsD1PressureCompFailure             INTEGER,
+        tsD1Dirty                           INTEGER,
+        tsD1ProgramFailure                  INTEGER,
+        tsD1Failure                         INTEGER,
+
+        -- Detector 2 DIL switches
+
+        tsD2AltSensInput                    INTEGER,
+        tsD2ResetInput                      INTEGER,
+--      tsUnusedD2DILSwitchBit02            INTEGER,
+--      tsUnusedD2DILSwitchBit03            INTEGER,
+--      tsUnusedD2DILSwitchBit04            INTEGER,
+--      tsUnusedD2DILSwitchBit05            INTEGER,
+        tsD2DILSwitch-10                    INTEGER,
+        tsD2DILSwitch-09                    INTEGER,
+        tsD2DILSwitch-08                    INTEGER,
+        tsD2DILSwitch-07                    INTEGER,
+        tsD2DILSwitch-06                    INTEGER,
+        tsD2DILSwitch-05                    INTEGER,
+        tsD2DILSwitch-04                    INTEGER,
+        tsD2DILSwitch-03                    INTEGER,
+        tsD2DILSwitch-02                    INTEGER,
+        tsD2DILSwitch-01                    INTEGER,
+
+        -- Detector 2 summarized failures
+
+--      tsUnusedD2FailureBit00Stored        INTEGER,
+--      tsUnusedD2FailureBit01Stored        INTEGER,
+--      tsUnusedD2FailureBit02Stored        INTEGER,
+        tsD2AnemometerFailureStored         INTEGER,
+        tsD2PressureCompFailureStored       INTEGER,
+        tsD2DirtyStored                     INTEGER,
+        tsD2ProgramFailureStored            INTEGER,
+        tsD2FailureStored                   INTEGER,
+
+--      tsUnusedD2FailureBit00              INTEGER,
+--      tsUnusedD2FailureBit01              INTEGER,
+--      tsUnusedD2FailureBit02              INTEGER,
+        tsD2AnemometerFailure               INTEGER,
+        tsD2PressureCompFailure             INTEGER,
+        tsD2Dirty                           INTEGER,
+        tsD2ProgramFailure                  INTEGER,
+        tsD2Failure                         INTEGER,
+
+        -- Values for Bargraph 1
+
+        tsBarGraph1String           OCTET STRING,
+        tsBarGraph1Integer          INTEGER,
+        tsBarGraph1IntMul100        INTEGER,
+
+        -- Values for Bargraph 2
+
+        tsBarGraph2String           OCTET STRING,
+        tsBarGraph2Integer          INTEGER,
+        tsBarGraph2IntMul100        INTEGER,
+
+        -- Values for detector 1 alarm delay time
+
+        tsD1AlarmDelayTimeString            OCTET STRING,
+        tsD1AlarmDelayTimeInteger           INTEGER,
+        tsD1AlarmDelayTimeIntMul100         INTEGER,
+
+        -- Values for detector 1 air flow failure delay time 
+
+        tsD1AirFlowFailureDelayTimeString       OCTET STRING,
+        tsD1AirFlowFailureDelayTimeInteger      INTEGER,
+        tsD1AirFlowFailureDelayTimeIntMul100    INTEGER,
+
+        -- Values for detector 1 action alarm level
+
+        tsD1PreAlarmLevelString             OCTET STRING,
+        tsD1PreAlarmLevelInteger            INTEGER,
+        tsD1PreAlarmLevelIntMul100          INTEGER,
+
+        -- Values for detector 1 alert alarm level
+
+        tsD1InfoAlarmLevelString            OCTET STRING,
+        tsD1InfoAlarmLevelInteger           INTEGER,
+        tsD1InfoAlarmLevelIntMul100         INTEGER,
+
+        -- Values for detector 1 sensibility
+
+        tsD1SensibilityString               OCTET STRING,
+        tsD1SensibilityInteger              INTEGER,
+        tsD1SensibilityIntMul100            INTEGER,
+
+        -- Values for detector 1 chamber value
+
+        tsD1ChamberValueString              OCTET STRING,
+        tsD1ChamberValueInteger             INTEGER,
+        tsD1ChamberValueIntMul100           INTEGER,
+
+        -- Values for detector 1 air flow deviation
+
+        tsD1AirFlowDeviationString          OCTET STRING,
+        tsD1AirFlowDeviationInteger         INTEGER,
+        tsD1AirFlowDeviationIntMul100       INTEGER,
+
+        -- Values for detector 1 air temperature
+
+        tsD1AirTemperatureString            OCTET STRING,
+        tsD1AirTemperatureInteger           INTEGER,
+        tsD1AirTemperatureIntMul100         INTEGER,
+
+        -- Values for detector 2 alarm delay time
+
+        tsD2AlarmDelayTimeString            OCTET STRING,
+        tsD2AlarmDelayTimeInteger           INTEGER,
+        tsD2AlarmDelayTimeIntMul100         INTEGER,
+
+        -- Values for detector 2 air flow failure delay time 
+
+        tsD2AirFlowFailureDelayTimeString       OCTET STRING,
+        tsD2AirFlowFailureDelayTimeInteger      INTEGER,
+        tsD2AirFlowFailureDelayTimeIntMul100    INTEGER,
+
+        -- Values for detector 2 action alarm level
+
+        tsD2PreAlarmLevelString             OCTET STRING,
+        tsD2PreAlarmLevelInteger            INTEGER,
+        tsD2PreAlarmLevelIntMul100          INTEGER,
+
+        -- Values for detector 2 alert alarm level
+
+        tsD2InfoAlarmLevelString            OCTET STRING,
+        tsD2InfoAlarmLevelInteger           INTEGER,
+        tsD2InfoAlarmLevelIntMul100         INTEGER,
+
+        -- Values for detector 2 sensibility
+
+        tsD2SensibilityString               OCTET STRING,
+        tsD2SensibilityInteger              INTEGER,
+        tsD2SensibilityIntMul100            INTEGER,
+
+        -- Values for detector 2 chamber value
+
+        tsD2ChamberValueString              OCTET STRING,
+        tsD2ChamberValueInteger             INTEGER,
+        tsD2ChamberValueIntMul100           INTEGER,
+
+        -- Values for detector 2 air flow deviation
+
+        tsD2AirFlowDeviationString          OCTET STRING,
+        tsD2AirFlowDeviationInteger         INTEGER,
+        tsD2AirFlowDeviationIntMul100       INTEGER,
+
+        -- Values for detector 2 air temperature
+
+        tsD2AirTemperatureString            OCTET STRING,
+        tsD2AirTemperatureInteger           INTEGER,
+        tsD2AirTemperatureIntMul100         INTEGER
+    }
+
+    ----------------------------------------------------
+    -- TopSens object data
+    ----------------------------------------------------
+
+    objectIndex OBJECT-TYPE
+        SYNTAX  INTEGER (0..1)
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "A unique value for each table."
+        ::= { objectEntry 99 } 
+
+    tsUnitState                     OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The actual state of the TopSens. It consists of 16 bit from which every
+             one of them can be examined under id 24576000 to 24576015."
+        ::= { objectEntry 24576 }
+        
+    tsUnitSoftwareNumber            OBJECT-TYPE 
+        SYNTAX DisplayString
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The software number of the firmware in the mainboard of the TopSens."
+        ::= { objectEntry 24577 }
+        
+    tsNumberOfDetectors             OBJECT-TYPE 
+        SYNTAX INTEGER      
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The number of detector modules in the TopSens."
+        ::= { objectEntry 24578 }
+        
+    tsBargraphLevel1                OBJECT-TYPE 
+        SYNTAX Opaque       
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The bargraph level from detector 1.
+             The value is in percent from the chosen sensibility."
+        ::= { objectEntry 24579 }
+        
+    tsBargraphLevel2                OBJECT-TYPE 
+        SYNTAX Opaque       
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The bargraph level from detector 2.
+             The value is in percent from the chosen sensibility."
+        ::= { objectEntry 24580 }
+        
+    tsDisplayData                   OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The actual state of the TopSens display.
+             It consists of 16 bit from which every
+             one of them can be examined under id 24581000 to 24581015."
+        ::= { objectEntry 24581 }
+        
+    tsRelayData                     OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The actual state of the TopSens relais.
+             It consists of 8 bit from which every
+             one of them can be examined under id 24582000 to 24582007."
+        ::= { objectEntry 24582 }
+        
+    tsActualSummarizedUnitFailures  OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The actual failure state information of the TopSens.
+             It consists of 16 bit from which every
+             one of them can be examined under id 24583000 to 24583015."
+        ::= { objectEntry 24583 }
+        
+    tsStoredSummarizedUnitFailures  OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The stored failure state information of the TopSens.
+             It consists of 16 bit from which every
+             one of them can be examined under id 24584000 to 24584015."
+        ::= { objectEntry 24584 }
+        
+    tsValidSummarizedUnitFailures   OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The information of valid failure state bits for the TopSens.
+             It consists of 16 bit from which every
+             one of them can be examined under id 24585000 to 24585015."
+        ::= { objectEntry 24585 }
+        
+
+    tsD1SerialNumber                OBJECT-TYPE 
+        SYNTAX INTEGER          
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The serial number of the first detector module in the TopSens."
+        ::= { objectEntry 24586 }
+        
+    tsD1SoftwareNumber              OBJECT-TYPE 
+        SYNTAX DisplayString    
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The number of the software in the first detector module in the TopSens."
+        ::= { objectEntry 24587 }
+        
+    tsD1DILSwitches                 OBJECT-TYPE 
+        SYNTAX OCTET STRING     
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switches and the inputs 
+             of the first detector module in the TopSens.
+             It consists of 16 bit from which every
+             one of them can be examined under id 24588000 to 24588015."
+        ::= { objectEntry 24588 }
+        
+    tsD1AlarmDelayTime              OBJECT-TYPE 
+        SYNTAX Opaque           
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The alarm delay time in s for detector 1."
+        ::= { objectEntry 24589 }
+        
+    tsD1AirFlowFailureDelayTime     OBJECT-TYPE 
+        SYNTAX Opaque           
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The air flow failure delay time in s for detector 1."
+        ::= { objectEntry 24590 }
+        
+    tsD1PreAlarmLevel               OBJECT-TYPE 
+        SYNTAX Opaque           
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The action alarm threshold for detector 1.
+             The value is in percent from the chosen sensibility."
+        ::= { objectEntry 24591 }
+        
+    tsD1InfoAlarmLevel              OBJECT-TYPE 
+        SYNTAX Opaque           
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The alert alarm threshold for detector 1.
+             The value is in percent from the chosen sensibility."
+        ::= { objectEntry 24592 }
+        
+    tsD1Sensibility                 OBJECT-TYPE 
+        SYNTAX Opaque           
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The sensibility of detector 1 in %/m."
+        ::= { objectEntry 24593 }
+        
+    tsD1ChamberValue                OBJECT-TYPE 
+        SYNTAX Opaque           
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The chamber deviation from the calibration point for detector 1.
+             The value is in percent from the chamber deviation limits,
+             where a chamber fault condition occures."
+        ::= { objectEntry 24594 }
+        
+    tsD1AirFlowDeviation            OBJECT-TYPE 
+        SYNTAX Opaque           
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The air flow deviation of detector 1 from the set point.
+             The value is in percent from the chosen air flow limits,
+             where an air flow fault condition occure."
+        ::= { objectEntry 24595 }
+        
+    tsD1AirTemperature              OBJECT-TYPE 
+        SYNTAX Opaque           
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The sampled air temperature in detector 1 in Celsius."
+        ::= { objectEntry 24596 }
+        
+    tsD1SummarizedFailures          OBJECT-TYPE 
+        SYNTAX OCTET STRING     
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The actual failure state information of detector 1.
+             It consists of 2 x 8 bit from which every
+             one of them can be examined under id 24597000 to 24597015.
+             The first 8 bit represent the actual failure states and 
+             the second 8 bits represent the stored failure states."
+        ::= { objectEntry 24597 }
+        
+
+    tsD2SerialNumber                OBJECT-TYPE 
+        SYNTAX INTEGER          
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The serial number of the second detector module in the TopSens."
+        ::= { objectEntry 24598 }
+        
+    tsD2SoftwareNumber              OBJECT-TYPE 
+        SYNTAX DisplayString    
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The number of the software in the second detector module in the TopSens."
+        ::= { objectEntry 24599 }
+        
+    tsD2DILSwitches                 OBJECT-TYPE 
+        SYNTAX OCTET STRING     
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switches and the inputs 
+             of the second detector module in the TopSens.
+             It consists of 16 bit from which every
+             one of them can be examined under id 24600000 to 24600015."
+        ::= { objectEntry 24600 }
+        
+    tsD2AlarmDelayTime              OBJECT-TYPE 
+        SYNTAX Opaque           
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The alarm delay time in s for detector 2."
+        ::= { objectEntry 24601 }
+        
+    tsD2AirFlowFailureDelayTime     OBJECT-TYPE 
+        SYNTAX Opaque           
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The air flow failure delay time in s for detector 2."
+        ::= { objectEntry 24602 }
+        
+    tsD2PreAlarmLevel               OBJECT-TYPE 
+        SYNTAX Opaque           
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The action alarm threshold for detector 2.
+             The value is in percent from the chosen sensibility."
+        ::= { objectEntry 24603 }
+        
+    tsD2InfoAlarmLevel              OBJECT-TYPE 
+        SYNTAX Opaque           
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The alert alarm threshold for detector 2.
+             The value is in percent from the chosen sensibility."
+        ::= { objectEntry 24604 }
+        
+    tsD2Sensibility                 OBJECT-TYPE 
+        SYNTAX Opaque           
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The sensibility of detector 2 in %/m."
+        ::= { objectEntry 24605 }
+        
+    tsD2ChamberValue                OBJECT-TYPE 
+        SYNTAX Opaque           
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The chamber deviation from the calibration point for detector 2.
+             The value is in percent from the chamber deviation limits,
+             where a chamber fault condition occures."
+        ::= { objectEntry 24606 }
+        
+    tsD2AirFlowDeviation            OBJECT-TYPE 
+        SYNTAX Opaque           
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The air flow deviation of detector 2 from the set point.
+             The value is in percent from the chosen air flow limits,
+             where an air flow fault condition occure."
+            ::= { objectEntry 24607 }
+        
+    tsD2AirTemperature              OBJECT-TYPE 
+        SYNTAX Opaque           
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The sampled air temperature in detector 2 in Celsius."
+        ::= { objectEntry 24608 }
+        
+    tsD2SummarizedFailures          OBJECT-TYPE 
+        SYNTAX OCTET STRING     
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The actual failure state information of detector 2.
+             It consists of 2 x 8 bit from which every
+             one of them can be examined under id 24609000 to 24609007.
+             The first 8 bit represent the actual failure states and 
+             the second 8 bits represent the stored failure states."
+        ::= { objectEntry 24609 }
+        
+
+    ------------------------------------------------------------------------
+    -- Bits from TopSens data object 24576 (6000 hex), Unit state bits
+    ------------------------------------------------------------------------
+
+    tsMainAlarmD1                   OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "Detector 1 fire alarm state.
+             It is one (1) if the fire alarm is released."
+        ::= { objectEntry 24576000 }
+        
+    tsPreAlarmD1                    OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "Detector 1 action alarm state.
+             It is one (1) if the action alarm is released."
+        ::= { objectEntry 24576001 }
+        
+    tsInfAlarmD1                    OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "Detector 1 alert alarm state.
+             It is one (1) if the alert alarm is released."
+        ::= { objectEntry 24576002 }
+        
+    tsMainAlarmD2                   OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "Detector 2 fire alarm state.
+             It is one (1) if the fire alarm is released."
+        ::= { objectEntry 24576003 }
+        
+    tsPreAlarmD2                    OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "Detector 2 action alarm state.
+             It is one (1) if the action alarm is released."
+        ::= { objectEntry 24576004 }
+        
+    tsInfAlarmD2                    OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "Detector 2 alert alarm state.
+             It is one (1) if the alert alarm is released."
+        ::= { objectEntry 24576005 }
+        
+    tsFailureDisplayIsOn            OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If one (1) the failure display is on."
+        ::= { objectEntry 24576006 }
+        
+    tsAlternateSensitivityOn        OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If one (1) the alternative sensitivity is switched on."
+        ::= { objectEntry 24576007 }
+        
+    tsAirFlowInitD1                 OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If one (1) the detector 1 is in air flow initialization state."
+        ::= { objectEntry 24576008 }
+        
+    tsAirFlowInitD2                 OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If one (1) the detector 2 is in air flow initialization state."
+        ::= { objectEntry 24576009 }
+        
+--  tsUnusedBit10                         OBJECT-TYPE 
+--      SYNTAX INTEGER { 
+--          off(0), 
+--          on(1) 
+--      } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 10."
+--      ::= { objectEntry 24576010 }
+        
+--  tsUnusedBit11                         OBJECT-TYPE 
+--      SYNTAX INTEGER { 
+--          off(0), 
+--          on(1) 
+--      } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 11."
+--      ::= { objectEntry 24576011 }
+        
+    tsStoredMessagesResetD1         OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If one (1) the stored messages in detector 1 are reset."
+        ::= { objectEntry 24576012 }
+        
+    tsStoredMessagesResetD2         OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If one (1) the stored messages in detector 2 are reset."
+        ::= { objectEntry 24576013 }
+        
+    tsStoredMessagesResetUnit       OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If one (1) the stored messages on the unit mainboard are reset."
+        ::= { objectEntry 24576014 }
+        
+--  tsUnusedBit15                         OBJECT-TYPE 
+--      SYNTAX INTEGER { 
+--          off(0), 
+--          on(1) 
+--      } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 15."
+--      ::= { objectEntry 24576015 }
+        
+
+    --------------------------------------------------------------------
+    -- Bits from TopSens data object 24581 (6005 hex), Display data bits
+    --------------------------------------------------------------------
+
+    tsD2AlarmDisplayOn              OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If set(1) the fire alarm display for detector 2 is on." 
+        ::= { objectEntry 24581000 }
+        
+    tsD2AlarmDisplayBlinking        OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            blinking(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If set(1) the fire alarm display for detector 2 is blinking." 
+        ::= { objectEntry 24581001 }
+        
+    tsD2PreAlarmDisplayOn           OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If set(1) the action alarm display for detector 2 is steady on." 
+        ::= { objectEntry 24581002 }
+        
+    tsD2PreAlarmDisplayBlinking     OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            blinking(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If set(1) the action alarm display for detector 2 is blinking." 
+        ::= { objectEntry 24581003 }
+        
+    tsD2InfAlarmDisplayOn           OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If set(1) the alert alarm display for detector 2 is steady on." 
+        ::= { objectEntry 24581004 }
+        
+    tsD2InfAlarmDisplayBlinking     OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            blinking(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If set(1) the alert alarm display for detector 2 is blinking." 
+        ::= { objectEntry 24581005 }
+        
+    tsD1AlarmDisplayOn              OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If set(1) the fire alarm display for detector 1 is steady on." 
+        ::= { objectEntry 24581006 }
+        
+    tsD1AlarmDisplayBlinking        OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            blinking(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If set(1) the fire alarm display for detector 1 is blinking." 
+        ::= { objectEntry 24581007 }
+        
+    tsD1PreAlarmDisplayOn           OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If set(1) the action alarm display for detector 1 is steady on." 
+        ::= { objectEntry 24581008 }
+        
+    tsD1PreAlarmDisplayBlinking     OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            blinking(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If set(1) the action alarm display for detector 1 is blinking." 
+        ::= { objectEntry 24581009 }
+        
+    tsD1InfAlarmDisplayOn           OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If set(1) the alert alarm display for detector 1 is steady on." 
+        ::= { objectEntry 24581010 }
+        
+    tsD1InfAlarmDisplayBlinking     OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            blinking(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If set(1) the alert alarm display for detector 1 is blinking." 
+        ::= { objectEntry 24581011 }
+        
+    tsFailureDisplayOn              OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If set(1) the failure display is steady on." 
+        ::= { objectEntry 24581012 }
+        
+    tsFailureDisplayBlinking        OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            blinking(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If set(1) the failure display is blinking." 
+        ::= { objectEntry 24581013 }
+        
+    tsOperatingDisplayOn                OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            on(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If set(1) the operating display is steady on." 
+        ::= { objectEntry 24581014 }
+        
+    tsOperatingDisplayBlinking          OBJECT-TYPE 
+        SYNTAX INTEGER { 
+            off(0), 
+            blinking(1) 
+        } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "If set(1) the operating display is blinking." 
+        ::= { objectEntry 24581015 }
+        
+
+    ------------------------------------------------------------------
+    -- Bits from TopSens data object 24582 (6006 hex), Relay data bits
+    ------------------------------------------------------------------
+
+    tsFailureRelayD2                OBJECT-TYPE 
+        SYNTAX INTEGER  { relaxed(0), engaged(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "Shows the state of the failure relay for detector 2.
+             If detector 2 is in failure state the relay is relaxed." 
+        ::= { objectEntry 24582000 }    
+        
+    tsInfAlarmRelayD2               OBJECT-TYPE 
+        SYNTAX INTEGER  { relaxed(0), engaged(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "Shows the state of the alert alarm relay for detector 2.
+             If detector 2 is in alert alarm state the relay is engaged." 
+        ::= { objectEntry 24582001 }    
+        
+    tsPreAlarmRelayD2               OBJECT-TYPE 
+        SYNTAX INTEGER  { relaxed(0), engaged(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "Shows the state of the action alarm relay for detector 2.
+             If detector 2 is in action alarm state the relay is engaged." 
+        ::= { objectEntry 24582002 }    
+        
+    tsMainAlarmRelayD2              OBJECT-TYPE 
+        SYNTAX INTEGER  { relaxed(0), engaged(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "Shows the state of the fire alarm relay for detector 2.
+             If detector 2 is in fire alarm state the relay is engaged." 
+        ::= { objectEntry 24582003 }    
+        
+    tsFailureRelayD1                OBJECT-TYPE 
+        SYNTAX INTEGER  { relaxed(0), engaged(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "Shows the state of the failure relay for detector 1.
+             If detector 1 is in failure state the relay is relaxed." 
+        ::= { objectEntry 24582004 }    
+        
+    tsInfAlarmRelayD1               OBJECT-TYPE 
+        SYNTAX INTEGER  { relaxed(0), engaged(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "Shows the state of the alert alarm relay for detector 1.
+             If detector 1 is in alert alarm state the relay is engaged." 
+        ::= { objectEntry 24582005 }    
+        
+    tsPreAlarmRelayD1               OBJECT-TYPE 
+        SYNTAX INTEGER  { relaxed(0), engaged(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "Shows the state of the action alarm relay for detector 1.
+             If detector 1 is in action alarm state the relay is engaged." 
+        ::= { objectEntry 24582006 }    
+        
+    tsMainAlarmRelayD1              OBJECT-TYPE 
+        SYNTAX INTEGER  { relaxed(0), engaged(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "Shows the state of the fire alarm relay for detector 1.
+             If detector 1 is in fire alarm state the relay is engaged." 
+        ::= { objectEntry 24582007 }    
+        
+
+    ----------------------------------------------------
+    -- Bits from TopSens data object 24583 (6007 hex), 
+    -- Actual summarized unit failure data bits
+    ----------------------------------------------------
+
+    tsD2StaticAirFlowHigh           OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),high(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the air flow rate in detector 2 gets too high.
+             It can be caused by fissures in the pipe." 
+        ::= { objectEntry 24583000 }    
+        
+    tsD2StaticAirFlowLow            OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),low(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the air flow rate in detector 2 gets too low.
+             It can be caused by engorged sampling holes in the pipe." 
+        ::= { objectEntry 24583001 }    
+        
+    tsD1StaticAirFlowHigh           OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),high(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the air flow rate in detector 1 gets too high.
+             It can be caused by fissures in the pipe." 
+        ::= { objectEntry 24583002 }    
+        
+    tsD1StaticAirFlowLow            OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),low(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the air flow rate in detector 1 gets too low.
+             It can be caused by engorged sampling holes in the pipe." 
+        ::= { objectEntry 24583003 }    
+        
+--  tsUnusedBit24583-04                   OBJECT-TYPE 
+--      SYNTAX INTEGER  { off(0),on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 4" 
+--      ::= { objectEntry 24583004 }    
+        
+--  tsUnusedBit24583-05                   OBJECT-TYPE 
+--      SYNTAX INTEGER  { off(0),on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 5" 
+--      ::= { objectEntry 24583005 }    
+        
+--  tsUnusedBit24583-06                   OBJECT-TYPE 
+--      SYNTAX INTEGER  { off(0),on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 6" 
+--      ::= { objectEntry 24583006 }    
+        
+--  tsUnusedBit24583-07                   OBJECT-TYPE 
+--      SYNTAX INTEGER  { off(0),on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 7" 
+--      ::= { objectEntry 24583007 }    
+        
+--  tsUnusedBit24583-08                   OBJECT-TYPE 
+--      SYNTAX INTEGER  { off(0),on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 8" 
+--      ::= { objectEntry 24583008 }    
+        
+    tsCutOff                        OBJECT-TYPE 
+        SYNTAX INTEGER  { ext-on(0),ext-off(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the cut-off board
+             in the unit has switched off the external device." 
+        ::= { objectEntry 24583009 }    
+        
+    tsCutOffBoardFailure            OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),failure(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the cut-off board
+             in the unit is in failure condition." 
+        ::= { objectEntry 24583010 }    
+        
+    tsCutOffBoardConnected          OBJECT-TYPE 
+        SYNTAX INTEGER  { absent(0),connected(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the cut-off board
+             is connected to the unit." 
+        ::= { objectEntry 24583011 }    
+        
+    tsUnitFailure                   OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),failure(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the unit is in failure state." 
+        ::= { objectEntry 24583012 }    
+        
+    tsI2CUnitCommunicationFailure   OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),failure(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the I2C bus of the unit
+             is in failure state." 
+        ::= { objectEntry 24583013 }    
+        
+    tsI2CD2CommunicationFailure     OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),failure(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the I2C communication
+             with detector 2 is in failure state." 
+        ::= { objectEntry 24583014 }    
+        
+    tsI2CD1CommunicationFailure     OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),failure(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the I2C communication
+             with detector 1 is in failure state." 
+        ::= { objectEntry 24583015 }    
+        
+
+    ----------------------------------------------------
+    -- Bits from TopSens data object 24584 (6008 hex), 
+    -- Stored summarized unit failure data bits
+    ----------------------------------------------------
+
+    tsD2StaticAirFlowHighStored         OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the air flow rate in detector 2 has been too high." 
+        ::= { objectEntry 24584000 }
+        
+    tsD2StaticAirFlowLowStored          OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the air flow rate in detector 2 has been too low." 
+        ::= { objectEntry 24584001 }
+        
+    tsD1StaticAirFlowHighStored         OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the air flow rate in detector 1 has been too high." 
+        ::= { objectEntry 24584002 }
+        
+    tsD1StaticAirFlowLowStored          OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the air flow rate in detector 1 has been too low." 
+        ::= { objectEntry 24584003 }
+        
+--  tsUnusedBit24583-04Stored                 OBJECT-TYPE 
+--      SYNTAX INTEGER  { off(0),on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 4" 
+--      ::= { objectEntry 24584004 }
+        
+--  tsUnusedBit24583-05Stored                 OBJECT-TYPE 
+--      SYNTAX INTEGER  { off(0),on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 5" 
+--      ::= { objectEntry 24584005 }
+        
+--  tsUnusedBit24583-06Stored                 OBJECT-TYPE 
+--      SYNTAX INTEGER  { off(0),on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 6" 
+--      ::= { objectEntry 24584006 }
+        
+--  tsUnusedBit24583-07Stored                 OBJECT-TYPE 
+--      SYNTAX INTEGER  { off(0),on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 7" 
+--      ::= { objectEntry 24584007 }
+        
+--  tsUnusedBit24583-08Stored                 OBJECT-TYPE 
+--      SYNTAX INTEGER  { off(0),on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 8" 
+--      ::= { objectEntry 24584008 }
+        
+    tsCutOffStored                      OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the the external device
+             has been switched off by the cut-off board." 
+        ::= { objectEntry 24584009 }
+        
+    tsCutOffBoardFailureStored          OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the cut-off board
+             in the unit has been in failure condition." 
+        ::= { objectEntry 24584010 }
+        
+    tsCutOffBoardConnectedStored        OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the cut-off board
+             has been connected to the unit." 
+        ::= { objectEntry 24584011 }
+        
+    tsUnitFailureStored                 OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the unit has been in failure state." 
+        ::= { objectEntry 24584012 }
+        
+    tsI2CUnitCommunicationFailureStored OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the I2C bus of the unit
+             has been in failure state." 
+        ::= { objectEntry 24584013 }
+        
+    tsI2CD2CommunicationFailureStored   OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the I2C communication
+             with detector 2 has been in failure state." 
+        ::= { objectEntry 24584014 }
+        
+    tsI2CD1CommunicationFailureStored   OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the I2C communication
+             with detector 1 has been in failure state." 
+        ::= { objectEntry 24584015 }
+        
+
+    ----------------------------------------------------
+    -- Bits from TopSens data object 24585 (6009 hex), 
+    -- Valid summarized unit failure data bits
+    ----------------------------------------------------
+
+    tsD2StaticAirFlowHighValid          OBJECT-TYPE 
+        SYNTAX INTEGER { invalid(0), valid(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the air flow rate too high 
+             failure bit for detector 2 is valid." 
+        ::= { objectEntry 24585000 }
+        
+    tsD2StaticAirFlowLowValid           OBJECT-TYPE 
+        SYNTAX INTEGER { invalid(0), valid(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the air flow rate too low 
+             failure bit for detector 2 is valid." 
+        ::= { objectEntry 24585001 }
+        
+    tsD1StaticAirFlowHighValid          OBJECT-TYPE 
+        SYNTAX INTEGER { invalid(0), valid(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the air flow rate too high 
+             failure bit for detector 1 is valid." 
+        ::= { objectEntry 24585002 }
+        
+    tsD1StaticAirFlowLowValid           OBJECT-TYPE 
+        SYNTAX INTEGER { invalid(0), valid(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the air flow rate too low 
+             failure bit for detector 1 is valid." 
+        ::= { objectEntry 24585003 }
+        
+--  tsUnusedBit24583-04Valid                  OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 4" 
+--      ::= { objectEntry 24585004 }
+        
+--  tsUnusedBit24583-05Valid                  OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 5" 
+--      ::= { objectEntry 24585005 }
+        
+--  tsUnusedBit24583-06Valid                  OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 6" 
+--      ::= { objectEntry 24585006 }
+        
+--  tsUnusedBit24583-07Valid                  OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 7" 
+--      ::= { objectEntry 24585007 }
+        
+--  tsUnusedBit24583-08Valid                  OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 8" 
+--      ::= { objectEntry 24585008 }
+        
+    tsCutOffValid                       OBJECT-TYPE 
+        SYNTAX INTEGER { invalid(0), valid(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the cut-off board
+             in the unit can switch off the external device." 
+        ::= { objectEntry 24585009 }
+        
+    tsCutOffBoardFailureValid           OBJECT-TYPE 
+        SYNTAX INTEGER { invalid(0), valid(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the cut-off board
+             in the unit can have a failure condition." 
+        ::= { objectEntry 24585010 }
+        
+    tsCutOffBoardConnectedValid         OBJECT-TYPE 
+        SYNTAX INTEGER { invalid(0), valid(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the cut-off board
+             can be connected to the unit." 
+        ::= { objectEntry 24585011 }
+        
+    tsUnitFailureValid                  OBJECT-TYPE 
+        SYNTAX INTEGER { invalid(0), valid(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the unit can have failure states." 
+        ::= { objectEntry 24585012 }
+        
+    tsI2CUnitCommunicationFailureValid  OBJECT-TYPE 
+        SYNTAX INTEGER { invalid(0), valid(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the I2C bus of the unit
+             can have failure states." 
+        ::= { objectEntry 24585013 }
+        
+    tsI2CD2CommunicationFailureValid    OBJECT-TYPE 
+        SYNTAX INTEGER { invalid(0), valid(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the I2C communication
+             with detector 2 can have failure states." 
+        ::= { objectEntry 24585014 }
+        
+    tsI2CD1CommunicationFailureValid    OBJECT-TYPE 
+        SYNTAX INTEGER { invalid(0), valid(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the I2C communication
+             with detector 1 can have failure states." 
+        ::= { objectEntry 24585015 }
+        
+
+    ----------------------------------------------------
+    -- Bits from TopSens data object 24588 (600C hex), 
+    -- Detector 1 DIL switches
+    ----------------------------------------------------
+
+    tsD1AltSensInput                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), activated(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the input 'Alternate sensitivity' for detector 1.
+             If set(1) the alternative sensitivity is activated." 
+        ::= { objectEntry 24588000 }
+        
+    tsD1ResetInput                      OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), activated(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the reset input for detector 1.
+             If set(1) the reset input is activated." 
+        ::= { objectEntry 24588001 }
+        
+--  tsUnusedD1DILSwitchBit02                  OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 2" 
+--      ::= { objectEntry 24588002 }
+        
+--  tsUnusedD1DILSwitchBit03                  OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 3" 
+--      ::= { objectEntry 24588003 }
+        
+--  tsUnusedD1DILSwitchBit04                  OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 4" 
+--      ::= { objectEntry 24588004 }
+        
+--  tsUnusedD1DILSwitchBit05                  OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 5" 
+--      ::= { objectEntry 24588005 }
+        
+    tsD1DILSwitch-10                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 10 on detector 1.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24588006 }
+        
+    tsD1DILSwitch-09                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 9 on detector 1.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24588007 }
+        
+    tsD1DILSwitch-08                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 8 on detector 1.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24588008 }
+        
+    tsD1DILSwitch-07                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 7 on detector 1.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24588009 }
+        
+    tsD1DILSwitch-06                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 6 on detector 1.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24588010 }
+        
+    tsD1DILSwitch-05                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 5 on detector 1.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24588011 }
+        
+    tsD1DILSwitch-04                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 4 on detector 1.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24588012 }
+        
+    tsD1DILSwitch-03                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 3 on detector 1.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24588013 }
+        
+    tsD1DILSwitch-02                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 2 on detector 1.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24588014 }
+        
+    tsD1DILSwitch-01                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 1 on detector 1.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24588015 }
+        
+
+    ----------------------------------------------------
+    -- Bits from TopSens data object 24597 (6015 hex), 
+    -- Detector 1 summarized failures
+    ----------------------------------------------------
+
+--  tsUnusedD1FailureBit00Stored              OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 0" 
+--      ::= { objectEntry 24597000 }
+        
+--  tsUnusedD1FailureBit01Stored              OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 1" 
+--      ::= { objectEntry 24597001 }
+        
+--  tsUnusedD1FailureBit02Stored              OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 2" 
+--      ::= { objectEntry 24597002 }
+        
+    tsD1AnemometerFailureStored         OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the air flow anemometer 
+             in detector 1 has detected a failure condition." 
+        ::= { objectEntry 24597003 }
+        
+    tsD1PressureCompFailureStored       OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the pressure compensation 
+             value for detector 1 has been out of bounds." 
+        ::= { objectEntry 24597004 }
+        
+    tsD1DirtyStored                     OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the smoke measuring
+             chamber in detector 1 has been dirty." 
+        ::= { objectEntry 24597005 }
+        
+    tsD1ProgramFailureStored            OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the detector 1
+             has detected a program failure." 
+        ::= { objectEntry 24597006 }
+        
+    tsD1FailureStored                   OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the detector 1 has detected failures.
+             It's the stored summary of all failure conditions in detector 1." 
+        ::= { objectEntry 24597007 }
+        
+--  tsUnusedD1FailureBit00                    OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 0" 
+--      ::= { objectEntry 24597008 }
+        
+--  tsUnusedD1FailureBit01                    OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 1" 
+--      ::= { objectEntry 24597009 }
+        
+--  tsUnusedD1FailureBit02                    OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 2" 
+--      ::= { objectEntry 24597010 }
+        
+    tsD1AnemometerFailure               OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the air flow anemometer 
+             in detector 1 has detected a failure condition." 
+        ::= { objectEntry 24597011 }
+        
+    tsD1PressureCompFailure             OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the pressure compensation 
+             value for detector 1 is out of bounds." 
+        ::= { objectEntry 24597012 }
+        
+    tsD1Dirty                           OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the smoke measuring
+             chamber in detector 1 is dirty." 
+        ::= { objectEntry 24597013 }
+        
+    tsD1ProgramFailure                  OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the detector 1
+             has detected a program failure." 
+        ::= { objectEntry 24597014 }
+        
+    tsD1Failure                         OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the detector 1 has detected failures.
+             It's the summary of all failure conditions in detector 1." 
+        ::= { objectEntry 24597015 }
+        
+
+    ----------------------------------------------------
+    -- Bits from TopSens data object 24600 (6018 hex), 
+    -- Detector 2 DIL switches
+    ----------------------------------------------------
+
+    tsD2AltSensInput                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), activated(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the input 'Alternate sensitivity' for detector 2.
+             If set(1) the alternative sensitivity is activated." 
+        ::= { objectEntry 24600000 }
+        
+    tsD2ResetInput                      OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), activated(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the reset input for detector 2.
+             If set(1) the reset input is activated." 
+        ::= { objectEntry 24600001 }
+        
+--  tsUnusedD2DILSwitchBit02                  OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 2" 
+--      ::= { objectEntry 24600002 }
+        
+--  tsUnusedD2DILSwitchBit03                  OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 3" 
+--      ::= { objectEntry 24600003 }
+        
+--  tsUnusedD2DILSwitchBit04                  OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 4" 
+--      ::= { objectEntry 24600004 }
+        
+--  tsUnusedD2DILSwitchBit05                  OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 5" 
+--      ::= { objectEntry 24600005 }
+        
+    tsD2DILSwitch-10                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 10 on detector 2.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24600006 }
+        
+    tsD2DILSwitch-09                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 9 on detector 2.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24600007 }
+        
+    tsD2DILSwitch-08                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 8 on detector 2.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24600008 }
+        
+    tsD2DILSwitch-07                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 7 on detector 2.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24600009 }
+        
+    tsD2DILSwitch-06                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 6 on detector 2.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24600010 }
+        
+    tsD2DILSwitch-05                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 5 on detector 2.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24600011 }
+        
+    tsD2DILSwitch-04                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 4 on detector 2.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24600012 }
+        
+    tsD2DILSwitch-03                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 3 on detector 2.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24600013 }
+        
+    tsD2DILSwitch-02                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 2 on detector 2.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24600014 }
+        
+    tsD2DILSwitch-01                    OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The state of the DIL switch 1 on detector 2.
+             If set(1) the DIL switch is set to 'on'." 
+        ::= { objectEntry 24600015 }
+        
+
+    ----------------------------------------------------
+    -- Bits from TopSens data object 24609 (6021 hex), 
+    -- Detector 2 summarized failures
+    ----------------------------------------------------
+
+--  tsUnusedD2FailureBit00Stored              OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 0" 
+--      ::= { objectEntry 24609000 }
+        
+--  tsUnusedD2FailureBit01Stored              OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 1" 
+--      ::= { objectEntry 24609001 }
+        
+--  tsUnusedD2FailureBit02Stored              OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 2" 
+--      ::= { objectEntry 24609002 }
+        
+    tsD2AnemometerFailureStored         OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the air flow anemometer 
+             in detector 2 has detected a failure condition." 
+        ::= { objectEntry 24609003 }
+        
+    tsD2PressureCompFailureStored       OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the pressure compensation 
+             value for detector 2 has been out of bounds." 
+        ::= { objectEntry 24609004 }
+        
+    tsD2DirtyStored                     OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the smoke measuring
+             chamber in detector 2 has been dirty." 
+        ::= { objectEntry 24609005 }
+        
+    tsD2ProgramFailureStored            OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the detector 2
+             has detected a program failure." 
+        ::= { objectEntry 24609006 }
+        
+    tsD2FailureStored                   OBJECT-TYPE 
+        SYNTAX INTEGER  { normal(0),stored(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the detector 2 has detected failures.
+             It's the stored summary of all failure conditions in detector 2." 
+        ::= { objectEntry 24609007 }
+        
+--  tsUnusedD2FailureBit00                    OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 0" 
+--      ::= { objectEntry 24609008 }
+        
+--  tsUnusedD2FailureBit01                    OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 1" 
+--      ::= { objectEntry 24609009 }
+        
+--  tsUnusedD2FailureBit02                    OBJECT-TYPE 
+--      SYNTAX INTEGER { off(0), on(1) } 
+--      ACCESS read-only 
+--      STATUS mandatory 
+--      DESCRIPTION 
+--          "Unused bit 2" 
+--      ::= { objectEntry 24609010 }
+        
+    tsD2AnemometerFailure               OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the air flow anemometer 
+             in detector 2 has detected a failure condition." 
+        ::= { objectEntry 24609011 }
+        
+    tsD2PressureCompFailure             OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the pressure compensation 
+             value for detector 2 is out of bounds." 
+        ::= { objectEntry 24609012 }
+        
+    tsD2Dirty                           OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the smoke measuring
+             chamber in detector 2 is dirty." 
+        ::= { objectEntry 24609013 }
+        
+    tsD2ProgramFailure                  OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the detector 2
+             has detected a program failure." 
+        ::= { objectEntry 24609014 }
+        
+    tsD2Failure                         OBJECT-TYPE 
+        SYNTAX INTEGER { off(0), on(1) } 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "This flag is set(1) when the detector 2 has detected failures.
+             It's the summary of all failure conditions in detector 2." 
+        ::= { objectEntry 24609015 }
+        
+
+    ----------------------------------------------------
+    -- Float value from data object 24579 (6003 hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsBarGraph1String           OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The bar graph value for detector 1 in percent, as string."
+        ::= { objectEntry 245790000 }
+        
+    tsBarGraph1Integer          OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The bar graph value for detector 1 in percent, as integer."
+        ::= { objectEntry 245790001 }
+        
+    tsBarGraph1IntMul100        OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The bar graph value for detector 1 in percent,
+             multiplied by 100, as integer."
+        ::= { objectEntry 245790002 }
+
+    ----------------------------------------------------
+    -- Float value from data object 24580 (6004 hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsBarGraph2String           OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The bar graph value for detector 2 in percent, as string."
+        ::= { objectEntry 245800000 }
+        
+    tsBarGraph2Integer          OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The bar graph value for detector 2 in percent, as integer."
+        ::= { objectEntry 245800001 }
+        
+    tsBarGraph2IntMul100        OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The bar graph value for detector 2 in percent,
+             multiplied by 100, as integer."
+        ::= { objectEntry 245800002 }
+
+    ----------------------------------------------------
+    -- Float value from data object 24589 (600D hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsD1AlarmDelayTimeString            OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The alarm delay time in s for detector 1, as string."
+        ::= { objectEntry 245890000 }
+        
+    tsD1AlarmDelayTimeInteger           OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The alarm delay time in s for detector 1, as integer."
+        ::= { objectEntry 245890001 }
+        
+    tsD1AlarmDelayTimeIntMul100         OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The alarm delay time in s for detector 1,
+             multiplied by 100, as integer."
+        ::= { objectEntry 245890002 }
+
+    ----------------------------------------------------
+    -- Float value from data object 24590 (600E hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsD1AirFlowFailureDelayTimeString       OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The air flow failure delay time in s for detector 1, as string."
+        ::= { objectEntry 245900000 }
+        
+    tsD1AirFlowFailureDelayTimeInteger      OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The air flow failure delay time in s for detector 1, as integer."
+        ::= { objectEntry 245900001 }
+        
+    tsD1AirFlowFailureDelayTimeIntMul100    OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The air flow failure delay time in s for detector 1,
+             multiplied by 100, as integer."
+        ::= { objectEntry 245900002 }
+
+    ----------------------------------------------------
+    -- Float value from data object 24591 (600F hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsD1PreAlarmLevelString             OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The action alarm threshold for detector 1, as string.
+             The value is in percent from the chosen sensibility."
+        ::= { objectEntry 245910000 }
+        
+    tsD1PreAlarmLevelInteger            OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The action alarm threshold for detector 1, as integer.
+             The value is in percent from the chosen sensibility."
+        ::= { objectEntry 245910001 }
+        
+    tsD1PreAlarmLevelIntMul100          OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The action alarm threshold for detector 1, as integer.
+             The value is in percent multiplied by 100 
+             from the chosen sensibility."
+        ::= { objectEntry 245910002 }
+
+        ----------------------------------------------------
+    -- Float value from data object 24592 (6010 hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsD1InfoAlarmLevelString            OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The alert alarm threshold for detector 1, as string.
+             The value is in percent from the chosen sensibility."
+        ::= { objectEntry 245920000 }
+        
+    tsD1InfoAlarmLevelInteger           OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The alert alarm threshold for detector 1, as integer.
+             The value is in percent from the chosen sensibility."
+        ::= { objectEntry 245920001 }
+        
+    tsD1InfoAlarmLevelIntMul100         OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The alert alarm threshold for detector 1, as integer.
+             The value is in percent multiplied by 100 
+             from the chosen sensibility."
+        ::= { objectEntry 245920002 }
+
+    ----------------------------------------------------
+    -- Float value from data object 24593 (6011 hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsD1SensibilityString               OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The sensibility of detector 1 in %/m, as string."
+        ::= { objectEntry 245930000 }
+        
+    tsD1SensibilityInteger              OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The sensibility of detector 1 in %/m, as integer."
+        ::= { objectEntry 245930001 }
+        
+    tsD1SensibilityIntMul100            OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The sensibility of detector 1 in %/m,
+             multiplied by 100, as integer."
+        ::= { objectEntry 245930002 }
+
+    ----------------------------------------------------
+    -- Float value from data object 24594 (6012 hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsD1ChamberValueString              OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The chamber deviation from the calibration point for detector 1, as string.
+             The value is in percent from the chamber deviation limits,
+             where a chamber fault condition occures."
+        ::= { objectEntry 245940000 }
+        
+    tsD1ChamberValueInteger             OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The chamber deviation from the calibration point for detector 1, as integer.
+             The value is in percent from the chamber deviation limits,
+             where a chamber fault condition occures."
+        ::= { objectEntry 245940001 }
+        
+    tsD1ChamberValueIntMul100           OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The chamber deviation from the calibration point for detector 1,
+             multiplied by 100, as integer. The value is in percent from the 
+             chamber deviation limits, where a chamber fault condition occures."
+        ::= { objectEntry 245940002 }
+
+    ----------------------------------------------------
+    -- Float value from data object 24595 (6013 hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsD1AirFlowDeviationString          OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The air flow deviation of detector 1 from the set point in %, as string.
+             The value is in percent from the chosen air flow limits,
+             where an air flow fault condition occure."
+        ::= { objectEntry 245950000 }
+        
+    tsD1AirFlowDeviationInteger         OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The air flow deviation of detector 1 from the set point in %, as integer.
+             The value is in percent from the chosen air flow limits,
+             where an air flow fault condition occure."
+        ::= { objectEntry 245950001 }
+        
+    tsD1AirFlowDeviationIntMul100       OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The air flow deviation of detector 1 from the set point in %, 
+             multiplied by 100, as integer.
+             The value is in percent from the chosen air flow limits,
+             where an air flow fault condition occure."
+        ::= { objectEntry 245950002 }
+
+    ----------------------------------------------------
+    -- Float value from data object 24596 (6014 hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsD1AirTemperatureString            OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The sampled air temperature in detector 1
+             in Celsius, as string."
+        ::= { objectEntry 245960000 }
+        
+    tsD1AirTemperatureInteger           OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The sampled air temperature in detector 1
+             in Celsius, as integer."
+        ::= { objectEntry 245960001 }
+        
+    tsD1AirTemperatureIntMul100         OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The sampled air temperature in detector 1
+             in Celsius, multiplied by 100, as integer."
+        ::= { objectEntry 245960002 }
+
+    ----------------------------------------------------
+    -- Float value from data object 24601 (6019 hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsD2AlarmDelayTimeString            OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The alarm delay time in s for detector 2, as string."
+        ::= { objectEntry 246010000 }
+        
+    tsD2AlarmDelayTimeInteger           OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The alarm delay time in s for detector 2, as integer."
+        ::= { objectEntry 246010001 }
+        
+    tsD2AlarmDelayTimeIntMul100         OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The alarm delay time in s for detector 2,
+             multiplied by 100, as integer."
+        ::= { objectEntry 246010002 }
+
+    ----------------------------------------------------
+    -- Float value from data object 24602 (601A hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsD2AirFlowFailureDelayTimeString       OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The air flow failure delay time in s for detector 2,
+             as string."
+        ::= { objectEntry 246020000 }
+        
+    tsD2AirFlowFailureDelayTimeInteger      OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The air flow failure delay time in s for detector 2,
+             as integer."
+        ::= { objectEntry 246020001 }
+        
+    tsD2AirFlowFailureDelayTimeIntMul100    OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The air flow failure delay time in s for detector 2,
+             multiplied by 100, as integer."
+        ::= { objectEntry 246020002 }
+
+    ----------------------------------------------------
+    -- Float value from data object 24603 (601B hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsD2PreAlarmLevelString             OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The action alarm threshold for detector 2, as string.
+             The value is in percent from the chosen sensibility."
+        ::= { objectEntry 246030000 }
+        
+    tsD2PreAlarmLevelInteger            OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The action alarm threshold for detector 2, as integer.
+             The value is in percent from the chosen sensibility."
+        ::= { objectEntry 246030001 }
+        
+    tsD2PreAlarmLevelIntMul100          OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The action alarm threshold for detector 2, as integer.
+             The value is in percent multiplied by 100 
+             from the chosen sensibility."
+        ::= { objectEntry 246030002 }
+
+    ----------------------------------------------------
+    -- Float value from data object 24604 (601C hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsD2InfoAlarmLevelString            OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The alert alarm threshold for detector 2, as string.
+             The value is in percent from the chosen sensibility."
+        ::= { objectEntry 246040000 }
+        
+    tsD2InfoAlarmLevelInteger           OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The alert alarm threshold for detector 2, as integer.
+             The value is in percent from the chosen sensibility."
+        ::= { objectEntry 246040001 }
+        
+    tsD2InfoAlarmLevelIntMul100         OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The alert alarm threshold for detector 2, as integer.
+             The value is in percent multiplied by 100 
+             from the chosen sensibility."
+        ::= { objectEntry 246040002 }
+
+    ----------------------------------------------------
+    -- Float value from data object 24605 (601D hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsD2SensibilityString               OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The sensibility of detector 2 in %/m, as string."
+        ::= { objectEntry 246050000 }
+        
+    tsD2SensibilityInteger              OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The sensibility of detector 2 in %/m, as integer."
+        ::= { objectEntry 246050001 }
+        
+    tsD2SensibilityIntMul100            OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The sensibility of detector 2 in %/m,
+             multiplied by 100, as integer."
+        ::= { objectEntry 246050002 }
+
+    ----------------------------------------------------
+    -- Float value from data object 24606 (601E hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsD2ChamberValueString              OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The chamber deviation from the calibration point for detector 2, as string.
+             The value is in percent from the chamber deviation limits,
+             where a chamber fault condition occures."
+        ::= { objectEntry 246060000 }
+        
+    tsD2ChamberValueInteger             OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The chamber deviation from the calibration point for detector 2, as integer.
+             The value is in percent from the chamber deviation limits,
+             where a chamber fault condition occures."
+        ::= { objectEntry 246060001 }
+        
+    tsD2ChamberValueIntMul100           OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The chamber deviation from the calibration point for detector 2,
+             multiplied by 100, as integer. The value is in percent from the 
+             chamber deviation limits, where a chamber fault condition occures."
+        ::= { objectEntry 246060002 }
+
+    ----------------------------------------------------
+    -- Float value from data object 24607 (601F hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsD2AirFlowDeviationString          OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The air flow deviation of detector 2 from the set point in %, as string.
+             The value is in percent from the chosen air flow limits,
+             where an air flow fault condition occure."
+        ::= { objectEntry 246070000 }
+        
+    tsD2AirFlowDeviationInteger         OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The air flow deviation of detector 2 from the set point in %, as integer.
+             The value is in percent from the chosen air flow limits,
+             where an air flow fault condition occure."
+        ::= { objectEntry 246070001 }
+        
+    tsD2AirFlowDeviationIntMul100       OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The air flow deviation of detector 2 from the set point in %, 
+             multiplied by 100, as integer.
+             The value is in percent from the chosen air flow limits,
+             where an air flow fault condition occure."
+        ::= { objectEntry 246070002 }
+
+    ----------------------------------------------------
+    -- Float value from data object 24608 (6020 hex), 
+    -- as string, integer and multiplied by 100 --
+    ----------------------------------------------------
+
+    tsD2AirTemperatureString            OBJECT-TYPE 
+        SYNTAX OCTET STRING 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The sampled air temperature in detector 2
+             in Celsius, as string."
+        ::= { objectEntry 246080000 }
+        
+    tsD2AirTemperatureInteger           OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The sampled air temperature in detector 2
+             in Celsius, as integer."
+        ::= { objectEntry 246080001 }
+        
+    tsD2AirTemperatureIntMul100         OBJECT-TYPE 
+        SYNTAX INTEGER 
+        ACCESS read-only 
+        STATUS mandatory 
+        DESCRIPTION 
+            "The sampled air temperature in detector 2
+             in Celsius, multiplied by 100, as integer."
+        ::= { objectEntry 246080002 }
+
+
+END

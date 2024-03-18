@@ -1,0 +1,622 @@
+<?xml version="1.0"?>
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+  ddfid="accuenergy_ev300_powermeter" ddfname="AccuEnergy EV300 Power Meter" ddfversion="2" canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+	
+	<device deviceid="accuenergy_ev300_powermeter">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+	
+		<setProductData ruleid="vendordata" field="vendor">AccuEnergy</setProductData>
+		<setProductData ruleid="typedata" field="type">Power Meter</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+		<valueMap ruleid="phase_ll-vm">
+			<valueIn>0</valueIn><valueOut>12</valueOut>
+			<valueIn>1</valueIn><valueOut>23</valueOut>
+			<valueIn>2</valueIn><valueOut>31</valueOut>
+			<valueIn>*</valueIn><valueOut>*</valueOut>
+		</valueMap>
+
+		<valueMap ruleid="phase-vm">
+			<valueIn>0</valueIn><valueOut>1</valueOut>
+			<valueIn>1</valueIn><valueOut>2</valueOut>
+			<valueIn>2</valueIn><valueOut>3</valueOut>
+			<valueIn>*</valueIn><valueOut>*</valueOut>
+		</valueMap>
+
+		<valueMap ruleid="zerobased2onebased-vm">
+			<valueIn>0</valueIn><valueOut>1</valueOut>
+			<valueIn>1</valueIn><valueOut>2</valueOut>
+			<valueIn>2</valueIn><valueOut>3</valueOut>
+			<valueIn>*</valueIn><valueOut>*</valueOut>
+		</valueMap>
+
+		<numSensor ruleid="phase_voltage" index="addresses0x110-0x112">
+			<type>voltage</type>
+			<sensorId>VOLTAGE_LN_PH<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op>
+						<getRowOid>addresses0x110-0x112</getRowOid>
+					</op>
+					<op>
+						<mult>
+							<op>
+								<div>
+									<op>
+										<getOid>address0x104</getOid>
+									</op>
+									<op>
+										<getOid>address0x106</getOid>
+									</op>
+								</div>
+							</op>
+							<op>0.1</op>
+						</mult>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Phase Voltage U<mapValue mapid="phase-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="line_voltage" index="addresses0x113-0x115">
+			<type>voltage</type>
+			<sensorId>VOLTAGE_LL_PH<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op>
+						<getRowOid>addresses0x113-0x115</getRowOid>
+					</op>
+					<op>
+						<mult>
+							<op>
+								<div>
+									<op>
+										<getOid>address0x104</getOid>
+									</op>
+									<op>
+										<getOid>address0x106</getOid>
+									</op>
+								</div>
+							</op>
+							<op>0.1</op>
+						</mult>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Line Voltage U<mapValue mapid="phase_ll-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="current" index="addresses0x116-0x118">
+			<type>amperage</type>
+			<sensorId>CURRENT_PH<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op>
+						<getRowOid>addresses0x116-0x118</getRowOid>
+					</op>
+					<op>
+						<mult>
+							<op>
+								<mult>
+									<op>
+										<getOid>address0x107</getOid>
+									</op>
+									<op>0.2</op>
+								</mult>
+							</op>
+							<op>0.001</op>
+						</mult>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Current I<mapValue mapid="phase-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="avg_phase_voltage">
+			<type>voltage</type>
+			<sensorId>AVG_PHASE_VOLTAGE</sensorId>
+			<value>
+				<mult>
+					<op>
+						<getOid>address0x119</getOid>
+					</op>
+					<op>
+						<mult>
+							<op>
+								<div>
+									<op>
+										<getOid>address0x104</getOid>
+									</op>
+									<op>
+										<getOid>address0x106</getOid>
+									</op>
+								</div>
+							</op>
+							<op>0.1</op>
+						</mult>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Average Phase Voltage Uavg</label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="avg_line_voltage">
+			<type>voltage</type>
+			<sensorId>AVG_LINE_VOLTAGE</sensorId>
+			<value>
+				<mult>
+					<op>
+						<getOid>address0x11A</getOid>
+					</op>
+					<op>
+						<mult>
+							<op>
+								<div>
+									<op>
+										<getOid>address0x104</getOid>
+									</op>
+									<op>
+										<getOid>address0x106</getOid>
+									</op>
+								</div>
+							</op>
+							<op>0.1</op>
+						</mult>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Average Line Voltage Ulavg</label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="avg_current">
+			<type>amperage</type>
+			<sensorId>AVG_CURRENT</sensorId>
+			<value>
+				<mult>
+					<op>
+						<getOid>address0x11B</getOid>
+					</op>
+					<op>
+						<mult>
+							<op>
+								<mult>
+									<op>
+										<getOid>address0x107</getOid>
+									</op>
+									<op>0.2</op>
+								</mult>
+							</op>
+							<op>0.001</op>
+						</mult>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Average Current Iavg</label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="power">
+			<type>num/powerKW</type>
+			<sensorId>POWER</sensorId>
+			<value>
+				<mult>
+					<op>
+						<mult>
+							<op>
+								<getOid>address0x11C</getOid>
+							</op>
+							<op>
+								<mult>
+									<op>
+										<div>
+											<op>
+												<getOid>address0x104</getOid>
+											</op>
+											<op>
+												<getOid>address0x106</getOid>
+											</op>
+										</div>
+									</op>
+									<op>
+										<mult>
+											<op>
+												<getOid>address0x107</getOid>
+											</op>
+											<op>0.2</op>
+										</mult>
+									</op>
+								</mult>
+							</op>
+						</mult>
+					</op>
+					<op>0.001</op> <!-- convert Watts to kW -->
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Power P</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="reactive_power">
+			<type>num/powerKVAR</type>
+			<sensorId>REACTIVE_POWER</sensorId>
+			<value>
+				<mult>
+					<op>
+						<mult>
+							<op>
+								<getOid>address0x11D</getOid>
+							</op>
+							<op>
+								<mult>
+									<op>
+										<div>
+											<op>
+												<getOid>address0x104</getOid>
+											</op>
+											<op>
+												<getOid>address0x106</getOid>
+											</op>
+										</div>
+									</op>
+									<op>
+										<mult>
+											<op>
+												<getOid>address0x107</getOid>
+											</op>
+											<op>0.2</op>
+										</mult>
+									</op>
+								</mult>
+							</op>
+						</mult>
+					</op>
+					<op>0.001</op> <!-- convert VAR to kVAR -->
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Reactive Power Q</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="apparent_power">
+			<type>num/powerKVA</type>
+			<sensorId>APPARENT_POWER</sensorId>
+			<value>
+				<mult>
+					<op>
+						<mult>
+							<op>
+								<getOid>address0x11E</getOid>
+							</op>
+							<op>
+								<mult>
+									<op>
+										<div>
+											<op>
+												<getOid>address0x104</getOid>
+											</op>
+											<op>
+												<getOid>address0x106</getOid>
+											</op>
+										</div>
+									</op>
+									<op>
+										<mult>
+											<op>
+												<getOid>address0x107</getOid>
+											</op>
+											<op>0.2</op>
+										</mult>
+									</op>
+								</mult>
+							</op>
+						</mult>
+					</op>
+					<op>0.001</op> <!-- convert VA to kVA -->
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Apparent Power S</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="frequency">
+			<type>frequency</type>
+			<sensorId>FREQUENCY</sensorId>
+			<value>
+				<mult>
+					<op><getOid>address0x11F</getOid></op>
+					<op>0.01</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Frequency F</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="power_factor">
+			<type>powerfactor</type>
+			<sensorId>POWER_FACTOR</sensorId>
+			<value>
+				<mult>
+					<op><getOid>address0x120</getOid></op>
+					<op>0.001</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Power Factor PF</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<!-- 
+		Documentation indicates the value is 'ASCII L(4CH), C(43H), R(52H)'
+		- not sure what that means, but we don't support
+		string sensors, so leaving out
+		<numSensor ruleid="load_nature">
+			<type>num</type>
+			<sensorId>LOAD_NATURE</sensorId>
+			<value>
+				<mult>
+					<op><getOid>address0x121</getOid></op>
+					<op>0.01</op>
+				</mult>
+			</value>
+			<label>Load Nature RT</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		-->
+		
+		<numSensor ruleid="neutral_current">
+			<type>amperage</type>
+			<sensorId>NEUTRAL_CURRENT</sensorId>
+			<value>
+				<mult>
+					<op>
+						<getOid>address0x124</getOid>
+					</op>
+					<op>
+						<mult>
+							<op>
+								<mult>
+									<op>
+										<getOid>address0x107</getOid>
+									</op>
+									<op>0.2</op>
+								</mult>
+							</op>
+							<op>0.001</op>
+						</mult>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Neutral Current In</label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="energy">
+			<type>num/kwatthr</type>
+			<sensorId>ENERGY</sensorId>
+			<value>
+				<mult>
+					<op>0.1</op>
+					<op><getOid>address0x10C</getOid></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Energy Ep</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="reactive_energy">
+			<type>num/kVARhr</type>
+			<sensorId>REACTIVE_ENERGY</sensorId>
+			<value>
+				<mult>
+					<op>0.1</op>
+					<op><getOid>address0x10E</getOid></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Reactive Energy Eq</label>
+			<sensorSet>Energy</sensorSet>
+		</numSensor>
+		
+	</device>
+	
+	<protocol>
+		<modbus>	
+			<type_definition type_name="swapped_uint32">
+				<type>uint_32</type>                 <!-- must be one of our 'normal' modbus types -->
+				<byte_order>1,0,3,2</byte_order>     <!-- mapping of device's byte string into the order which we want -->
+			</type_definition>
+
+			<value_ref_id valid="address0x104"> <!-- PT1 -->
+				<function>3</function>
+				<start_addr>260</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x106"> <!-- PT2 -->
+				<function>3</function>
+				<start_addr>262</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x107"> <!-- CT1 -->
+				<function>3</function>
+				<start_addr>263</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x10C"> <!-- ENERGY -->
+				<function>3</function>
+				<start_addr>268</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x10E"> <!-- REACTIVE_ENERGY -->
+				<function>3</function>
+				<start_addr>270</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="addresses0x110-0x112"> <!-- VOLTAGE_LN_PHn -->
+				<entry num="0">address0x110</entry>
+				<entry num="1">address0x111</entry>
+				<entry num="2">address0x112</entry>
+			</table_ref_id>
+			<value_ref_id valid="address0x110">
+				<function>3</function>
+				<start_addr>272</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x111">
+				<function>3</function>
+				<start_addr>273</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x112">
+				<function>3</function>
+				<start_addr>274</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="addresses0x113-0x115"> <!-- VOLTAGE_LL_PHn -->
+				<entry num="0">address0x113</entry>
+				<entry num="1">address0x114</entry>
+				<entry num="2">address0x115</entry>
+			</table_ref_id>
+			<value_ref_id valid="address0x113">
+				<function>3</function>
+				<start_addr>275</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x114">
+				<function>3</function>
+				<start_addr>276</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x115">
+				<function>3</function>
+				<start_addr>277</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="addresses0x116-0x118"> <!-- CURRENT_PHn -->
+				<entry num="0">address0x116</entry>
+				<entry num="1">address0x117</entry>
+				<entry num="2">address0x118</entry>
+			</table_ref_id>
+			<value_ref_id valid="address0x116">
+				<function>3</function>
+				<start_addr>278</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x117">
+				<function>3</function>
+				<start_addr>279</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x118">
+				<function>3</function>
+				<start_addr>280</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="address0x119"> <!-- AVG_PHASE_VOLTAGE -->
+				<function>3</function>
+				<start_addr>281</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x11A"> <!-- AVG_LINE_VOLTAGE -->
+				<function>3</function>
+				<start_addr>282</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x11B"> <!-- AVG_CURRENT -->
+				<function>3</function>
+				<start_addr>283</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x11C"> <!-- POWER -->
+				<function>3</function>
+				<start_addr>284</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x11D"> <!-- REACTIVE_POWER -->
+				<function>3</function>
+				<start_addr>285</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x11E"> <!-- APPARENT_POWER -->
+				<function>3</function>
+				<start_addr>286</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x11F"> <!-- FREQUENCY -->
+				<function>3</function>
+				<start_addr>287</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x120"> <!-- POWER_FACTOR -->
+				<function>3</function>
+				<start_addr>288</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x124"> <!-- NEUTRAL_CURRENT -->
+				<function>3</function>
+				<start_addr>292</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			
+			<packet>
+				<function>3</function>
+				<start_addr>260</start_addr>
+				<quantity>4</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>268</start_addr>
+				<quantity>21</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>292</start_addr>
+				<quantity>1</quantity>
+			</packet>
+		</modbus>
+	</protocol>
+</APC_DDF>		

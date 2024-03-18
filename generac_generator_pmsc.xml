@@ -1,0 +1,1412 @@
+<?xml version="1.0"?>
+<!-- Test Modbus related information -->
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+         ddfid="generac_generator_pmsc" ddfname="Generac Generator (MPS PM-SC)" ddfversion="5" canremove="yes">
+  <schemaVersion>1.6</schemaVersion>
+
+  <!-- PM-SC has same register map as G Panel except it support multiple generators in 4k register sections -->
+  <!-- 0..4095=System Controller; 4096..8191=Gen1; 8192..12287=Gen2; 12288..16383=Gen3 -->
+  <!-- right now, hard-coded for 2 generators -->
+  <device deviceid="generac_generator">
+    <oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+    <setProductData ruleid="vendordata" field="vendor">Generac</setProductData>
+
+    <!-- MPS PowerManager System Controller used to monitor generators -->
+    <setProductData ruleid="modeldata" field="model">MPS PowerManager System Controller</setProductData>
+
+    <!-- Generator -->
+    <setProductData ruleid="typedata" field="type">Generator</setProductData>
+
+    <setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+    <numSensor ruleid="gen_current" index="current_table">
+      <type>amperage</type>
+      <sensorId><rowIndex/></sensorId>
+      <value><getRowOid>current_table</getRowOid></value>
+      <label><mapValue mapid="gen_sensorlabel_3"><rowNumber/></mapValue><space/>Current<space/><mapValue mapid="phase_current_sensorlabel"><rowNumber/></mapValue></label>
+      <sensorSet><mapValue mapid="gen_sensorlabel_3"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_voltagell" index="voltagell_table">
+      <type>voltage</type>
+      <sensorId><rowIndex/></sensorId>
+      <value><getRowOid>voltagell_table</getRowOid></value>
+      <label><mapValue mapid="gen_sensorlabel_3"><rowNumber/></mapValue><space/>Volt<space/><mapValue mapid="phase_voltagell_sensorlabel"><rowNumber/></mapValue></label>
+      <sensorSet><mapValue mapid="gen_sensorlabel_3"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <valueMap ruleid="gen_sensorlabel_3">
+      <valueIn>0</valueIn><valueOut>Gen 1</valueOut>
+      <valueIn>1</valueIn><valueOut>Gen 1</valueOut>
+      <valueIn>2</valueIn><valueOut>Gen 1</valueOut>
+      <valueIn>3</valueIn><valueOut>Gen 2</valueOut>
+      <valueIn>4</valueIn><valueOut>Gen 2</valueOut>
+      <valueIn>5</valueIn><valueOut>Gen 2</valueOut>
+			<valueIn>6</valueIn>			<valueOut>Gen 3</valueOut>
+			<valueIn>7</valueIn>			<valueOut>Gen 3</valueOut>
+			<valueIn>8</valueIn>			<valueOut>Gen 3</valueOut>
+			<valueIn>9</valueIn>			<valueOut>Gen 4</valueOut>
+			<valueIn>10</valueIn>			<valueOut>Gen 4</valueOut>
+			<valueIn>11</valueIn>			<valueOut>Gen 4</valueOut>
+      <valueIn>*</valueIn><valueOut>Gen Unknown</valueOut>
+    </valueMap>
+
+    <valueMap ruleid="gen_sensorlabel_1">
+      <valueIn>0</valueIn><valueOut>Gen 1</valueOut>
+      <valueIn>1</valueIn><valueOut>Gen 2</valueOut>
+			<valueIn>2</valueIn>			<valueOut>Gen 3</valueOut>
+			<valueIn>3</valueIn>			<valueOut>Gen 4</valueOut>
+
+      <valueIn>*</valueIn><valueOut>Gen Unknown</valueOut>
+    </valueMap>
+
+    <valueMap ruleid="phase_current_sensorlabel">
+      <valueIn>0</valueIn><valueOut>Phase A</valueOut>
+      <valueIn>1</valueIn><valueOut>Phase B</valueOut>
+      <valueIn>2</valueIn><valueOut>Phase C</valueOut>
+      <valueIn>3</valueIn><valueOut>Phase A</valueOut>
+      <valueIn>4</valueIn><valueOut>Phase B</valueOut>
+      <valueIn>5</valueIn><valueOut>Phase C</valueOut>
+			<valueIn>6</valueIn>			<valueOut>Phase A</valueOut>
+			<valueIn>7</valueIn>			<valueOut>Phase B</valueOut>
+			<valueIn>8</valueIn>			<valueOut>Phase C</valueOut>
+			<valueIn>9</valueIn>			<valueOut>Phase A</valueOut>
+			<valueIn>10</valueIn>			<valueOut>Phase B</valueOut>
+			<valueIn>11</valueIn>			<valueOut>Phase C</valueOut>
+
+      <valueIn>*</valueIn><valueOut>Phase Unknown</valueOut>
+    </valueMap>
+
+    <valueMap ruleid="phase_voltagell_sensorlabel">
+      <valueIn>0</valueIn><valueOut>Phase A-B</valueOut>
+      <valueIn>1</valueIn><valueOut>Phase B-C</valueOut>
+      <valueIn>2</valueIn><valueOut>Phase C-A</valueOut>
+      <valueIn>3</valueIn><valueOut>Phase A-B</valueOut>
+      <valueIn>4</valueIn><valueOut>Phase B-C</valueOut>
+      <valueIn>5</valueIn><valueOut>Phase C-A</valueOut>
+			<valueIn>6</valueIn>			<valueOut>Phase A-B</valueOut>
+			<valueIn>7</valueIn>			<valueOut>Phase B-C</valueOut>
+			<valueIn>8</valueIn>			<valueOut>Phase C-A</valueOut>
+			<valueIn>9</valueIn>			<valueOut>Phase A-B</valueOut>
+			<valueIn>10</valueIn>			<valueOut>Phase B-C</valueOut>
+			<valueIn>11</valueIn>			<valueOut>Phase C-A</valueOut>
+      <valueIn>*</valueIn><valueOut>Phase Unknown</valueOut>
+    </valueMap>
+
+    <stateSensor ruleid="gen_oil_press_state" index="oilpressstate_table">
+      <type>state</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <mapValue mapid="oilpressstate_valuemap">
+          <formatNumber>
+            <bitwise_and>
+              <op><getRowOid>oilpressstate_table</getRowOid></op>
+              <op>12288</op> <!-- 0x3000=bits 12 and 13 -->
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue><space/>Oil Pressure State</label>
+      <enum>warncritstate_enummap</enum>
+      <sensorSet><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </stateSensor>
+
+    <valueMap ruleid="oilpressstate_valuemap">
+      <valueIn>4096</valueIn><valueOut>2</valueOut>
+      <valueIn>8192</valueIn><valueOut>1</valueOut>
+      <valueIn>*</valueIn><valueOut>0</valueOut>
+    </valueMap>
+
+    <stateSensor ruleid="gen_cool_temp_state" index="cooltempstate_table">
+      <type>state</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <mapValue mapid="cooltempstate_valuemap">
+          <formatNumber>
+            <bitwise_and>
+              <op><getRowOid>cooltemptate_table</getRowOid></op>
+              <op>3584</op> <!-- 0x0E00=bits 9, 10 and 11 -->
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue><space/>Coolant Temperature State</label>
+      <enum>lowhighhighstate_enummap</enum>
+      <sensorSet><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </stateSensor>
+
+    <valueMap ruleid="cooltempstate_valuemap">
+      <valueIn>1024</valueIn><valueOut>3</valueOut>
+      <valueIn>2048</valueIn><valueOut>2</valueOut>
+      <valueIn>512</valueIn><valueOut>1</valueOut>
+      <valueIn>*</valueIn><valueOut>0</valueOut>
+    </valueMap>
+
+    <stateSensor ruleid="gen_oil_temp_state" index="oiltempstate_table">
+      <type>state</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <mapValue mapid="oiltempstate_valuemap">
+          <formatNumber>
+            <bitwise_and>
+              <op><getRowOid>oiltempstate_table</getRowOid></op>
+              <op>384</op> <!-- 0x0180=bits 7 and 8 -->
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue><space/>Oil Temperature State</label>
+      <enum>warncritstate_enummap</enum>
+      <sensorSet><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </stateSensor>
+
+    <valueMap ruleid="oiltempstate_valuemap">
+      <valueIn>128</valueIn><valueOut>2</valueOut>
+      <valueIn>256</valueIn><valueOut>1</valueOut>
+      <valueIn>*</valueIn><valueOut>0</valueOut>
+    </valueMap>
+
+    <stateSensor ruleid="gen_batt_volt_state" index="battvoltstate_table">
+      <type>state</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <mapValue mapid="battvoltstate_valuemap">
+          <formatNumber>
+            <bitwise_and>
+              <op><getRowOid>battvoltstate_table</getRowOid></op>
+              <op>96</op> <!-- 0x0060=bits 5 and 6 -->
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue><space/>Battery Voltage State</label>
+      <enum>lowhighstate_enummap</enum>
+      <sensorSet><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </stateSensor>
+
+    <valueMap ruleid="battvoltstate_valuemap">
+      <valueIn>32</valueIn><valueOut>2</valueOut>
+      <valueIn>64</valueIn><valueOut>1</valueOut>
+      <valueIn>*</valueIn><valueOut>0</valueOut>
+    </valueMap>
+
+    <stateSensor ruleid="gen_fuel_level_state" index="fuellevelstate_table">
+      <type>state</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <mapValue mapid="fuellevelstate_valuemap">
+          <formatNumber>
+            <bitwise_and>
+              <op><getRowOid>fuellevelstate_table</getRowOid></op>
+              <op>12288</op> <!-- 0x3000=bits 12 and 13 -->
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue><space/>Fuel Level State</label>
+      <enum>lowemptystate_enummap</enum>
+      <sensorSet><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </stateSensor>
+
+    <valueMap ruleid="fuellevelstate_valuemap">
+      <valueIn>4096</valueIn><valueOut>2</valueOut>
+      <valueIn>8192</valueIn><valueOut>1</valueOut>
+      <valueIn>*</valueIn><valueOut>0</valueOut>
+    </valueMap>
+
+    <stateSensor ruleid="gen_cool_level_state" index="coollevelstate_table">
+      <type>state</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <mapValue mapid="coollevelstate_valuemap">
+          <formatNumber>
+            <bitwise_and>
+              <op><getRowOid>coollevelstate_table</getRowOid></op>
+              <op>1024</op> <!-- 0x0400=bit 10 -->
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue><space/>Coolant Level State</label>
+      <enum>lowstate_enummap</enum>
+      <sensorSet><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </stateSensor>
+
+    <valueMap ruleid="coollevelstate_valuemap">
+      <valueIn>1024</valueIn><valueOut>1</valueOut>
+      <valueIn>*</valueIn><valueOut>0</valueOut>
+    </valueMap>
+
+    <stateSensor ruleid="sc_masterswitchpos_state">
+      <type>state</type>
+      <sensorId>GENC_MASTER_SWITCH_POSITION</sensorId>
+      <value>
+        <mapValue mapid="masterswitchpos_valuemap">
+          <formatNumber>
+            <bitwise_and>
+              <op><getOid>GENC_ALARMCOND_2_3</getOid></op>
+              <op>229376</op> <!-- 0x00038000=bits 15, 16 and 17 -->
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>System Controller Master Switch Position</label>
+      <enum>masterswitchpos_enummap</enum>
+      <sensorSet>System Controller Sensors</sensorSet>
+    </stateSensor>
+
+    <valueMap ruleid="masterswitchpos_valuemap">
+      <valueIn>32768</valueIn><valueOut>1</valueOut>
+      <valueIn>65536</valueIn><valueOut>2</valueOut>
+      <valueIn>131072</valueIn><valueOut>3</valueOut>
+      <valueIn>*</valueIn><valueOut>0</valueOut>
+    </valueMap>
+
+    <valueMap ruleid="notinauto_valuemap">
+      <valueIn>131072</valueIn><valueOut>0</valueOut>
+      <valueIn>*</valueIn><valueOut>1</valueOut>
+    </valueMap>
+
+
+    <enumMap ruleid="warncritstate_enummap">
+      <label>Ok</label>
+      <label>Warning</label>
+      <label>Critical</label>
+    </enumMap>
+
+    <enumMap ruleid="lowhighhighstate_enummap">
+      <label>Ok</label>
+      <label>Low</label>
+      <label>High Warning</label>
+      <label>High Alarm</label>
+    </enumMap>
+
+    <enumMap ruleid="lowhighstate_enummap">
+      <label>Ok</label>
+      <label>Low</label>
+      <label>High</label>
+    </enumMap>
+
+    <enumMap ruleid="lowemptystate_enummap">
+      <label>Ok</label>
+      <label>Low</label>
+      <label>Empty</label>
+    </enumMap>
+
+    <enumMap ruleid="lowstate_enummap">
+      <label>Ok</label>
+      <label>Low</label>
+    </enumMap>
+
+    <enumMap ruleid="masterswitchpos_enummap">
+      <label>Other</label>
+      <label>Off</label>
+      <label>Manual</label>
+      <label>Auto</label>
+    </enumMap>
+
+
+
+    <alarmFlags2 ruleid="gen_alarmconds_0" index="gen_alarmconds0_table">
+      <value><getRowOid>gen_alarmconds0_table</getRowOid></value>
+
+      <!-- Customer requested as sensor
+      <alarmFlagsTest mask="2000" match="2000" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Low Oil Pressure Warning</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Low Oil Pressure Warning Cleared</inactiveText>
+        </name>
+        <severity>warning</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a Low Oil Pressure Warning condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Low Oil Pressure Warning condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+      <alarmFlagsTest mask="1000" match="1000" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Low Oil Pressure Alarm</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Low Oil Pressure Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a Low Oil Pressure Alarm condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Low Oil Pressure Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+      <alarmFlagsTest mask="800" match="800" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-High Coolant Temperature Warning</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-High Coolant Temperature Warning Cleared</inactiveText>
+        </name>
+        <severity>warning</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a High Coolant Temperature Warning condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The High Coolant Temperature Warning condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+      <alarmFlagsTest mask="400" match="400" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-High Coolant Temperature Alarm</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-High Coolant Temperature Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a High Coolant Temperature Alarm condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The High Coolant Temperature Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+        -->
+
+      <!-- Customer did not specify - omit
+      <alarmFlagsTest mask="200" match="200" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Low Coolant Temperature Warning</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Low Coolant Temperature Warning Cleared</inactiveText>
+        </name>
+        <severity>warning</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a Low Coolant Temperature Warning condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Low Coolant Temperature Warning condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+        -->
+
+      <!-- Customer requested as sensor
+      <alarmFlagsTest mask="100" match="100" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-High Oil Temperature Warning</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-High Oil Temperature Warning Cleared</inactiveText>
+        </name>
+        <severity>warning</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a High Oil Temperature Warning condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The High Oil Temperature Warning condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+      <alarmFlagsTest mask="80" match="80" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-High Oil Temperature Alarm</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-High Oil Temperature Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a High Oil Temperature Alarm condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The High Oil Temperature Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+      <alarmFlagsTest mask="40" match="40" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Low Battery Voltage Warning</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Low Battery Voltage Warning Cleared</inactiveText>
+        </name>
+        <severity>warning</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a Low Battery Voltage Warning condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Low Battery Voltage Warning condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+      <alarmFlagsTest mask="20" match="20" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-High Battery Voltage Warning</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-High Battery Voltage Warning Cleared</inactiveText>
+        </name>
+        <severity>warning</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a High Battery Voltage Warning condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The High Battery Voltage Warning condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+        -->
+
+      <alarmFlagsTest mask="10" match="10" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Overspeed Warning</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Overspeed Warning Cleared</inactiveText>
+        </name>
+        <severity>warning</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected an Overspeed Warning condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Overspeed Warning condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+      <alarmFlagsTest mask="8" match="8" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Underspeed Warning</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Underspeed Warning Cleared</inactiveText>
+        </name>
+        <severity>warning</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected an Underspeed Warning condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Underspeed Warning condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+
+      <!-- Customer did not specify - omit
+      <alarmFlagsTest mask="4" match="4" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Over Voltage Alarm</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Over Voltage Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected an Over Voltage Alarm condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Over Voltage Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+      <alarmFlagsTest mask="2" match="2" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Under Voltage Alarm</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Under Voltage Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected an Under Voltage Alarm condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Under Voltage Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+      <alarmFlagsTest mask="1" match="1" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Over Frequency Alarm</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Over Frequency Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected an Over Frequency Alarm condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Over Frequency Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+        -->
+    </alarmFlags2>
+
+    <alarmFlags2 ruleid="gen_alarmconds_1" index="gen_alarmconds1_table">
+      <value><getRowOid>gen_alarmconds1_table</getRowOid></value>
+
+      <!-- Customer did not specify - omit
+      <alarmFlagsTest mask="8000" match="8000" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Under Frequency Alarm</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Under Frequency Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected an Under Frequency Alarm condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Under Frequency Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+      <alarmFlagsTest mask="4000" match="4000" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-High Fuel Alarm</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-High Fuel Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a High Fuel Alarm condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The High Fuel Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+        -->
+
+      <!-- Customer requested as sensor
+      <alarmFlagsTest mask="2000" match="2000" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Low Fuel Warning</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Low Fuel Warning Cleared</inactiveText>
+        </name>
+        <severity>warning</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a Low Fuel Warning condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Low Fuel Warning condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+      <alarmFlagsTest mask="1000" match="1000" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Low Fuel Alarm</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Low Fuel Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a Low Fuel Alarm condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Low Fuel Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+        -->
+      <alarmFlagsTest mask="800" match="800" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Fail To Start Alarm</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Fail To Start Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a Fail To Start Alarm condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Fail To Start Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+
+      <!-- Customer requested as sensor
+      <alarmFlagsTest mask="400" match="400" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Coolant Level Alarm</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Coolant Level Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a Coolant Level Alarm condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Coolant Level Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+        -->
+      <alarmFlagsTest mask="200" match="200" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-RPM Sensor Loss</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-RPM Sensor Loss Cleared</inactiveText>
+        </name>
+        <severity>warning</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a RPM Sensor Loss condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The RPM Sensor Loss condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+
+      <!-- Customer did not specify - omit
+      <alarmFlagsTest mask="100" match="100" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Start Inhibit Alarm</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Start Inhibit Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a Start Inhibit Alarm condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Start Inhibit Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+        -->
+
+      <alarmFlagsTest mask="80" match="80" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Emergency Stop Alarm</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Emergency Stop Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected an Emergency Stop Alarm condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Emergency Stop Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+
+      <!-- Customer did not specify bits 6..0 - omit -->
+    </alarmFlags2>
+
+    <alarmFlags2 ruleid="gen_alarmconds_2" index="gen_alarmconds2_table">
+      <value><getRowOid>gen_alarmconds2_table</getRowOid></value>
+      <!-- Customer did not specify bits 15..2 - omit -->
+
+      <!-- bit 1 - alarm when not set -->
+      <alarmFlagsTest mask="02" match="0" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Generator Not In Auto Alarm</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Generator Not In Auto Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a Generator Not In Auto Alarm condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Generator Not In Auto Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+      <!-- Customer did not specify bit 0 - omit -->
+    </alarmFlags2>
+
+    <alarmFlags2 ruleid="gen_alarmconds_3" index="gen_alarmconds3_table">
+      <value><getRowOid>gen_alarmconds3_table</getRowOid></value>
+      <!-- Customer did not specify bits 15..12 - omit -->
+
+      <alarmFlagsTest mask="800" match="800" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Generator Running Alarm</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Generator Running Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a Generator Running Alarm condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Generator Running Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+
+      <!-- Customer did not specify bit 0 - omit -->
+    </alarmFlags2>
+
+    <alarmFlags2 ruleid="gen_alarmconds_4" index="gen_alarmconds4_table">
+      <value><getRowOid>gen_alarmconds4_table</getRowOid></value>
+      <!-- Customer did not specify bits 15..14 - omit -->
+
+      <alarmFlagsTest mask="2000" match="2000" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Battery Charger AC failure</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Battery Charger AC failure Cleared</inactiveText>
+        </name>
+        <severity>warning</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a Battery Charger AC failure condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Battery Charger AC failure condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+        <!-- Customer did not specify bit 12 - omit -->
+      <alarmFlagsTest mask="800" match="800" log="no">
+        <name>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Generator Power Alarm</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-Generator Power Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The system has detected a Generator Power Alarm condition.</activeText>
+          <inactiveText><mapValue mapid="gen_sensorlabel_1"><rowNumber/></mapValue>-The Generator Power Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+      <!-- Customer did not specify bits 10..0 - omit -->
+    </alarmFlags2>
+
+
+    <alarmFlags2 ruleid="sc_alarmconds_0" index="sc_alarmconds0_table">
+      <value><getRowOid>sc_alarmconds0_table</getRowOid></value>
+
+      <alarmFlagsTest mask="8000" match="8000" log="no">
+        <name>
+          <activeText>System Controller-Common Alarm</activeText>
+          <inactiveText>System Controller-Common Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText>System Controller-The system has detected a Common Alarm condition.</activeText>
+          <inactiveText>System Controller-The Common Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+      <alarmFlagsTest mask="4000" match="4000" log="no">
+        <name>
+          <activeText>System Controller-Common Warning</activeText>
+          <inactiveText>System Controller-Common Warning Cleared</inactiveText>
+        </name>
+        <severity>warning</severity>
+        <category>Output</category>
+        <description>
+          <activeText>System Controller-The system has detected a Common Warning condition.</activeText>
+          <inactiveText>System Controller-The Common Warning condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+
+    </alarmFlags2>
+
+    <alarmFlags2 ruleid="sc_alarmconds_1" index="sc_alarmconds1_table">
+      <value><getRowOid>sc_alarmconds1_table</getRowOid></value>
+
+      <alarmFlagsTest mask="80" match="80" log="no">
+        <name>
+          <activeText>System Controller-Emergency Stop Alarm</activeText>
+          <inactiveText>System Controller-Emergency Stop Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText>System Controller-The system has detected an Emergency Stop Alarm condition.</activeText>
+          <inactiveText>System Controller-The Emergency Stop Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+
+    </alarmFlags2>
+
+    <alarmFlags2 ruleid="sc_alarmconds_2_3" index="sc_alarmconds2_3_table">
+      <!-- same bits as the masterswitchpos state sensor value -->
+      <value>
+        <mapValue mapid="notinauto_valuemap">
+          <formatNumber>
+            <bitwise_and>
+              <op><getRowOid>sc_alarmconds2_3_table</getRowOid></op>
+              <op>229376</op> <!-- 0x00038000=bits 15, 16 and 17 -->
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+
+      <!-- alarm when state sensor not equal to auto -->
+      <alarmFlagsTest mask="1" match="1" log="no">
+        <name>
+          <activeText>System Controller-Generator Not In Auto Alarm</activeText>
+          <inactiveText>System Controller-Generator Not In Auto Alarm Cleared</inactiveText>
+        </name>
+        <severity>error</severity>
+        <category>Output</category>
+        <description>
+          <activeText>System Controller-The system has detected a Not In Auto Alarm condition.</activeText>
+          <inactiveText>System Controller-The Not In Auto Alarm condition has been cleared.</inactiveText>
+        </description>
+      </alarmFlagsTest>
+
+    </alarmFlags2>
+  </device>
+
+  <protocol>
+    <modbus>
+      <table_ref_id indexid="current_table">
+        <entry num="0">GEN0_CURRENT_1</entry>
+        <entry num="1">GEN0_CURRENT_2</entry>
+        <entry num="2">GEN0_CURRENT_3</entry>
+        <entry num="3">GEN1_CURRENT_1</entry>
+        <entry num="4">GEN1_CURRENT_2</entry>
+        <entry num="5">GEN1_CURRENT_3</entry>
+				<entry num="6">GEN2_CURRENT_1</entry>
+				<entry num="7">GEN2_CURRENT_2</entry>
+				<entry num="8">GEN2_CURRENT_3</entry>
+				<entry num="9">GEN3_CURRENT_1</entry>
+				<entry num="10">GEN3_CURRENT_2</entry>
+				<entry num="11">GEN3_CURRENT_3</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="voltagell_table">
+        <entry num="0">GEN0_VOLTAGE_LL_1</entry>
+        <entry num="1">GEN0_VOLTAGE_LL_2</entry>
+        <entry num="2">GEN0_VOLTAGE_LL_3</entry>
+        <entry num="3">GEN1_VOLTAGE_LL_1</entry>
+        <entry num="4">GEN1_VOLTAGE_LL_2</entry>
+        <entry num="5">GEN1_VOLTAGE_LL_3</entry>
+				<entry num="6">GEN2_VOLTAGE_LL_1</entry>
+				<entry num="7">GEN2_VOLTAGE_LL_2</entry>
+				<entry num="8">GEN2_VOLTAGE_LL_3</entry>
+				<entry num="9">GEN3_VOLTAGE_LL_1</entry>
+				<entry num="10">GEN3_VOLTAGE_LL_2</entry>
+				<entry num="11">GEN3_VOLTAGE_LL_3</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="oilpressstate_table">
+        <entry num="0">GEN0_OIL_PRESS_STATE</entry>
+        <entry num="1">GEN1_OIL_PRESS_STATE</entry>
+				<entry num="2">GEN2_OIL_PRESS_STATE</entry>
+				<entry num="3">GEN3_OIL_PRESS_STATE</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="cooltempstate_table">
+        <entry num="0">GEN0_COOL_TEMP_STATE</entry>
+        <entry num="1">GEN1_COOL_TEMP_STATE</entry>
+				<entry num="2">GEN2_COOL_TEMP_STATE</entry>
+				<entry num="3">GEN3_COOL_TEMP_STATE</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="oiltempstate_table">
+        <entry num="0">GEN0_OIL_TEMP_STATE</entry>
+        <entry num="1">GEN1_OIL_TEMP_STATE</entry>
+				<entry num="2">GEN2_OIL_TEMP_STATE</entry>
+				<entry num="3">GEN3_OIL_TEMP_STATE</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="battvoltstate_table">
+        <entry num="0">GEN0_BATT_VOLT_STATE</entry>
+        <entry num="1">GEN1_BATT_VOLT_STATE</entry>
+				<entry num="2">GEN2_BATT_VOLT_STATE</entry>
+				<entry num="3">GEN3_BATT_VOLT_STATE</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="fuellevelstate_table">
+        <entry num="0">GEN0_FUEL_LEVEL_STATE</entry>
+        <entry num="1">GEN1_FUEL_LEVEL_STATE</entry>
+				<entry num="2">GEN2_FUEL_LEVEL_STATE</entry>
+				<entry num="3">GEN3_FUEL_LEVEL_STATE</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="coollevelstate_table">
+        <entry num="0">GEN0_COOL_LEVEL_STATE</entry>
+        <entry num="1">GEN1_COOL_LEVEL_STATE</entry>
+				<entry num="2">GEN2_COOL_LEVEL_STATE</entry>
+				<entry num="3">GEN3_COOL_LEVEL_STATE</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_alarmconds0_table">
+        <entry num="0">GEN0_ALARMCOND_0</entry>
+        <entry num="1">GEN1_ALARMCOND_0</entry>
+				<entry num="2">GEN2_ALARMCOND_0</entry>
+				<entry num="3">GEN3_ALARMCOND_0</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_alarmconds1_table">
+        <entry num="0">GEN0_ALARMCOND_1</entry>
+        <entry num="1">GEN1_ALARMCOND_1</entry>
+				<entry num="2">GEN2_ALARMCOND_1</entry>
+				<entry num="3">GEN3_ALARMCOND_1</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_alarmconds2_table">
+        <entry num="0">GEN0_ALARMCOND_2</entry>
+        <entry num="1">GEN1_ALARMCOND_2</entry>
+				<entry num="2">GEN2_ALARMCOND_2</entry>
+				<entry num="3">GEN3_ALARMCOND_2</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_alarmconds3_table">
+        <entry num="0">GEN0_ALARMCOND_3</entry>
+        <entry num="1">GEN1_ALARMCOND_3</entry>
+				<entry num="2">GEN2_ALARMCOND_3</entry>
+				<entry num="3">GEN3_ALARMCOND_3</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_alarmconds4_table">
+        <entry num="0">GEN0_ALARMCOND_4</entry>
+        <entry num="1">GEN1_ALARMCOND_4</entry>
+				<entry num="2">GEN2_ALARMCOND_4</entry>
+				<entry num="3">GEN3_ALARMCOND_4</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="sc_alarmconds0_table">
+        <entry num="0">GENC_ALARMCOND_0</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="sc_alarmconds1_table">
+        <entry num="0">GENC_ALARMCOND_1</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="sc_alarmconds2_table">
+        <entry num="0">GENC_ALARMCOND_2</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="sc_alarmconds3_table">
+        <entry num="0">GENC_ALARMCOND_3</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="sc_alarmconds2_3_table">
+        <entry num="0">GENC_ALARMCOND_2_3</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="sc_alarmconds4_table">
+        <entry num="0">GENC_ALARMCOND_4</entry>
+      </table_ref_id>
+
+
+      <!-- System Controller -->
+      <value_ref_id valid="GENC_ALARMCOND_0">
+        <function>3</function>
+        <start_addr>130</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GENC_ALARMCOND_1">
+        <function>3</function>
+        <start_addr>131</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GENC_ALARMCOND_2">
+        <function>3</function>
+        <start_addr>132</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GENC_ALARMCOND_3">
+        <function>3</function>
+        <start_addr>133</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GENC_ALARMCOND_2_3">
+        <function>3</function>
+        <start_addr>132</start_addr>
+        <quantity>2</quantity>
+        <type>uint_32</type>
+      </value_ref_id>
+      <value_ref_id valid="GENC_ALARMCOND_4">
+        <function>3</function>
+        <start_addr>134</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <!-- Generator 1 -->
+      <value_ref_id valid="GEN0_ALARMCOND_0">
+        <function>3</function>
+        <start_addr>4226</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN0_OIL_PRESS_STATE">
+        <function>3</function>
+        <start_addr>4226</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN0_COOL_TEMP_STATE">
+        <function>3</function>
+        <start_addr>4226</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN0_OIL_TEMP_STATE">
+        <function>3</function>
+        <start_addr>4226</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN0_BATT_VOLT_STATE">
+        <function>3</function>
+        <start_addr>4226</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="GEN0_ALARMCOND_1">
+        <function>3</function>
+        <start_addr>4227</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN0_FUEL_LEVEL_STATE">
+        <function>3</function>
+        <start_addr>4227</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN0_COOL_LEVEL_STATE">
+        <function>3</function>
+        <start_addr>4227</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="GEN0_ALARMCOND_2">
+        <function>3</function>
+        <start_addr>4228</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN0_ALARMCOND_3">
+        <function>3</function>
+        <start_addr>4229</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN0_ALARMCOND_4">
+        <function>3</function>
+        <start_addr>4230</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="GEN0_CURRENT_1">
+        <function>3</function>
+        <start_addr>4279</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN0_CURRENT_2">
+        <function>3</function>
+        <start_addr>4281</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN0_CURRENT_3">
+        <function>3</function>
+        <start_addr>4283</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="GEN0_VOLTAGE_LL_1">
+        <function>3</function>
+        <start_addr>4295</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN0_VOLTAGE_LL_2">
+        <function>3</function>
+        <start_addr>4297</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN0_VOLTAGE_LL_3">
+        <function>3</function>
+        <start_addr>4299</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+
+      <!-- Generator 2 -->
+      <value_ref_id valid="GEN1_ALARMCOND_0">
+        <function>3</function>
+        <start_addr>8322</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_OIL_PRESS_STATE">
+        <function>3</function>
+        <start_addr>8322</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_COOL_TEMP_STATE">
+        <function>3</function>
+        <start_addr>8322</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_OIL_TEMP_STATE">
+        <function>3</function>
+        <start_addr>8322</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_BATT_VOLT_STATE">
+        <function>3</function>
+        <start_addr>8322</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="GEN1_ALARMCOND_1">
+        <function>3</function>
+        <start_addr>8323</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_FUEL_LEVEL_STATE">
+        <function>3</function>
+        <start_addr>8323</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_COOL_LEVEL_STATE">
+        <function>3</function>
+        <start_addr>8323</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="GEN1_ALARMCOND_2">
+        <function>3</function>
+        <start_addr>8324</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="GEN1_ALARMCOND_3">
+        <function>3</function>
+        <start_addr>8325</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="GEN1_ALARMCOND_4">
+        <function>3</function>
+        <start_addr>8326</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="GEN1_CURRENT_1">
+        <function>3</function>
+        <start_addr>8375</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_CURRENT_2">
+        <function>3</function>
+        <start_addr>8377</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_CURRENT_3">
+        <function>3</function>
+        <start_addr>8379</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="GEN1_VOLTAGE_LL_1">
+        <function>3</function>
+        <start_addr>8391</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_VOLTAGE_LL_2">
+        <function>3</function>
+        <start_addr>8393</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_VOLTAGE_LL_3">
+        <function>3</function>
+        <start_addr>8395</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+			<!-- Generator 3 -->
+			<value_ref_id valid="GEN2_ALARMCOND_0">
+				<function>3</function>
+				<start_addr>12418</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN2_OIL_PRESS_STATE">
+				<function>3</function>
+				<start_addr>12418</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN2_COOL_TEMP_STATE">
+				<function>3</function>
+				<start_addr>12418</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN2_OIL_TEMP_STATE">
+				<function>3</function>
+				<start_addr>12418</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN2_BATT_VOLT_STATE">
+				<function>3</function>
+				<start_addr>12418</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="GEN2_ALARMCOND_1">
+				<function>3</function>
+				<start_addr>12419</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN2_FUEL_LEVEL_STATE">
+				<function>3</function>
+				<start_addr>12419</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN2_COOL_LEVEL_STATE">
+				<function>3</function>
+				<start_addr>12419</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="GEN2_ALARMCOND_2">
+				<function>3</function>
+				<start_addr>12420</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="GEN2_ALARMCOND_3">
+				<function>3</function>
+				<start_addr>12421</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="GEN2_ALARMCOND_4">
+				<function>3</function>
+				<start_addr>12422</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="GEN2_CURRENT_1">
+				<function>3</function>
+				<start_addr>12471</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN2_CURRENT_2">
+				<function>3</function>
+				<start_addr>12473</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN2_CURRENT_3">
+				<function>3</function>
+				<start_addr>12475</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="GEN2_VOLTAGE_LL_1">
+				<function>3</function>
+				<start_addr>12487</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN2_VOLTAGE_LL_2">
+				<function>3</function>
+				<start_addr>12489</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN2_VOLTAGE_LL_3">
+				<function>3</function>
+				<start_addr>12491</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<!-- Generator 4 -->
+			<value_ref_id valid="GEN3_ALARMCOND_0">
+				<function>3</function>
+				<start_addr>16514</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN3_OIL_PRESS_STATE">
+				<function>3</function>
+				<start_addr>16514</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN3_COOL_TEMP_STATE">
+				<function>3</function>
+				<start_addr>16514</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN3_OIL_TEMP_STATE">
+				<function>3</function>
+				<start_addr>16514</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN3_BATT_VOLT_STATE">
+				<function>3</function>
+				<start_addr>16514</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="GEN3_ALARMCOND_1">
+				<function>3</function>
+				<start_addr>16515</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN3_FUEL_LEVEL_STATE">
+				<function>3</function>
+				<start_addr>16515</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN3_COOL_LEVEL_STATE">
+				<function>3</function>
+				<start_addr>16515</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="GEN3_ALARMCOND_2">
+				<function>3</function>
+				<start_addr>16516</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="GEN3_ALARMCOND_3">
+				<function>3</function>
+				<start_addr>16517</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="GEN3_ALARMCOND_4">
+				<function>3</function>
+				<start_addr>16518</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="GEN3_CURRENT_1">
+				<function>3</function>
+				<start_addr>16567</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN3_CURRENT_2">
+				<function>3</function>
+				<start_addr>16569</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN3_CURRENT_3">
+				<function>3</function>
+				<start_addr>16571</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="GEN3_VOLTAGE_LL_1">
+				<function>3</function>
+				<start_addr>16583</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN3_VOLTAGE_LL_2">
+				<function>3</function>
+				<start_addr>16585</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GEN3_VOLTAGE_LL_3">
+				<function>3</function>
+				<start_addr>16587</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+      <!-- Bulk read for performance. -->
+      <packet>
+        <function>3</function>
+        <start_addr>130</start_addr>
+        <quantity>5</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>4226</start_addr>
+        <quantity>5</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>8322</start_addr>
+        <quantity>5</quantity>
+      </packet>
+			<packet>
+				<function>3</function>
+				<start_addr>12418</start_addr>
+				<quantity>5</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>16514</start_addr>
+				<quantity>5</quantity>
+			</packet>
+    </modbus>
+  </protocol>
+</APC_DDF>

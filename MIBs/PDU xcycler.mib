@@ -1,0 +1,1423 @@
+PDU-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+	MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE     
+						FROM SNMPv2-SMI
+	enterprises, Integer32, Unsigned32, IpAddress, TimeTicks
+						FROM SNMPv2-SMI
+	MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+						FROM SNMPv2-CONF
+	TEXTUAL-CONVENTION, DisplayString, MacAddress, DateAndTime
+						FROM SNMPv2-TC
+	sysName 
+						FROM SNMPv2-MIB;
+xinyou	MODULE-IDENTITY
+    	LAST-UPDATED	"201308310000Z"      -- Aug 30, 2013
+   		ORGANIZATION	""
+    	CONTACT-INFO	""
+    	DESCRIPTION	"describes the SNMP mib of the Smart PDU"
+    	REVISION	"201410270000Z"      -- Oct 27, 2014
+   		DESCRIPTION	"For PDU-E 1.0.7 and 1.1.0"
+        ::= { enterprises 42123 }
+pdu						OBJECT IDENTIFIER ::= { xinyou 1 }
+traps					OBJECT IDENTIFIER ::= { pdu 1 }
+device					OBJECT IDENTIFIER ::= {	pdu 3 }
+pduScalars				OBJECT IDENTIFIER ::= {	device 2 }
+pduTables				OBJECT IDENTIFIER ::= { device 3 }
+systemInform			OBJECT IDENTIFIER ::= { pduScalars 1 }
+networkInform 			OBJECT IDENTIFIER ::= { pduScalars 2 }
+servicesInform 			OBJECT IDENTIFIER ::= { pduScalars 3 }
+configurationInform 	OBJECT IDENTIFIER ::= { pduScalars 5 }
+counts					OBJECT IDENTIFIER ::= { pduScalars 7 }
+upgradeFW				OBJECT IDENTIFIER ::= { pduScalars 8 }
+outlets 				OBJECT IDENTIFIER ::= { pduTables 1 }
+branchs					OBJECT IDENTIFIER ::= { pduTables 2 }
+sensors					OBJECT IDENTIFIER ::= { pduTables 3 }
+inlets					OBJECT IDENTIFIER ::= { pduTables 4 }
+protection		 		OBJECT IDENTIFIER ::= { pduTables 5 }
+-- Textual Conventions
+MilliAmps       ::= TEXTUAL-CONVENTION
+                DISPLAY-HINT "d"
+                STATUS        current
+                DESCRIPTION
+                    "Data type for reporting sensor readings and thresholds
+                    associated with current sensors. If the underlying hardware
+                    sensor indicates 1 amp, then the SNMP agent will report
+                    a value of 1000 milliamps.  The value is scaled in this
+                    manner as a way to deal with floating point types
+                    that SNMP does not currently support."
+                SYNTAX Unsigned32
+MilliVolts      ::= TEXTUAL-CONVENTION
+                DISPLAY-HINT "d"
+                STATUS      current
+                DESCRIPTION
+                    "Data type for reporting sensor readings and thresholds
+                    associated with voltage sensors. If the underlying hardware
+                    sensor indicates 1 volts, then the SNMP agent will report
+                    a value of 1000 millivolts.  The value is scaled in this
+                    manner as a way to deal with floating point types
+                    that SNMP does not currently support."
+                SYNTAX Unsigned32
+MilliWatts           ::= TEXTUAL-CONVENTION
+                DISPLAY-HINT "d"
+                STATUS      current
+                DESCRIPTION
+                    "Data type for reporting sensor readings and thresholds
+                    associated with active power sensors. If the underlying 
+					hardware sensor indicates 1 watt, then the SNMP agent 
+					will report a value of 1000 milliwatt. No scaling is 
+					performed for this type."
+                SYNTAX Unsigned32
+                  
+Watts           ::= TEXTUAL-CONVENTION
+                DISPLAY-HINT "d"
+                STATUS      current
+                DESCRIPTION
+                    "Data type for reporting sensor readings and thresholds
+                    associated with active power sensors. If the underlying 
+					hardware sensor indicates 1 watt, then the SNMP agent 
+					will report a value of 1 watt. No scaling is performed 
+					for this type."
+                SYNTAX Unsigned32
+MilliVoltAmps        ::= TEXTUAL-CONVENTION
+                DISPLAY-HINT "d"
+                STATUS      current
+                DESCRIPTION
+                    "Data type for reporting sensor readings and thresholds
+                    associated with apparent power sensors. If the underlying 
+					hardware sensor indicates 1 volt-amp, then the SNMP agent 
+					will report a value of 1000 millivolt-amp. No scaling is 
+					performed for this type."
+                SYNTAX Unsigned32
+                  
+VoltAmps        ::= TEXTUAL-CONVENTION
+                DISPLAY-HINT "d"
+                STATUS      current
+                DESCRIPTION
+                    "Data type for reporting sensor readings and thresholds
+                    associated with apparent power sensors. If the underlying 
+					hardware sensor indicates 1 volt-amp, then the SNMP agent 
+					will report a value of 1 volt-amp. No scaling is performed 
+					for this type."
+                SYNTAX Unsigned32
+DegreesCelsius  ::= TEXTUAL-CONVENTION
+                DISPLAY-HINT "d"
+                STATUS      current
+                DESCRIPTION
+                    "Data type for reporting sensor readings and thresholds
+                    associated with temperature sensors. If the underlying 
+					hardware sensor indicates 1 degree Celsius, then the 
+					SNMP agent will report a value of 1 degree Celsius. 
+					No scaling is performed for this type."
+                SYNTAX Unsigned32
+TenthDegreesCelsius  ::= TEXTUAL-CONVENTION
+                 DISPLAY-HINT "d"
+                 STATUS      current
+                 DESCRIPTION
+					"Data type for reporting sensor readings associated with 
+					temperature sensors. If the underlying hardware sensor 
+					indicates 1 degree Celsius, then the SNMP agent will report
+					a value of 10  tenth degrees Celsius. The value is scaled 
+					in this manner as a way to deal with floating point types
+					that SNMP does not currently support."
+                 SYNTAX Unsigned32
+Hertz           ::= TEXTUAL-CONVENTION
+                DISPLAY-HINT "d"
+                STATUS      current
+                DESCRIPTION
+                    "Data type for reporting sensor readings and thresholds
+                    associated with frequency sensors. If the underlying 
+					hardware sensor indicates 1 Hertz, then the SNMP agent 
+					will report a value of 1 Hertz. No scaling is performed 
+					for this type."
+                SYNTAX Unsigned32
+RelativeHumidity    ::= TEXTUAL-CONVENTION
+					DISPLAY-HINT "d"
+                    STATUS      current
+                    DESCRIPTION
+						"Data type for reporting sensor readings and thresholds
+						associated with humidity sensors. Relative humidity is
+						expressed as percentage and is defined as the ratio of 
+						the partial pressure of water vapor in a gaseous mixture
+						of air and water vapor to the saturated vapor pressure 
+						of water at a given temperature."
+                    SYNTAX Unsigned32 (0..100)
+PowerFactorPercentage   ::= TEXTUAL-CONVENTION
+						DISPLAY-HINT "d"
+						STATUS      current
+						DESCRIPTION
+								"Data type for reporting sensor readings and thresholds
+								associated with power factor sensors. The power factor of
+								an AC power system is defined as the ratio of the real
+								or active power to the apparent power and is a number
+								between 0 and 1.  A PowerFactorPercentage value is 
+								calculated by taking this ratio and multiplying by 100.  
+								The power factor is used to indicate how efficiently a 
+								particular load is
+								utilizing energy."
+						SYNTAX Unsigned32 (0..100)
+Percentage  	::= TEXTUAL-CONVENTION
+                DISPLAY-HINT "d"
+                STATUS      current
+                DESCRIPTION
+                       "Data type for reporting values in percentage."
+                SYNTAX Unsigned32 (0..100)
+WattHours       ::= TEXTUAL-CONVENTION
+                DISPLAY-HINT "d"
+                STATUS      current
+                DESCRIPTION
+                    "Data type for reporting the active energy"
+                SYNTAX Unsigned32
+firmwareVersion	OBJECT-TYPE
+                SYNTAX        DisplayString
+                MAX-ACCESS    read-only
+                STATUS       current
+                DESCRIPTION
+                    "The working firmware version"
+                ::= { systemInform 1 }
+                  
+firmwareDate 	OBJECT-TYPE
+                SYNTAX        DisplayString
+                MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                    "The working firmware date"
+                ::= { systemInform 2 }
+hardwareRev     OBJECT-TYPE
+                SYNTAX        Integer32(0..255)
+                MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                    "The hardware revision number."
+                ::= { systemInform 3 }
+productModel	OBJECT-TYPE
+				SYNTAX		DisplayString
+				MAX-ACCESS	read-only
+				STATUS		current
+				DESCRIPTION
+					"The product model, part number or FSU."
+				::= { systemInform 4 }
+cpuLoad			OBJECT-TYPE
+				SYNTAX		DisplayString
+				MAX-ACCESS	read-only
+				STATUS		current
+				DESCRIPTION
+					"The cpu load."
+				::= { systemInform 5 }
+memoryUsage		OBJECT-TYPE
+				SYNTAX		DisplayString
+				MAX-ACCESS	read-only
+				STATUS		current
+				DESCRIPTION
+		    		"The memory usage."
+				::= { systemInform 6 }
+serialNumber	OBJECT-TYPE
+				SYNTAX		DisplayString
+				MAX-ACCESS	read-only
+				STATUS		current
+				DESCRIPTION
+		    		"The serial number."
+				::= { systemInform 7 }
+assetTag		OBJECT-TYPE
+				SYNTAX		DisplayString
+				MAX-ACCESS	read-write
+				STATUS		current
+				DESCRIPTION
+		    		"The  assettag."
+				::= { systemInform 8 }
+targetUser      OBJECT-TYPE
+                SYNTAX          DisplayString
+                MAX-ACCESS      accessible-for-notify
+                STATUS          current
+                DESCRIPTION
+                    "Trap target user"
+                ::= { systemInform 9 }
+userName        OBJECT-TYPE
+                SYNTAX          DisplayString
+                MAX-ACCESS      accessible-for-notify
+                STATUS          current
+                DESCRIPTION
+                    "User name to access the PDU."
+                ::= { systemInform 10 }
+outletLabel		OBJECT-TYPE
+                SYNTAX          DisplayString
+                MAX-ACCESS      accessible-for-notify
+                STATUS          current
+                DESCRIPTION
+                    "Trap outlet label."
+                ::= { systemInform 11 }
+alarmMassage	OBJECT-TYPE
+                SYNTAX          DisplayString
+                MAX-ACCESS      accessible-for-notify
+                STATUS          current
+                DESCRIPTION
+                    "Trap alarm massage."
+                ::= { systemInform 12 }
+loginIP			OBJECT-TYPE
+                SYNTAX          DisplayString
+                MAX-ACCESS      accessible-for-notify
+                STATUS          current
+                DESCRIPTION
+                    "The current IP address."
+                ::= { systemInform 13 }
+muteInterval	OBJECT-TYPE
+               	SYNTAX        Integer32
+               	MAX-ACCESS    read-only
+               	STATUS        current
+               	DESCRIPTION
+                    "Switch control mute interval between outlets. The default value is 1000 milliseconds"
+               	::= { configurationInform 1 } 
+inRushInterval      OBJECT-TYPE
+                    SYNTAX        Integer32
+                    MAX-ACCESS    read-only
+                    STATUS        current
+                    DESCRIPTION
+                       "Switch control inrush interval between outlets. The default value is 100 
+						milliseconds"
+					::= { configurationInform 2 } 
+pageRefreshInterval	OBJECT-TYPE
+                    SYNTAX        Integer32
+                    MAX-ACCESS    read-only
+                    STATUS        current
+                    DESCRIPTION
+                    	"Web UI outlet page refresh interval. The default value
+				     is 10 seconds"
+                    ::= { configurationInform 3 }                        
+                  
+ipAddress       OBJECT-TYPE
+                SYNTAX        IpAddress
+                MAX-ACCESS    read-write
+                STATUS        current
+                DESCRIPTION
+                    "The local system IP address. A value of 0.0.0.0 
+				indicates an error or an unset status."
+                ::= { networkInform 1 }
+netmask         OBJECT-TYPE
+                SYNTAX        IpAddress
+                MAX-ACCESS    read-write
+                STATUS        current
+                DESCRIPTION
+                    "The IP address netmask. A value of 0.0.0.0 indicates an error
+                     or an unset status."
+                ::= { networkInform 2 }
+gateway         OBJECT-TYPE
+                SYNTAX        IpAddress
+                MAX-ACCESS    read-write
+                STATUS        current
+                DESCRIPTION
+                    "The system network interface Gateway. A value of 0.0.0.0 indicates an error
+                     or an unset status."
+                ::= { networkInform 3 }
+macAddress    	OBJECT-TYPE
+                SYNTAX        MacAddress
+                MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                    "The system MAC address."
+                ::= { networkInform 4 }
+hostName      	OBJECT-TYPE
+                SYNTAX        DisplayString
+                MAX-ACCESS    read-write
+                STATUS        current
+                DESCRIPTION
+                    "The system host name."
+                ::= { networkInform 5 }
+httpService 	OBJECT-TYPE
+                SYNTAX        INTEGER{enabled(0),
+				      disabled(1)}
+                MAX-ACCESS    read-write
+                STATUS        current
+				DEFVAL	      {enabled}
+                DESCRIPTION
+                    "Enable or disable the HTTP service"
+                ::= { servicesInform 1 }
+httpsService    OBJECT-TYPE
+                SYNTAX        INTEGER{enabled(0),
+				      disabled(1)}
+                MAX-ACCESS    read-write
+                STATUS        current
+				DEFVAL	      {disabled}
+                DESCRIPTION
+                    "Enable or disable the HTTPS service"
+                ::= { servicesInform 2 }
+telnetService  	OBJECT-TYPE
+                SYNTAX        INTEGER{enabled(0),
+				      disabled(1)}
+                MAX-ACCESS    read-write
+                STATUS        current
+				DEFVAL	      {enabled}
+                DESCRIPTION
+                    "Enable or disable the Telnet service"
+                ::= { servicesInform 3 }
+sshService  	OBJECT-TYPE
+                SYNTAX        INTEGER{enabled(0),
+				      disabled(1)}
+                MAX-ACCESS    read-write
+                STATUS        current
+				DEFVAL	      {enabled}
+                DESCRIPTION
+                    "Enable or disable the SSH service"
+                ::= { servicesInform 4 }
+snmpService     OBJECT-TYPE
+                SYNTAX        INTEGER{enabled(0),
+				      disabled(1)}
+                MAX-ACCESS    read-write
+                STATUS        current
+				DEFVAL	      {enabled}
+                DESCRIPTION
+                    "Enable or disable the SNMP service"
+                ::= { servicesInform 5 }
+-- counts 
+outletCount     OBJECT-TYPE
+                SYNTAX        Integer32
+                MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                    "The number of outlets (regardless of
+                     their current state) present on this PDU. 
+					 Not include the outlet on the daisy chain."
+                ::= { counts 1 }
+branchCount	OBJECT-TYPE
+              	SYNTAX        Integer32
+            	MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                    "The number of branchs present on this PDU."
+                ::= { counts 2 }
+sensorCount     OBJECT-TYPE
+                SYNTAX        Integer32
+                MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                     "The number of external temperature sensors (regardless of
+                      their current state) present on this PDU."
+                ::= { counts 3 }
+inletCount		OBJECT-TYPE
+              	SYNTAX        Integer32
+            	MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                    "The number of inlets present on this PDU."
+                ::= { counts 4 }
+pduCount		OBJECT-TYPE
+              	SYNTAX        Integer32
+            	MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                    "The number of PDU."
+                ::= { counts 5 }
+-- upgrade				
+ftpServerIPAddress	OBJECT-TYPE
+					SYNTAX IpAddress
+					ACCESS read-write
+					STATUS current
+					DESCRIPTION
+					 "The IP address of FTP server."
+					::= { upgradeFW 1 }
+ftpServerPort 		OBJECT-TYPE
+					SYNTAX Unsigned32
+					ACCESS read-write
+					STATUS current
+					DESCRIPTION
+					 "The port of FTP server."    
+					DEFVAL { 21 }
+					::= { upgradeFW 2 }
+ftpServerUsername	OBJECT-TYPE
+					SYNTAX DisplayString (SIZE (1..32))
+					ACCESS read-write
+					STATUS current
+					DESCRIPTION
+					 "The username of FTP server."    
+					::= { upgradeFW 3 }
+					
+ftpServerPassword 	OBJECT-TYPE
+					SYNTAX DisplayString (SIZE (1..16))
+					ACCESS read-write
+					STATUS current
+					DESCRIPTION
+					 "The password of FTP server."    
+					::= { upgradeFW 4 }
+					
+ftpServerRemotePath OBJECT-TYPE
+					SYNTAX DisplayString (SIZE (1..64))
+					ACCESS read-write
+					STATUS current
+					DESCRIPTION
+					 "The remote fath in FTP server."    
+					::= { upgradeFW 5 }
+					
+ftpServerRemoteFile OBJECT-TYPE
+					SYNTAX DisplayString (SIZE (1..64))
+					ACCESS read-write
+					STATUS current
+					DESCRIPTION
+					 "The remote file in FTP server."    
+					::= { upgradeFW 6 }
+					
+upgradeFWOperation 	OBJECT-TYPE
+					SYNTAX INTEGER{noaction(0),upgrade(1)}
+					ACCESS read-write
+					STATUS current
+					DESCRIPTION
+					 "The upgrading device operations:
+					  noaction(0) - No action.
+					  upgrade(1)  - Upgrade PDU F/W."
+					DEFVAL { 0 } 
+					::= { upgradeFW 7 }
+upgradeFWResult 	OBJECT-TYPE
+					SYNTAX INTEGER{failed(-1),noaction(0),success(1),running(2)}
+					ACCESS read-only
+					STATUS current
+					DESCRIPTION
+					 "The upgrading PDU device result:
+					  failed(-1)  - Upgrading device F/W was failed.
+					  noaction(0) - No action, should be set by NMS.                          
+					  success(1)  - Upgrading device F/W was success.
+					  running(2)  - Upgrading device F/W is running."
+					DEFVAL { 0 } 
+					::= { upgradeFW 8 }
+
+-- outlet Table
+outletCount     OBJECT-TYPE
+                SYNTAX        Integer32
+                MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                    "The number of outlets (regardless of
+                     their current state) present on this PDU. 
+					 Not include the outlet on the daisy chain."
+                ::= { outlets 1 }
+outletPowerTable OBJECT-TYPE
+            SYNTAX        SEQUENCE OF OutletPowerEntry
+            MAX-ACCESS    not-accessible
+            STATUS        current
+            DESCRIPTION
+                "A list of outlet entries. The number of
+                entries is given by the value of outletCount."
+            ::= { outlets 2 }
+outletPowerEntry OBJECT-TYPE
+            SYNTAX        OutletPowerEntry
+            MAX-ACCESS    not-accessible
+            STATUS        current
+            DESCRIPTION
+                "An outlet entry containing objects at the
+                for a particular outlet."
+            INDEX         {
+							pduPowerIndex,
+							outletPowerIndex
+							}
+            ::= { outletPowerTable 1 }
+OutletPowerEntry ::= SEQUENCE { 
+								pduPowerIndex		 	Integer32,
+								outletPowerIndex     	Integer32,
+                          		outletBranchId			Integer32,
+                                outletPowerDescr        DisplayString,
+                                outletRatedCurrent     	MilliAmps,
+                                outletCurrent          	MilliAmps,
+                                outletVoltage          	MilliVolts,
+                                outletActivePower      	MilliWatts,
+                                outletApparentPower    	MilliVoltAmps,
+                                outletPowerFactor      	PowerFactorPercentage,
+                                outletFrequency        	Hertz,
+                                outletBasePower  	MilliWatts}
+pduPowerIndex	 	OBJECT-TYPE
+             		SYNTAX        Integer32(1..64)
+             		MAX-ACCESS    not-accessible
+             		STATUS        current
+             		DESCRIPTION
+               	    	    "A unique value for each outlet. Its value
+                     	     ranges between 1 and the value of PDUConunt."
+             		::= { outletPowerEntry 1 }
+outletPowerIndex 	OBJECT-TYPE
+             		SYNTAX        Integer32(1..64)
+             		MAX-ACCESS    not-accessible
+             		STATUS        current
+             		DESCRIPTION
+               	    	    "A unique value for each outlet. Its value
+                     	     ranges between 1 and the value of outletCount."
+             		::= { outletPowerEntry 2 }
+outletBranchId 	OBJECT-TYPE
+             		SYNTAX        Integer32(1..64)
+             		MAX-ACCESS    read-only
+             		STATUS        current
+             		DESCRIPTION
+               	    	    "A unique value for each outlet. Its value
+                     	     ranges between 1 and the value of branchCount."
+             		::= { outletPowerEntry 3 }
+outletPowerDescr	OBJECT-TYPE
+             		SYNTAX        DisplayString
+            		MAX-ACCESS    read-write
+             		STATUS        current
+             		DESCRIPTION
+               		    "A textual string containing information
+               		     about the outlet."
+             ::= { outletPowerEntry 4 }
+outletRatedCurrent 	OBJECT-TYPE
+             		SYNTAX        MilliAmps
+             		MAX-ACCESS    read-only
+             		STATUS        current
+             		DESCRIPTION
+             		    "The current rating of the outlet. This value 
+			     is reported in milliamps (1/1000th of an amp)"
+             ::= { outletPowerEntry 5 }
+outletCurrent 	OBJECT-TYPE
+               	SYNTAX        MilliAmps
+               	MAX-ACCESS    read-only
+               	STATUS        current
+                DESCRIPTION
+                    "A unique value for the current sensor
+                     attached to the outlet.  This value is
+                     reported in milliamps (1/1000th of an amp)"
+                ::= { outletPowerEntry 6 }
+outletVoltage	OBJECT-TYPE
+                SYNTAX        MilliVolts
+                MAX-ACCESS    read-only
+                STATUS        current
+               	DESCRIPTION
+                     "A unique value for the voltage sensor
+                      attached to the outlet.This value is
+                      reported in millivolts (1/1000th of a volt)"
+               ::= { outletPowerEntry 7 }
+outletActivePower	OBJECT-TYPE
+                        SYNTAX        Watts
+                        MAX-ACCESS    read-only
+                        STATUS        current
+                        DESCRIPTION
+                            "A unique value for the active power sensor
+                             attached to the outlet.  This value is
+                             reported in Watts."
+                       ::= { outletPowerEntry 8 }
+outletApparentPower         OBJECT-TYPE
+                            SYNTAX        VoltAmps
+                            MAX-ACCESS    read-only
+                            STATUS        current
+                            DESCRIPTION
+                                "A unique value for the apparent power sensor
+                                 attached to the outlet.  This value is
+                                 reported in Volt-Amps"
+                            ::= { outletPowerEntry 9 }
+outletPowerFactor           OBJECT-TYPE
+                            SYNTAX        PowerFactorPercentage
+                            MAX-ACCESS    read-only
+                            STATUS        current
+                            DESCRIPTION
+                                "A unique value for the power factor
+                                 of the outlet. The reading represents a
+                                 percentage in the range of 0% to 100%."
+                            ::= { outletPowerEntry 10 }
+outletFrequency	OBJECT-TYPE
+            	SYNTAX        Hertz
+             	MAX-ACCESS    read-only
+             	STATUS        current
+             	DESCRIPTION
+             	    "The frequency of the output. This value is in milliHz"
+             	::= { outletPowerEntry 11 }        
+outletBasePower      OBJECT-TYPE
+             SYNTAX        MilliWatts
+             MAX-ACCESS    read-only
+             STATUS        current
+             DESCRIPTION
+                 "The base active power of the outlet which is measured 
+		  when the device is on. This value is in MilliWatts(
+		  1/1000th of a 1 watts)"
+             ::= { outletPowerEntry 12 }
+outletSwitchTable	OBJECT-TYPE
+			SYNTAX		SEQUENCE OF OutletSwitchEntry
+			MAX-ACCESS	not-accessible
+			STATUS		current
+			DESCRIPTION
+			    "Outlet control switch table."
+			::= { outlets 3}
+outletSwitchEntry	OBJECT-TYPE
+			SYNTAX		OutletSwitchEntry
+			MAX-ACCESS	not-accessible
+			STATUS		current
+			DESCRIPTION
+			    "Outlet control switch entry."
+			INDEX		{
+							pduSwitchIndex,
+							outletSwitchIndex
+						}
+			::= { outletSwitchTable 1 }
+OutletSwitchEntry  ::= SEQUENCE{
+				pduSwitchIndex 	Integer32,
+				outletSwitchIndex 	Integer32,
+				outletOperationState	INTEGER,
+				outletOperationDelay	Integer32
+				}
+pduSwitchIndex 	OBJECT-TYPE
+			SYNTAX		Integer32
+			MAX-ACCESS	not-accessible
+			STATUS		current
+			DESCRIPTION
+			    "PDU Outlet switch index"
+			::= { outletSwitchEntry 1 }
+      
+outletSwitchIndex 	OBJECT-TYPE
+			SYNTAX		Integer32
+			MAX-ACCESS	not-accessible
+			STATUS		current
+			DESCRIPTION
+			    "Outlet switch index"
+			::= { outletSwitchEntry 2 }
+      
+outletOperationalState      OBJECT-TYPE
+                            SYNTAX        INTEGER { error(-1),
+                                                    on(0),
+                                                    off(1),
+                                                    cycling(2) }
+                            MAX-ACCESS    read-write
+                            STATUS        current
+                            DESCRIPTION
+                                "A value for each outlet which describes the
+                                 operational state of the outlet. It is also
+                                 used to set the operational state of the 
+				 outlet"
+                            ::= { outletSwitchEntry 3 }
+outletOperationalDelay  OBJECT-TYPE
+             		SYNTAX        Integer32
+             		MAX-ACCESS    read-write
+             		STATUS        current
+	 		DEFVAL	      { 0 }
+             		DESCRIPTION
+            	 	    "The delay before the outlet switch operation. default(0). 
+			     This value is in millisecond(ms, 1/1000th of 
+  			     a second)"
+             ::= { outletSwitchEntry 4 }
+   
+outletConsumptionTable	OBJECT-TYPE
+			SYNTAX		SEQUENCE OF OutletConsumptionEntry
+			MAX-ACCESS	not-accessible
+			STATUS		current
+			DESCRIPTION
+			   "Outlet consumption table."
+			::= { outlets 4 }
+outletConsumptionEntry 	OBJECT-TYPE
+			SYNTAX		OutletConsumptionEntry
+			MAX-ACCESS	not-accessible
+			STATUS		current
+			DESCRIPTION
+			    "Outlet consumption entry."
+			INDEX		{
+							pduConsumptionIndex,
+							outletConsumptionIndex
+						}
+			::= {outletConsumptionTable 1}
+OutletConsumptionEntry 	::= SEQUENCE{
+					 pduConsumptionIndex	Integer32,
+					 outletConsumptionIndex	Integer32,
+				     outletPowerWattHours	WattHours,
+				     outletSavingWattHouts	WattHours,
+				     outletPowerCost		Integer32,
+				     outletCostSaving		Integer32,
+				     outletCarbonMission	tons,
+				     outletCarbonMissionSaving	tons
+				} 
+pduConsumptionIndex	OBJECT-TYPE
+			SYNTAX		Integer32
+			MAX-ACCESS	not-accessible
+			STATUS		current
+			DESCRIPTION
+			    "Outlet consumption index." 
+			::= { outletConsumptionEntry 1 } 
+outletConsumptionIndex	OBJECT-TYPE
+			SYNTAX		Integer32
+			MAX-ACCESS	not-accessible
+			STATUS		current
+			DESCRIPTION
+			    "Outlet consumption index." 
+			::= { outletConsumptionEntry 2 } 
+outletPowerWattHours   OBJECT-TYPE
+                  SYNTAX        WattHours
+                  MAX-ACCESS    read-only
+                  STATUS        current
+                  DESCRIPTION
+                  "The value of active energy for this outlet.
+                   This value is reported in WattHours"
+                  ::= { outletConsumptionEntry 3 }        
+outletSavingWattHours   OBJECT-TYPE
+                  SYNTAX        WattHours
+                  MAX-ACCESS    read-only
+                  STATUS        current
+                  DESCRIPTION
+                  "The value of saving energy for this outlet when switch is 
+		   off.This value is reported in WattHours"
+                   ::= { outletConsumptionEntry 4 }
+                     
+outletPowerCost   OBJECT-TYPE
+                  SYNTAX        Integer32
+                  MAX-ACCESS    read-only
+                  STATUS        current
+                  DESCRIPTION
+                  "The value of energy cost for this outlet when switch is on.
+                   This value is reported in the currency defined in the system
+		   default to be RMB/CNY"
+                   ::= { outletConsumptionEntry 5 }
+                     
+outletCostSaving   OBJECT-TYPE
+                  SYNTAX        Integer32
+                  MAX-ACCESS    read-only
+                  STATUS        current
+                  DESCRIPTION
+                  "The estimation of energy cost for this outlet when switch 
+		  is off.This value is reported in the currency defined in 
+		   the system, default to be RMB/CNY"
+                   ::= { outletConsumptionEntry 6}
+outletCarbonMission   OBJECT-TYPE
+                  SYNTAX        Integer32
+                  MAX-ACCESS    read-only
+                  STATUS        current
+                  DESCRIPTION
+                  "The value of carbon emission for this outlet when switch 
+		   is on.This value is reported in the tons"
+                   ::= { outletConsumptionEntry 7 }                     
+                                      
+outletCarbonMissionSaving   OBJECT-TYPE
+                  SYNTAX        Integer32
+                  MAX-ACCESS    read-only
+                  STATUS        current
+                  DESCRIPTION
+                  "The estimation of carbon emission for this outlet when 
+		   switch is off.This value is reported in the tons"
+                   ::= { outletConsumptionEntry 8 }   
+branchCount	OBJECT-TYPE
+              	SYNTAX        Integer32
+            	MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                    "The number of branchs present on this PDU."
+                ::= { branchs 1 }
+branchTable OBJECT-TYPE
+            SYNTAX        SEQUENCE OF BranchEntry
+            MAX-ACCESS    not-accessible
+            STATUS        current
+            DESCRIPTION
+                "A list of bank entries. The number of
+                entries is given by the value of branchCount."
+            ::= { branchs 2 }
+branchEntry OBJECT-TYPE
+            SYNTAX        BranchEntry
+            MAX-ACCESS    not-accessible
+            STATUS        current
+            DESCRIPTION
+                "A bank entry containing objects at the
+                for a particular bank."
+            INDEX         { branchPDUIndex,branchIndex }
+            ::= { branchTable 1 }
+BranchEntry ::= SEQUENCE { branchPDUIndex   	Integer32,
+						 branchIndex   			Integer32,
+                         branchCurrent          MilliAmps,
+                         branchRatedCurrent     MilliAmps,
+                         branchVoltage          MilliVolts,
+                         branchActivePower      MilliWatts,
+                         branchApparentPower    MilliVoltAmps,
+                         branchPowerFactor      PowerFactorPercentage,
+                         branchFrequency        Hertz,
+						 branchPowerWattHours	WattHours	  	
+						}
+branchPDUIndex 	OBJECT-TYPE
+                SYNTAX        Integer32(1..256)
+                MAX-ACCESS    not-accessible
+                STATUS        current
+                DESCRIPTION
+                     "The PDU ID for each branch. This value ranges
+					  between 0 and the value of pduConut. Local branch
+					  will use index 0, while branch on Daisy chain will
+					  starts with index 1"
+                ::= { branchEntry 1 }
+			
+branchIndex    	OBJECT-TYPE
+            	SYNTAX        Integer32(1..64)
+             	MAX-ACCESS    not-accessible
+             	STATUS        current
+             	DESCRIPTION
+                    "The index for each branch. Its value
+                     ranges between 1 and the value of branchCount."
+             	::= { branchEntry 2 }
+branchCurrent 	OBJECT-TYPE
+               	SYNTAX        MilliAmps
+               	MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                    "A unique value for the current sensor
+                     attached to the branch.  This value is
+                     reported in milliamps (1/1000th of an amp)"
+                ::= { branchEntry 3 }
+branchRatedCurrent   OBJECT-TYPE
+             SYNTAX        MilliAmps
+             MAX-ACCESS    read-only
+             STATUS        current
+             DESCRIPTION
+             "The current rating of the branch. This value is reported 
+	      in milliAmps)"
+             ::= { branchEntry 4 }
+branchVoltage  	OBJECT-TYPE
+                SYNTAX        MilliVolts
+               	MAX-ACCESS    read-only
+               	STATUS        current
+                DESCRIPTION
+                    "A unique value for the voltage sensor
+                     attached to the branch.This value is
+                     reported in millivolts (1/1000th of a volt)"
+                ::= { branchEntry 5 }
+branchActivePower	OBJECT-TYPE
+                	SYNTAX        Watts
+                	MAX-ACCESS    read-only
+                	STATUS        current
+                	DESCRIPTION
+                    	     "A unique value for the active power sensor
+                     	      attached to the branch.  This value is
+                     	      reported in Watts."
+               		 ::= { branchEntry 6 }
+branchApparentPower         OBJECT-TYPE
+                            SYNTAX        VoltAmps
+                            MAX-ACCESS    read-only
+                            STATUS        current
+                            DESCRIPTION
+                                "A unique value for the apparent power sensor
+				 attached to the branch.  This value is
+                                 reported in Volt-Amps"
+                            ::= { branchEntry 7 }
+branchPowerFactor	OBJECT-TYPE
+                        SYNTAX        PowerFactorPercentage
+                        MAX-ACCESS    read-only
+                        STATUS        current
+                        DESCRIPTION
+                             "A unique value for the power factor
+                              of the branch. The reading represents a
+                              percentage in the range of 0% to 100%."
+                        ::= { branchEntry 8 }
+                                 
+branchFrequency 	OBJECT-TYPE
+             		SYNTAX        Hertz
+             		MAX-ACCESS    read-only
+             		STATUS        current
+             		DESCRIPTION
+             		    "The frequency of the branch. This value is in 
+			     milliHz"
+             		::= { branchEntry 9 }        
+branchPowerWattHours	OBJECT-TYPE
+			SYNTAX		WattHours
+			MAX-ACCESS	read-only
+			STATUS		current
+			DESCRIPTION
+			    "Branch consumption" 
+			::= { branchEntry 10 }                                
+sensorCount     OBJECT-TYPE
+                SYNTAX        Integer32
+                MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                     "The number of external temperature sensors (regardless of
+                      their current state) present on this PDU."
+                ::= { sensors 1 }
+sensorTable     OBJECT-TYPE
+                SYNTAX        SEQUENCE OF SensorEntry
+                MAX-ACCESS    not-accessible
+                STATUS        current
+                DESCRIPTION
+                    "A list of temperature sensor entries. The number of
+                     entries is given by the value of tempSensorCount."
+                ::= { sensors 2 }
+sensorEntry     OBJECT-TYPE
+                    SYNTAX        SensorEntry
+                    MAX-ACCESS    not-accessible
+                    STATUS        current
+                    DESCRIPTION
+                        "An entry containing sensor reading and threshold
+                        settings for a particular temperature sensor."
+                    INDEX         { sensorPDUIndex, sensorIndex }
+                    ::= { sensorTable 1 }
+SensorEntry ::= SEQUENCE { sensorPDUIndex		Integer32,
+						   sensorIndex          Integer32,
+                           sensorDescr        	DisplayString,
+                           temperature          TenthDegreesCelsius,
+                           humidity             RelativeHumidity}
+sensorPDUIndex 	OBJECT-TYPE
+                SYNTAX        Integer32(1..256)
+                MAX-ACCESS    not-accessible
+                STATUS        current
+                DESCRIPTION
+                     "The PDU ID for each sensors. This value ranges
+					  between 0 and the value of pduConut. Local sensors
+					  will use index 0, while sensors on Daisy chain will
+					  starts with index 1"
+                ::= { sensorEntry 1 }
+						   
+sensorIndex 	OBJECT-TYPE
+                SYNTAX        Integer32(1..256)
+                MAX-ACCESS    not-accessible
+                STATUS        current
+                DESCRIPTION
+                     "The index for each temperature sensor. Its value
+                      ranges between 1 and tempSensorCount."
+                ::= { sensorEntry 2 }
+sensorDescr		OBJECT-TYPE
+                SYNTAX        DisplayString
+                MAX-ACCESS    read-write
+                STATUS        current
+                DESCRIPTION
+                    "A settable human-readable description for the external 
+                     sensor.  One possible use for this description is to 
+					convey sensor location."
+                ::= { sensorEntry 3 }
+temperature     OBJECT-TYPE
+                SYNTAX        TenthDegreesCelsius
+                MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                    "The value of the external temperature sensor 
+				reported in tenth degrees celsius."
+                ::= { sensorEntry 4 }
+humidity        OBJECT-TYPE
+                SYNTAX        RelativeHumidity
+                MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                    "The value of the external humidity sensor reported
+                    as relative humidity (a percentage)."
+                ::= { sensorEntry 5 }
+-- inlet 
+inletCount		OBJECT-TYPE
+              	SYNTAX        Integer32
+            	MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                    "The number of inlets present on this PDU."
+                ::= { inlets 1 }
+threePhaseTable OBJECT-TYPE
+				SYNTAX        SEQUENCE OF ThreePhaseEntry
+				MAX-ACCESS    not-accessible
+				STATUS        current
+				DESCRIPTION
+				"A list of three phase entries. The number of
+				entries is given by the value of inletCount."
+				::= { inlets 2 }
+threePhaseEntry OBJECT-TYPE
+            	SYNTAX        ThreePhaseEntry
+            	MAX-ACCESS    not-accessible
+            	STATUS        current
+            	DESCRIPTION
+                "A phase entry containing objects at the
+                for a particular phase."
+            INDEX         { pduIndex,
+							inletIndex }
+            ::= { threePhaseTable 1 }
+ThreePhaseEntry ::= SEQUENCE { pduIndex   	Integer32,
+                         inletIndex           Integer32,
+                         threePhaseType         Integer32,
+                         threePhaseV12          MilliVolts,
+                         threePhaseV13          MilliVolts,
+                         threePhaseV23          MilliVolts,
+                         threePhaseIn 			MilliAmps,
+                         inletRatedCurrent 		MilliAmps,
+                         unbalanceVoltage     	MilliVolts
+			}
+pduIndex    	OBJECT-TYPE
+            	SYNTAX        Integer32(1..64)
+             	MAX-ACCESS    not-accessible
+             	STATUS        current
+             	DESCRIPTION
+					"PDU id"
+             	::= { threePhaseEntry 1 }
+inletIndex	OBJECT-TYPE
+			SYNTAX		Integer32(1..64)
+			MAX-ACCESS	not-accessible
+			STATUS		current
+			DESCRIPTION
+                    "A unique value for each inlet. Its value
+                     ranges between 1 and the value of inletCount."
+			::= { threePhaseEntry 2 }         
+threePhaseType 	OBJECT-TYPE
+               	SYNTAX        Integer32
+               	MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                    "A unique value for three phase type"
+                ::= { threePhaseEntry 3 }
+threePhaseV12   OBJECT-TYPE
+             	SYNTAX        MilliVolts
+             	MAX-ACCESS    read-only
+             	STATUS        current
+             	DESCRIPTION
+             		"Phase voltage between v1 and v2. 
+					This value is reported in millivolts"
+             	::= { threePhaseEntry 4 }
+threePhaseV23   OBJECT-TYPE
+             	SYNTAX        MilliVolts
+             	MAX-ACCESS    read-only
+             	STATUS        current
+             	DESCRIPTION
+             		"Phase voltage between v2 and v3. 
+					This value is reported in millivolts"
+             	::= { threePhaseEntry 5 }
+threePhaseV13   OBJECT-TYPE
+             	SYNTAX        MilliVolts
+             	MAX-ACCESS    read-only
+             	STATUS        current
+             	DESCRIPTION
+             		"Phase voltage between v1 and v3. 
+					This value is reported in millivolts"
+             	::= { threePhaseEntry 6 }
+threePhaseIn  	OBJECT-TYPE
+                SYNTAX        MilliAmps
+               	MAX-ACCESS    read-only
+               	STATUS        current
+                DESCRIPTION
+                    "A unique value for the In
+                     attached to the 3ph.This value is
+                     reported in milliAmps"
+                ::= { threePhaseEntry 7 }
+inletRatedCurrent  	OBJECT-TYPE
+                SYNTAX        MilliAmps
+               	MAX-ACCESS    read-only
+               	STATUS        current
+                DESCRIPTION
+                    "A unique value for the rated current
+                     attached to the inlet.This value is
+                     reported in milliAmps"
+                ::= { threePhaseEntry 8 }
+unbalanceVoltage  	OBJECT-TYPE
+                SYNTAX        MilliVolts
+               	MAX-ACCESS    read-only
+               	STATUS        current
+                DESCRIPTION
+                    "A unique value for the unbalance voltage
+                     attached to the inlet.This value is
+                     reported in millivolts"
+                ::= { threePhaseEntry 9 }
+singlePhaseTable OBJECT-TYPE
+				SYNTAX        SEQUENCE OF SinglePhaseEntry
+				MAX-ACCESS    not-accessible
+				STATUS        current
+				DESCRIPTION
+				"A list of single phase entries. The number of
+				entries is given by the value of inletCount."
+				::= { inlets 3 }
+singlePhaseEntry OBJECT-TYPE
+            	SYNTAX        SinglePhaseEntry
+            	MAX-ACCESS    not-accessible
+            	STATUS        current
+            	DESCRIPTION
+                "A phase entry containing objects at the
+                for a particular phase."
+            	INDEX  { 
+						 singlePhasepduIndex,
+                         singlePhaseIndex
+						}
+            	::= { singlePhaseTable 1 }
+SinglePhaseEntry ::= SEQUENCE { 
+						 singlePhasepduIndex   	Integer32,
+                         singlePhaseIndex           Integer32,
+                         singlePhaseCurrent          MilliAmps,
+                         singlePhaseRatedCurrent     MilliAmps,
+                         singlePhaseVoltage          MilliVolts,
+                         singlePhaseActivePower      MilliWatts,
+                         singlePhaseApparentPower    MilliVoltAmps,
+                         singlePhasePowerFactor      PowerFactorPercentage,
+                         singlePhaseFrequency        Hertz,
+						 singlePhasePowerWattHours	WattHours	  	
+			}
+singlePhasepduIndex   	OBJECT-TYPE
+            	SYNTAX        Integer32(1..64)
+             	MAX-ACCESS    not-accessible
+             	STATUS        current
+             	DESCRIPTION
+					"PDU id"
+             	::= { singlePhaseEntry 1 }
+singlePhaseIndex	OBJECT-TYPE
+			SYNTAX		Integer32(1..64)
+			MAX-ACCESS	not-accessible
+			STATUS		current
+			DESCRIPTION
+                    "A unique value for each inlet. Its value
+                     ranges between 1 and the value of inletCount."
+			::= { singlePhaseEntry 2 }         
+singlePhaseCurrent 	OBJECT-TYPE
+               	SYNTAX        MilliAmps
+               	MAX-ACCESS    read-only
+                STATUS        current
+                DESCRIPTION
+                    "A unique value for the current sensor
+                     attached to the inlet.  This value is
+                     reported in milliamps (1/1000th of an amp)"
+                ::= { singlePhaseEntry 3 }
+singlePhaseRatedCurrent   OBJECT-TYPE
+             SYNTAX        MilliAmps
+             MAX-ACCESS    read-only
+             STATUS        current
+             DESCRIPTION
+             "The current rating of the inlet. This value is reported 
+	      in milliAmps)"
+             ::= { singlePhaseEntry 4 }
+singlePhaseVoltage  	OBJECT-TYPE
+                SYNTAX        MilliVolts
+               	MAX-ACCESS    read-only
+               	STATUS        current
+                DESCRIPTION
+                    "A unique value for the voltage sensor
+                     attached to the inlet.This value is
+                     reported in millivolts (1/1000th of a volt)"
+                ::= { singlePhaseEntry 5 }
+singlePhaseActivePower	OBJECT-TYPE
+                	SYNTAX        Watts
+                	MAX-ACCESS    read-only
+                	STATUS        current
+                	DESCRIPTION
+                    	     "A unique value for the active power sensor
+                     	      attached to the inlet.  This value is
+                     	      reported in Watts."
+               		 ::= { singlePhaseEntry 6 }
+singlePhaseApparentPower         OBJECT-TYPE
+                            SYNTAX        VoltAmps
+                            MAX-ACCESS    read-only
+                            STATUS        current
+                            DESCRIPTION
+                                "A unique value for the apparent power 
+								sensor attached to the inlet.  This 
+								value is reported in Volt-Amps"
+                            ::= { singlePhaseEntry 7 }
+singlePhasePowerFactor	OBJECT-TYPE
+                        SYNTAX        PowerFactorPercentage
+                        MAX-ACCESS    read-only
+                        STATUS        current
+                        DESCRIPTION
+                             "A unique value for the power factor
+                              of the inlet. The reading represents a
+                              percentage in the range of 0% to 100%."
+                        ::= { singlePhaseEntry 8 }
+                                 
+singlePhaseFrequency 	OBJECT-TYPE
+             		SYNTAX        Hertz
+             		MAX-ACCESS    read-only
+             		STATUS        current
+             		DESCRIPTION
+             		    "The frequency of the inlet. This value is in 
+			     milliHz"
+             		::= { singlePhaseEntry 9 }        
+singlePhasePowerWattHours	OBJECT-TYPE
+			SYNTAX		WattHours
+			MAX-ACCESS	read-only
+			STATUS		current
+			DESCRIPTION
+			    "Inlet consumption" 
+			::= { singlePhaseEntry 10 }                                
+-- protection
+protectConfigTable	OBJECT-TYPE
+					SYNTAX        SEQUENCE OF ProtectConfigEntry
+					MAX-ACCESS    not-accessible
+					STATUS        current
+					DESCRIPTION
+					"Protection config table."
+					::= { protection 1 }
+protectConfigEntry	OBJECT-TYPE
+            		SYNTAX        ProtectConfigEntry
+            		MAX-ACCESS    not-accessible
+            		STATUS        current
+            		DESCRIPTION
+                	"Protection config entry."
+            		INDEX  {
+							pduProtectIndex,
+							protectConfigType,
+							protectConfigID,
+							protectConfigLevel
+							}
+    	        	::= { protectConfigTable 1 }
+ProtectConfigEntry ::= SEQUENCE { 
+					    pduProtectIndex			Integer32,
+						protectConfigType 		Integer32,
+						protectConfigID			Integer32,
+						protectConfigLevel		Integer32,
+						protectConfigValue		Integer32,
+						protectConfigEnable		Integer32
+			}
+pduProtectIndex 		OBJECT-TYPE
+            			SYNTAX        Integer32(0..4)
+             			MAX-ACCESS    not-accessible
+             			STATUS        current
+             			DESCRIPTION
+			   				"The PDU ID for each config. This value
+					 		 ranges between 1 and the value of pduCount.
+							Local config will use index 0, while config 
+							on Daisy chain will starts with index 1."
+						::= { protectConfigEntry 1 }
+protectConfigType 		OBJECT-TYPE
+            			SYNTAX        Integer32(1..8)
+             			MAX-ACCESS    not-accessible
+             			STATUS        current
+             			DESCRIPTION
+							"A type for protection config.[inlet current:1][inlet voltage:2]
+						[outlet current:3][outlet voltage:4][branch current:5][branch voltage:6]
+						[temperature:7][humidity:8]"
+						::= { protectConfigEntry 2 }
+protectConfigID 		OBJECT-TYPE
+            			SYNTAX        Integer32(0...)
+             			MAX-ACCESS    not-accessible
+             			STATUS        current
+             			DESCRIPTION
+							"A number for protection config. Total config will use index 0."
+						::= { protectConfigEntry 3 }
+protectConfigLevel 		OBJECT-TYPE
+            			SYNTAX        Integer32(1..4)
+             			MAX-ACCESS    not-accessible
+             			STATUS        current
+             			DESCRIPTION
+							"A level for protection config.[High terminate:1][High alarm:2]
+						[Low alarm:3][Low terminate:4]"
+						::= { protectConfigEntry 4 }
+protectConfigEnable		OBJECT-TYPE
+            			SYNTAX        Integer32(0..1)
+             			MAX-ACCESS    read-write
+             			STATUS        current
+             			DESCRIPTION
+							"Enable(1) or disable(0) protection."
+						::= { protectConfigEntry 5 }
+protectConfigValue		OBJECT-TYPE
+            			SYNTAX        Integer32(0..320)
+             			MAX-ACCESS    read-write
+             			STATUS        current
+             			DESCRIPTION
+							"The value of the threshold for the protection."
+						::= { protectConfigEntry 6 }
+-- Start the traps
+rebootStarted             NOTIFICATION-TYPE
+                          OBJECTS { productModel,
+                                    hostName,
+									ipAddress,
+									macAddress,
+									userName
+						  }
+                          STATUS current
+                          DESCRIPTION
+                              "The reboot process has started"
+                          ::= { traps 1 }
+rebootCompleted           NOTIFICATION-TYPE
+                          OBJECTS { productModel,
+                                    hostName,
+									ipAddress,
+									macAddress,
+									userName
+						  }
+                          STATUS current
+                          DESCRIPTION
+                              "The reboot process is complete"
+                          ::= { traps 2 }
+userLogin                 NOTIFICATION-TYPE
+                          OBJECTS { productModel,
+                                    hostName,
+                                    ipAddress,
+									macAddress,
+									userName,
+									loginIP
+						  }
+                          STATUS current
+                          DESCRIPTION
+                              "A user logged in"
+                          ::= { traps 3 }
+userLogout                NOTIFICATION-TYPE
+                          OBJECTS { productModel,
+                                    hostName,
+                                    ipAddress,
+									macAddress,
+									userName,
+									loginIP
+						  }
+                          STATUS current
+                          DESCRIPTION
+                              "A user logged out"
+                          ::= { traps 4 }
+userSessionTimeout        NOTIFICATION-TYPE
+                          OBJECTS { productModel,
+                                    hostName,
+                                    ipAddress,
+									macAddress,
+									userName
+						  }
+                          STATUS current
+                          DESCRIPTION
+                              "A user timed out from the device"
+                          ::= { traps 5 }
+userAdded                 NOTIFICATION-TYPE
+                          OBJECTS { productModel,
+                                    hostName,
+									ipAddress,
+									macAddress,
+									userName,
+									targetUser
+						  }
+                          STATUS current
+                          DESCRIPTION
+                              "A user was added to the system"
+                          ::= { traps 6 }
+userModified              NOTIFICATION-TYPE
+                          OBJECTS { productModel,
+                                    hostName,
+									ipAddress,
+									macAddress,
+									userName,
+									targetUser
+						  }
+                          STATUS current
+                          DESCRIPTION
+                              "A user account was modified"
+                          ::= { traps 7 }
+userDeleted               NOTIFICATION-TYPE
+                          OBJECTS { productModel,
+                                    hostName,
+									ipAddress,
+									macAddress,
+									userName,
+									targetUser
+						  }
+                          STATUS current
+                          DESCRIPTION
+                              "A user was deleted from the system"
+                          ::= { traps 8 }
+userPasswordChanged       NOTIFICATION-TYPE
+                          OBJECTS { productModel,
+                                    hostName,
+                                    ipAddress,
+									macAddress,
+									userName,
+									targetUser
+						  }
+                          STATUS current
+                          DESCRIPTION
+                              "A user password was changed"
+                          ::= { traps 9 }
+deviceUpdateStarted       NOTIFICATION-TYPE
+                          OBJECTS { productModel,
+                                    hostName,
+                                    ipAddress,
+									macAddress,
+									userName,
+                                    firmwareVersion
+						  }
+                          STATUS current
+                          DESCRIPTION
+                              "The device update has started"
+                          ::= { traps 10 }
+switchControl             NOTIFICATION-TYPE
+                          OBJECTS { productModel,
+                                    hostName,
+                                    ipAddress,
+									macAddress,
+									userName,
+                                    outletLabel,
+                                    outletOperationalState
+						  }
+                          STATUS current
+                          DESCRIPTION
+                              "An outlet has been switched"
+                          ::= { traps 11 }
+alarm					  NOTIFICATION-TYPE
+                          OBJECTS { productModel,
+                                    hostName,
+                                    ipAddress,
+									macAddress,
+									alarmMassage
+						  }
+                          STATUS current
+                          DESCRIPTION
+                              "A system protection alarm."
+                          ::= { traps 12 }
+END

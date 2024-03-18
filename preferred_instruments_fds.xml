@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<APC_DDF
+    xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    canremove="yes"
+    ddfversion="8"
+    ddfname="Preferred Instruments Fuel Delivery System"
+    ddfid="preferred_instruments_fds">
+  <schemaVersion>1.6</schemaVersion>
+
+  <device deviceid="pi_fds_header">
+    <oidMustExist oid="MODBUS_OID_MUST_EXIST" ruleid="OIDMustExist_modbusdevicetest" />
+
+    <setProductData ruleid="vendordata" field="vendor">Preferred Instruments</setProductData>
+    <setProductData ruleid="modeldata" field="model">Fuel Delivery System</setProductData>
+    <setProductData ruleid="typedata" field="type">Fuel Delivery System</setProductData>
+    <setDefaultLabel ruleid="labeldata"><sysHostname /> - Slave <commSetting field="slaveaddress" /> </setDefaultLabel>
+  </device>
+
+  <!-- Device that contains generator sensors -->
+  <device deviceid="pi_fds_sensors">
+    <oidMustExist oid="MODBUS_OID_MUST_EXIST" ruleid="OIDMustExist_modbusdevicetest" />
+
+    <numSensor ruleid="MainTankDepth-Sensor">
+      <type>pctofcapacity</type>
+      <sensorId>MAIN_TANK_DEPTH</sensorId>
+      <!--  Instead of inches wc, customer wants this divided by 100 and get percent of cap -->
+      <value>
+        <mult>
+          <op>
+            <getOid>MainTankDepth</getOid>
+          </op>
+          <op>0.01</op>
+        </mult>
+      </value>
+      <label>Main Tank Depth</label>
+      <sensorSet>Main Tank</sensorSet>
+    </numSensor>
+
+    <!--  
+    <numSensor ruleid="MainTankDepth-Sensor">
+      <type>airdiffpressure</type>
+      <sensorId>MAIN_TANK_DEPTH</sensorId>
+        // following comment needs to be made an XML comment if this sensor gets uncommented
+        // From Vendor, value = input /10
+      <value>
+        <mult>
+          <op>
+            <getOid>MainTankDepth</getOid>
+          </op>
+          <op>0.1</op>
+        </mult>
+      </value>
+      <label>Main Tank Depth</label>
+      <sensorSet>Main Tank</sensorSet>
+    </numSensor>
+    -->
+
+    <numSensor ruleid="MainTankLastDeliveryVolume-Sensor">
+      <type>num</type>
+      <units>gallons</units>
+      <sensorId>MAIN_TANK_LAST_DELIVERY_VOLUME</sensorId>
+      <!--  From Vendor, value = input /10000 * 250 = input * 0.025 -->
+      <value>
+        <mult>
+          <op>
+        <getOid>MainTankLastDeliveryVolume</getOid>
+          </op>
+          <op>0.025</op>
+        </mult>
+      </value>
+      <label>Main Tank Last Delivery Volume</label>
+      <sensorSet>Main Tank</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="MainTankVolume-Sensor">
+      <type>num</type>
+      <units>gallons</units>
+      <sensorId>MAIN_TANK_VOLUME</sensorId>
+      <!--  From Vendor, value = input /10000 * 250 = input * 0.025 -->
+      <value>
+        <mult>
+          <op>
+        <getOid>MainTankVolume</getOid>
+          </op>
+          <op>0.025</op>
+        </mult>
+      </value>
+      <label>Main Tank Volume</label>
+      <sensorSet>Main Tank</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="Pump1RuntimeHours-Sensor">
+      <type>timeinhrs</type>
+      <sensorId>PUMP1_RUNTIME_HOURS</sensorId>
+      <value>
+        <getOid>Pump1RuntimeHours</getOid>
+      </value>
+      <label>Pump 1 Runtime Hours</label>
+      <sensorSet>Pump 1</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="Pump1RuntimeMinutes-Sensor">
+      <type>timeinmin</type>
+      <sensorId>PUMP1_RUNTIME_MINUTES</sensorId>
+      <value>
+        <getOid>Pump1RuntimeMinutes</getOid>
+      </value>
+      <label>Pump 1 Runtime Minutes</label>
+      <sensorSet>Pump 1</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="Pump2RuntimeHours-Sensor">
+      <type>timeinhrs</type>
+      <sensorId>PUMP2_RUNTIME_HOURS</sensorId>
+      <value>
+        <getOid>Pump2RuntimeHours</getOid>
+      </value>
+      <label>Pump 2 Runtime Hours</label>
+      <sensorSet>Pump 2</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="Pump2RuntimeMinutes-Sensor">
+      <type>timeinmin</type>
+      <sensorId>PUMP2_RUNTIME_MINUTES</sensorId>
+      <value>
+        <getOid>Pump2RuntimeMinutes</getOid>
+      </value>
+      <label>Pump 2 Runtime Minutes</label>
+      <sensorSet>Pump 2</sensorSet>
+      </numSensor>
+      
+    <stateSensor ruleid="Pump1FaultStatus">
+      <type>state</type>
+      <sensorId>PUMP_1_FAULT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="state_vm">
+          <getOid>Pump1Fault</getOid>
+        </mapValue>
+      </value>
+      <label>Pump 1 Fault Status</label>
+      <enum>state_em</enum>
+      <sensorSet>Pump 1</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="Pump1OnOffAutoStatus">
+      <type>state</type>
+      <sensorId>PUMP_1_ON_OFF_AUTO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="on_off_auto_vm">
+          <getOid>Pump1OnOffAuto</getOid>
+        </mapValue>
+      </value>
+      <label>Pump 1 On/Off/Auto Status</label>
+      <enum>on_off_auto_em</enum>
+      <sensorSet>Pump 1</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="Pump1RunningStatus">
+      <type>state</type>
+      <sensorId>PUMP_1_RUNNING_STATUS</sensorId>
+      <value>
+          <mapValue mapid="state_vm">
+        <getOid>Pump1Running</getOid>
+            </mapValue>
+        </value>
+      <label>Pump 1 Running Status</label>
+      <enum>running_em</enum>
+      <sensorSet>Pump 1</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="Pump2FaultStatus">
+      <type>state</type>
+      <sensorId>PUMP_2_FAULT_STATUS</sensorId>
+      <value>
+          <mapValue mapid="state_vm">
+        <getOid>Pump2Fault</getOid>
+            </mapValue>
+        </value>
+      <label>Pump 2 Fault Status</label>
+      <enum>state_em</enum>
+      <sensorSet>Pump 2</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="Pump2OnOffAutoStatus">
+      <type>state</type>
+      <sensorId>PUMP_2_ON_OFF_AUTO_STATUS</sensorId>
+      <value>
+        <mapValue mapid="on_off_auto_vm">
+            <getOid>Pump2OnOffAuto</getOid>
+        </mapValue>
+      </value>
+      <label>Pump 2 On/Off/Auto Status</label>
+      <enum>on_off_auto_em</enum>
+      <sensorSet>Pump 2</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="Pump2RunningStatus">
+      <type>state</type>
+      <sensorId>PUMP_2_RUNNING_STATUS</sensorId>
+      <value>
+        <mapValue mapid="state_vm">
+          <getOid>Pump2Running</getOid>
+        </mapValue>
+      </value>
+      <label>Pump 2 Running Status</label>
+      <enum>running_em</enum>
+      <sensorSet>Pump 2</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="StrainerHiDiffPressureStatus">
+      <type>state</type>
+      <sensorId>STRAINER_HI_DIFF_PRESS_STATUS</sensorId>
+      <value>
+        <mapValue mapid="state_vm">
+          <getOid>StrainerHiDiffPressure</getOid>
+        </mapValue>
+      </value>
+      <label>Strainer High Diff Pressure Status</label>
+      <enum>state_em</enum>
+      <sensorSet></sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="PumpSetLeakDetectedStatus">
+      <type>state</type>
+      <sensorId>PUMP_SET_LEAK_STATUS</sensorId>
+      <value>
+        <mapValue mapid="state_vm">
+          <getOid>PumpSetLeakDetected</getOid>
+        </mapValue>
+      </value>
+      <label>Pump Set Leak Detected Status</label>
+      <enum>leak_em</enum>
+      <sensorSet></sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="DayTankLeakDetectedStatus">
+      <type>state</type>
+      <sensorId>DAY_TANK_LEAK_STATUS</sensorId>
+      <value>
+        <mapValue mapid="state_vm">
+          <getOid>DayTankLeakDetected</getOid>
+        </mapValue>
+      </value>
+      <label>Day Tank Leak Detected Status</label>
+      <enum>leak_em</enum>
+      <sensorSet>Day Tank</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="DayTankHiAlarmStatus">
+      <type>state</type>
+      <sensorId>DAY_TANK_HI_ALARM</sensorId>
+      <value>
+        <mapValue mapid="state_vm">
+          <getOid>DayTankHiAlarm</getOid>
+        </mapValue>
+      </value>
+      <label>Day Tank High Level Alarm Status</label>
+      <enum>state_em</enum>
+      <sensorSet>Day Tank</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="DayTankLowAlarmStatus">
+      <type>state</type>
+      <sensorId>DAY_TANK_LOW_ALARM</sensorId>
+      <value>
+        <mapValue mapid="state_vm">
+          <getOid>DayTankLowAlarm</getOid>
+        </mapValue>
+      </value>
+      <label>Day Tank Low Level Alarm Status</label>
+      <enum>state_em</enum>
+      <sensorSet>Day Tank</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="MainTankWaterLeakStatus">
+      <type>state</type>
+      <sensorId>MAIN_TANK_WATER_LEAK</sensorId>
+      <value>
+        <mapValue mapid="state_vm">
+          <getOid>MainTankWaterLeak</getOid>
+          </mapValue>
+      </value>
+      <label>Main Tank Water Level Leak Status</label>
+      <enum>leak_em</enum>
+      <sensorSet>Main Tank</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="MainTankOilLeak">
+      <type>state</type>
+      <sensorId>MAIN_TANK_OIL_LEAK</sensorId>
+      <value>
+        <mapValue mapid="state_vm">
+          <getOid>MainTankOilLeak</getOid>
+        </mapValue>
+      </value>
+      <label>Main Tank Oil Leak Status</label>
+      <enum>leak_em</enum>
+      <sensorSet>Main Tank</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="MainTankHiAlarmStatus">
+      <type>state</type>
+      <sensorId>MAIN_TANK_HI_ALARM</sensorId>
+      <value>
+        <mapValue mapid="state_vm">
+          <getOid>MainTankHiAlarm</getOid>
+        </mapValue>
+      </value>
+      <label>Main Tank High Level Alarm Status</label>
+      <enum>state_em</enum>
+      <sensorSet>Main Tank</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="MainTankLowAlarmStatus">
+      <type>state</type>
+      <sensorId>MAIN_TANK_LOW_ALARM</sensorId>
+      <value>
+        <mapValue mapid="state_vm">
+          <getOid>MainTankLowAlarm</getOid>
+        </mapValue>
+      </value>
+      <label>Main Tank Low Level Alarm Status</label>
+      <enum>state_em</enum>
+      <sensorSet>Main Tank</sensorSet>
+    </stateSensor>
+
+    <valueMap ruleid="on_off_auto_vm">
+      <valueIn>0</valueIn><valueOut>0</valueOut>
+      <valueIn>1</valueIn><valueOut>1</valueOut>
+      <valueIn>*</valueIn><valueOut>2</valueOut>
+    </valueMap>
+
+    <enumMap ruleid="on_off_auto_em">
+      <label>On</label>
+      <label>Auto</label>
+      <label>Off</label>
+    </enumMap>
+
+    <valueMap ruleid="state_vm">
+      <valueIn>0</valueIn><valueOut>0</valueOut>
+      <valueIn>1</valueIn><valueOut>1</valueOut>
+      <valueIn>*</valueIn><valueOut>2</valueOut>
+    </valueMap>
+        
+    <enumMap ruleid="state_em">
+      <label>Normal</label>
+      <label>Alarm</label>
+      <label>Unknown</label>
+    </enumMap>
+
+    <enumMap ruleid="leak_em">
+      <label>Normal</label>
+      <label>Leak Detected</label>
+      <label>Unknown</label>
+    </enumMap>
+
+    <enumMap ruleid="running_em">
+      <label>Standby</label>
+      <label>Running</label>
+      <label>Unknown</label>
+    </enumMap>
+
+
+  </device>
+  <protocol>
+    <modbus>
+      <!-- Holding Registers -->
+      <value_ref_id valid="MainTankVolume">
+        <function>3</function>
+        <start_addr>0</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="MainTankDepth">
+        <function>3</function>
+        <start_addr>1</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="Pump1RuntimeMinutes">
+        <function>3</function>
+        <start_addr>3</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="MainTankLastDeliveryVolume">
+        <function>3</function>
+        <start_addr>2</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="Pump1RuntimeHours">
+        <function>3</function>
+        <start_addr>4</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="Pump2RuntimeMinutes">
+        <function>3</function>
+        <start_addr>5</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="Pump2RuntimeHours">
+        <function>3</function>
+        <start_addr>6</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      
+      <!-- Coil Registers -->
+      <value_ref_id valid="Pump1Fault">
+        <function>1</function>
+        <start_addr>8</start_addr>
+        <quantity>1</quantity>
+        <type>bit</type>
+      </value_ref_id>
+
+      <value_ref_id valid="Pump1OnOffAuto">
+        <function>1</function>
+        <start_addr>9</start_addr>
+        <quantity>1</quantity>
+        <type>bit</type>
+      </value_ref_id>
+
+      <value_ref_id valid="Pump1Running">
+        <function>1</function>
+        <start_addr>11</start_addr>
+        <quantity>1</quantity>
+        <type>bit</type>
+      </value_ref_id>
+
+      <value_ref_id valid="Pump2Fault">
+        <function>1</function>
+        <start_addr>14</start_addr>
+        <quantity>1</quantity>
+        <type>bit</type>
+      </value_ref_id>
+
+      <value_ref_id valid="Pump2OnOffAuto">
+        <function>1</function>
+        <start_addr>15</start_addr>
+        <quantity>1</quantity>
+        <type>bit</type>
+      </value_ref_id>
+
+      <value_ref_id valid="Pump2Running">
+        <function>1</function>
+        <start_addr>17</start_addr>
+        <quantity>1</quantity>
+        <type>bit</type>
+      </value_ref_id>
+
+      <value_ref_id valid="StrainerHiDiffPressure">
+        <function>1</function>
+        <start_addr>20</start_addr>
+        <quantity>1</quantity>
+        <type>bit</type>
+      </value_ref_id>
+
+      <value_ref_id valid="PumpSetLeakDetected">
+        <function>1</function>
+        <start_addr>21</start_addr>
+        <quantity>1</quantity>
+        <type>bit</type>
+      </value_ref_id>
+
+      <value_ref_id valid="DayTankLeakDetected">
+        <function>1</function>
+        <start_addr>25</start_addr>
+        <quantity>1</quantity>
+        <type>bit</type>
+      </value_ref_id>
+
+      <value_ref_id valid="DayTankHiAlarm">
+        <function>1</function>
+        <start_addr>26</start_addr>
+        <quantity>1</quantity>
+        <type>bit</type>
+      </value_ref_id>
+
+      <value_ref_id valid="DayTankLowAlarm">
+        <function>1</function>
+        <start_addr>27</start_addr>
+        <quantity>1</quantity>
+        <type>bit</type>
+      </value_ref_id>
+
+      <value_ref_id valid="MainTankWaterLeak">
+        <function>1</function>
+        <start_addr>28</start_addr>
+        <quantity>1</quantity>
+        <type>bit</type>
+      </value_ref_id>
+
+      <value_ref_id valid="MainTankOilLeak">
+        <function>1</function>
+        <start_addr>29</start_addr>
+        <quantity>1</quantity>
+        <type>bit</type>
+      </value_ref_id>
+
+      <value_ref_id valid="MainTankHiAlarm">
+        <function>1</function>
+        <start_addr>30</start_addr>
+        <quantity>1</quantity>
+        <type>bit</type>
+      </value_ref_id>
+
+      <value_ref_id valid="MainTankLowAlarm">
+        <function>1</function>
+        <start_addr>31</start_addr>
+        <quantity>1</quantity>
+        <type>bit</type>
+      </value_ref_id>
+      
+      <packet>
+        <function>3</function>
+        <start_addr>0</start_addr>
+        <quantity>7</quantity>
+      </packet>
+
+    </modbus>
+  </protocol>
+</APC_DDF>

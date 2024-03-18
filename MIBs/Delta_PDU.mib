@@ -1,0 +1,1576 @@
+
+--Delta-MIB { iso(1) org(3) dod(6) internet(1) private(4) enterprises(1) delta(2254) ups(2) pduv3(32) }
+
+
+DeltaPDU-MIB DEFINITIONS ::= BEGIN
+
+
+IMPORTS
+	enterprises, IpAddress
+		FROM RFC1155-SMI
+	DisplayString
+		FROM RFC1213-MIB
+	OBJECT-TYPE
+		FROM RFC-1212
+	TRAP-TYPE
+		FROM RFC-1215;
+
+
+delta				OBJECT IDENTIFIER ::=  { enterprises 2254 }
+
+ups					OBJECT IDENTIFIER ::=  { delta 2 }
+
+pduv3			    OBJECT IDENTIFIER ::=  { ups 32 }
+
+dpduIdent			OBJECT IDENTIFIER ::=  { pduv3 1 }
+dpduOutput			OBJECT IDENTIFIER ::=  { pduv3 2 }
+dpduAlarm 			OBJECT IDENTIFIER ::=  { pduv3 3 }
+dpduTraps			OBJECT IDENTIFIER ::=  { pduv3 20 }
+
+
+--
+-- dpdu Ident group
+--
+   dpduIdentManufacturer OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..32))
+       ACCESS     read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The EnviroStation Vendor."
+       ::= { dpduIdent 1 }
+	   
+	dpduIdentName OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..63))
+       ACCESS     read-write
+       STATUS     mandatory
+       DESCRIPTION
+               "A string identifying the System. This object should be
+               set by the administrator."
+       ::= { dpduIdent 2 }
+	   
+	dpduIdentAttachedDevices OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..63))
+       ACCESS     read-write
+       STATUS     mandatory
+       DESCRIPTION
+               "A string identifying the devices attached to the
+               output(s) of the System. This object should be set by
+               the administrator."
+       ::= { dpduIdent 3 }	   
+	   
+	dpduIdentAgentSoftwareVersion OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..16))
+       ACCESS     read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The PDU NMC software version"
+       ::= { dpduIdent 4 }
+	   
+
+	dpduPDUNum OBJECT-TYPE
+        SYNTAX     INTEGER
+        ACCESS     read-only
+        STATUS     mandatory
+        DESCRIPTION
+	        "The number of PDU devices."
+        ::= { dpduIdent 5 }
+		
+	dpduIdentTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF DpduIdentEntry
+        ACCESS     not-accessible
+        STATUS     mandatory
+        DESCRIPTION
+	        "A list of identification table entries.  The number of entries
+	        is given by the value of dpduPDUNum."
+        ::= { dpduIdent 6 }
+		
+   dpduIdentEntry OBJECT-TYPE
+        SYNTAX     DpduIdentEntry
+        ACCESS     not-accessible
+        STATUS     mandatory
+        DESCRIPTION
+	        "An entry containing identification to a particular PDU device."
+        INDEX { dpduIdentPDUID}
+        ::= { dpduIdentTable 1 }
+
+    DpduIdentEntry ::= SEQUENCE {
+		dpduIdentPDUID           	INTEGER,
+		dpduIdentEnabled		 	INTEGER,
+        dpduIdentModel           	DisplayString,
+        dpduIdentSerialNumber    	DisplayString,
+        dpduIdentPDUFirmwareVersion DisplayString,
+		dpduIdentPDUName            DisplayString,
+		dpduIdentPDUAttachedDevices DisplayString
+    }	   
+	
+	dpduIdentPDUID OBJECT-TYPE
+        SYNTAX     INTEGER(0..15)
+        ACCESS     read-only
+        STATUS     mandatory
+        DESCRIPTION
+	        "PDU device ID"
+        ::= { dpduIdentEntry 1 }
+
+   dpduIdentEnabled OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+	   ACCESS read-write
+       STATUS     mandatory
+       DESCRIPTION
+               "Is the PDU device enabled?"
+       ::= { dpduIdentEntry 2 }
+
+   dpduIdentModel OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..32))
+       ACCESS     read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The PDU Model designation."
+       ::= { dpduIdentEntry 3 }
+
+   dpduIdentSerialNumber OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..16))
+       ACCESS     read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The PDU serial number"
+       ::= { dpduIdentEntry 4 }
+
+   dpduIdentPDUFirmwareVersion OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..16))
+       ACCESS     read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The PDU firmware version"
+       ::= { dpduIdentEntry 5 }
+
+   dpduIdentPDUName OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..63))
+       ACCESS     read-write
+       STATUS     mandatory
+       DESCRIPTION
+               "A string identifying the PDU. This object should be
+               set by the administrator."
+       ::= { dpduIdentEntry 6 }
+
+   dpduIdentPDUAttachedDevices OBJECT-TYPE
+       SYNTAX     DisplayString (SIZE(0..63))
+       ACCESS     read-write
+       STATUS     mandatory
+       DESCRIPTION
+               "A string identifying the devices attached to the
+               output(s) of the PDU. This object should be set by
+               the administrator."
+       ::= { dpduIdentEntry 7 }
+
+--
+-- dpdu Output group
+--
+   dpduOutputTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF DpduOutputEntry
+        ACCESS     not-accessible
+        STATUS     mandatory
+        DESCRIPTION
+	        "A list of Output table entries.  The number of entries
+	        is given by the value of dpduPDUNum."
+        ::= { dpduOutput 1 }
+		
+   dpduOutputEntry OBJECT-TYPE
+        SYNTAX     DpduOutputEntry
+        ACCESS     not-accessible
+        STATUS     mandatory
+        DESCRIPTION
+	        "An entry containing output information to a
+	        particular PDU device."
+        INDEX { dpduOutputPDUID}
+        ::= { dpduOutputTable 1 }
+
+    DpduOutputEntry ::= SEQUENCE {
+		dpduOutputPDUID       INTEGER,
+        dpduOutputFrequency   INTEGER,
+        dpduOutputVoltage1    INTEGER,
+        dpduOutputCurrent1    INTEGER,
+        dpduOutputVoltage2    INTEGER,
+		dpduOutputCurrent2    INTEGER,
+		dpduOutputVoltage3    INTEGER,
+		dpduOutputCurrent3    INTEGER,
+		dpduOutputWattage1    INTEGER,
+		dpduOutputEnergy1     INTEGER,
+		dpduOutputWattage2    INTEGER,
+		dpduOutputEnergy2     INTEGER,
+		dpduOutputWattage3    INTEGER,
+		dpduOutputEnergy3     INTEGER,
+		dpduOutputWattageTotal	INTEGER,
+		dpduOutputEnergyTotal	INTEGER,
+		dpduOutputCurrentL1-2    INTEGER,
+		dpduOutputCurrentL2-2    INTEGER,
+		dpduOutputCurrentL3-2    INTEGER,
+		dpduOutputWattageL1-2    INTEGER,
+		dpduOutputWattageL2-2    INTEGER,
+		dpduOutputWattageL3-2    INTEGER,
+		dpduOutputEnergyL1-2     INTEGER,
+		dpduOutputEnergyL2-2     INTEGER,
+		dpduOutputEnergyL3-2     INTEGER,		
+		dpduOutputCurrentL1-3    INTEGER,
+		dpduOutputCurrentL2-3    INTEGER,
+		dpduOutputCurrentL3-3    INTEGER,
+		dpduOutputWattageL1-3    INTEGER,
+		dpduOutputWattageL2-3    INTEGER,
+		dpduOutputWattageL3-3    INTEGER,
+		dpduOutputEnergyL1-3     INTEGER,
+		dpduOutputEnergyL2-3     INTEGER,
+		dpduOutputEnergyL3-3     INTEGER,
+		dpduOutputCurrentL1Total INTEGER,
+		dpduOutputCurrentL2Total INTEGER,
+		dpduOutputCurrentL3Total INTEGER,
+		dpduOutputCurrentTotal INTEGER,
+		dpduOutputWattageL1Total INTEGER,
+		dpduOutputWattageL2Total INTEGER,
+		dpduOutputWattageL3Total INTEGER
+    }
+	
+	dpduOutputPDUID OBJECT-TYPE
+        SYNTAX     INTEGER(0..15)
+        ACCESS     read-only
+        STATUS     mandatory
+        DESCRIPTION
+	        "The PDU device ID. This value is same as dpduIdentPDUID"
+        ::= { dpduOutputEntry 1 }
+		
+   dpduOutputFrequency OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "0.1 Hertz"
+       ACCESS     read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The present output frequency in 1/10 Hz."
+       ::= { dpduOutputEntry 2 }
+
+   dpduOutputVoltage1 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 V"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line 1 voltage of the PDU system in 1/10 V."
+		::= { dpduOutputEntry 3 }
+
+   dpduOutputCurrent1 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 A"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line 1 current of the PDU system in 1/10 A."
+		::= { dpduOutputEntry 4 }
+
+   dpduOutputVoltage2 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 V"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line 2 voltage of the PDU system in 1/10 V."
+		::= { dpduOutputEntry 5 }
+
+   dpduOutputCurrent2 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 A"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line 2 current of the PDU system in 1/10 A."
+		::= { dpduOutputEntry 6 }
+
+   dpduOutputVoltage3 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 V"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line 3 voltage of the PDU system in 1/10 V."
+		::= { dpduOutputEntry 7 }
+
+   dpduOutputCurrent3 OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "0.1 A"
+       ACCESS     read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The Output line 3 current of the PDU system in 1/10 A."
+		::= { dpduOutputEntry 8 }
+
+   dpduOutputWattage1 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "1 Watt"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line 1 power of the PDU system."
+		::= { dpduOutputEntry 9 }
+
+   dpduOutputEnergy1 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 kWh"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line 1 energy of the PDU system in 0.1 kWh."
+		::= { dpduOutputEntry 10 }
+
+   dpduOutputWattage2 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "1 Watt"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line 2 power of the PDU system."
+		::= { dpduOutputEntry 11 }
+
+   dpduOutputEnergy2 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 kWh"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line 2 energy of the PDU system in 0.1 kWh."
+		::= { dpduOutputEntry 12 }
+
+   dpduOutputWattage3 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "1 Watt"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line 3 power of the PDU system."
+		::= { dpduOutputEntry 13 }
+
+   dpduOutputEnergy3 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 kWh"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line 3 energy of the PDU system in 0.1 kWh."
+		::= { dpduOutputEntry 14 }
+
+   dpduOutputWattageTotal OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "1 Watt"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The total Output power of the PDU system."
+		::= { dpduOutputEntry 15 }
+
+   dpduOutputEnergyTotal OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 kWh"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The total Output energy of the PDU system in 0.1 kWh."
+		::= { dpduOutputEntry 16 }
+		
+	dpduOutputCurrentL1-2 OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "0.1 A"
+       ACCESS     read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The Output line L1-2 current of the PDU system in 1/10 A."
+		::= { dpduOutputEntry 17 }
+	
+	dpduOutputCurrentL2-2 OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "0.1 A"
+       ACCESS     read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The Output line L2-2 current of the PDU system in 1/10 A."
+		::= { dpduOutputEntry 18 }
+		
+	dpduOutputCurrentL3-2 OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "0.1 A"
+       ACCESS     read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The Output line L3-2 current of the PDU system in 1/10 A."
+		::= { dpduOutputEntry 19 }		
+		
+	dpduOutputWattageL1-2 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "1 Watt"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L1-2 power of the PDU system."
+		::= { dpduOutputEntry 20 }
+		
+	dpduOutputWattageL2-2 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "1 Watt"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L2-2 power of the PDU system."
+		::= { dpduOutputEntry 21 }
+		
+	dpduOutputWattageL3-2 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "1 Watt"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L3-2 power of the PDU system."
+		::= { dpduOutputEntry 22 }
+		
+	dpduOutputEnergyL1-2 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 kWh"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L1-2 energy of the PDU system in 0.1 kWh."
+		::= { dpduOutputEntry 23 }
+		
+	dpduOutputEnergyL2-2 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 kWh"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L2-2 energy of the PDU system in 0.1 kWh."
+		::= { dpduOutputEntry 24 }
+		
+	dpduOutputEnergyL3-2 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 kWh"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L3-2 energy of the PDU system in 0.1 kWh."
+		::= { dpduOutputEntry 25 }
+		
+	dpduOutputCurrentL1-3 OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "0.1 A"
+       ACCESS     read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The Output line L1-3 current of the PDU system in 1/10 A."
+		::= { dpduOutputEntry 26 }
+	dpduOutputCurrentL2-3 OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "0.1 A"
+       ACCESS     read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The Output line L2-3 current of the PDU system in 1/10 A."
+		::= { dpduOutputEntry 27 }
+	dpduOutputCurrentL3-3 OBJECT-TYPE
+       SYNTAX     INTEGER
+       UNITS      "0.1 A"
+       ACCESS     read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "The Output line L3-3 current of the PDU system in 1/10 A."
+		::= { dpduOutputEntry 28 }
+	
+	dpduOutputWattageL1-3 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "1 Watt"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L1-3 power of the PDU system."
+		::= { dpduOutputEntry 29 }
+		
+	dpduOutputWattageL2-3 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "1 Watt"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L2-3 power of the PDU system."
+		::= { dpduOutputEntry 30 }
+		
+	dpduOutputWattageL3-3 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "1 Watt"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L3-3 power of the PDU system."
+		::= { dpduOutputEntry 31 }
+		
+	dpduOutputEnergyL1-3 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 kWh"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L1-3 energy of the PDU system in 0.1 kWh."
+		::= { dpduOutputEntry 32 }
+		
+	dpduOutputEnergyL2-3 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 kWh"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L2-3 energy of the PDU system in 0.1 kWh."
+		::= { dpduOutputEntry 33 }
+		
+	dpduOutputEnergyL3-3 OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 kWh"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L3-3 energy of the PDU system in 0.1 kWh."
+		::= { dpduOutputEntry 34 }
+	
+	dpduOutputCurrentL1Total OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 A"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L1 total current of the PDU system in 1/10 A."
+		::= { dpduOutputEntry 35 }
+		
+	dpduOutputCurrentL2Total OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 A"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L2 total current of the PDU system in 1/10 A."
+		::= { dpduOutputEntry 36 }
+		
+	dpduOutputCurrentL3Total OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 A"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L3 total current of the PDU system in 1/10 A."
+		::= { dpduOutputEntry 37 }
+		
+	dpduOutputCurrentTotal OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "0.1 A"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L3 total current of the PDU system in 1/10 A."
+		::= { dpduOutputEntry 38 }
+ 
+	dpduOutputWattageL1Total OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "1 Watt"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L1 total power of the PDU system."
+		::= { dpduOutputEntry 39 }
+
+	dpduOutputWattageL2Total OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "1 Watt"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L2 total power of the PDU system."
+		::= { dpduOutputEntry 40 }
+		
+	dpduOutputWattageL3Total OBJECT-TYPE
+	   SYNTAX     INTEGER
+       UNITS      "1 Watt"
+	   ACCESS     read-only
+	   STATUS     mandatory
+	   DESCRIPTION
+	           "The Output line L3 total power of the PDU system."
+		::= { dpduOutputEntry 41 }
+		
+--
+-- dpdu Alarm group
+--
+	dpduAlarmTable OBJECT-TYPE
+        SYNTAX     SEQUENCE OF DpduAlarmEntry
+        ACCESS     not-accessible
+        STATUS     mandatory
+        DESCRIPTION
+	        "A list of Alarm table entries.  The number of entries
+	        is given by the value of dpduPDUNum."
+        ::= { dpduAlarm 1 }
+		
+	dpduAlarmEntry OBJECT-TYPE
+        SYNTAX     DpduAlarmEntry
+        ACCESS     not-accessible
+        STATUS     mandatory
+        DESCRIPTION
+	        "An entry containing alarm to a particular PDU device."
+        INDEX { dpduAlarmPDUID}
+        ::= { dpduAlarmTable 1 }
+
+    DpduAlarmEntry ::= SEQUENCE {
+		dpduAlarmPDUID   	  	INTEGER,
+        dpduAlarmDisconnect   	INTEGER,
+        dpduAlarmL1LoadMajor    INTEGER,
+        dpduAlarmL1LoadMinor    INTEGER,
+        dpduAlarmL1OutVoltMajor INTEGER,
+		dpduAlarmL1OutVoltMinor INTEGER,
+		dpduAlarmL2LoadMajor    INTEGER,
+		dpduAlarmL2LoadMinor    INTEGER,
+		dpduAlarmL2OutVoltMajor INTEGER,
+		dpduAlarmL2OutVoltMinor INTEGER,
+		dpduAlarmL3LoadMajor    INTEGER,
+		dpduAlarmL3LoadMinor    INTEGER,
+		dpduAlarmL3OutVoltMajor INTEGER,
+		dpduAlarmL3OutVoltMinor INTEGER,
+		dpduAlarmL12LoadMajor   INTEGER,
+		dpduAlarmL12LoadMinor   INTEGER,
+		dpduAlarmL1-1BreakerOpen INTEGER,
+		dpduAlarmL2-1BreakerOpen INTEGER,
+		dpduAlarmL3-1BreakerOpen INTEGER,		
+		dpduAlarmL1-2LoadMajor   INTEGER,
+		dpduAlarmL1-2LoadMinor   INTEGER,
+		dpduAlarmL2-2LoadMajor   INTEGER,
+		dpduAlarmL2-2LoadMinor   INTEGER,
+		dpduAlarmL3-2LoadMajor   INTEGER,
+		dpduAlarmL3-2LoadMinor   INTEGER,
+		dpduAlarmL1-2BreakerOpen INTEGER,
+		dpduAlarmL2-2BreakerOpen INTEGER,
+		dpduAlarmL3-2BreakerOpen INTEGER,
+		dpduAlarmL1-3LoadMajor   INTEGER,
+		dpduAlarmL1-3LoadMinor   INTEGER,
+		dpduAlarmL2-3LoadMajor   INTEGER,
+		dpduAlarmL2-3LoadMinor   INTEGER,
+		dpduAlarmL3-3LoadMajor   INTEGER,
+		dpduAlarmL3-3LoadMinor   INTEGER,	
+		dpduAlarmL1-3BreakerOpen INTEGER,
+		dpduAlarmL2-3BreakerOpen INTEGER,
+		dpduAlarmL3-3BreakerOpen INTEGER	
+    }
+	
+	dpduAlarmPDUID OBJECT-TYPE
+       SYNTAX     INTEGER(0..15)
+       ACCESS     read-only
+       STATUS     mandatory
+       DESCRIPTION
+	       "The PDU device ID. This value is same as dpduIdentPDUID"
+       ::= { dpduAlarmEntry 1 }
+		
+		
+	dpduAlarmDisconnect OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "Does the PDU disconnect?"
+       ::= { dpduAlarmEntry 2 }
+
+	dpduAlarmL1LoadMajor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L1 load major alarm"
+       ::= { dpduAlarmEntry 3 }
+
+	dpduAlarmL1LoadMinor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L1 load minor alarm"
+       ::= { dpduAlarmEntry 4 }
+
+	dpduAlarmL1OutVoltMajor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L1 output votage major alarm"
+       ::= { dpduAlarmEntry 5 }
+
+	dpduAlarmL1OutVoltMinor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L1 output voltage minor alarm"
+       ::= { dpduAlarmEntry 6 }
+
+	dpduAlarmL2LoadMajor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L2 load major alarm"
+       ::= { dpduAlarmEntry 7 }
+
+	dpduAlarmL2LoadMinor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L2 load minor alarm"
+       ::= { dpduAlarmEntry 8 }
+
+	dpduAlarmL2OutVoltMajor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L2 output votage major alarm"
+       ::= { dpduAlarmEntry 9 }
+
+	dpduAlarmL2OutVoltMinor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L2 output voltage minor alarm"
+       ::= { dpduAlarmEntry 10 }
+
+	dpduAlarmL3LoadMajor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L3 load major alarm"
+       ::= { dpduAlarmEntry 11 }
+
+	dpduAlarmL3LoadMinor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L3 load minor alarm"
+       ::= { dpduAlarmEntry 12 }
+
+	dpduAlarmL3OutVoltMajor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L3 output votage major alarm"
+       ::= { dpduAlarmEntry 13 }
+
+	dpduAlarmL3OutVoltMinor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L3 output voltage minor alarm"
+       ::= { dpduAlarmEntry 14 }
+
+	dpduAlarmL12LoadMajor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L1, L2 load major alarm"
+       ::= { dpduAlarmEntry 15 }
+
+	dpduAlarmL12LoadMinor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L1, L2 load minor alarm"
+       ::= { dpduAlarmEntry 16 }
+	
+	dpduAlarmL1-1BreakerOpen OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  open(1),
+				  close(2)
+       }
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "L1-1 breaker open"
+       ::= { dpduAlarmEntry 17 }
+	   
+	dpduAlarmL2-1BreakerOpen OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  open(1),
+				  close(2)
+       }
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "L2-1 breaker open"
+       ::= { dpduAlarmEntry 18 }
+	
+	dpduAlarmL3-1BreakerOpen OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  open(1),
+				  close(2)
+       }
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "L3-1 breaker open"
+       ::= { dpduAlarmEntry 19 }
+	   
+	   
+	dpduAlarmL1-2LoadMajor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L1-2 load major alarm"
+       ::= { dpduAlarmEntry 20 }
+	   
+	dpduAlarmL1-2LoadMinor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L1-2 load minor alarm"
+       ::= { dpduAlarmEntry 21 }
+	   
+	dpduAlarmL2-2LoadMajor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L2-2 load major alarm"
+       ::= { dpduAlarmEntry 22 }
+	   
+	dpduAlarmL2-2LoadMinor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L2-2 load minor alarm"
+       ::= { dpduAlarmEntry 23 } 
+	
+	dpduAlarmL3-2LoadMajor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L3-2 load major alarm"
+       ::= { dpduAlarmEntry 24 }
+	   
+	dpduAlarmL3-2LoadMinor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L3-2 load minor alarm"
+       ::= { dpduAlarmEntry 25 }
+
+	dpduAlarmL1-2BreakerOpen OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  open(1),
+				  close(2)
+       }
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "L1-2 breaker open"
+       ::= { dpduAlarmEntry 26 }
+	   
+	dpduAlarmL2-2BreakerOpen OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  open(1),
+				  close(2)
+       }
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "L2-2 breaker open"
+       ::= { dpduAlarmEntry 27 }
+	
+	dpduAlarmL3-2BreakerOpen OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  open(1),
+				  close(2)
+       }
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "L3-2 breaker open"
+       ::= { dpduAlarmEntry 28 }
+	   
+	dpduAlarmL1-3LoadMajor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L1-3 load major alarm"
+       ::= { dpduAlarmEntry 29 }
+	   
+	dpduAlarmL1-3LoadMinor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L1-3 load minor alarm"
+       ::= { dpduAlarmEntry 30 }
+	   
+	dpduAlarmL2-3LoadMajor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L2-3 load major alarm"
+       ::= { dpduAlarmEntry 31 }
+	   
+	dpduAlarmL2-3LoadMinor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L2-3 load minor alarm"
+       ::= { dpduAlarmEntry 32 }
+	   
+	dpduAlarmL3-3LoadMajor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L3-3 load major alarm"
+       ::= { dpduAlarmEntry 33 }
+	   
+	dpduAlarmL3-3LoadMinor OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  on(1),
+				  off(2)
+       }
+       ACCESS read-only
+       STATUS     mandatory
+       DESCRIPTION
+               "L3-3 load minor alarm"
+       ::= { dpduAlarmEntry 34 }
+	   
+	dpduAlarmL1-3BreakerOpen OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  open(1),
+				  close(2)
+       }
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "L1-3 breaker open"
+       ::= { dpduAlarmEntry 35 }
+	   
+	dpduAlarmL2-3BreakerOpen OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  open(1),
+				  close(2)
+       }
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "L2-3 breaker open"
+       ::= { dpduAlarmEntry 36 }
+	
+	dpduAlarmL3-3BreakerOpen OBJECT-TYPE
+       SYNTAX     INTEGER{
+                  open(1),
+				  close(2)
+       }
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "L3-3 breaker open"
+       ::= { dpduAlarmEntry 37 }
+	   
+--
+-- dpdu Trap group
+--
+
+   dpduCommunicationLost TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Communication with the PDU failed."
+       ::= 1
+
+   dpduCommunicationEstablished TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Communication with the PDU reestablished."
+       ::= 2
+
+   dpduL1LoadMajorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L1 load major alarm."
+       ::= 3
+
+   dpduL1LoadMajorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L1 load major alarm."
+       ::= 4
+
+   dpduL1LoadMinorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L1 load minor alarm."
+       ::= 5
+
+   dpduL1LoadMinorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L1 load minor alarm."
+       ::= 6
+
+   dpduL1OutVoltMajorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L1 output voltage major alarm."
+       ::= 7
+
+   dpduL1OutVoltMajorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L1 output voltage major alarm."
+       ::= 8
+
+   dpduL1OutVoltMinorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L1 output voltage minor alarm."
+       ::= 9
+
+   dpduL1OutVoltMinorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L1 output voltage minor alarm."
+       ::= 10
+
+   dpduL2LoadMajorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L2 load major alarm."
+       ::= 11
+
+   dpduL2LoadMajorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L2 load major alarm."
+       ::= 12
+
+   dpduL2LoadMinorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L2 load minor alarm."
+       ::= 13
+
+   dpduL2LoadMinorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L2 load minor alarm."
+       ::= 14
+
+   dpduL2OutVoltMajorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L2 output voltage major alarm."
+       ::= 15
+
+   dpduL2OutVoltMajorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L2 output voltage major alarm."
+       ::= 16
+
+   dpduL2OutVoltMinorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L2 output voltage minor alarm."
+       ::= 17
+
+   dpduL2OutVoltMinorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L2 output voltage minor alarm."
+       ::= 18
+
+   dpduL3LoadMajorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L3 load major alarm."
+       ::= 19
+
+   dpduL3LoadMajorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L3 load major alarm."
+       ::= 20
+
+   dpduL3LoadMinorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L3 load minor alarm."
+       ::= 21
+
+   dpduL3LoadMinorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L3 load minor alarm."
+       ::= 22
+
+   dpduL3OutVoltMajorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L3 output voltage major alarm."
+       ::= 23
+
+   dpduL3OutVoltMajorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L3 output voltage major alarm."
+       ::= 24
+
+   dpduL3OutVoltMinorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L3 output voltage minor alarm."
+       ::= 25
+
+   dpduL3OutVoltMinorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L3 output voltage minor alarm."
+       ::= 26
+
+   dpduL12LoadMajorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L1 L2 load major alarm."
+       ::= 27
+
+   dpduL12LoadMajorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L1 L2 load major alarm."
+       ::= 28
+
+   dpduL12LoadMinorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L1 L2 load minor alarm."
+       ::= 29
+
+   dpduL12LoadMinorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L1 L2 load minor alarm."
+       ::= 30
+
+	dpduL1-1BreakerOpen TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L1-1 Breaker open alarm."
+       ::= 31
+
+	dpduL1-1BreakerOpenRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L1-1 Breaker open alarm."
+       ::= 32
+	   
+	dpduL2-1BreakerOpen TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L2-1 Breaker open alarm."
+       ::= 33
+
+	dpduL2-1BreakerOpenRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L2-1 Breaker open alarm."
+       ::= 34
+
+	dpduL3-1BreakerOpen TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L3-1 Breaker open alarm."
+       ::= 35
+
+	dpduL3-1BreakerOpenRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L3-1 Breaker open alarm."
+       ::= 36
+	   
+	dpduL1-2LoadMajorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L1-2 load major alarm."
+       ::= 37
+
+   dpduL1-2LoadMajorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L1-2 load major alarm."
+       ::= 38
+
+   dpduL1-2LoadMinorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L1-2 load minor alarm."
+       ::= 39
+
+   dpduL1-2LoadMinorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L1-2 load minor alarm."
+       ::= 40
+
+	dpduL2-2LoadMajorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L2-2 load major alarm."
+       ::= 41
+
+   dpduL2-2LoadMajorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L2-2 load major alarm."
+       ::= 42
+
+   dpduL2-2LoadMinorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L2-2 load minor alarm."
+       ::= 43
+
+   dpduL2-2LoadMinorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L2-2 load minor alarm."
+       ::= 44
+	
+	dpduL3-2LoadMajorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L3-2 load major alarm."
+       ::= 45
+
+   dpduL3-2LoadMajorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L3-2 load major alarm."
+       ::= 46
+
+   dpduL3-2LoadMinorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L3-2 load minor alarm."
+       ::= 47
+
+   dpduL3-2LoadMinorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L3-2 load minor alarm."
+       ::= 48
+	
+	dpduL1-2BreakerOpen TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L1-2 Breaker open alarm."
+       ::= 49
+
+	dpduL1-2BreakerOpenRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L1-2 Breaker open alarm."
+       ::= 50
+	   
+	dpduL2-2BreakerOpen TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L2-2 Breaker open alarm."
+       ::= 51
+
+	dpduL2-2BreakerOpenRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L2-2 Breaker open alarm."
+       ::= 52
+	   
+	dpduL3-2BreakerOpen TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L3-2 Breaker open alarm."
+       ::= 53
+
+	dpduL3-2BreakerOpenRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L3-2 Breaker open alarm."
+       ::= 54
+	   
+	dpduL1-3LoadMajorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L1-3 load major alarm."
+       ::= 55
+
+   dpduL1-3LoadMajorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L1-3 load major alarm."
+       ::= 56
+
+   dpduL1-3LoadMinorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L1-3 load minor alarm."
+       ::= 57
+
+   dpduL1-3LoadMinorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L1-3 load minor alarm."
+       ::= 58
+	   
+	dpduL2-3LoadMajorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L2-3 load major alarm."
+       ::= 59
+
+   dpduL2-3LoadMajorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L2-3 load major alarm."
+       ::= 60
+
+   dpduL2-3LoadMinorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L2-3 load minor alarm."
+       ::= 61
+
+   dpduL2-3LoadMinorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L2-3 load minor alarm."
+       ::= 62
+	   
+	dpduL3-3LoadMajorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L3-3 load major alarm."
+       ::= 63
+
+   dpduL3-3LoadMajorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L3-3 load major alarm."
+       ::= 64
+
+   dpduL3-3LoadMinorAlarm TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L3-3 load minor alarm."
+       ::= 65
+
+   dpduL3-3LoadMinorAlarmRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L3-3 load minor alarm."
+       ::= 66
+	   
+	dpduL1-3BreakerOpen TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L1-3 Breaker open alarm."
+       ::= 67
+
+	dpduL1-3BreakerOpenRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L1-3 Breaker open alarm."
+       ::= 68
+	   
+	dpduL2-3BreakerOpen TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L2-3 Breaker open alarm."
+       ::= 69
+
+	dpduL2-3BreakerOpenRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L2-3 Breaker open alarm."
+       ::= 70
+	   
+	dpduL3-3BreakerOpen TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"L3-3 Breaker open alarm."
+       ::= 71
+
+	dpduL3-3BreakerOpenRecover TRAP-TYPE
+       ENTERPRISE dpduTraps
+	   VARIABLES { dpduAlarmPDUID }
+       DESCRIPTION
+	"Recover from L3-3 Breaker open alarm."
+       ::= 72
+	   
+	   
+END

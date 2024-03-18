@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<!-- Test Modbus related information -->
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+         ddfid="starline_m5" ddfname="Starline M5 Current Monitor" ddfversion="2" canremove="yes">
+  <schemaVersion>1.6</schemaVersion>
+
+  <device deviceid="starline_m5">
+      <oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+      <setProductData ruleid="vendordata" field="vendor">Universal Electric Corp</setProductData>
+      <setProductData ruleid="modeldata" field="model">Starline M5 Current Monitor</setProductData>
+
+      <!-- Power Feed Current Monitor -->
+      <setProductData ruleid="typedata" field="type">PDU</setProductData>
+
+      <setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+     
+      <!-- Greater or equal to 100A scale and values are in amps. Otherwise values are 1/10 amp. --> 
+      <numSensor ruleid="channel-current" index="CURRENT_CHANNEL_TABLE" >
+          <type>amperage</type>
+          <sensorId>OUTLET_CURRENT_<mapValue mapid="current_channel_index_map"><rowNumber/></mapValue></sensorId>
+          <value>
+              <if><!-- Check Amps vs 1/10 Amps -->
+                  <op>
+                      <ge>
+                          <op><getRowOid>CURRENT_CHANNEL_TABLE</getRowOid></op>
+                          <op>100</op> <!-- >=100A -->
+                      </ge>
+                  </op>
+                  <op><!-- Amps -->
+                      <getRowOid>CURRENT_CHANNEL_TABLE</getRowOid>
+                  </op>    
+                  <op> <!-- 1/10 Amps -->
+                      <mult>
+                          <op><getRowOid>CURRENT_CHANNEL_TABLE</getRowOid></op>
+                          <op>1</op>
+                      </mult>
+                  </op>
+              </if>
+          </value>
+          <label>Current <mapValue mapid="current_channel_index_map"><rowNumber/></mapValue></label>
+          <sensorSet>Current Sensors</sensorSet>
+      </numSensor>
+
+      <!-- Map table entries 0-3 to Channel numbers 1-4 -->
+      <valueMap ruleid="current_channel_index_map">
+          <valueIn>0</valueIn><valueOut>Phase A</valueOut>
+          <valueIn>1</valueIn><valueOut>Phase B</valueOut>
+          <valueIn>2</valueIn><valueOut>Phase C</valueOut>
+          <valueIn>3</valueIn><valueOut>Neutral</valueOut>
+      </valueMap>
+
+  </device>
+
+  <protocol>
+    <modbus>    
+        <!-- Current Channel Table -->
+        <table_ref_id indexid="CURRENT_CHANNEL_TABLE">
+            <entry num="0">current_channel_1</entry>
+            <entry num="1">current_channel_2</entry>
+            <entry num="2">current_channel_3</entry>
+            <entry num="3">current_channel_4</entry>
+        </table_ref_id>
+
+        <value_ref_id valid="current_channel_1">
+            <function>3</function>
+            <start_addr>0</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="current_channel_2">
+            <function>3</function>
+            <start_addr>1</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="current_channel_3">
+            <function>3</function>
+            <start_addr>2</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="current_channel_4">
+            <function>3</function>
+            <start_addr>3</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+
+        <!-- Bulk read for performance. -->
+        <packet>
+            <function>3</function>
+            <start_addr>0</start_addr>
+            <quantity>4</quantity>
+        </packet>
+    </modbus>
+  </protocol>
+</APC_DDF>    

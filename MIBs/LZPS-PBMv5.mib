@@ -1,0 +1,1883 @@
+LZPS-PBM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32, enterprises
+        FROM SNMPv2-SMI
+    OBJECT-GROUP
+    	FROM SNMPv2-CONF
+    TEXTUAL-CONVENTION
+    	FROM SNMPv2-TC;
+
+pbm MODULE-IDENTITY
+    LAST-UPDATED "201203011955Z"  -- March 1, 2012 19:55
+    ORGANIZATION
+           "LayerZero Power Systems"
+    CONTACT-INFO
+           "Victor Kean (developer)
+
+            LayerZero Power Systems
+            6205 Plummer Road NW
+            Carroll, Ohio 43112-9729
+
+            Phone: +1 440 399-9016
+            Email: <vkean@layerzero.com>"
+    DESCRIPTION
+           "The MIB module for eRPP, eRDP, and ePanel setup
+            and monitoring.  Copyright 2011 LayerZero Power
+            Systems."
+    ::= { lzps 3 }
+
+    lzps OBJECT IDENTIFIER ::= { enterprises 23760 }
+    version OBJECT IDENTIFIER ::= { pbm 5 }
+
+SystemVoltageType ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION "description"
+    SYNTAX      INTEGER {
+            system200LineNeutral(1), system208LineNeutral(2), system200LineLine(3),
+            system208LineLine(4), system380LineNeutral(5), system400LineNeutral(6),
+            system415LineNeutral(7), system480LineNeutral(8), system600LineNeutral(9),
+            system380LineLine(10), system400LineLine(11), system415LineLine(12),
+            system480LineLine(13), system600LineLine(14) }
+
+BooleanDataType ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION "description"
+    SYNTAX      INTEGER {
+            booleanFalse(1), booleanTrue(2) }
+
+AlarmDataType ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION "description"
+    SYNTAX      INTEGER {
+            alarmNormal(1), alarmActive(2), alarmUnknown(3) }
+
+TriggerDataType ::= TEXTUAL-CONVENTION
+    STATUS      current
+    DESCRIPTION "description"
+    SYNTAX      INTEGER {
+            triggerTypeTrigger(1) }
+
+systemName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..40))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "Customer provided name for an instance of this product.  The
+            default value is the serial number.  Variable: .23760.3.5.1"
+    ::= { version 1 }
+
+systemSerial OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..40))
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "Manufacturer provided name for an instance of this product
+            in the form LZ-99999-999-X, where 99999 is the job number,
+            999 is the job-item number, and X is an optional letter
+            indicating PBM instance, A or B.  Variable: .23760.3.5.2"
+    ::= { version 2 }
+
+productName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..40))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "LayerZero Power Systems product name.  Variable:
+            .23760.3.5.3"
+    ::= { version 3 }
+
+systemNominalVoltage OBJECT-TYPE
+    SYNTAX      SystemVoltageType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Name plate operating voltage, when measured from line to
+            line, enumerated.  Variable: .23760.3.5.4"
+    ::= { version 4 }
+
+nominalLineLineVoltage OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Name plate operating voltage, when measured from line to
+            line, rounded to a whole number.  Variable: .23760.3.5.5"
+    ::= { version 5 }
+
+nominalLineNeutralVoltage OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Name plate operating voltage, when measured from line to
+            neutral, rounded to a whole number.  Variable: .23760.3.5.6"
+    ::= { version 6 }
+
+secondNominalVoltage OBJECT-TYPE
+    SYNTAX      SystemVoltageType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Type X ePOD input voltage, when measured from line to line,
+            enumerated.  Variable: .23760.3.5.7"
+    ::= { version 7 }
+
+numberPanels OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of panels supported by this PBM instance.  Typically
+            1 or 2.  The hardware supports up to 4.  Variable:
+            .23760.3.5.8"
+    ::= { version 8 }
+
+numberFeeds OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Total number of feeds (inputs) connected to this PBM/PBE
+            stack.  Variable: .23760.3.5.9"
+    ::= { version 9 }
+
+numberPositionsPerPanel OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of poles or positions on each distribution panel. 
+            Typically 42 (14 3-pole breakers), sometimes 36 (12 3-pole
+            breakers).  Variable: .23760.3.5.10"
+    ::= { version 10 }
+
+numberMainBreakers OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of mains breakers for the purpose of holding default
+            states and names.  Variable: .23760.3.5.11"
+    ::= { version 11 }
+
+numberMainBreakerMonitors OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of mains breakers for the purpose of breaker state
+            monitoring.  Variable: .23760.3.5.12"
+    ::= { version 12 }
+
+numberThermostats OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of pairs of thermostats for temperature monitoring. 
+            Variable: .23760.3.5.13"
+    ::= { version 13 }
+
+numberDoorSwitches OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of door position sensors.  Typically 1.  Frequently
+            0.  Variable: .23760.3.5.14"
+    ::= { version 14 }
+
+numberSurgeSuppressors OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of transient surge suppressor alarm contacts. 
+            Tiypically 0.  Occassionally 1.  Variable: .23760.3.5.15"
+    ::= { version 15 }
+
+numberSubFeedBreakers OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of sub-feed breakers for the purpose of holding
+            default states and names.  Variable: .23760.3.5.16"
+    ::= { version 16 }
+
+numberSubFeedBreakerMonitors OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Number of sub-feed breakers for the purpose of sub-feed
+            breaker state monitoring.  This feature requires the IO
+            Expander (EMB).  Variable: .23760.3.5.17"
+    ::= { version 17 }
+
+demandInterval OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Default demand power averaging interval in minutes. 
+            Variable: .23760.3.5.18"
+    ::= { version 18 }
+
+displayTimeout OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "Display blanking interval in seconds.  After this interval
+            with no user interaction, the front panel display goes
+            blank.  Variable: .23760.3.5.19"
+    ::= { version 19 }
+
+hornDisable OBJECT-TYPE
+    SYNTAX      BooleanDataType
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+           "When enabled, the system alarm horn is disabled at all times
+            except while the reset button is depressed.  Variable:
+            .23760.3.5.20"
+    ::= { version 20 }
+
+summaryAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Boolean sum (logical OR) of all alarms.  Variable:
+            .23760.3.5.21"
+    ::= { version 21 }
+
+branchTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF BranchTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Branch circuit breaker name and alarm information, including
+            metered and calculated values, alarm setpoints, and breaker
+            position.  The terms 'branch' and 'position' are synonymous.
+             Table: .23760.3.5.22"
+    ::= { version 22 }
+
+branchTableEntry OBJECT-TYPE
+    SYNTAX      BranchTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Row description goes here.  Row: .23760.3.5.22.1"
+    INDEX   { branchPanelIndex,
+              branchIndex }
+    ::= {branchTable 1 }
+
+BranchTableEntry ::= SEQUENCE {
+    branchPanelIndex Integer32,
+    branchIndex Integer32,
+    branchName OCTET STRING,
+    branchBreakerNumberPoles Integer32,
+    branchBreakerRating Integer32,
+    positionCurrentNominal Integer32,
+    positionCurrentTransformerRating Integer32,
+    positionCurrent Integer32,
+    positionRealPower Integer32,
+    positionApparentPower Integer32,
+    positionReactivePower Integer32,
+    positionPowerFactor Integer32,
+    positionEnergy Integer32,
+    positionDemandBlock Integer32,
+    positionDemandBlockPeak Integer32,
+    positionDemandRolling Integer32,
+    positionDemandRollingPeak Integer32,
+    branchCurrentSetpointNominal Integer32,
+    branchHighCurrentSetpoint Integer32,
+    branchOverCurrentSetpoint Integer32,
+    branchNeutralConnected BooleanDataType,
+    positionCurrentXformerReversed BooleanDataType,
+    positionHighCurrentAlarm AlarmDataType,
+    positionOverCurrentAlarm AlarmDataType }
+
+branchPanelIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..4)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Panel number, counting from 1.  Column: .23760.3.5.22.1.1"
+    ::= { branchTableEntry 1 }
+
+branchIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..42)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Position number within a panel of this branch circuit pole,
+            counting from 1.  Column: .23760.3.5.22.1.2"
+    ::= { branchTableEntry 2 }
+
+branchName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..40))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Customer provided name of this branch circuit.  When the
+            branch breaker has more than one pole, the name displayed is
+            that of the first pole.  Column: .23760.3.5.22.1.3"
+    ::= { branchTableEntry 3 }
+
+branchBreakerNumberPoles OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Number of branch circuit breaker poles.  Column:
+            .23760.3.5.22.1.4"
+    ::= { branchTableEntry 4 }
+
+branchBreakerRating OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Branch circuit breaker rating in amperes.  Column:
+            .23760.3.5.22.1.5"
+    ::= { branchTableEntry 5 }
+
+positionCurrentNominal OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Nominal maximum expected current in amperes, used to
+            calculate the high and over current alarm thresholds. 
+            Column: .23760.3.5.22.1.6"
+    ::= { branchTableEntry 6 }
+
+positionCurrentTransformerRating OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Branch circuit monitoring current transformer capacity in
+            amperes.  Column: .23760.3.5.22.1.7"
+    ::= { branchTableEntry 7 }
+
+positionCurrent OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Measured branch position (pole) current in amperes.  Column:
+            .23760.3.5.22.1.8"
+    ::= { branchTableEntry 8 }
+
+positionRealPower OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Calculated branch circuit real power in kilowatts.  Column:
+            .23760.3.5.22.1.9"
+    ::= { branchTableEntry 9 }
+
+positionApparentPower OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Calculated branch circuit complex power in kilowatts. 
+            Column: .23760.3.5.22.1.10"
+    ::= { branchTableEntry 10 }
+
+positionReactivePower OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Calculated branch circuit reactive power in kilowatts. 
+            Column: .23760.3.5.22.1.11"
+    ::= { branchTableEntry 11 }
+
+positionPowerFactor OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Calculated power factor.  Column: .23760.3.5.22.1.12"
+    ::= { branchTableEntry 12 }
+
+positionEnergy OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Calculated energy consumption in kilowatt hours since the
+            last time the counter was reset.  Column: .23760.3.5.22.1.13"
+    ::= { branchTableEntry 13 }
+
+positionDemandBlock OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Calculated real power for this current meter averaged over
+            the fixed demand interval.  Column: .23760.3.5.22.1.14"
+    ::= { branchTableEntry 14 }
+
+positionDemandBlockPeak OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Largest real power for this current meter averaged over the
+            fixed demand interval since the last the register was reset.
+             Column: .23760.3.5.22.1.15"
+    ::= { branchTableEntry 15 }
+
+positionDemandRolling OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Calculated real power for this current meter averaged over
+            the sliding demand interval.  Column: .23760.3.5.22.1.16"
+    ::= { branchTableEntry 16 }
+
+positionDemandRollingPeak OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Largest real power for this current meter averaged over the
+            sliding demand interval since the last the register was
+            reset.  Column: .23760.3.5.22.1.17"
+    ::= { branchTableEntry 17 }
+
+branchCurrentSetpointNominal OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Nominal maximum expected current in amperes, used to
+            calculate the high and over current alarm thresholds. 
+            Column: .23760.3.5.22.1.18"
+    ::= { branchTableEntry 18 }
+
+branchHighCurrentSetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Branch high current warning setpoint in percent of nominal. 
+            Column: .23760.3.5.22.1.19"
+    ::= { branchTableEntry 19 }
+
+branchOverCurrentSetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Branch over current alarm setpoint in percent of nominal. 
+            Column: .23760.3.5.22.1.20"
+    ::= { branchTableEntry 20 }
+
+branchNeutralConnected OBJECT-TYPE
+    SYNTAX      BooleanDataType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Branch circuit includes a neutral wire.  Column:
+            .23760.3.5.22.1.21"
+    ::= { branchTableEntry 21 }
+
+positionCurrentXformerReversed OBJECT-TYPE
+    SYNTAX      BooleanDataType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The current transformer for this position (pole) is reversed
+            from normal.  This setting removes the minus sign from the
+            corresponding current meter and allows correct power
+            computations.  Column: .23760.3.5.22.1.22"
+    ::= { branchTableEntry 22 }
+
+positionHighCurrentAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Position (pole) high current alarm.  Column:
+            .23760.3.5.22.1.23"
+    ::= { branchTableEntry 23 }
+
+positionOverCurrentAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Position (pole) over current alarm.  Column:
+            .23760.3.5.22.1.24"
+    ::= { branchTableEntry 24 }
+
+breakerTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF BreakerTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Mains circuit breaker name and alarm information.  Table:
+            .23760.3.5.23"
+    ::= { version 23 }
+
+breakerTableEntry OBJECT-TYPE
+    SYNTAX      BreakerTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Row description goes here.  Row: .23760.3.5.23.1"
+    INDEX   { breakerIndex }
+    ::= {breakerTable 1 }
+
+BreakerTableEntry ::= SEQUENCE {
+    breakerIndex Integer32,
+    breakerName OCTET STRING,
+    breakerRating Integer32,
+    breakerNotNormalAlarm AlarmDataType,
+    breakerFormCPositionCircuitAlarm AlarmDataType,
+    breakerFormCTripCircuitAlarm AlarmDataType,
+    breakerTrippedAlarm AlarmDataType }
+
+breakerIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..4)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Breaker number within the system, counting from 1.  Column:
+            .23760.3.5.23.1.1"
+    ::= { breakerTableEntry 1 }
+
+breakerName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..40))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "User supplied circuit breaker name.  Column:
+            .23760.3.5.23.1.2"
+    ::= { breakerTableEntry 2 }
+
+breakerRating OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Circuit breaker rating in amperes.  Column:
+            .23760.3.5.23.1.3"
+    ::= { breakerTableEntry 3 }
+
+breakerNotNormalAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Circuit breaker not in normal state alarm.  Column:
+            .23760.3.5.23.1.4"
+    ::= { breakerTableEntry 4 }
+
+breakerFormCPositionCircuitAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Circuit breaker Form C position circuit has wiring error or
+            malfunction alarm.  Column: .23760.3.5.23.1.5"
+    ::= { breakerTableEntry 5 }
+
+breakerFormCTripCircuitAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Circuit breaker Form C tripped circuit has wiring error or
+            malfunction alarm.  Column: .23760.3.5.23.1.6"
+    ::= { breakerTableEntry 6 }
+
+breakerTrippedAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Circuit breaker tripped alarm.  Column: .23760.3.5.23.1.7"
+    ::= { breakerTableEntry 7 }
+
+subFeedBreakerTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SubFeedBreakerTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Mains circuit subFeedBreaker name and alarm information. 
+            Table: .23760.3.5.24"
+    ::= { version 24 }
+
+subFeedBreakerTableEntry OBJECT-TYPE
+    SYNTAX      SubFeedBreakerTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Row description goes here.  Row: .23760.3.5.24.1"
+    INDEX   { subFeedBreakerIndex }
+    ::= {subFeedBreakerTable 1 }
+
+SubFeedBreakerTableEntry ::= SEQUENCE {
+    subFeedBreakerIndex Integer32,
+    subFeedBreakerName OCTET STRING,
+    subFeedBreakerRating Integer32,
+    subFeedBreakerNotNormalAlarm AlarmDataType,
+    subFeedBreakerFormCPositionCircuitAlarm AlarmDataType,
+    subFeedBreakerFormCTripCircuitAlarm AlarmDataType,
+    subFeedBreakerTrippedAlarm AlarmDataType }
+
+subFeedBreakerIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..4)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "subFeedBreaker number within the system, counting from 1. 
+            Column: .23760.3.5.24.1.1"
+    ::= { subFeedBreakerTableEntry 1 }
+
+subFeedBreakerName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(0..40))
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "User supplied circuit subFeedBreaker name.  Column:
+            .23760.3.5.24.1.2"
+    ::= { subFeedBreakerTableEntry 2 }
+
+subFeedBreakerRating OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Circuit sub-feed breaker rating in amperes.  Column:
+            .23760.3.5.24.1.3"
+    ::= { subFeedBreakerTableEntry 3 }
+
+subFeedBreakerNotNormalAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Circuit sub-feed breaker not in normal state alarm.  Column:
+            .23760.3.5.24.1.4"
+    ::= { subFeedBreakerTableEntry 4 }
+
+subFeedBreakerFormCPositionCircuitAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Circuit sub-feed breaker Form C position circuit has wiring
+            error or malfunction alarm.  Column: .23760.3.5.24.1.5"
+    ::= { subFeedBreakerTableEntry 5 }
+
+subFeedBreakerFormCTripCircuitAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Circuit sub-feed breaker Form C tripped circuit has wiring
+            error or malfunction alarm.  Column: .23760.3.5.24.1.6"
+    ::= { subFeedBreakerTableEntry 6 }
+
+subFeedBreakerTrippedAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Circuit sub-feed breaker tripped alarm.  Column:
+            .23760.3.5.24.1.7"
+    ::= { subFeedBreakerTableEntry 7 }
+
+amMeterTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF AmMeterTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Mains current meters and alarm information, indexed by meter
+            instance on each panel.  There may be 0, 1 or 2 meter
+            instances per panel.  Not all rows are populated.  Includes
+            metered and calculated values and alarm setpoints.  Table:
+            .23760.3.5.25"
+    ::= { version 25 }
+
+amMeterTableEntry OBJECT-TYPE
+    SYNTAX      AmMeterTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Row description goes here.  Row: .23760.3.5.25.1"
+    INDEX   { amMeterPanelIndex,
+              amMeterIndex }
+    ::= {amMeterTable 1 }
+
+AmMeterTableEntry ::= SEQUENCE {
+    amMeterPanelIndex Integer32,
+    amMeterIndex Integer32,
+    meterCtReversedPhaseA BooleanDataType,
+    meterCtReversedPhaseB BooleanDataType,
+    meterCtReversedPhaseC BooleanDataType,
+    meterCtReversedNeutral BooleanDataType,
+    meterCurrentPhaseA Integer32,
+    meterCurrentPhaseB Integer32,
+    meterCurrentPhaseC Integer32,
+    meterCurrentPhaseN Integer32,
+    meterCurrentPhaseG Integer32,
+    meterRealPower Integer32,
+    meterApparentPower Integer32,
+    meterReactivePower Integer32,
+    meterPowerFactor Integer32,
+    meterEnergy Integer32,
+    meterDemandBlock Integer32,
+    meterDemandBlockPeak Integer32,
+    meterDemandRolling Integer32,
+    meterDemandRollingPeak Integer32,
+    meterPhaseCurrentNominal Integer32,
+    meterPhaseHighCurrentSetpoint Integer32,
+    meterPhaseOverCurrentSetpoint Integer32,
+    meterNeutralCurrentNominal Integer32,
+    meterNeutralHighCurrentSetpoint Integer32,
+    meterNeutralOverCurrentSetpoint Integer32,
+    meterGroundCurrentNominal Integer32,
+    meterGroundHighCurrentSetpoint Integer32,
+    meterGroundOverCurrentSetpoint Integer32,
+    meterHighCurrentAlarmPhaseA AlarmDataType,
+    meterHighCurrentAlarmPhaseB AlarmDataType,
+    meterHighCurrentAlarmPhaseC AlarmDataType,
+    meterHighCurrentAlarmNeutral AlarmDataType,
+    meterHighCurrentAlarmGround AlarmDataType,
+    meterOverCurrentAlarmPhaseA AlarmDataType,
+    meterOverCurrentAlarmPhaseB AlarmDataType,
+    meterOverCurrentAlarmPhaseC AlarmDataType,
+    meterOverCurrentAlarmNeutral AlarmDataType,
+    meterOverCurrentAlarmGround AlarmDataType }
+
+amMeterPanelIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..4)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Panel number within a PBM instance, counting from 1. 
+            Column: .23760.3.5.25.1.1"
+    ::= { amMeterTableEntry 1 }
+
+amMeterIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..2)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Meter number within a panel, counting from 1.  Column:
+            .23760.3.5.25.1.2"
+    ::= { amMeterTableEntry 2 }
+
+meterCtReversedPhaseA OBJECT-TYPE
+    SYNTAX      BooleanDataType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The current transformer for this meter phase A wire is
+            reversed from normal.  This setting removes the minus sign
+            from the corresponding current meter and allows correct
+            power computations.  Column: .23760.3.5.25.1.3"
+    ::= { amMeterTableEntry 3 }
+
+meterCtReversedPhaseB OBJECT-TYPE
+    SYNTAX      BooleanDataType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The current transformer for this meter phase B wire is
+            reversed from normal.  This setting removes the minus sign
+            from the corresponding current meter and allows correct
+            power computations.  Column: .23760.3.5.25.1.4"
+    ::= { amMeterTableEntry 4 }
+
+meterCtReversedPhaseC OBJECT-TYPE
+    SYNTAX      BooleanDataType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The current transformer for this meter phase C wire is
+            reversed from normal.  This setting removes the minus sign
+            from the corresponding current meter and allows correct
+            power computations.  Column: .23760.3.5.25.1.5"
+    ::= { amMeterTableEntry 5 }
+
+meterCtReversedNeutral OBJECT-TYPE
+    SYNTAX      BooleanDataType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "The current transformer for this meter neutral wire is
+            reversed from normal.  This setting removes the minus sign
+            from the corresponding current meter and allows correct
+            power computations.  Column: .23760.3.5.25.1.6"
+    ::= { amMeterTableEntry 6 }
+
+meterCurrentPhaseA OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Current meter reading for phase A wire in tenths of an
+            ampere.  Column: .23760.3.5.25.1.7"
+    ::= { amMeterTableEntry 7 }
+
+meterCurrentPhaseB OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Current meter reading for phase B wire in tenths of an
+            ampere.  Column: .23760.3.5.25.1.8"
+    ::= { amMeterTableEntry 8 }
+
+meterCurrentPhaseC OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Current meter reading for phase C wire in tenths of an
+            ampere.  Column: .23760.3.5.25.1.9"
+    ::= { amMeterTableEntry 9 }
+
+meterCurrentPhaseN OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Current meter reading for neutral wire in tenths of an
+            ampere, if equipped.  Column: .23760.3.5.25.1.10"
+    ::= { amMeterTableEntry 10 }
+
+meterCurrentPhaseG OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Current meter reading for ground wire in tenths of an
+            ampere, if equipped.  Column: .23760.3.5.25.1.11"
+    ::= { amMeterTableEntry 11 }
+
+meterRealPower OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Calculated real power for this current meter and the
+            corresponding voltage meter.  Column: .23760.3.5.25.1.12"
+    ::= { amMeterTableEntry 12 }
+
+meterApparentPower OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Calculated apparent power for this current meter and the
+            corresponding voltage meter.  Column: .23760.3.5.25.1.13"
+    ::= { amMeterTableEntry 13 }
+
+meterReactivePower OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Calculated reactive power for this current meter and the
+            corresponding voltage meter.  Column: .23760.3.5.25.1.14"
+    ::= { amMeterTableEntry 14 }
+
+meterPowerFactor OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Calculated power factor for this current meter and the
+            corresponding voltage meter.  Column: .23760.3.5.25.1.15"
+    ::= { amMeterTableEntry 15 }
+
+meterEnergy OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Calculated energy consumption in kilowatt hours since the
+            last time the counter was reset.  Column: .23760.3.5.25.1.16"
+    ::= { amMeterTableEntry 16 }
+
+meterDemandBlock OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Calculated real power for this current meter averaged over
+            the fixed demand interval.  Column: .23760.3.5.25.1.17"
+    ::= { amMeterTableEntry 17 }
+
+meterDemandBlockPeak OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Largest real power for this current meter averaged over the
+            fixed demand interval since the last the register was reset.
+             Column: .23760.3.5.25.1.18"
+    ::= { amMeterTableEntry 18 }
+
+meterDemandRolling OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Calculated real power for this current meter averaged over
+            the sliding demand interval.  Column: .23760.3.5.25.1.19"
+    ::= { amMeterTableEntry 19 }
+
+meterDemandRollingPeak OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Largest real power for this current meter averaged over the
+            sliding demand interval since the last the register was
+            reset.  Column: .23760.3.5.25.1.20"
+    ::= { amMeterTableEntry 20 }
+
+meterPhaseCurrentNominal OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Nominal maximum expected phase current in amperes, used to
+            calculate the high and over current alarm thresholds. 
+            Column: .23760.3.5.25.1.21"
+    ::= { amMeterTableEntry 21 }
+
+meterPhaseHighCurrentSetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Current meter phase wires high current warning setpoint in
+            percent of nominal.  Column: .23760.3.5.25.1.22"
+    ::= { amMeterTableEntry 22 }
+
+meterPhaseOverCurrentSetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Current meter phase wires over current alarm setpoint in
+            percent of nominal.  Column: .23760.3.5.25.1.23"
+    ::= { amMeterTableEntry 23 }
+
+meterNeutralCurrentNominal OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Nominal maximum expected neutral current in amperes, used to
+            calculate the high and over current alarm thresholds. 
+            Column: .23760.3.5.25.1.24"
+    ::= { amMeterTableEntry 24 }
+
+meterNeutralHighCurrentSetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Current meter neutral wire high current warning setpoint in
+            percent of nominal.  Column: .23760.3.5.25.1.25"
+    ::= { amMeterTableEntry 25 }
+
+meterNeutralOverCurrentSetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Current meter neutral wire over current alarm setpoint in
+            percent of nominal.  Column: .23760.3.5.25.1.26"
+    ::= { amMeterTableEntry 26 }
+
+meterGroundCurrentNominal OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Nominal maximum expected ground current in amperes, used to
+            calculate the high and over current alarm thresholds. 
+            Column: .23760.3.5.25.1.27"
+    ::= { amMeterTableEntry 27 }
+
+meterGroundHighCurrentSetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Current meter ground wire high current warning setpoint in
+            percent of nominal.  Column: .23760.3.5.25.1.28"
+    ::= { amMeterTableEntry 28 }
+
+meterGroundOverCurrentSetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Current meter ground wire over current alarm setpoint in
+            percent of nominal.  Column: .23760.3.5.25.1.29"
+    ::= { amMeterTableEntry 29 }
+
+meterHighCurrentAlarmPhaseA OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Current meter phase A high current alarm.  Column:
+            .23760.3.5.25.1.30"
+    ::= { amMeterTableEntry 30 }
+
+meterHighCurrentAlarmPhaseB OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Current meter phase B high current alarm.  Column:
+            .23760.3.5.25.1.31"
+    ::= { amMeterTableEntry 31 }
+
+meterHighCurrentAlarmPhaseC OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Current meter phase C high current alarm.  Column:
+            .23760.3.5.25.1.32"
+    ::= { amMeterTableEntry 32 }
+
+meterHighCurrentAlarmNeutral OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Current meter neutral high current alarm.  Column:
+            .23760.3.5.25.1.33"
+    ::= { amMeterTableEntry 33 }
+
+meterHighCurrentAlarmGround OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Current meter ground high current alarm.  Column:
+            .23760.3.5.25.1.34"
+    ::= { amMeterTableEntry 34 }
+
+meterOverCurrentAlarmPhaseA OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Current meter phase A over current alarm.  Column:
+            .23760.3.5.25.1.35"
+    ::= { amMeterTableEntry 35 }
+
+meterOverCurrentAlarmPhaseB OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Current meter phase B over current alarm.  Column:
+            .23760.3.5.25.1.36"
+    ::= { amMeterTableEntry 36 }
+
+meterOverCurrentAlarmPhaseC OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Current meter phase C over current alarm.  Column:
+            .23760.3.5.25.1.37"
+    ::= { amMeterTableEntry 37 }
+
+meterOverCurrentAlarmNeutral OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Current meter neutral over current alarm.  Column:
+            .23760.3.5.25.1.38"
+    ::= { amMeterTableEntry 38 }
+
+meterOverCurrentAlarmGround OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Current meter ground over current alarm.  Column:
+            .23760.3.5.25.1.39"
+    ::= { amMeterTableEntry 39 }
+
+voltMeterTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF VoltMeterTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Mains voltage meters and alarm information, indexed by meter
+            instance on each panel.  There may be 0, 1 or 2 meter
+            instances per panel.  Not all rows are populated.  Includes
+            metered and calculated values and alarm setpoints.  Table:
+            .23760.3.5.26"
+    ::= { version 26 }
+
+voltMeterTableEntry OBJECT-TYPE
+    SYNTAX      VoltMeterTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Row description goes here.  Row: .23760.3.5.26.1"
+    INDEX   { voltMeterPanelIndex,
+              voltMeterIndex }
+    ::= {voltMeterTable 1 }
+
+VoltMeterTableEntry ::= SEQUENCE {
+    voltMeterPanelIndex Integer32,
+    voltMeterIndex Integer32,
+    meterVoltageLineToLineA Integer32,
+    meterVoltageLineToLineB Integer32,
+    meterVoltageLineToLineC Integer32,
+    meterVoltageLineToNeutralA Integer32,
+    meterVoltageLineToNeutralB Integer32,
+    meterVoltageLineToNeutralC Integer32,
+    meterFrequency Integer32,
+    meterTotalHarmonicDistortion Integer32,
+    meterVoltageSetpointNominal Integer32,
+    meterUnderVoltageSetpoint Integer32,
+    meterLowVoltageSetpoint Integer32,
+    meterHighVoltageSetpoint Integer32,
+    meterOverVoltageSetpoint Integer32,
+    meterFrequencySetpointNominal Integer32,
+    meterUnderFrequencySetpoint Integer32,
+    meterLowFrequencySetpoint Integer32,
+    meterHighFrequencySetpoint Integer32,
+    meterOverFrequencySetpoint Integer32,
+    meterHighVthdSetpoint Integer32,
+    meterOverVthdSetpoint Integer32,
+    meterUnderVoltageAlarmPhaseA AlarmDataType,
+    meterUnderVoltageAlarmPhaseB AlarmDataType,
+    meterUnderVoltageAlarmPhaseC AlarmDataType,
+    meterLowVoltageAlarmPhaseA AlarmDataType,
+    meterLowVoltageAlarmPhaseB AlarmDataType,
+    meterLowVoltageAlarmPhaseC AlarmDataType,
+    meterHighVoltageAlarmPhaseA AlarmDataType,
+    meterHighVoltageAlarmPhaseB AlarmDataType,
+    meterHighVoltageAlarmPhaseC AlarmDataType,
+    meterOverVoltageAlarmPhaseA AlarmDataType,
+    meterOverVoltageAlarmPhaseB AlarmDataType,
+    meterOverVoltageAlarmPhaseC AlarmDataType,
+    meterUnderFrequencyAlarm AlarmDataType,
+    meterOverFrequencyAlarm AlarmDataType,
+    meterHighVthdAlarm AlarmDataType,
+    meterOverVthdAlarm AlarmDataType }
+
+voltMeterPanelIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..4)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Panel index per PBM instance, counting from 1.  Column:
+            .23760.3.5.26.1.1"
+    ::= { voltMeterTableEntry 1 }
+
+voltMeterIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..2)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Meter number within a panel, counting from 1.  Column:
+            .23760.3.5.26.1.2"
+    ::= { voltMeterTableEntry 2 }
+
+meterVoltageLineToLineA OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter reading for phase A line to line voltage in
+            tenths of a volt.  Column: .23760.3.5.26.1.3"
+    ::= { voltMeterTableEntry 3 }
+
+meterVoltageLineToLineB OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter reading for phase B line to line voltage in
+            tenths of a volt.  Column: .23760.3.5.26.1.4"
+    ::= { voltMeterTableEntry 4 }
+
+meterVoltageLineToLineC OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter reading for phase C line to line voltage in
+            tenths of a volt.  Column: .23760.3.5.26.1.5"
+    ::= { voltMeterTableEntry 5 }
+
+meterVoltageLineToNeutralA OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter reading for phase A line to neutral voltage in
+            tenths of a volt.  Column: .23760.3.5.26.1.6"
+    ::= { voltMeterTableEntry 6 }
+
+meterVoltageLineToNeutralB OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter reading for phase B line to neutral voltage in
+            tenths of a volt.  Column: .23760.3.5.26.1.7"
+    ::= { voltMeterTableEntry 7 }
+
+meterVoltageLineToNeutralC OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter reading for phase C line to neutral voltage in
+            tenths of a volt.  Column: .23760.3.5.26.1.8"
+    ::= { voltMeterTableEntry 8 }
+
+meterFrequency OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter reading frequency in tenths of a hertz. 
+            Column: .23760.3.5.26.1.9"
+    ::= { voltMeterTableEntry 9 }
+
+meterTotalHarmonicDistortion OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter reading total harmonic distortion in percent. 
+            Column: .23760.3.5.26.1.10"
+    ::= { voltMeterTableEntry 10 }
+
+meterVoltageSetpointNominal OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Nominal maximum expected phase line to line voltage in
+            volts, used to calculate the under, low, high and over
+            voltage alarm thresholds.  Column: .23760.3.5.26.1.11"
+    ::= { voltMeterTableEntry 11 }
+
+meterUnderVoltageSetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase wires under voltage warning setpoint in
+            percent of nominal.  Column: .23760.3.5.26.1.12"
+    ::= { voltMeterTableEntry 12 }
+
+meterLowVoltageSetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase wires low voltage alarm setpoint in
+            percent of nominal.  Column: .23760.3.5.26.1.13"
+    ::= { voltMeterTableEntry 13 }
+
+meterHighVoltageSetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase wires high voltage warning setpoint in
+            percent of nominal.  Column: .23760.3.5.26.1.14"
+    ::= { voltMeterTableEntry 14 }
+
+meterOverVoltageSetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase wires over voltage alarm setpoint in
+            percent of nominal.  Column: .23760.3.5.26.1.15"
+    ::= { voltMeterTableEntry 15 }
+
+meterFrequencySetpointNominal OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Nominal expected frequency in hertz, used to calculate the
+            under, low, high and over frequency alarm thresholds. 
+            Column: .23760.3.5.26.1.16"
+    ::= { voltMeterTableEntry 16 }
+
+meterUnderFrequencySetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase wires under frequency warning setpoint
+            in percent of nominal.  Column: .23760.3.5.26.1.17"
+    ::= { voltMeterTableEntry 17 }
+
+meterLowFrequencySetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase wires low frequency alarm setpoint in
+            percent of nominal.  Column: .23760.3.5.26.1.18"
+    ::= { voltMeterTableEntry 18 }
+
+meterHighFrequencySetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase wires high frequency warning setpoint in
+            percent of nominal.  Column: .23760.3.5.26.1.19"
+    ::= { voltMeterTableEntry 19 }
+
+meterOverFrequencySetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase wires over frequency alarm setpoint in
+            percent of nominal.  Column: .23760.3.5.26.1.20"
+    ::= { voltMeterTableEntry 20 }
+
+meterHighVthdSetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase wires high frequency warning setpoint in
+            percent of nominal.  Column: .23760.3.5.26.1.21"
+    ::= { voltMeterTableEntry 21 }
+
+meterOverVthdSetpoint OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase wires over frequency alarm setpoint in
+            percent of nominal.  Column: .23760.3.5.26.1.22"
+    ::= { voltMeterTableEntry 22 }
+
+meterUnderVoltageAlarmPhaseA OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase A under voltage alarm.  Column:
+            .23760.3.5.26.1.23"
+    ::= { voltMeterTableEntry 23 }
+
+meterUnderVoltageAlarmPhaseB OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase B under voltage alarm.  Column:
+            .23760.3.5.26.1.24"
+    ::= { voltMeterTableEntry 24 }
+
+meterUnderVoltageAlarmPhaseC OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase C under voltage alarm.  Column:
+            .23760.3.5.26.1.25"
+    ::= { voltMeterTableEntry 25 }
+
+meterLowVoltageAlarmPhaseA OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase A low voltage alarm.  Column:
+            .23760.3.5.26.1.26"
+    ::= { voltMeterTableEntry 26 }
+
+meterLowVoltageAlarmPhaseB OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase B low voltage alarm.  Column:
+            .23760.3.5.26.1.27"
+    ::= { voltMeterTableEntry 27 }
+
+meterLowVoltageAlarmPhaseC OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase C low voltage alarm.  Column:
+            .23760.3.5.26.1.28"
+    ::= { voltMeterTableEntry 28 }
+
+meterHighVoltageAlarmPhaseA OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase A high voltage alarm.  Column:
+            .23760.3.5.26.1.29"
+    ::= { voltMeterTableEntry 29 }
+
+meterHighVoltageAlarmPhaseB OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase B high voltage alarm.  Column:
+            .23760.3.5.26.1.30"
+    ::= { voltMeterTableEntry 30 }
+
+meterHighVoltageAlarmPhaseC OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase C high voltage alarm.  Column:
+            .23760.3.5.26.1.31"
+    ::= { voltMeterTableEntry 31 }
+
+meterOverVoltageAlarmPhaseA OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase A over voltage alarm.  Column:
+            .23760.3.5.26.1.32"
+    ::= { voltMeterTableEntry 32 }
+
+meterOverVoltageAlarmPhaseB OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase B over voltage alarm.  Column:
+            .23760.3.5.26.1.33"
+    ::= { voltMeterTableEntry 33 }
+
+meterOverVoltageAlarmPhaseC OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter phase C over voltage alarm.  Column:
+            .23760.3.5.26.1.34"
+    ::= { voltMeterTableEntry 34 }
+
+meterUnderFrequencyAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter under frequency alarm.  Column:
+            .23760.3.5.26.1.35"
+    ::= { voltMeterTableEntry 35 }
+
+meterOverFrequencyAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter over frequency alarm.  Column:
+            .23760.3.5.26.1.36"
+    ::= { voltMeterTableEntry 36 }
+
+meterHighVthdAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter high THD threshold alarm.  Column:
+            .23760.3.5.26.1.37"
+    ::= { voltMeterTableEntry 37 }
+
+meterOverVthdAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Voltage meter over THD threshold alarm.  Column:
+            .23760.3.5.26.1.38"
+    ::= { voltMeterTableEntry 38 }
+
+panelTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF PanelTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Per panel information, indexed by panel instance.  
+            Currently not supported.  Table: .23760.3.5.27"
+    ::= { version 27 }
+
+panelTableEntry OBJECT-TYPE
+    SYNTAX      PanelTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Row description goes here.  Row: .23760.3.5.27.1"
+    INDEX   { panelIndex }
+    ::= {panelTable 1 }
+
+PanelTableEntry ::= SEQUENCE {
+    panelIndex Integer32,
+    waveformCaptureTrigger TriggerDataType }
+
+panelIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..4)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Panel index per PBM instance, counting from 1.  Column:
+            .23760.3.5.27.1.1"
+    ::= { panelTableEntry 1 }
+
+waveformCaptureTrigger OBJECT-TYPE
+    SYNTAX      TriggerDataType
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+           "Setting this value triggers a waveform capture for all
+            equipped mains and branch meters on this panel.  Column:
+            .23760.3.5.27.1.2"
+    ::= { panelTableEntry 2 }
+
+thermostatTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ThermostatTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Type X ePODs thermostat alarms, indexed by thermostat
+            instance.  No table rows are available if no thermostats are
+            configured as indicated by numberThermostats.  Table:
+            .23760.3.5.28"
+    ::= { version 28 }
+
+thermostatTableEntry OBJECT-TYPE
+    SYNTAX      ThermostatTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Row description goes here.  Row: .23760.3.5.28.1"
+    INDEX   { thermostatIndex }
+    ::= {thermostatTable 1 }
+
+ThermostatTableEntry ::= SEQUENCE {
+    thermostatIndex Integer32,
+    highTemperatureAlarm AlarmDataType,
+    overTemperatureAlarm AlarmDataType,
+    temperatureCircuitErrorAlarm AlarmDataType }
+
+thermostatIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..4)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Thermostat index per PBM instance, counting from 1.  Column:
+            .23760.3.5.28.1.1"
+    ::= { thermostatTableEntry 1 }
+
+highTemperatureAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "High temperature alarm.  Column: .23760.3.5.28.1.2"
+    ::= { thermostatTableEntry 2 }
+
+overTemperatureAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Over temperature alarm.  Column: .23760.3.5.28.1.3"
+    ::= { thermostatTableEntry 3 }
+
+temperatureCircuitErrorAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Thermostat wiring error or malfunction alarm.  Column:
+            .23760.3.5.28.1.4"
+    ::= { thermostatTableEntry 4 }
+
+doorSwitchTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF DoorSwitchTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Door switch alarms, indexed by door switch instance.  No
+            table rows are available if no door switches are configured
+            as indicated by numberDoorSwitches.  Table: .23760.3.5.29"
+    ::= { version 29 }
+
+doorSwitchTableEntry OBJECT-TYPE
+    SYNTAX      DoorSwitchTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Row description goes here.  Row: .23760.3.5.29.1"
+    INDEX   { doorIndex }
+    ::= {doorSwitchTable 1 }
+
+DoorSwitchTableEntry ::= SEQUENCE {
+    doorIndex Integer32,
+    doorOpenAlarm AlarmDataType,
+    doorFormCErrorAlarm AlarmDataType }
+
+doorIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..4)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Door switch index per PBM instance, counting from 1. 
+            Column: .23760.3.5.29.1.1"
+    ::= { doorSwitchTableEntry 1 }
+
+doorOpenAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Door open alarm.  Column: .23760.3.5.29.1.2"
+    ::= { doorSwitchTableEntry 2 }
+
+doorFormCErrorAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Door switch Form C circuit has wiring error or malfunction
+            alarm.  Column: .23760.3.5.29.1.3"
+    ::= { doorSwitchTableEntry 3 }
+
+surgeSuppressorTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF SurgeSuppressorTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Transient voltage surge supressor alarms, indexed by surge
+            supressor instance.  No table rows are available if no surge
+            supressors are configured as indicated by
+            numberSurgeSupressors.  Table: .23760.3.5.30"
+    ::= { version 30 }
+
+surgeSuppressorTableEntry OBJECT-TYPE
+    SYNTAX      SurgeSuppressorTableEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Row description goes here.  Row: .23760.3.5.30.1"
+    INDEX   { surgeSuppressorIndex }
+    ::= {surgeSuppressorTable 1 }
+
+SurgeSuppressorTableEntry ::= SEQUENCE {
+    surgeSuppressorIndex Integer32,
+    surgeSuppressorTrippedAlarm AlarmDataType,
+    surgeSuppressorFormCErrorAlarm AlarmDataType }
+
+surgeSuppressorIndex OBJECT-TYPE
+    SYNTAX      Integer32 (1..4)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "Surge suppressor index per PBM instance, counting from 1. 
+            Column: .23760.3.5.30.1.1"
+    ::= { surgeSuppressorTableEntry 1 }
+
+surgeSuppressorTrippedAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Surge suppressor tripped alarm.  Column: .23760.3.5.30.1.2"
+    ::= { surgeSuppressorTableEntry 2 }
+
+surgeSuppressorFormCErrorAlarm OBJECT-TYPE
+    SYNTAX      AlarmDataType
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "Surge supressor Form C circuit has wiring error or
+            malfunction alarm.  Column: .23760.3.5.30.1.3"
+    ::= { surgeSuppressorTableEntry 3 }
+
+objectGroup OBJECT-GROUP
+       OBJECTS {
+                 systemName,
+                 systemSerial,
+                 productName,
+                 systemNominalVoltage,
+                 nominalLineLineVoltage,
+                 nominalLineNeutralVoltage,
+                 secondNominalVoltage,
+                 numberPanels,
+                 numberFeeds,
+                 numberPositionsPerPanel,
+                 numberMainBreakers,
+                 numberMainBreakerMonitors,
+                 numberThermostats,
+                 numberDoorSwitches,
+                 numberSurgeSuppressors,
+                 numberSubFeedBreakers,
+                 numberSubFeedBreakerMonitors,
+                 demandInterval,
+                 displayTimeout,
+                 hornDisable,
+                 summaryAlarm,
+                 branchName,
+                 branchBreakerNumberPoles,
+                 branchBreakerRating,
+                 positionCurrentNominal,
+                 positionCurrentTransformerRating,
+                 positionCurrent,
+                 positionRealPower,
+                 positionApparentPower,
+                 positionReactivePower,
+                 positionPowerFactor,
+                 positionEnergy,
+                 positionDemandBlock,
+                 positionDemandBlockPeak,
+                 positionDemandRolling,
+                 positionDemandRollingPeak,
+                 branchCurrentSetpointNominal,
+                 branchHighCurrentSetpoint,
+                 branchOverCurrentSetpoint,
+                 branchNeutralConnected,
+                 positionCurrentXformerReversed,
+                 positionHighCurrentAlarm,
+                 positionOverCurrentAlarm,
+                 breakerName,
+                 breakerRating,
+                 breakerNotNormalAlarm,
+                 breakerFormCPositionCircuitAlarm,
+                 breakerFormCTripCircuitAlarm,
+                 breakerTrippedAlarm,
+                 subFeedBreakerName,
+                 subFeedBreakerRating,
+                 subFeedBreakerNotNormalAlarm,
+                 subFeedBreakerFormCPositionCircuitAlarm,
+                 subFeedBreakerFormCTripCircuitAlarm,
+                 subFeedBreakerTrippedAlarm,
+                 meterCtReversedPhaseA,
+                 meterCtReversedPhaseB,
+                 meterCtReversedPhaseC,
+                 meterCtReversedNeutral,
+                 meterCurrentPhaseA,
+                 meterCurrentPhaseB,
+                 meterCurrentPhaseC,
+                 meterCurrentPhaseN,
+                 meterCurrentPhaseG,
+                 meterRealPower,
+                 meterApparentPower,
+                 meterReactivePower,
+                 meterPowerFactor,
+                 meterEnergy,
+                 meterDemandBlock,
+                 meterDemandBlockPeak,
+                 meterDemandRolling,
+                 meterDemandRollingPeak,
+                 meterPhaseCurrentNominal,
+                 meterPhaseHighCurrentSetpoint,
+                 meterPhaseOverCurrentSetpoint,
+                 meterNeutralCurrentNominal,
+                 meterNeutralHighCurrentSetpoint,
+                 meterNeutralOverCurrentSetpoint,
+                 meterGroundCurrentNominal,
+                 meterGroundHighCurrentSetpoint,
+                 meterGroundOverCurrentSetpoint,
+                 meterHighCurrentAlarmPhaseA,
+                 meterHighCurrentAlarmPhaseB,
+                 meterHighCurrentAlarmPhaseC,
+                 meterHighCurrentAlarmNeutral,
+                 meterHighCurrentAlarmGround,
+                 meterOverCurrentAlarmPhaseA,
+                 meterOverCurrentAlarmPhaseB,
+                 meterOverCurrentAlarmPhaseC,
+                 meterOverCurrentAlarmNeutral,
+                 meterOverCurrentAlarmGround,
+                 meterVoltageLineToLineA,
+                 meterVoltageLineToLineB,
+                 meterVoltageLineToLineC,
+                 meterVoltageLineToNeutralA,
+                 meterVoltageLineToNeutralB,
+                 meterVoltageLineToNeutralC,
+                 meterFrequency,
+                 meterTotalHarmonicDistortion,
+                 meterVoltageSetpointNominal,
+                 meterUnderVoltageSetpoint,
+                 meterLowVoltageSetpoint,
+                 meterHighVoltageSetpoint,
+                 meterOverVoltageSetpoint,
+                 meterFrequencySetpointNominal,
+                 meterUnderFrequencySetpoint,
+                 meterLowFrequencySetpoint,
+                 meterHighFrequencySetpoint,
+                 meterOverFrequencySetpoint,
+                 meterHighVthdSetpoint,
+                 meterOverVthdSetpoint,
+                 meterUnderVoltageAlarmPhaseA,
+                 meterUnderVoltageAlarmPhaseB,
+                 meterUnderVoltageAlarmPhaseC,
+                 meterLowVoltageAlarmPhaseA,
+                 meterLowVoltageAlarmPhaseB,
+                 meterLowVoltageAlarmPhaseC,
+                 meterHighVoltageAlarmPhaseA,
+                 meterHighVoltageAlarmPhaseB,
+                 meterHighVoltageAlarmPhaseC,
+                 meterOverVoltageAlarmPhaseA,
+                 meterOverVoltageAlarmPhaseB,
+                 meterOverVoltageAlarmPhaseC,
+                 meterUnderFrequencyAlarm,
+                 meterOverFrequencyAlarm,
+                 meterHighVthdAlarm,
+                 meterOverVthdAlarm,
+                 waveformCaptureTrigger,
+                 highTemperatureAlarm,
+                 overTemperatureAlarm,
+                 temperatureCircuitErrorAlarm,
+                 doorOpenAlarm,
+                 doorFormCErrorAlarm,
+                 surgeSuppressorTrippedAlarm,
+                 surgeSuppressorFormCErrorAlarm
+        }
+        STATUS  current
+        DESCRIPTION
+               "A collection of objects."
+        ::= { version 999 }
+
+END

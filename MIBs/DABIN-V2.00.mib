@@ -1,0 +1,188 @@
+-------------------------------------------------------------------------------
+-- DABin Do Anything by Internet
+--        Structure of Management Information
+--
+-- EXEMYS SRL - www.exemys.com - support@exemys.com
+--
+-- Feb 2006 Francisco Remersaro
+--
+--  History:
+--  1.00 FJR 08/02/2006 First Public Release of DABin MIB as independent file.
+--  2.00 FJR 23/06/2008 Tags' values are now integer. Tag Name is added to the table
+--			Trap #1 includes value and name
+--			Trap #2 is sent we se variable is acknowledged
+--                      Only matches DABin firmware V3.2.0 or higher
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The following objects are implemented in the MIB-II System Group
+-- 1.3.6.1.2.1.1.1  sysDescr
+-- 1.3.6.1.2.1.1.2  sysObjectID         
+-- 1.3.6.1.2.1.1.3  sysUpTime
+-------------------------------------------------------------------------------
+
+DABIN-AI DEFINITIONS ::= BEGIN
+
+IMPORTS
+  enterprises, IpAddress
+    FROM RFC1155-SMI 
+  OBJECT-TYPE
+    FROM RFC-1212
+  DisplayString
+    FROM SNMPv2-TC
+  TRAP-TYPE
+    FROM RFC-1215 ;
+
+-------------------------------------------------------------------------------
+-- MIB View Overview (.1.3.6.1.4.entreprise(1).exemys(18284).products(1).inetBasedSupervision(1).dabin(1)...)
+
+-- dabinStatus            .1
+--   tags                 .1.1
+--     tagsTables         .1.1.1
+--        tagIntTable     .1.1.1.2
+--          tagIntEntry   .1.1.1.2.1
+--            tagIntValue .1.1.1.2.1.1
+--            tagIntName  .1.1.1.2.1.2
+--            tagIntIndex .1.1.1.2.1.100
+-- config                 .10
+--   ipTraps              .10.1
+-------------------------------------------------------------------------------
+
+--
+-- Type Definitions
+--
+
+--
+-- Top-Level Object Identifiers
+--
+
+--1.3.6.1.4.1.18284
+exemys OBJECT IDENTIFIER
+  ::= { enterprises 18284 }
+
+--1.3.6.1.4.1.18284.1
+exemysProducts OBJECT IDENTIFIER
+  ::= { exemys 1 }
+
+--1.3.6.1.4.1.18284.10000
+otherExemys OBJECT IDENTIFIER
+  ::= { exemys 10000 }
+
+--1.3.6.1.4.1.18284.1.1
+inetBasedSupervision OBJECT IDENTIFIER
+  ::= { exemysProducts 1 }
+
+--1.3.6.1.4.1.18284.1.10000
+otherProducts OBJECT IDENTIFIER
+  ::= { exemysProducts 10000 }
+
+--1.3.6.1.4.1.18284.1.1.1
+dabin OBJECT IDENTIFIER
+  ::= { inetBasedSupervision 1 }
+
+--1.3.6.1.4.1.18284.1.1.10000
+otherinterBased OBJECT IDENTIFIER
+  ::= { inetBasedSupervision 10000 }
+
+--
+-- Product-Level Object Identifiers
+--
+
+--1.3.6.1.4.1.18284.1.1.1.1
+dabinStatus OBJECT IDENTIFIER
+  ::= { dabin 1 }
+
+--1.3.6.1.4.1.18284.1.1.1.1.1
+tags OBJECT IDENTIFIER
+  ::= { dabinStatus 1 }
+
+--1.3.6.1.4.1.18284.1.1.1.1.1.1
+tagsTables OBJECT IDENTIFIER
+  ::= { tags 1 }
+
+--1.3.6.1.4.1.18284.1.1.1.10
+config OBJECT IDENTIFIER
+  ::= { dabin 10 }
+
+--1.3.6.1.4.1.18284.1.1.1.1.1.1.2
+tagIntTable OBJECT-TYPE
+  SYNTAX  SEQUENCE OF tagIntEntry
+  ACCESS  not-accessible
+  STATUS  current
+  DESCRIPTION
+    "A list of analog input"
+  ::= { tagsTables 2 }
+
+--1.3.6.1.4.1.18284.1.1.1.1.1.1.2.1
+tagIntEntry OBJECT-TYPE
+  SYNTAX  TagIntEntry
+  ACCESS  not-accessible
+  STATUS  current
+  DESCRIPTION
+    "An entry containing to one tag's value on integer format"
+  INDEX { tagIntIndex }
+  ::= { tagIntTable 1 }
+
+TagIntEntry ::= SEQUENCE {
+  tagIntIndex  INTEGER,
+  tagIntValue  INTEGER,
+  tagIntName   DisplayString
+}
+
+--1.3.6.1.4.1.18284.1.1.1.1.1.1.2.1.1
+tagIntValue OBJECT-TYPE
+  SYNTAX  INTEGER
+  ACCESS  read-only
+  STATUS  current
+  DESCRIPTION
+    "The integer format tags value"
+  ::= { tagIntEntry 1 }
+
+--1.3.6.1.4.1.18284.1.1.1.1.1.1.2.1.2
+tagIntName OBJECT-TYPE
+  SYNTAX  DisplayString
+  ACCESS  read-only
+  STATUS  current
+  DESCRIPTION
+    "The tag's name"
+  ::= { tagIntEntry 2 }
+
+--1.3.6.1.4.1.18284.1.1.1.1.1.1.2.1.100
+tagIntIndex OBJECT-TYPE
+  SYNTAX  INTEGER(0..127) 
+  ACCESS  not-accessible
+  STATUS  current
+  DESCRIPTION
+    "The integer format tags table index"
+  ::= { tagIntEntry 100 }
+
+--1.3.6.1.4.1.18284.1.1.1.10.1
+ipTraps OBJECT-TYPE
+  SYNTAX  IpAddress
+  ACCESS  read-only
+  STATUS  current
+  DESCRIPTION
+    "IP Address of the nms"
+  ::= { config 1 }
+
+--
+-- Trap definitions
+--
+
+--1.3.6.1.4.1.18284.1.1.1.0.1
+dabinTagIntInAlarm TRAP-TYPE
+  ENTERPRISE  dabin
+  VARIABLES { tagIntValue, tagIntName }
+  DESCRIPTION
+    "This trap is sent each time one tags goes into alarm value" 
+  ::= 1
+
+--1.3.6.1.4.1.18284.1.1.1.0.2
+dabinTagIntAcked TRAP-TYPE
+  ENTERPRISE  dabin
+  VARIABLES { tagIntValue, tagIntName }
+  DESCRIPTION
+    "This trap is sent each time one tags is acknowledge"
+  ::= 2
+
+END

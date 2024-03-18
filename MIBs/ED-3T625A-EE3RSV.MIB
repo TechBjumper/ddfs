@@ -1,0 +1,3405 @@
+
+ RFC1213-MIB DEFINITIONS ::= BEGIN
+
+         IMPORTS
+                 mgmt                     FROM RFC1155-SMI
+                 OBJECT-TYPE                         FROM RFC-1212;
+
+         -- This MIB module uses the extended OBJECT-TYPE macro as
+          --  defined in [14];
+
+
+          --  MIB-II (same prefix as MIB-I)
+
+          mib-2      OBJECT IDENTIFIER ::= { mgmt 1 }
+
+          -- textual conventions
+
+          DisplayString ::=
+              OCTET STRING
+          -- This data type is used to model textual information taken
+          -- from the NVT ASCII character set.  By convention, objects
+          -- with this syntax are declared as having
+
+
+
+
+
+
+          --
+          --      SIZE (0..255)
+
+          PhysAddress ::=
+              OCTET STRING
+          -- This data type is used to model media addresses.  For many
+          -- types of media, this will be in a binary representation.
+          -- For example, an ethernet address would be represented as
+          -- a string of 6 octets.
+
+
+          -- groups in MIB-II
+
+          system       OBJECT IDENTIFIER ::= { mib-2 1 }
+
+          
+
+
+          -- the System group
+
+          -- Implementation of the System group is mandatory for all
+          -- systems.  If an agent is not configured to have a value
+          -- for any of these variables, a string of length 0 is
+          -- returned.
+
+          sysDescr OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE (0..255))
+              ACCESS  read-only
+              STATUS  mandatory
+
+
+
+
+
+              DESCRIPTION
+                      "A textual description of the entity.  This value
+                      should include the full name and version
+                      identification of the system's hardware type,
+                      software operating-system, and networking
+                      software.  It is mandatory that this only contain
+                      printable ASCII characters."
+              ::= { system 1 }
+
+          sysObjectID OBJECT-TYPE
+              SYNTAX  OBJECT IDENTIFIER
+              ACCESS  read-only
+              STATUS  mandatory
+              DESCRIPTION
+                      "The vendor's authoritative identification of the
+                      network management subsystem contained in the
+                      entity.  This value is allocated within the SMI
+                      enterprises subtree (1.3.6.1.4.1) and provides an
+                      easy and unambiguous means for determining `what
+                      kind of box' is being managed.  For example, if
+                      vendor `Flintstones, Inc.' was assigned the
+                      subtree 1.3.6.1.4.1.4242, it could assign the
+                      identifier 1.3.6.1.4.1.4242.1.1 to its `Fred
+                      Router'."
+              ::= { system 2 }
+
+          sysUpTime OBJECT-TYPE
+              SYNTAX  TimeTicks
+              ACCESS  read-only
+              STATUS  mandatory
+              DESCRIPTION
+                      "The time (in hundredths of a second) since the
+                      network management portion of the system was last
+                      re-initialized."
+              ::= { system 3 }
+
+          sysContact OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE (0..255))
+              ACCESS  read-write
+              STATUS  mandatory
+              DESCRIPTION
+                      "The textual identification of the contact person
+                      for this managed node, together with information
+                      on how to contact this person."
+              ::= { system 4 }
+
+          sysName OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE (0..255))
+
+
+
+
+
+              ACCESS  read-write
+              STATUS  mandatory
+              DESCRIPTION
+                      "An administratively-assigned name for this
+                      managed node.  By convention, this is the node's
+                      fully-qualified domain name."
+              ::= { system 5 }
+
+          sysLocation OBJECT-TYPE
+              SYNTAX  DisplayString (SIZE (0..255))
+              ACCESS  read-write
+              STATUS  mandatory
+              DESCRIPTION
+                      "The physical location of this node (e.g.,
+                      `telephone closet, 3rd floor')."
+              ::= { system 6 }
+
+          sysServices OBJECT-TYPE
+              SYNTAX  INTEGER (0..127)
+              ACCESS  read-only
+              STATUS  mandatory
+              DESCRIPTION
+                      "A value which indicates the set of services that
+                      this entity primarily offers.
+
+                      The value is a sum.  This sum initially takes the
+                      value zero, Then, for each layer, L, in the range
+                      1 through 7, that this node performs transactions
+                      for, 2 raised to (L - 1) is added to the sum.  For
+                      example, a node which performs primarily routing
+                      functions would have a value of 4 (2^(3-1)).  In
+                      contrast, a node which is a host offering
+                      application services would have a value of 72
+                      (2^(4-1) + 2^(7-1)).  Note that in the context of
+                      the Internet suite of protocols, values should be
+                      calculated accordingly:
+
+                           layer  functionality
+                               1  physical (e.g., repeaters)
+                               2  datalink/subnetwork (e.g., bridges)
+                               3  internet (e.g., IP gateways)
+                               4  end-to-end  (e.g., IP hosts)
+                               7  applications (e.g., mail relays)
+
+                      For systems including OSI protocols, layers 5 and
+                      6 may also be counted."
+              ::= { system 7 }
+
+
+END
+
+
+-- ElcomNet-MIB { iso org(3) dod(6) internet(1) private(4)
+--    enterprises(1) elcom(40367) }
+
+ElcomNet-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   enterprises   						                FROM RFC1155-SMI
+   OBJECT-TYPE											FROM RFC-1212
+   TRAP-TYPE											FROM RFC-1215;
+
+elcom                            OBJECT IDENTIFIER ::=  { enterprises 40367 }
+
+products                       OBJECT IDENTIFIER ::=  { elcom 1 }
+
+
+hardware                       OBJECT IDENTIFIER ::=  { products 1 }
+
+
+--experimental                   OBJECT IDENTIFIER ::=  { products 4 }
+
+
+
+--mtrapargs                      OBJECT IDENTIFIER ::=  { elcommgmt 3 }
+
+
+
+sPDU                           OBJECT IDENTIFIER ::=  { hardware 12 }
+
+
+
+
+
+--sPDUIdent                      OBJECT IDENTIFIER ::=  { sPDU 1 }
+--sPDULoad                       OBJECT IDENTIFIER ::=  { sPDU 2 } 
+
+--sPDUMainInput                  OBJECT IDENTIFIER ::=  { sPDU 5 }
+outletControl              		 OBJECT IDENTIFIER ::=  { sPDU 2 }
+--sPDUBranchOutput               OBJECT IDENTIFIER ::=  { sPDU 4 } 
+--output1-phase                    OBJECT IDENTIFIER ::=  { sPDU 6 } 
+
+outletData                       OBJECT IDENTIFIER ::=  { sPDU 5 }
+outletData-1                     OBJECT IDENTIFIER ::=  { outletData 1 }
+outletData-2                     OBJECT IDENTIFIER ::=  { outletData 2 }
+outletData-3                     OBJECT IDENTIFIER ::=  { outletData 3 }
+outletData-4                     OBJECT IDENTIFIER ::=  { outletData 4 }
+outletData-5                     OBJECT IDENTIFIER ::=  { outletData 5 }
+outletData-6                     OBJECT IDENTIFIER ::=  { outletData 6 }
+outletData-7                     OBJECT IDENTIFIER ::=  { outletData 7 }
+outletData-8                     OBJECT IDENTIFIER ::=  { outletData 8 }
+outletData-9                     OBJECT IDENTIFIER ::=  { outletData 9 }
+outletData-10                    OBJECT IDENTIFIER ::=  { outletData 10 }
+outletData-11                    OBJECT IDENTIFIER ::=  { outletData 11 }
+outletData-12                    OBJECT IDENTIFIER ::=  { outletData 12 }
+outletData-13                    OBJECT IDENTIFIER ::=  { outletData 13 }
+outletData-14                    OBJECT IDENTIFIER ::=  { outletData 14 }
+outletData-15                    OBJECT IDENTIFIER ::=  { outletData 15 }
+outletData-16                    OBJECT IDENTIFIER ::=  { outletData 16 }
+outletData-17                    OBJECT IDENTIFIER ::=  { outletData 17 }
+outletData-18                    OBJECT IDENTIFIER ::=  { outletData 18 }
+outletData-19                    OBJECT IDENTIFIER ::=  { outletData 19 }
+outletData-20                    OBJECT IDENTIFIER ::=  { outletData 20 }
+outletData-21                    OBJECT IDENTIFIER ::=  { outletData 21 }
+outletData-22                    OBJECT IDENTIFIER ::=  { outletData 22 }
+outletData-23                    OBJECT IDENTIFIER ::=  { outletData 23 }
+outletData-24                    OBJECT IDENTIFIER ::=  { outletData 24 }
+outletData-25                    OBJECT IDENTIFIER ::=  { outletData 25 }
+outletData-26                    OBJECT IDENTIFIER ::=  { outletData 26 }
+outletData-27                    OBJECT IDENTIFIER ::=  { outletData 27 }
+
+sensorOutput                     OBJECT IDENTIFIER ::=  { sPDU 7 }
+phaseOutput                      OBJECT IDENTIFIER ::=  { sPDU 8 }
+
+
+
+
+--sPDULoadPhaseConfig            OBJECT IDENTIFIER ::=  { sPDULoad 1 }    
+--sPDULoadStatus                 OBJECT IDENTIFIER ::=  { sPDULoad 2 }
+   
+
+
+
+
+-- object types
+
+-- the products group
+-- the experimental group
+
+
+
+-- the elcommgmt group
+-- the mconfig group
+
+
+  
+
+-- The mtrapargs group
+-- These OIDs allows elcom traps to be sent with additional arguments
+-- which may not be defined in the elcom MIB.
+
+   
+-- the mfiletransfer group
+-- the mfiletransferStatus group
+
+   
+-- the mfiletransferConfig group
+-- the mfiletransferConfigSettings group
+
+
+
+-- the xPDUIdent group
+
+
+--  the xPDUDevice group
+
+
+
+
+-- Main Input 
+
+
+-- Main Input Voltage Table
+
+
+
+-- Bypass Input  Voltage Table
+
+
+-- UPS Input Table
+
+
+-- System Output
+
+
+-- System Breakers 
+
+
+
+-- Branch Breakers (Breaker Panel)
+
+
+-- Branch Breakers Table
+
+
+
+-- the xPDUInputContacts group
+
+
+-- the xPDUOutputRelays group
+
+
+
+-- the xPDUMiscGroup
+
+
+
+
+-- the software group
+-- the powerNetSubAgent group
+-- the powerNetSoftwareSystem group
+      
+
+
+-- the sPDUIdent group
+
+
+   
+
+-- the sPDUMasterControl group
+
+
+
+
+-- the sPDUMasterConfig group
+   
+
+-- the sPDUOutletControl group
+
+-- the sPDUIdentVM group
+
+
+
+-- the sPDUMasterConfigVM group
+
+
+-- the sPDUMasterStatusVM group
+
+
+
+-- the sPDUOutletControlVM group
+
+   
+
+-- the sPDUOutletStatusVM group
+  
+
+-- the sPDUIdentMSP group
+
+
+
+-- the sPDUMasterControlMSP group
+
+
+
+-- the sPDUMasterConfigMSP group
+
+
+   
+-- the sPDUMasterStatusMSP group
+
+
+-- the sPDUOutletControlMSP group
+   
+
+-- the sPDUOutletConfigMSPall group
+  
+
+-- the sPDUOutConfigMSPgs group
+
+
+
+-- the sPDUOutConfigMSPannun group
+
+
+
+-- the sPDUOutConfigMSPmups group
+
+
+-- the sPDUOutletStatusMSP group
+  
+
+
+-- the sPDUIdent group
+
+
+-- the sPDULoadDevice group
+
+
+
+
+-- the sPDULoadPhaseConfig group
+
+
+
+
+
+
+-- the sPDULoadStatus group
+
+
+
+
+ 
+
+
+-- the sPDUOutletDevice group
+
+
+-- the sPDUOutletPhase group
+
+
+
+
+-- the sPDUOutletControl group
+
+
+
+-- the sPDUOutletConfig group
+
+
+-- Monitored Outlets table
+
+
+
+
+
+-- the sPDUOutletStatus group
+
+
+
+-- the sPDUOutletBank group
+
+
+-- the sPDUPowerSupplyDevice group
+
+
+
+-- the sPDUStatus group  
+
+
+-- Phase status table
+
+
+-- Outlet status table
+
+
+
+-- Main Input Voltage Table
+
+
+
+--Outlet control
+
+
+
+outlet-1State OBJECT-TYPE
+   SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+
+       
+   ::= { outletControl 1 }
+
+outlet-2State OBJECT-TYPE
+    SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off."  
+
+       
+   ::= { outletControl 2 }
+
+
+outlet-3State OBJECT-TYPE
+    SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+       
+   ::= { outletControl 3 }
+
+
+outlet-4State OBJECT-TYPE
+   SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+
+       
+   ::= { outletControl 4 }
+
+outlet-5State OBJECT-TYPE
+   SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off."  
+
+       
+   ::= { outletControl 5 }
+
+outlet-6State OBJECT-TYPE
+    SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+
+       
+   ::= { outletControl 6 }
+
+outlet-7State OBJECT-TYPE
+   SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+       
+   ::= { outletControl 7 }
+
+outlet-8State OBJECT-TYPE
+    SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+       
+   ::= { outletControl 8 }
+
+outlet-9State OBJECT-TYPE
+   SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+       
+   ::= { outletControl 9 }
+
+outlet-10State OBJECT-TYPE
+    SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+
+       
+   ::= { outletControl 10 }
+
+outlet-11State OBJECT-TYPE
+    SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+
+       
+   ::= { outletControl 11 }
+
+outlet-12State OBJECT-TYPE
+    SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+       
+   ::= { outletControl 12 }
+
+outlet-13State OBJECT-TYPE
+   SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+       
+   ::= { outletControl 13 }
+
+outlet-14State OBJECT-TYPE
+    SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off."  
+
+       
+   ::= { outletControl 14 }
+
+outlet-15State OBJECT-TYPE
+    SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+       
+   ::= { outletControl 15 }
+
+outlet-16State OBJECT-TYPE
+   SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+       
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+       
+   ::= { outletControl 16 }
+
+outlet-17State OBJECT-TYPE
+    SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+       
+   ::= { outletControl 17 }
+
+outlet-18State OBJECT-TYPE
+    SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+
+       
+   ::= { outletControl 18 }
+
+outlet-19State OBJECT-TYPE
+    SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+       
+   ::= { outletControl 19 }
+
+outlet-20State OBJECT-TYPE
+  SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+       
+   ::= { outletControl 20 }
+
+outlet-21State OBJECT-TYPE
+   SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+       
+   ::= { outletControl 21 }
+
+outlet-22State OBJECT-TYPE
+    SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+
+       
+   ::= { outletControl 22 }
+
+outlet-23State OBJECT-TYPE
+    SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+       
+   ::= { outletControl 23 }
+
+outlet-24State OBJECT-TYPE
+    SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off."  
+
+       
+   ::= { outletControl 24 }
+
+outlet-25State OBJECT-TYPE
+   SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off."  
+
+       
+   ::= { outletControl 25 }
+
+outlet-26State OBJECT-TYPE
+   SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+       
+   ::= { outletControl 26 }
+
+outlet-27State OBJECT-TYPE
+   SYNTAX INTEGER {
+        outletOn              (1),
+        outletOff             (0)
+        
+        
+   }     
+
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+       "Getting this variable will return the outlet state. If 
+       the outlet is on, the outletOn (1) value will be returned.
+       If the outlet is off, the outletOff (0) value will be
+       returned. 
+       
+       
+       
+       Setting this variable to outletOn (1) will turn the outlet on.
+       
+       Setting this variable to outletOff (0) will turn the outlet off." 
+
+       
+   ::= { outletControl 27 }
+
+
+
+--Branch Output
+--1- Phase Output
+--1 Phase Individual outlet data
+
+
+voltage-1 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-1 1 }
+
+current-1 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-1 2}
+
+
+kvaHr-1 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvaHr."
+   ::= { outletData-1 3 }
+
+kvarHr-1 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-1 4 }
+
+
+
+kwattHr-1 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-1 5 }
+
+
+pF-1 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-1 6 }
+
+kWatt-1 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-1 7}
+
+voltage-2 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-2 1 }
+
+current-2 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-2 2}
+
+
+kvaHr-2 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-2 3 }
+
+kvarHr-2 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-2 4 }
+
+
+
+kwattHr-2 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-2 5 }
+
+
+pF-2 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-2 6 }
+
+kWatt-2 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-2 7}
+
+
+voltage-3 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-3 1 }
+
+current-3 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-3 2}
+
+
+kvaHr-3 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-3 3 }
+
+kvarHr-3 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-3 4 }
+
+
+
+kwattHr-3 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-3 5 }
+
+
+pF-3 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-3 6 }
+
+kWatt-3 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-3 7}
+
+
+voltage-4 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-4 1 }
+
+current-4 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-4 2}
+
+
+kvaHr-4 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-4 3 }
+   
+kvarHr-4 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-4 4 }
+
+
+
+kwattHr-4 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-4 5 }
+
+
+pF-4 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-4 6 }
+
+kWatt-4 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-4 7}
+
+voltage-5 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-5 1 }
+
+current-5 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-5 2}
+
+
+kvaHr-5 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-5 3 }
+
+kvarHr-5 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-5 4 }
+
+
+
+kwattHr-5 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-5 5 }
+
+
+pF-5 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-5 6 }
+
+kWatt-5 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-5 7}
+
+
+voltage-6 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-6 1 }
+
+current-6 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-6 2}
+
+
+kvaHr-6 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-6 3 }
+
+kvarHr-6 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-6 4 }
+
+kwattHr-6 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-6 5 }
+
+pF-6 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-6 6 }
+
+kWatt-6 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-6 7}
+
+
+voltage-7 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-7 1 }
+
+current-7 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-7 2}
+
+kvaHr-7 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-7 3 }
+
+kvarHr-7 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-7 4 }
+
+
+
+kwattHr-7 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-7 5 }
+
+
+pF-7 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-7 6 }
+
+kWatt-7 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-7 7}
+
+voltage-8 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-8 1 }
+
+current-8 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-8 2}
+
+
+kvaHr-8 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-8 3 }
+
+kvarHr-8 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-8 4 }
+
+
+
+kwattHr-8 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-8 5 }
+
+
+pF-8 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-8 6 }
+
+kWatt-8 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-8 7}
+
+
+voltage-9 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-9 1 }
+
+current-9 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-9 2}
+
+
+kvaHr-9 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-9 3 }
+
+kvarHr-9 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-9 4 }
+
+
+
+kwattHr-9 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-9 5 }
+
+
+pF-9 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-9 6 }
+
+kWatt-9 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-9 7}
+
+
+voltage-10 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-10 1 }
+
+current-10 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-10 2}
+
+
+kvaHr-10 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-10 3 }
+
+kvarHr-10 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-10 4 }
+
+
+
+kwattHr-10 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-10 5 }
+
+
+pF-10 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-10 6 }
+
+kWatt-10 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-10 7}
+
+voltage-11 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-11 1 }
+
+current-11 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-11 2}
+
+
+kvaHr-11 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-11 3 }
+
+kvarHr-11 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-11 4 }
+
+
+
+kwattHr-11 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-11 5 }
+
+
+pF-11 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-11 6 }
+
+kWatt-11 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-11 7}
+
+
+voltage-12 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-12 1 }
+
+current-12 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-12 2}
+
+
+kvaHr-12 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-12 3 }
+
+kvarHr-12 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-12 4 }
+
+
+
+kwattHr-12 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-12 5 }
+
+
+pF-12 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-12 6 }
+
+kWatt-12 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-12 7}
+
+voltage-13 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-13 1 }
+
+current-13 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-13 2}
+
+
+kvaHr-13 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-13 3 }
+
+kvarHr-13 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-13 4 }
+
+
+
+kwattHr-13 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-13 5 }
+
+
+pF-13 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-13 6 }
+
+kWatt-13 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-13 7}
+  
+
+voltage-14 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-14 1 }
+
+current-14 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-14 2}
+
+
+kvaHr-14 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-14 3 }
+
+kvarHr-14 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-14 4 }
+
+
+
+kwattHr-14 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-14 5 }
+
+
+pF-14 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-14 6 }
+
+kWatt-14 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-14 7}
+
+voltage-15 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-15 1 }
+
+current-15 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-15 2}
+
+
+kvaHr-15 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-15 3 }
+
+kvarHr-15 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-15 4 }
+
+
+
+kwattHr-15 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-15 5 }
+
+
+pF-15 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-15 6 }
+
+kWatt-15 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-15 7}
+
+
+voltage-16 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-16 1 }
+
+current-16 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-16 2}
+
+
+kvaHr-16 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-16 3 }
+
+kvarHr-16 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-16 4 }
+
+
+
+kwattHr-16 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-16 5 }
+
+
+pF-16 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-16 6 }
+
+kWatt-16 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in tenths of KWatt."
+   ::= { outletData-16 7}
+
+
+voltage-17 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-17 1 }
+
+current-17 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-17 2}
+
+
+kvaHr-17 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-17 3 }
+
+kvarHr-17 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-17 4 }
+
+
+
+kwattHr-17 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-17 5 }
+
+
+pF-17 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-17 6 }
+
+kWatt-17 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-17 7}
+
+
+voltage-18 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-18 1 }
+
+current-18 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-18 2}
+
+
+kvaHr-18 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-18 3 }
+
+kvarHr-18 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-18 4 }
+
+
+
+kwattHr-18 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-18 5 }
+
+
+pF-18 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-18 6 }
+
+kWatt-18 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-18 7}
+
+
+voltage-19 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-19 1 }
+
+current-19 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-19 2}
+
+
+kvaHr-19 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-19 3 }
+
+kvarHr-19 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-19 4 }
+
+
+
+kwattHr-19 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-19 5 }
+
+
+pF-19 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-19 6 }
+
+kWatt-19 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-19 7}
+
+
+voltage-20 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-20 1 }
+
+current-20 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-20 2}
+
+
+kvaHr-20 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-20 3 }
+
+kvarHr-20 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-20 4 }
+
+
+
+kwattHr-20 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-20 5 }
+
+
+pF-20 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-20 6 }
+
+kWatt-20 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-20 7}
+
+
+voltage-21 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-21 1 }
+
+current-21 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-21 2}
+
+
+kvaHr-21 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-21 3 }
+
+kvarHr-21 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-21 4 }
+
+
+
+kwattHr-21 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-21 5 }
+
+
+pF-21 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-21 6 }
+
+kWatt-21 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-21 7}
+
+
+voltage-22 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-22 1 }
+
+current-22 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-22 2}
+
+
+kvaHr-22 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-22 3 }
+
+kvarHr-22 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-22 4 }
+
+
+
+kwattHr-22 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-22 5 }
+
+
+pF-22 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-22 6 }
+
+kWatt-22 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-22 7}
+
+
+voltage-23 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-23 1 }
+
+current-23 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-23 2}
+
+
+kvaHr-23 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-23 3 }
+
+kvarHr-23 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-23 4 }
+
+
+
+kwattHr-23 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-23 5 }
+
+
+pF-23 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-23 6 }
+
+kWatt-23 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-23 7}
+
+
+voltage-24 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-24 1 }
+
+current-24 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-24 2}
+
+
+kvaHr-24 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-24 3 }
+
+kvarHr-24 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-24 4 }
+
+
+
+kwattHr-24 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-24 5 }
+
+
+pF-24 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-24 6 }
+
+kWatt-24 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-24 7}
+
+voltage-25 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-25 1 }
+
+current-25 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-25 2}
+
+
+kvaHr-25 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-25 3 }
+
+kvarHr-25 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-25 4 }
+
+
+
+kwattHr-25 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-25 5 }
+
+
+pF-25 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-25 6 }
+
+kWatt-25 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-25 7}
+
+voltage-26 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-26 1 }
+
+current-26 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-26 2}
+
+
+kvaHr-26 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-26 3 }
+
+kvarHr-26 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-26 4 }
+
+
+
+kwattHr-26 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-26 5 }
+
+
+pF-26 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-26 6 }
+
+kWatt-26 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-26 7}
+
+voltage-27 OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The outlet voltage in tenths of Volts."
+   ::= { outletData-27 1 }
+
+current-27 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the outlet in hundredths of Amps."
+   ::= { outletData-27 2}
+
+
+kvaHr-27 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of kvaHr."
+   ::= { outletData-27 3 }
+
+kvarHr-27 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet power in tenths of KvarHr."
+   ::= { outletData-27 4 }
+
+
+
+kwattHr-27 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet Power consumption in tenths of KwattHr."
+   ::= { outletData-27 5 }
+
+
+pF-27 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the outlet.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { outletData-27 6 }
+
+kWatt-27 OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  outlet instantaneous power in thousand of KWatt."
+   ::= { outletData-27 7}
+
+
+
+--phaseOutput
+
+
+voltage-R OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The Branch output voltage in tenths of Volts."
+   ::= { phaseOutput 1 }
+
+current-R OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the Branch output in hundredths of Amps."
+   ::= { phaseOutput 2 }
+
+
+kvaHr-R OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  Branch output power in tenths of kvaHr."
+   ::= { phaseOutput 3 }
+
+kvarHr-R OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  Branch output power in tenths of KvarHr."
+   ::= { phaseOutput 4 }
+
+
+
+kwattHr-R OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  Branch Power consumption in tenths of KwattHr."
+   ::= { phaseOutput 5 }
+
+
+pF-R OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the Branch output.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { phaseOutput 6 }
+
+kWatt-R OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  Branch output instantaneous power in thousand of KWatt."
+   ::= { phaseOutput 7}
+
+voltage-Y OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The Branch output voltage in tenths of Volts."
+   ::= { phaseOutput 8 }
+
+current-Y OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the Branch output in hundredths of Amps."
+   ::= { phaseOutput 9 }
+
+
+kvaHr-Y OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  Branch output power in tenths of kvaHr."
+   ::= { phaseOutput 10 }
+
+kvarHr-Y OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  Branch output power in tenths of KvarHr."
+   ::= { phaseOutput 11 }
+
+
+
+kwattHr-Y OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  Branch Power consumption in tenths of KwattHr."
+   ::= { phaseOutput 12 }
+
+
+pF-Y OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the Branch output.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { phaseOutput 13 }
+
+kWatt-Y OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  Branch output instantaneous power in thousand of KWatt."
+   ::= { phaseOutput 14}
+
+
+voltage-B OBJECT-TYPE
+   SYNTAX     INTEGER
+   ACCESS     read-only
+   STATUS     mandatory
+   DESCRIPTION
+      "The Branch output voltage in tenths of Volts."
+   ::= { phaseOutput 15 }
+
+current-B OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the current measured at the Branch output in hundredths of Amps."
+   ::= { phaseOutput 16 }
+
+
+kvaHr-B OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  Branch output power in tenths of kvaHr."
+   ::= { phaseOutput 17 }
+
+kvarHr-B OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  Branch output power in tenths of KvarHr."
+   ::= { phaseOutput 18 }
+
+
+
+kwattHr-B OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  Branch Power consumption in tenths of KwattHr."
+   ::= { phaseOutput 19 }
+
+
+pF-B OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Indicates the  power factor of the Branch output.
+       A value of 100 representing a unity power factor (1.00).
+       Measured in hundredths."
+   ::= { phaseOutput 20 }
+
+kWatt-B OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Shows the  Branch output instantaneous power in thousand of KWatt."
+   ::= { phaseOutput 21 }
+
+--Sensor Output
+
+
+temp-1 OBJECT-TYPE
+        SYNTAX      INTEGER
+        ACCESS  read-only
+        STATUS      mandatory
+        DESCRIPTION
+            "Temperature measured at the temperature sensor reported in
+             degrees Celsius."
+        ::= { sensorOutput 1  }
+
+relativeHum-1 OBJECT-TYPE
+        SYNTAX      INTEGER
+        ACCESS  read-only
+        STATUS      mandatory
+        DESCRIPTION
+            "Relative humidity measured at the Humidity sensor reported in
+              %."
+        ::= { sensorOutput 2  }
+
+temp-2 OBJECT-TYPE
+        SYNTAX      INTEGER
+        ACCESS  read-only
+        STATUS      mandatory
+        DESCRIPTION
+            "Temperature measured at the temperature sensor reported in
+             degrees Celsius."
+        ::= { sensorOutput 3  }
+
+relativeHum-2 OBJECT-TYPE
+        SYNTAX      INTEGER
+        ACCESS  read-only
+        STATUS      mandatory
+        DESCRIPTION
+            "Relative humidity measured at the temperature sensor reported in
+             degrees Celsius."
+        ::= { sensorOutput 4  }
+
+
+
+-- Traps
+-- Annotations are provided for Novell's NMS product
+--
+-- Each trap has at least one variable (mtrapargsString) which always appears
+-- as the last variable in the list. This variable contains either a static
+-- or dynamically-constructed string which provides an enhanced description of
+-- the trap's purpose and any pertinent information about the trap.
+
+
+lowLoad-R TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES {current-R }
+   DESCRIPTION
+      "WARNING: A Rack PDU has violated the low load threshold."
+       
+   --#TYPE "Rack PDU: Violation of low load threshold."
+   --#SUMMARY "A Rack PDU has violated the low load threshold."
+   --#ARGUMENTS { }
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 1
+
+
+nearOverload-R TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES {current-R }
+   DESCRIPTION
+      "WARNING: A Rack PDU is near an overload condition."
+       
+   --#TYPE "Rack PDU: Near an overload condition."
+   --#SUMMARY "A Rack PDU is near an overload condition."
+   --#ARGUMENTS { }
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 2
+
+overload-R TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES { current-R }
+   DESCRIPTION
+      "SEVERE: A Rack PDU is in an overload condition."
+       
+   --#TYPE "Rack PDU: Overload condition."
+   --#SUMMARY "A Rack PDU is in an overload condition."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 3
+
+temp-1LowCutoff TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES { temp-1 }
+   DESCRIPTION
+      "SEVERE: The temperature of the PDU has exceeded the lower thershold value ."
+       
+   --#TYPE "PDU: Temperature Lower cutoff."
+   --#SUMMARY "PDU is in an Temperature cutoff condition."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 4
+
+temp-1HighCutoff TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES { temp-1 }
+   DESCRIPTION
+      "SEVERE: The temperature of the PDU has exceeded the higher thershold value ."
+       
+   --#TYPE "PDU: Temperature Higher cutoff."
+   --#SUMMARY "PDU is in an Temperature cutoff condition."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 5
+
+
+hum-1LowCutoff TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES { relativeHum-1}
+   DESCRIPTION
+      "SEVERE: The Humidity of the PDU has exceeded the lower thershold value ."
+       
+   --#TYPE "PDU: Humidity cutoff."
+   --#SUMMARY "PDU is in an Humidity cutoff condition."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 8
+
+
+hum-1HighCutoff TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES { relativeHum-1}
+   DESCRIPTION
+      "SEVERE: The Humidity of the PDU has exceeded the higher thershold value ."
+       
+   --#TYPE "PDU: Humidity cutoff."
+   --#SUMMARY "PDU is in an Humidity cutoff condition."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 9
+
+
+temp-2LowCutoff TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES { temp-2 }
+   DESCRIPTION
+      "SEVERE: The temperature of the PDU has exceeded the lower thershold value ."
+       
+   --#TYPE "PDU: Temperature Lower cutoff."
+   --#SUMMARY "PDU is in an Temperature cutoff condition."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 6
+
+temp-2HighCutoff TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES { temp-2 }
+   DESCRIPTION
+      "SEVERE: The temperature of the PDU has exceeded the higher thershold value ."
+       
+   --#TYPE "PDU: Temperature Higher cutoff."
+   --#SUMMARY "PDU is in an Temperature cutoff condition."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 7
+
+
+relativeHum-2LowCutoff TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES { relativeHum-2}
+   DESCRIPTION
+      "SEVERE: The Humidity of the PDU has exceeded the lower thershold value ."
+       
+   --#TYPE "PDU: Humidity cutoff."
+   --#SUMMARY "PDU is in an Humidity cutoff condition."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 10
+
+
+relativeHum-2HighCutoff TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES { relativeHum-2}
+   DESCRIPTION
+      "SEVERE: The Humidity of the PDU has exceeded the higher thershold value ."
+       
+   --#TYPE "PDU: Humidity cutoff."
+   --#SUMMARY "PDU is in an Humidity cutoff condition."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 11
+
+
+
+lowLoad-Y TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES {current-Y }
+   DESCRIPTION
+      "WARNING: A Rack PDU has violated the low load threshold."
+       
+   --#TYPE "Rack PDU: Violation of low load threshold."
+   --#SUMMARY "A Rack PDU has violated the low load threshold."
+   --#ARGUMENTS { }
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 12
+
+
+nearOverload-Y TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES {current-Y }
+   DESCRIPTION
+      "WARNING: A Rack PDU is near an overload condition."
+       
+   --#TYPE "Rack PDU: Near an overload condition."
+   --#SUMMARY "A Rack PDU is near an overload condition."
+   --#ARGUMENTS { }
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 13
+
+overload-Y TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES { current-Y }
+   DESCRIPTION
+      "SEVERE: A Rack PDU is in an overload condition."
+       
+   --#TYPE "Rack PDU: Overload condition."
+   --#SUMMARY "A Rack PDU is in an overload condition."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 14
+
+lowLoad-B TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES {current-B }
+   DESCRIPTION
+      "WARNING: A Rack PDU has violated the low load threshold."
+       
+   --#TYPE "Rack PDU: Violation of low load threshold."
+   --#SUMMARY "A Rack PDU has violated the low load threshold."
+   --#ARGUMENTS { }
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 15
+
+
+nearOverload-B TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES {current-B }
+   DESCRIPTION
+      "WARNING: A Rack PDU is near an overload condition."
+       
+   --#TYPE "Rack PDU: Near an overload condition."
+   --#SUMMARY "A Rack PDU is near an overload condition."
+   --#ARGUMENTS { }
+   --#SEVERITY WARNING
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE OPERATIONAL
+   ::= 16
+
+overload-B TRAP-TYPE
+   ENTERPRISE elcom
+   VARIABLES { current-B }
+   DESCRIPTION
+      "SEVERE: A Rack PDU is in an overload condition."
+       
+   --#TYPE "Rack PDU: Overload condition."
+   --#SUMMARY "A Rack PDU is in an overload condition."
+   --#ARGUMENTS { }
+   --#SEVERITY SEVERE
+   --#TIMEINDEX 1
+   --#HELP ""
+   --#HELPTAG 0
+   --#STATE DEGRADED
+   ::= 17
+
+
+
+
+-- Misc. Traps
+
+
+
+
+
+
+-- MasterSwitch Vm Traps
+
+
+-- MasterSwitch plus (MSP) Traps
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Switched and Metered Rack PDU Traps
+
+
+-- xPDU Traps (part 1)
+
+
+
+
+
+
+
+   
+
+
+
+-- xPDU Traps (part 2)
+
+
+
+
+
+
+
+
+END

@@ -1,0 +1,1225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<APC_DDF
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+	ddfid="riello_netman204"
+	ddfname="Riello Netman204"
+	ddfversion="4"
+	canremove="yes">
+
+	<schemaVersion>1.6</schemaVersion>
+	<device deviceid="riello_netman204">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST" />
+		<setProductData ruleid="vendordata" field="vendor">Riello</setProductData>
+		<setProductData ruleid="modeldata" field="model">Netman 204</setProductData>
+		<setProductData ruleid="typedata" field="type">UPS</setProductData>
+
+		<setDefaultLabel ruleid="labeldata"><sysHostname /> - Slave <commSetting field="slaveaddress" /></setDefaultLabel>
+
+		<setProductData ruleid="inputdata" field="inputphasecount">
+			<if>
+			<op>
+				<!-- check to see if L3 returns 0xFFFF -->
+				<eq>
+				<op><getOid>INPUT_MAINS_STAR_VOLTAGE_V3</getOid></op>
+				<op>65535</op>
+				</eq>
+			</op>
+			<op>1</op>
+			<op>3</op>
+			</if>
+		</setProductData>
+		<setProductData ruleid="outputdata" field="outputphasecount">
+			<if>
+			<op>
+				<!-- check to see if L3 returns 0xFFFF -->
+				<eq>
+				<op><getOid>OUTPUT_CURRENT_PHASE_L3</getOid></op>
+				<op>65535</op>
+				</eq>
+			</op>
+			<op>1</op>
+			<op>3</op>
+			</if>
+		</setProductData>
+
+		<valueMap ruleid="deleteNull-vm">
+			<valueIn>65535</valueIn>	<valueOut>[false]</valueOut>
+			<valueIn>*</valueIn>		<valueOut>[true]</valueOut>
+		</valueMap>
+
+		<stateSensor ruleid="test_in_progress">
+			<type>state</type>
+			<sensorId>_TEST_IN_PROGRESS__</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+					<bitwise_and>
+					<op>
+						<right_shift>
+						<op><getOid>STATES0</getOid></op>
+						<op>1</op>
+						</right_shift>
+					</op>
+					<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>Test in Progress</label>
+			<enum>noYes-em</enum>
+			<sensorSet>UPS States</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="shutdown_active">
+			<type>state</type>
+			<sensorId>_SHUTDOWN_ACTIVE__</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+					<bitwise_and>
+					<op>
+						<right_shift>
+						<op><getOid>STATES0</getOid></op>
+						<op>3</op>
+						</right_shift>
+					</op>
+					<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>Shutdown Active</label>
+			<enum>noYes-em</enum>
+			<sensorSet>UPS States</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="battery_charged">
+			<type>state</type>
+			<sensorId>_BATTERY_CHARGED__</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+					<bitwise_and>
+					<op>
+						<right_shift>
+						<op><getOid>STATES0</getOid></op>
+						<op>5</op>
+						</right_shift>
+					</op>
+					<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>Battery Charged</label>
+			<enum>noYes-em</enum>
+			<sensorSet>UPS States</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="battery_charging">
+			<type>state</type>
+			<sensorId>_BATTERY_CHARGING__</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+					<bitwise_and>
+					<op>
+						<right_shift>
+						<op><getOid>STATES0</getOid></op>
+						<op>6</op>
+						</right_shift>
+					</op>
+					<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>Battery Charging</label>
+			<enum>noYes-em</enum>
+			<sensorSet>UPS States</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="bypass_bad">
+			<type>state</type>
+			<sensorId>_BYPASS_BAD__</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+					<bitwise_and>
+					<op>
+						<right_shift>
+						<op><getOid>STATES0</getOid></op>
+						<op>7</op>
+						</right_shift>
+					</op>
+					<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>Bypass Bad</label>
+			<enum>noYes-em</enum>
+			<sensorSet>UPS States</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="normal_operation">
+			<type>state</type>
+			<sensorId>_NORMAL_OPERATION__</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+					<bitwise_and>
+					<op>
+						<right_shift>
+						<op><getOid>STATES0</getOid></op>
+						<op>9</op>
+						</right_shift>
+					</op>
+					<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>Normal Operation</label>
+			<enum>noYes-em</enum>
+			<sensorSet>UPS States</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="on_bypass">
+			<type>state</type>
+			<sensorId>_ON_BYPASS__</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+					<bitwise_and>
+					<op>
+						<right_shift>
+						<op><getOid>STATES0</getOid></op>
+						<op>11</op>
+						</right_shift>
+					</op>
+					<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>On Bypass</label>
+			<enum>noYes-em</enum>
+			<sensorSet>UPS States</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="battery_low">
+			<type>state</type>
+			<sensorId>_BATTERY_LOW__</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+					<bitwise_and>
+					<op>
+						<right_shift>
+						<op><getOid>STATES0</getOid></op>
+						<op>12</op>
+						</right_shift>
+					</op>
+					<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>Battery Low</label>
+			<enum>noYes-em</enum>
+			<sensorSet>UPS States</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="battery_working">
+			<type>state</type>
+			<sensorId>_BATTERY_WORKING</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+					<bitwise_and>
+					<op>
+						<right_shift>
+						<op><getOid>STATES0</getOid></op>
+						<op>13</op>
+						</right_shift>
+					</op>
+					<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>Battery Working</label>
+			<enum>noYes-em</enum>
+			<sensorSet>UPS States</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="ups_locked">
+			<type>state</type>
+			<sensorId>_UPS_LOCKED__</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+					<bitwise_and>
+					<op>
+						<right_shift>
+						<op><getOid>STATES0</getOid></op>
+						<op>14</op>
+						</right_shift>
+					</op>
+					<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>UPS Locked</label>
+			<enum>noYes-em</enum>
+			<sensorSet>UPS States</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="output_powered">
+			<type>state</type>
+			<sensorId>_OUTPUT_POWERED__</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+					<bitwise_and>
+					<op>
+						<right_shift>
+						<op><getOid>STATES0</getOid></op>
+						<op>15</op>
+						</right_shift>
+					</op>
+					<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>Output Powered</label>
+			<enum>noYes-em</enum>
+			<sensorSet>UPS States</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="input_mains_present">
+			<type>state</type>
+			<sensorId>_INPUT_MAINS_PRESENT_</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+					<bitwise_and>
+					<op>
+						<right_shift>
+						<op><getOid>STATES1</getOid></op>
+						<op>12</op>
+						</right_shift>
+					</op>
+					<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>Input Mains Present</label>
+			<enum>noYes-em</enum>
+			<sensorSet>UPS States</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="alarm_temperature">
+			<type>state</type>
+			<sensorId>_ALARM_TEMPERATURE_</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+					<bitwise_and>
+					<op>
+						<right_shift>
+						<op><getOid>STATES1</getOid></op>
+						<op>13</op>
+						</right_shift>
+					</op>
+					<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>Alarm Temperature</label>
+			<enum>noYes-em</enum>
+			<sensorSet>UPS States</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="alarm_overload">
+			<type>state</type>
+			<sensorId>_ALARM_OVERLOAD_</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+					<bitwise_and>
+					<op>
+						<right_shift>
+						<op><getOid>STATES1</getOid></op>
+						<op>14</op>
+						</right_shift>
+					</op>
+					<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>Alarm Overload</label>
+			<enum>noYes-em</enum>
+			<sensorSet>UPS States</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="ups_failure">
+			<type>state</type>
+			<sensorId>_UPS_FAILURE_</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+					<bitwise_and>
+					<op>
+						<right_shift>
+						<op><getOid>STATES1</getOid></op>
+						<op>15</op>
+						</right_shift>
+					</op>
+					<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>UPS Failure</label>
+			<enum>noYes-em</enum>
+			<sensorSet>UPS States</sensorSet>
+		</stateSensor>
+
+		<numSensor ruleid="input_mains_star_voltage_v1">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>INPUT_MAINS_STAR_VOLTAGE_V1</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>INPUT_VOLTAGE_PHASE1</sensorId>
+			<value>
+				<getOid>INPUT_MAINS_STAR_VOLTAGE_V1</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Input Mains Star Voltage V1</label>
+			<sensorSet>Input</sensorSet>
+		</numSensor>
+		<numSensor ruleid="input_mains_star_voltage_v2">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>INPUT_MAINS_STAR_VOLTAGE_V2</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>INPUT_VOLTAGE_PHASE2</sensorId>
+			<value>
+				<getOid>INPUT_MAINS_STAR_VOLTAGE_V2</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Input Mains Star Voltage V2</label>
+			<sensorSet>Input</sensorSet>
+		</numSensor>
+		<numSensor ruleid="input_mains_star_voltage_v3">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>INPUT_MAINS_STAR_VOLTAGE_V3</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>INPUT_VOLTAGE_PHASE3</sensorId>
+			<value>
+				<getOid>INPUT_MAINS_STAR_VOLTAGE_V3</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Input Mains Star Voltage V3</label>
+			<sensorSet>Input</sensorSet>
+		</numSensor>
+		<numSensor ruleid="input_current_phase_l1">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>INPUT_MAINS_STAR_VOLTAGE_V1</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>INPUT_AMPS_1</sensorId>
+			<value>
+				<mult>
+				<op><getOid>INPUT_CURRENT_PHASE_L1</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Input Current Phase L1</label>
+			<sensorSet>Input</sensorSet>
+		</numSensor>
+		<numSensor ruleid="input_current_phase_l2">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>INPUT_MAINS_STAR_VOLTAGE_V2</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>INPUT_AMPS_2</sensorId>
+			<value>
+				<mult>
+				<op><getOid>INPUT_CURRENT_PHASE_L2</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Input Current Phase L2</label>
+			<sensorSet>Input</sensorSet>
+		</numSensor>
+		<numSensor ruleid="input_current_phase_l3">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>INPUT_MAINS_STAR_VOLTAGE_V3</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>INPUT_AMPS_3</sensorId>
+			<value>
+				<mult>
+				<op><getOid>INPUT_CURRENT_PHASE_L3</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Input Current Phase L3</label>
+			<sensorSet>Input</sensorSet>
+		</numSensor>
+		<numSensor ruleid="input_frequency">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>INPUT_FREQUENCY</getOid>
+				</mapValue>
+			</rowTest>
+			<type>frequency</type>
+			<sensorId>INPUT_FREQ</sensorId>
+			<value>
+				<mult>
+				<op><getOid>INPUT_FREQUENCY</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Input Frequency</label>
+			<sensorSet>Input</sensorSet>
+		</numSensor>
+		<numSensor ruleid="bypass_mains_star_voltage_v1">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>BYPASS_MAINS_STAR_VOLTAGE_V1</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>BYPASS_VOLTAGE_PHASE1</sensorId>
+			<value>
+				<getOid>BYPASS_MAINS_STAR_VOLTAGE_V1</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Bypass Mains Star Voltage V1</label>
+			<sensorSet>Bypass</sensorSet>
+		</numSensor>
+		<numSensor ruleid="bypass_mains_star_voltage_v2">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>BYPASS_MAINS_STAR_VOLTAGE_V2</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>BYPASS_VOLTAGE_PHASE2</sensorId>
+			<value>
+				<getOid>BYPASS_MAINS_STAR_VOLTAGE_V2</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Bypass Mains Star Voltage V2</label>
+			<sensorSet>Bypass</sensorSet>
+		</numSensor>
+		<numSensor ruleid="bypass_mains_star_voltage_v3">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>BYPASS_MAINS_STAR_VOLTAGE_V3</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>BYPASS_VOLTAGE_PHASE3</sensorId>
+			<value>
+				<getOid>BYPASS_MAINS_STAR_VOLTAGE_V3</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Bypass Mains Star Voltage V3</label>
+			<sensorSet>Bypass</sensorSet>
+		</numSensor>
+		<numSensor ruleid="bypass_frequency">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>BYPASS_FREQUENCY</getOid>
+				</mapValue>
+			</rowTest>
+			<type>frequency</type>
+			<sensorId>BYPASS_FREQ</sensorId>
+			<value>
+				<mult>
+				<op><getOid>BYPASS_FREQUENCY</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Bypass Frequency</label>
+			<sensorSet>Bypass</sensorSet>
+		</numSensor>
+		<numSensor ruleid="output_star_voltage_v1">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>OUTPUT_STAR_VOLTAGE_V1</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>OUTPUT_VOLTAGE_PHASE1</sensorId>
+			<value>
+				<getOid>OUTPUT_STAR_VOLTAGE_V1</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Output Star Voltage V1</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+		<numSensor ruleid="output_star_voltage_v2">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>OUTPUT_STAR_VOLTAGE_V2</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>OUTPUT_VOLTAGE_PHASE2</sensorId>
+			<value>
+				<getOid>OUTPUT_STAR_VOLTAGE_V2</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Output Star Voltage V2</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+		<numSensor ruleid="output_star_voltage_v3">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>OUTPUT_STAR_VOLTAGE_V3</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>OUTPUT_VOLTAGE_PHASE3</sensorId>
+			<value>
+				<getOid>OUTPUT_STAR_VOLTAGE_V3</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Output Star Voltage V3</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+		<numSensor ruleid="output_current_phase_l1">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>OUTPUT_CURRENT_PHASE_L1</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>OUTPUT_AMPS_1</sensorId>
+			<value>
+				<mult>
+				<op><getOid>OUTPUT_CURRENT_PHASE_L1</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Output Current Phase L1</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+		<numSensor ruleid="output_current_phase_l2">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>OUTPUT_CURRENT_PHASE_L2</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>OUTPUT_AMPS_2</sensorId>
+			<value>
+				<mult>
+				<op><getOid>OUTPUT_CURRENT_PHASE_L2</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Output Current Phase L2</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+		<numSensor ruleid="output_current_phase_l3">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>OUTPUT_CURRENT_PHASE_L3</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>OUTPUT_AMPS_3</sensorId>
+			<value>
+				<mult>
+				<op><getOid>OUTPUT_CURRENT_PHASE_L3</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Output Current Phase L3</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+		<numSensor ruleid="output_peak_current_phase_l1">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>OUTPUT_PEAK_CURRENT_PHASE_L1</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>OUTPUT_PEAK_AMPS_1</sensorId>
+			<value>
+				<mult>
+				<op><getOid>OUTPUT_PEAK_CURRENT_PHASE_L1</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Output Peak Current Phase L1</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+		<numSensor ruleid="output_peak_current_phase_l2">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>OUTPUT_PEAK_CURRENT_PHASE_L2</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>OUTPUT_PEAK_AMPS_2</sensorId>
+			<value>
+				<mult>
+				<op><getOid>OUTPUT_PEAK_CURRENT_PHASE_L2</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Output Peak Current Phase L2</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+		<numSensor ruleid="output_peak_current_phase_l3">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>OUTPUT_PEAK_CURRENT_PHASE_L3</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>OUTPUT_PEAK_AMPS_3</sensorId>
+			<value>
+				<mult>
+				<op><getOid>OUTPUT_PEAK_CURRENT_PHASE_L3</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Output Peak Current Phase L3</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+		<numSensor ruleid="load_phase_l1">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>LOAD_PHASE_L1</getOid>
+				</mapValue>
+			</rowTest>
+			<type>pctofcapacity</type>
+			<sensorId>OUTPUT_LOAD_1</sensorId>
+			<value>
+				<getOid>LOAD_PHASE_L1</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Load Phase L1</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+		<numSensor ruleid="load_phase_l2">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>LOAD_PHASE_L2</getOid>
+				</mapValue>
+			</rowTest>
+			<type>pctofcapacity</type>
+			<sensorId>OUTPUT_LOAD_2</sensorId>
+			<value>
+				<getOid>LOAD_PHASE_L2</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Load Phase L2</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+		<numSensor ruleid="load_phase_l3">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>LOAD_PHASE_L3</getOid>
+				</mapValue>
+			</rowTest>
+			<type>pctofcapacity</type>
+			<sensorId>OUTPUT_LOAD_3</sensorId>
+			<value>
+				<getOid>LOAD_PHASE_L3</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Load Phase L3</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+		<numSensor ruleid="output_active_power_phase_l1">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>OUTPUT_STAR_VOLTAGE_V1</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerW</type>
+			<sensorId>OUTPUT_POWER_1</sensorId>
+			<value>
+				<mult>
+				<op><getOid>OUTPUT_ACTIVE_POWER_PHASE_L1</getOid></op>
+				<op>100</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Output Active Power Phase L1</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+		<numSensor ruleid="output_active_power_phase_l2">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>OUTPUT_STAR_VOLTAGE_V2</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerW</type>
+			<sensorId>OUTPUT_POWER_2</sensorId>
+			<value>
+				<mult>
+				<op><getOid>OUTPUT_ACTIVE_POWER_PHASE_L2</getOid></op>
+				<op>100</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Output Active Power Phase L2</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+		<numSensor ruleid="output_active_power_phase_l3">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>OUTPUT_STAR_VOLTAGE_V3</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerW</type>
+			<sensorId>OUTPUT_POWER_3</sensorId>
+			<value>
+				<mult>
+				<op><getOid>OUTPUT_ACTIVE_POWER_PHASE_L3</getOid></op>
+				<op>100</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Output Active Power Phase L3</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+		<numSensor ruleid="output_frequency">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>OUTPUT_FREQUENCY</getOid>
+				</mapValue>
+			</rowTest>
+			<type>frequency</type>
+			<sensorId>_OUTPUT_FREQUENCY_</sensorId>
+			<value>
+				<mult>
+				<op><getOid>OUTPUT_FREQUENCY</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Output Frequency</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+		<numSensor ruleid="battery_voltage">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>BATTERY_VOLTAGE</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>BATT_VOLTAGE</sensorId>
+			<value>
+				<mult>
+				<op><getOid>BATTERY_VOLTAGE</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Battery Voltage</label>
+			<sensorSet>Battery</sensorSet>
+		</numSensor>
+		<numSensor ruleid="battery_current">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>BATTERY_CURRENT</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>BATT_AMPERAGE</sensorId>
+			<value>
+				<mult>
+				<op><getOid>BATTERY_CURRENT</getOid></op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Battery Current</label>
+			<sensorSet>Battery</sensorSet>
+		</numSensor>
+		<numSensor ruleid="remaining_battery_capacity">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>REMAINING_BATTERY_CAPACITY</getOid>
+				</mapValue>
+			</rowTest>
+			<type>pctofcapacity</type>
+			<sensorId>BATT_CAPACITY_LEFT</sensorId>
+			<value>
+				<getOid>REMAINING_BATTERY_CAPACITY</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Remaining Battery Capacity</label>
+			<sensorSet>Battery</sensorSet>
+		</numSensor>
+		<numSensor ruleid="remaining_back-up_time">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>REMAINING_BACKUP_TIME</getOid>
+				</mapValue>
+			</rowTest>
+			<type>timeinmin</type>
+			<sensorId>TIME_REMAINING_ON_BATT</sensorId>
+			<value>
+				<getOid>REMAINING_BACKUP_TIME</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Remaining Backup Time</label>
+			<sensorSet>Battery</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="total-output-energy">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>TOTAL_OUTPUT_ENERGY_LSW</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kwatthr</type>
+			<sensorId>ENERGY_TOTAL_KWH</sensorId>
+			<value>
+				<mult>
+				<op>
+					<add>
+					<op><getOid>TOTAL_OUTPUT_ENERGY_LSW</getOid></op>
+					<op><mult><op><getOid>TOTAL_OUTPUT_ENERGY_MSW</getOid></op><op>65536</op></mult></op>
+					</add>
+				</op>
+				<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Total Output Energy</label>
+			<sensorSet>Output</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="internal_ups_temperature">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>INTERNAL_UPS_TEMPERATURE</getOid>
+				</mapValue>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>IEM_TEMP_0</sensorId>
+			<value>
+				<getOid>INTERNAL_UPS_TEMPERATURE</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Internal UPS Temperature</label>
+			<sensorSet>Temperature</sensorSet>
+		</numSensor>
+		<numSensor ruleid="sensor_1_temperature">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>SENSOR_1_TEMPERATURE</getOid>
+				</mapValue>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>EM_TEMP_1</sensorId>
+			<value>
+				<getOid>SENSOR_1_TEMPERATURE</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Sensor 1 Temperature</label>
+			<sensorSet>Temperature</sensorSet>
+		</numSensor>
+		<numSensor ruleid="sensor_2_temperature">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+				<getOid>SENSOR_2_TEMPERATURE</getOid>
+				</mapValue>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>EM_TEMP_2</sensorId>
+			<value>
+				<getOid>SENSOR_2_TEMPERATURE</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Sensor 2 Temperature</label>
+			<sensorSet>Temperature</sensorSet>
+		</numSensor>
+
+		<valueMap ruleid="binaryDefaultZero-vm">
+			<valueIn>1</valueIn>			<valueOut>1</valueOut>
+			<valueIn>*</valueIn>			<valueOut>0</valueOut>
+		</valueMap>
+		<enumMap ruleid="noYes-em">
+			<label>No</label>
+			<label>Yes</label>
+		</enumMap>
+
+
+	</device>
+	<protocol>
+		<modbus>
+			<value_ref_id valid="STATES0">
+				<function>3</function>
+				<start_addr>0</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="STATES1">
+				<function>3</function>
+				<start_addr>1</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="INPUT_MAINS_STAR_VOLTAGE_V1">
+				<function>3</function>
+				<start_addr>11</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="INPUT_MAINS_STAR_VOLTAGE_V2">
+				<function>3</function>
+				<start_addr>12</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="INPUT_MAINS_STAR_VOLTAGE_V3">
+				<function>3</function>
+				<start_addr>13</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="INPUT_CURRENT_PHASE_L1">
+				<function>3</function>
+				<start_addr>14</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="INPUT_CURRENT_PHASE_L2">
+				<function>3</function>
+				<start_addr>15</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="INPUT_CURRENT_PHASE_L3">
+				<function>3</function>
+				<start_addr>16</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="INPUT_FREQUENCY">
+				<function>3</function>
+				<start_addr>17</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="BYPASS_MAINS_STAR_VOLTAGE_V1">
+				<function>3</function>
+				<start_addr>21</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="BYPASS_MAINS_STAR_VOLTAGE_V2">
+				<function>3</function>
+				<start_addr>22</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="BYPASS_MAINS_STAR_VOLTAGE_V3">
+				<function>3</function>
+				<start_addr>23</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="BYPASS_FREQUENCY">
+				<function>3</function>
+				<start_addr>24</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTPUT_STAR_VOLTAGE_V1">
+				<function>3</function>
+				<start_addr>25</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTPUT_STAR_VOLTAGE_V2">
+				<function>3</function>
+				<start_addr>26</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTPUT_STAR_VOLTAGE_V3">
+				<function>3</function>
+				<start_addr>27</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTPUT_CURRENT_PHASE_L1">
+				<function>3</function>
+				<start_addr>31</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTPUT_CURRENT_PHASE_L2">
+				<function>3</function>
+				<start_addr>32</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTPUT_CURRENT_PHASE_L3">
+				<function>3</function>
+				<start_addr>33</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTPUT_PEAK_CURRENT_PHASE_L1">
+				<function>3</function>
+				<start_addr>34</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTPUT_PEAK_CURRENT_PHASE_L2">
+				<function>3</function>
+				<start_addr>35</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTPUT_PEAK_CURRENT_PHASE_L3">
+				<function>3</function>
+				<start_addr>36</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="LOAD_PHASE_L1">
+				<function>3</function>
+				<start_addr>37</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="LOAD_PHASE_L2">
+				<function>3</function>
+				<start_addr>38</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="LOAD_PHASE_L3">
+				<function>3</function>
+				<start_addr>39</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTPUT_ACTIVE_POWER_PHASE_L1">
+				<function>3</function>
+				<start_addr>40</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTPUT_ACTIVE_POWER_PHASE_L2">
+				<function>3</function>
+				<start_addr>41</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTPUT_ACTIVE_POWER_PHASE_L3">
+				<function>3</function>
+				<start_addr>42</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTPUT_FREQUENCY">
+				<function>3</function>
+				<start_addr>43</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="BATTERY_VOLTAGE">
+				<function>3</function>
+				<start_addr>47</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="BATTERY_VOLTAGE_POS">
+				<function>3</function>
+				<start_addr>48</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="BATTERY_VOLTAGE_NEG">
+				<function>3</function>
+				<start_addr>49</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="BATTERY_CURRENT">
+				<function>3</function>
+				<start_addr>50</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="REMAINING_BATTERY_CAPACITY">
+				<function>3</function>
+				<start_addr>51</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="REMAINING_BACKUP_TIME">
+				<function>3</function>
+				<start_addr>53</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="TOTAL_OUTPUT_ENERGY_LSW">
+				<function>3</function>
+				<start_addr>58</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="TOTAL_OUTPUT_ENERGY_MSW">
+				<function>3</function>
+				<start_addr>59</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="INTERNAL_UPS_TEMPERATURE">
+				<function>3</function>
+				<start_addr>61</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="SENSOR_1_TEMPERATURE">
+				<function>3</function>
+				<start_addr>62</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="SENSOR_2_TEMPERATURE">
+				<function>3</function>
+				<start_addr>63</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+		</modbus>
+	</protocol>
+</APC_DDF>

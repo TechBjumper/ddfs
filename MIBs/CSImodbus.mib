@@ -1,0 +1,238 @@
+CSI-Babel-Buster-Gateway-MIB 
+-- ******************************************************
+--Control Solutions, Inc., SNMP  MIB
+--Prefix for private enterprises:  1.3.6.1.4.1	
+--Control Solutions, Inc. private enterprize number:  3815
+--
+-- The following MIB is the master definition of the SNMP based implementation
+-- of Babel Buster 10/100 LonWorks to Modbus Gateway. The MIB gives access
+-- to all Modbus registers in the gateway. 	
+--
+--
+--
+-- ************************************************************
+
+DEFINITIONS ::= BEGIN
+
+IMPORTS  
+	MODULE-IDENTITY, OBJECT-TYPE, Integer32 
+		FROM SNMPv2-SMI
+	MODULE-COMPLIANCE, OBJECT-GROUP
+		FROM SNMPv2-CONF
+	bb100modbus, bb100modbusV1 
+		FROM Control-Solutions-MIB-Registrations;
+
+
+sys700v1Module MODULE-IDENTITY
+	LAST-UPDATED "200502230000Z"
+	ORGANIZATION "Control Solutions, Inc."
+	CONTACT-INFO
+		"Jim Hogenson
+		Control Solutions, Inc.
+		2179 Fourth Street, Suite 2-G
+		PO Box 10789
+		White Bear Lake, MN 55110
+		jimhogenson@csimn.com
+		Voice: 651-426-4410
+		Fax: 651-426-4418"
+	DESCRIPTION
+		"The following MIB is the master definition of the SNMP based 
+		implementation of System 700 using Control Solutions, Inc., BAS-700 
+		series hardware for  applications including remote alarm monitoring, 
+		data logging, and facility management."
+	REVISION "200502230000Z"
+	DESCRIPTION
+		"Initial draft."
+	::= { bb100modbusV1 1 }
+
+
+-- Major object categories for Babel Buster 10/100
+
+bb100modbusObjects	OBJECT IDENTIFIER ::= { bb100modbus 1 }
+
+systemDefs	OBJECT IDENTIFIER ::= { bb100modbusObjects 1 }		-- 3815.1.2.1.1.1
+modbusRegs	OBJECT IDENTIFIER ::= { bb100modbusObjects 2 }		-- 3815.1.2.1.1.2
+modbusMaps	OBJECT IDENTIFIER ::= { bb100modbusObjects 3 }		-- 3815.1.2.1.1.3
+
+
+-- ******************************************************
+--
+-- SYSTEM OBJECTS
+-- 
+-- ******************************************************
+
+-- System objects
+
+sysCapacity	OBJECT IDENTIFIER ::= { systemDefs 1 }
+
+configuredMaps OBJECT-TYPE
+	SYNTAX 	INTEGER	(0..58)
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"Number of gateway mappings supported."
+	::= { sysCapacity 1 }
+
+
+-- ******************************************************
+--
+-- MODBUS DATA TABLE
+-- 
+-- ******************************************************
+
+modbusRegTable OBJECT-TYPE
+	SYNTAX	SEQUENCE OF ModbusRegEntry
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"Modbus register data table."
+	::= { modbusRegs 1 }
+
+modbusRegEntry OBJECT-TYPE
+	SYNTAX	ModbusRegEntry
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"Modbus register data table entry."
+	INDEX	{ modbusRegIndex }
+	::= { modbusRegTable 1 }
+
+ModbusRegEntry ::= SEQUENCE {
+	modbusRegIndex		INTEGER,
+	modbusRegData		Integer32
+	}
+
+modbusRegIndex OBJECT-TYPE
+	SYNTAX	INTEGER (1..58)
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"Index into Modbus data table."
+	::= { modbusRegEntry 1 }
+
+modbusRegData OBJECT-TYPE
+	SYNTAX	Integer32
+	MAX-ACCESS	read-write
+	STATUS	current
+	DESCRIPTION
+		"Content of Modbus register in gateway."
+	::= { modbusRegEntry 2 }
+
+-- ******************************************************
+--
+-- MODBUS MAP TABLE
+-- 
+-- ******************************************************
+
+modbusMapTable OBJECT-TYPE
+	SYNTAX	SEQUENCE OF ModbusMapEntry
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"Modbus register mapping table."
+	::= { modbusMaps 1 }
+
+modbusMapEntry OBJECT-TYPE
+	SYNTAX	ModbusMapEntry
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"Modbus register mapping table entry."
+	INDEX	{ modbusMapIndex }
+	::= { modbusMapTable 1 }
+
+ModbusMapEntry ::= SEQUENCE {
+	modbusMapIndex		INTEGER,
+	modbusMapRegRef		Integer32,
+	modbusMapRegType	INTEGER
+	}
+
+modbusMapIndex OBJECT-TYPE
+	SYNTAX	INTEGER (1..58)
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION
+		"Index into Modbus map table."
+	::= { modbusMapEntry 1 }
+
+modbusMapRegRef OBJECT-TYPE
+	SYNTAX	Integer32
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"Register reference of Modbus register in gateway."
+	::= { modbusMapEntry 2 }
+
+modbusMapRegType OBJECT-TYPE
+	SYNTAX	INTEGER {
+		undefined(0),
+		slaveTo(1),
+		slaveFrom(2),
+		masterTo(5),
+		masterFrom(6),
+		swappedSlaveTo(9),
+		swappedSlaveFrom(10),
+		swappedMasterTo(13),
+		swappedMasterFrom(14)
+		}
+	MAX-ACCESS	read-only
+	STATUS	current
+	DESCRIPTION
+		"Register reference of Modbus register in gateway."
+	::= { modbusMapEntry 3 }
+
+-- ******************************************************
+--
+-- MODBUS MIB COMPLIANCE
+-- 
+-- ******************************************************
+
+bb100modbusConformance	OBJECT IDENTIFIER ::= { bb100modbus 2 }
+
+bb100modbusGroups		OBJECT IDENTIFIER ::= { bb100modbusConformance 1 }
+bb100modbusCompliances  OBJECT IDENTIFIER ::= { bb100modbusConformance 2 }
+
+bb100modbusCompliance MODULE-COMPLIANCE
+	STATUS 	current
+	DESCRIPTION
+		"The compliance statement for SNMPv2 entities which
+		implement the Babel Buster 10/100 LonWorks to Modbus Gateway."
+	MODULE
+		MANDATORY-GROUPS { bb100modbusSystemGroup }
+
+		GROUP	bb100modbusDataGroup
+		DESCRIPTION
+			"This group is mandatory for implementation of
+			Modbus data registers."
+
+		GROUP	bb100modbusMappingGroup
+		DESCRIPTION
+			"This group is mandatory for implementation of
+			Modbus register mapping."
+
+	::= { bb100modbusCompliances 1 }
+
+bb100modbusSystemGroup	OBJECT-GROUP
+	OBJECTS { configuredMaps }
+	STATUS	current
+	DESCRIPTION
+		"Group of objects that define gateway capacity or capability."
+	::= { bb100modbusGroups 1 }
+
+bb100modbusDataGroup	OBJECT-GROUP
+	OBJECTS { modbusRegData }
+	STATUS 	current
+	DESCRIPTION
+		"Group of objects that contain Modbus register data."
+	::= { bb100modbusGroups 2 }
+
+bb100modbusMappingGroup	OBJECT-GROUP
+	OBJECTS { modbusMapRegRef, modbusMapRegType }
+	STATUS current
+	DESCRIPTION
+		"Group of objects that define properties of Modbus registers."
+	::= { bb100modbusGroups 3 }
+
+END
+
+

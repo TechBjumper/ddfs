@@ -1,0 +1,2347 @@
+-- AQUACOOLER P223 control MIB.
+--
+-- Author                   Date        Comment
+-- ==================================================================
+-- Nilesh Rajbharti         5/21/03     Initial
+-- PcB											29/9/09			V004 Added to p223SetupSetPtsParameter: heatldset, pressure1set, pressure2set
+-- PcB											29/10/09		V005 Removed ON-OFF line, Added p223StatusCycle,p223StatusCycleAlm,p223StatusCycleOutput & sub-tree OIDs
+-- PcB											06/11/09		V006 New lines for SYNTAX INTEGER values, SYNTAX INTEGER values to lower case. Added p223StatusWarnFlow: flow1,2,3,4warn, statusmid
+-- PcB											09/11/09		V007 Enum remove zero, Traps listed.
+-- PcB											13/11/09		V008 Added to p223StatusWarnLevel- buffhiwarn & bufflowarn , added circfail, added bufftankxlo
+-- PcB											18/11/09		V009 Added comp3fl, comp4fl, comp3on, comp4on, comptm3, comptm4
+-- PcB											30/11/09		V102_010 Temperatures and Flow to integers
+-- PcB											27/01/10		V102_011 Added Calculated Heat Loads: heatld1,heatld2,heatld3,heatld4, Misc Text Changes
+-- PcB											17/02/10		V102_012 Added p223ValueReadInInputs: input1,2,3,4,5,6,7,8, Added Static snmpalive, Added slave2master and master2slave
+-- PcB											02/03/10		V103_013 Added p223StatusWarnOther, p223StatusRunSystem
+-- PcB											16/06/10		V103_014 Added aux1inwarn, aux2inwarn, hpalm, hpwar, sphpwar, sphpalm
+-- PcB											21/08/10		V103_015 Added sys3, sys4
+-- PcB											23/11/10		V103_016 Added pressure3, pressure4, fan1speed, fan2speed, fanmindis, fanmaxdis, , pump1rvt, pump2rvt
+-- PcB											07/01/11		V103_017 Added lpalm,lpwar,splpwar,splpalm,splhys
+-- PcB											25/01/11		V103_018 Added spumpdiswar
+-- PcB											25/02/11		V103_019 Added setptpdtemp,setptpdhyst
+-- PcB											12/04/11		Vxxx_021 Added pumpspeed, compspeed, Consolidate embedded code for one MIB only for whole number (1 degree and L/Min) or fractional number ().1 degree or L/Sec) output
+-- PcB											12/06/11		Vxxx_022 Added pressure5
+
+
+AQUACOOLER-P223-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+          IMPORTS
+           enterprises FROM RFC1155-SMI
+           DisplayString FROM RFC1213-MIB
+           sysName FROM RFC1213-MIB  
+           sysDescr FROM RFC1213-MIB  
+           sysContact FROM RFC1213-MIB  
+           sysLocation FROM RFC1213-MIB  
+
+           OBJECT-TYPE FROM RFC-1212
+           TRAP-TYPE FROM RFC-1215;
+
+
+aquacooler															OBJECT IDENTIFIER ::= { enterprises 33888 }
+	p223																	OBJECT IDENTIFIER ::= { aquacooler 1 }
+		p223About														OBJECT IDENTIFIER ::= { p223 1 }
+		p223TrapControl											OBJECT IDENTIFIER ::= { p223 2 }
+		p223Value														OBJECT IDENTIFIER ::= { p223 3 }
+			p223ValueReadIn										OBJECT IDENTIFIER ::= { p223Value 1 }
+				p223ValueReadInTemp							OBJECT IDENTIFIER ::= { p223ValueReadIn 1 }
+				p223ValueReadInFlow							OBJECT IDENTIFIER ::= { p223ValueReadIn 2 }
+				p223ValueReadInVar							OBJECT IDENTIFIER ::= { p223ValueReadIn 3 }
+				p223ValueReadInOnOff						OBJECT IDENTIFIER ::= { p223ValueReadIn 4 }
+				p223ValueReadInInputs						OBJECT IDENTIFIER ::= { p223ValueReadIn 5 }
+			p223ValueOutPut										OBJECT IDENTIFIER ::= { p223Value 2 }
+				p223ValueOutPut24V							OBJECT IDENTIFIER ::= { p223ValueOutPut 1 }
+				p223ValueOutPutAnalogue					OBJECT IDENTIFIER ::= { p223ValueOutPut 2 }
+				p223ValueOutPutStepper					OBJECT IDENTIFIER ::= { p223ValueOutPut 3 }
+			p223ValueMonitor									OBJECT IDENTIFIER ::= { p223Value 3 }
+				p223ValueCalc										OBJECT IDENTIFIER ::= { p223ValueMonitor 1 }
+				p223ValueRun										OBJECT IDENTIFIER ::= { p223ValueMonitor 2 }
+			p223ValueTime											OBJECT IDENTIFIER ::= { p223Value 4 }
+		p223Status													OBJECT IDENTIFIER ::= { p223 4 }
+			p223StatusAlm											OBJECT IDENTIFIER ::= { p223Status 1 }
+				p223StatusAlmSummary						OBJECT IDENTIFIER ::= { p223StatusAlm 1 }
+				p223StatusAlmSystem							OBJECT IDENTIFIER ::= { p223StatusAlm 2 }
+				p223StatusAlmTemp								OBJECT IDENTIFIER ::= { p223StatusAlm 3 }
+				p223StatusAlmPump								OBJECT IDENTIFIER ::= { p223StatusAlm 4 }
+				p223StatusAlmSensor							OBJECT IDENTIFIER ::= { p223StatusAlm 5 }
+				p223StatusAlmNetwork						OBJECT IDENTIFIER ::= { p223StatusAlm 6 }
+				p223StatusAlmWater							OBJECT IDENTIFIER ::= { p223StatusAlm 7 }
+				p223StatusAlmOther							OBJECT IDENTIFIER ::= { p223StatusAlm 8 }
+			p223StatusCycle										OBJECT IDENTIFIER ::= { p223Status 2 }
+				p223StatusCycleAlm							OBJECT IDENTIFIER ::= { p223StatusCycle 1 }
+				p223StatusCycleOutput						OBJECT IDENTIFIER ::= { p223StatusCycle 2 }
+			p223StatusWarn										OBJECT IDENTIFIER ::= { p223Status 3 }
+				p223StatusWarnFlow							OBJECT IDENTIFIER ::= { p223StatusWarn 1 }
+				p223StatusWarnLevel							OBJECT IDENTIFIER ::= { p223StatusWarn 2 }
+				p223StatusWarnOther							OBJECT IDENTIFIER ::= { p223StatusWarn 3 }
+			p223StatusRun											OBJECT IDENTIFIER ::= { p223Status 4 }
+				p223StatusRunSystem							OBJECT IDENTIFIER ::= { p223StatusRun 1 }
+		p223Setup														OBJECT IDENTIFIER ::= { p223 5 }
+			p223SetupGeneral									OBJECT IDENTIFIER ::= { p223Setup 1 }
+			p223SetupSetPts										OBJECT IDENTIFIER ::= { p223Setup 2 }
+				p223SetupSetPtsMain							OBJECT IDENTIFIER ::= { p223SetupSetPts 1 }
+				p223SetupSetPtsParameter				OBJECT IDENTIFIER ::= { p223SetupSetPts 2 }
+				p223SetupSetPtsWarnings					OBJECT IDENTIFIER ::= { p223SetupSetPts 3 }
+				p223SetupSetPtsAlarms						OBJECT IDENTIFIER ::= { p223SetupSetPts 4 }
+		p223Control													OBJECT IDENTIFIER ::= { p223 6 }
+			p223ControlReset									OBJECT IDENTIFIER ::= { p223Control 1 }
+			p223ControlSet										OBJECT IDENTIFIER ::= { p223Control 2 }
+
+
+
+name    OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Large Chiller Control PCB P223V3"
+   ::= { p223About 1 }
+   
+
+version    OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "P223_102_011.MIB"
+   ::= { p223About 2 }
+   
+   
+timesntp OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "SNTP UTC seconds since 01-Jan-1970"
+    ::= { p223ValueTime 1 }
+
+watertemp1 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Actual water temp #1 in 1 Degree or 0.1 Degree C"
+    ::= { p223ValueReadInTemp 1 }
+
+watertemp2 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Actual water temp #2 in 1 Degree or 0.1 Degree C"
+    ::= { p223ValueReadInTemp 2 }
+
+watertemp3 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Actual water temp #3 in 1 Degree or 0.1 Degree C"
+    ::= { p223ValueReadInTemp 3 }
+
+watertemp4 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Actual water temp #4 in 1 Degree or 0.1 Degree C"
+    ::= { p223ValueReadInTemp 4 }
+
+rtnwatertemp1 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Return water temp #1 in 1 Degree or 0.1 Degree C"
+    ::= { p223ValueReadInTemp 5 }
+
+rtnwatertemp2 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Return water temp #2 in 1 Degree or 0.1 Degree C"
+    ::= { p223ValueReadInTemp 6 }
+
+rtnwatertemp3 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Return water temp #3 in 1 Degree or 0.1 Degree C"
+    ::= { p223ValueReadInTemp 7 }
+
+rtnwatertemp4 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Return water temp #4 in 1 Degree or 0.1 Degree C"
+    ::= { p223ValueReadInTemp 8 }
+
+flow1    OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Secondary water flow rate #1 in L/Min or L/Sec"
+   ::= { p223ValueReadInFlow 1 }
+
+flow2    OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Secondary water flow rate #2 in L/Min or L/Sec"
+   ::= { p223ValueReadInFlow 2 }
+
+flow3    OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Secondary water flow rate #3 in L/Min or L/Sec"
+   ::= { p223ValueReadInFlow 3 }
+
+flow4    OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Secondary water flow rate #4 in L/Min or L/Sec"
+   ::= { p223ValueReadInFlow 4 }
+
+pressure1 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Cct 1 Suction Pressure Reading(kPa)"
+    ::= { p223ValueReadInVar 1 }
+
+pressure2 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Cct 2 Suction Pressure Reading(kPa)"
+    ::= { p223ValueReadInVar 2 }
+
+relhumidity OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Relative Humidity %"
+    ::= { p223ValueReadInVar 3 }
+
+pressure3 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Cct 1 Discharge Pressure Reading(kPa)"
+    ::= { p223ValueReadInVar 4 }
+
+pressure4 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Cct 2 Discharge Pressure Reading(kPa)"
+    ::= { p223ValueReadInVar 5 }
+
+pressure5 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Water Pressure Reading(kPa)"
+    ::= { p223ValueReadInVar 6 }
+
+output241 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "24V Output 1"
+    ::= { p223ValueReadInOnOff 1 }
+
+output242 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "24V Output 2"
+    ::= { p223ValueReadInOnOff 2 }
+
+output243 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "24V Output 3"
+    ::= { p223ValueReadInOnOff 3 }
+
+output244 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "24V Output 4"
+    ::= { p223ValueReadInOnOff 4 }
+
+output245 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "24V Output 5"
+    ::= { p223ValueReadInOnOff 5 }
+
+output246 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "24V Output 6"
+    ::= { p223ValueReadInOnOff 6 }
+
+output247 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "24V Output 7"
+    ::= { p223ValueReadInOnOff 7 }
+
+output248 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "24V Output 8"
+    ::= { p223ValueReadInOnOff 8 }
+
+output249 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "24V Output 9"
+    ::= { p223ValueReadInOnOff 9 }
+
+output2410 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "24V Output 10"
+    ::= { p223ValueReadInOnOff 10 }
+
+output2411 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "24V Output 11"
+    ::= { p223ValueReadInOnOff 11 }
+
+output2412 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "24V Output 12"
+    ::= { p223ValueReadInOnOff 12 }
+
+output2413 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "24V Output 13"
+    ::= { p223ValueReadInOnOff 13 }
+
+output2414 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "24V Output 14"
+    ::= { p223ValueReadInOnOff 14 }
+
+output2415 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "24V Output 15"
+    ::= { p223ValueReadInOnOff 15 }
+
+output2416 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "24V Output 16"
+    ::= { p223ValueReadInOnOff 16 }
+
+input1 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Board Input 1"
+    ::= { p223ValueReadInInputs 1 }
+
+input2 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Board Input 2"
+    ::= { p223ValueReadInInputs 2 }
+
+input3 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Board Input 3"
+    ::= { p223ValueReadInInputs 3 }
+
+input4 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Board Input 4"
+    ::= { p223ValueReadInInputs 4 }
+
+input5 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Board Input 5"
+    ::= { p223ValueReadInInputs 5 }
+
+input6 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Board Input 6"
+    ::= { p223ValueReadInInputs 6 }
+
+input7 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Board Input 7"
+    ::= { p223ValueReadInInputs 7 }
+
+input8 OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Board Input 8"
+    ::= { p223ValueReadInInputs 8 }
+
+ambienttemp OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Ambient temp  in 1 Degree or 0.1 Degree C"
+    ::= { p223ValueReadInTemp 9 }
+
+outputaux OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "24VDC Uncommitted Drive on Output #15"
+    ::= { p223ValueOutPut24V 1 }
+
+fan1speed OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Fan 1 Speed Drive Level - Percent"
+    ::= { p223ValueOutPutAnalogue 3 }
+
+fan2speed OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Fan 2 Speed Drive Level - Percent"
+    ::= { p223ValueOutPutAnalogue 4 }
+
+pumpspeed OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Pump Speed Drive Level - Percent"
+    ::= { p223ValueOutPutAnalogue 5 }
+
+compspeed OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Comp Speed Drive Level - Percent"
+    ::= { p223ValueOutPutAnalogue 6 }
+
+statushi    OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Hi 32 Bit Summary Alarm Status"
+   ::= { p223StatusAlmSummary 1 }
+     
+statusmid    OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Mid 32 Bit Summary Alarm Status"
+   ::= { p223StatusAlmSummary 2 }
+   
+statuslo    OBJECT-TYPE
+   SYNTAX INTEGER
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Lo 32 Bit Summary Alarm Status"
+   ::= { p223StatusAlmSummary 3 }
+
+hp    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "High Pressure"
+   ::= { p223StatusAlmSystem 1 }
+
+lp    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Low Pressure"
+   ::= { p223StatusAlmSystem 2 }
+
+sys1    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Fault System 1"
+   ::= { p223StatusAlmSystem 3 }
+
+sys2    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Fault System 2"
+   ::= { p223StatusAlmSystem 4 }
+
+compsfail    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Both Compressors Failed"
+   ::= { p223StatusAlmSystem 5 }
+
+slave2master    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Status of Master Standby Input Link from Slave"
+   ::= { p223StatusAlmSystem 6 }
+
+master2slave    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Status of Slave Standby Input Link from Master"
+   ::= { p223StatusAlmSystem 7 }
+
+sys3    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Fault System 3"
+   ::= { p223StatusAlmSystem 8 }
+
+sys4    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Fault System 4"
+   ::= { p223StatusAlmSystem 9 }
+
+ambotemp1    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Ambient Over Temp 1"
+   ::= { p223StatusAlmTemp 1 }
+
+ambotemp2    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Ambient Over Temp 2"
+   ::= { p223StatusAlmTemp 2 }
+
+ambotemp3    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Ambient Over Temp 3"
+   ::= { p223StatusAlmTemp 3 }
+
+ambotemp4    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Ambient Over Temp 4"
+   ::= { p223StatusAlmTemp 4 }
+
+htsupply1    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "High Temp Supply"
+   ::= { p223StatusAlmTemp 5 }
+
+htsupply2    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "High Temp Supply"
+   ::= { p223StatusAlmTemp 6 }
+
+htsupply3    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "High Temp Supply"
+   ::= { p223StatusAlmTemp 7 }
+
+htsupply4    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "High Temp Supply"
+   ::= { p223StatusAlmTemp 8 }
+
+ltsupply1    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Low Temp Supply"
+   ::= { p223StatusAlmTemp 9 }
+
+ltsupply2    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Low Temp Supply"
+   ::= { p223StatusAlmTemp 10 }
+
+ltsupply3    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Low Temp Supply"
+   ::= { p223StatusAlmTemp 11 }
+
+ltsupply4    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Low Temp Supply"
+   ::= { p223StatusAlmTemp 12 }
+
+htreturn1    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "High Temp Return"
+   ::= { p223StatusAlmTemp 13 }
+
+htreturn2    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "High Temp Return"
+   ::= { p223StatusAlmTemp 14 }
+
+htreturn3    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "High Temp Return"
+   ::= { p223StatusAlmTemp 15 }
+
+htreturn4    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "High Temp Return"
+   ::= { p223StatusAlmTemp 16 }
+
+ltreturn1    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Low Temp Return"
+   ::= { p223StatusAlmTemp 17 }
+
+ltreturn2    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Low Temp Return"
+   ::= { p223StatusAlmTemp 18 }
+
+ltreturn3    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Low Temp Return"
+   ::= { p223StatusAlmTemp 19 }
+
+ltreturn4    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Low Temp Return"
+   ::= { p223StatusAlmTemp 20 }
+
+undertemp    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Plate Under Temperature"
+   ::= { p223StatusAlmTemp 21 }
+
+triacotemp    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Triac Over Temperature"
+   ::= { p223StatusAlmTemp 22 }
+
+htcnd    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "High Temp Condensor Water"
+   ::= { p223StatusAlmTemp 23 }
+
+ltcnd    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Low Temp Condensor Water"
+   ::= { p223StatusAlmTemp 24 }
+
+pump1    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Water Pump 1"
+   ::= { p223StatusAlmPump 1 }
+
+pump2    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Water Pump 2"
+   ::= { p223StatusAlmPump 2 }
+
+pumpsfail    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Both Secondary Pumps Failed to raise secondary flow #1 above Flow #1 Alarm Set Point after 3 Cycle Retries"
+   ::= { p223StatusAlmPump 3 }
+
+circfail    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Circulating Pump Failed"
+   ::= { p223StatusAlmPump 4 }
+
+tempsensor1    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Temp Sensor 1 Fail"
+   ::= { p223StatusAlmSensor 1 }
+
+tempsensor2    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Temp Sensor 2 Fail"
+   ::= { p223StatusAlmSensor 2 }
+
+tempsensor3    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Temp Sensor 3 Fail"
+   ::= { p223StatusAlmSensor 3 }
+
+tempsensor4    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Temp Sensor 4 Fail"
+   ::= { p223StatusAlmSensor 4 }
+
+tempsensor5    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Temp Sensor 5 Fail"
+   ::= { p223StatusAlmSensor 5 }
+
+tempsensor6    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Temp Sensor 6 Fail"
+   ::= { p223StatusAlmSensor 6 }
+
+tempsensor7    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Temp Sensor 7 Fail"
+   ::= { p223StatusAlmSensor 7 }
+
+tempsensor8    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Temp Sensor 8 Fail"
+   ::= { p223StatusAlmSensor 8 }
+
+tempsensor9    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Temp Sensor 9 Fail"
+   ::= { p223StatusAlmSensor 9 }
+
+authenticate    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "SNMP Authenticate Fail"
+   ::= { p223StatusAlmNetwork 1 }
+
+snmpalive    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "SNMP Alive Read Only OID for Polling by External System"
+   ::= { p223StatusAlmNetwork 2 }
+
+driptray    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Water Drip Tray Full"
+   ::= { p223StatusAlmWater 1 }
+
+bufftankxlo    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Buffer Tank Extra Low"
+   ::= { p223StatusAlmWater 2 }
+
+hpalm    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "High Discharge Pressure Alarm"
+   ::= { p223StatusAlmOther 1 }
+
+lpalm    OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Low Suction Pressure Alarm"
+   ::= { p223StatusAlmOther 2 }
+
+comp1fl   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Chiller #1 Fail after Start Time Elapsed"
+   ::= { p223StatusCycleAlm 1 }
+
+comp2fl   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Chiller #2 Fail after Start Time Elapsed"
+   ::= { p223StatusCycleAlm 2 }
+
+comp3fl   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Chiller #3 Fail after Start Time Elapsed"
+   ::= { p223StatusCycleAlm 3 }
+
+comp4fl   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Chiller/ Compressor 4 Fail"
+   ::= { p223StatusCycleAlm 4 }
+
+pump1fl   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Pump 1 Failed to Raise Flow Rate above Flow #1 Alarm Set Point"
+   ::= { p223StatusCycleAlm 5 }
+
+pump2fl   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Pump 2 Failed to Raise Flow Rate above Flow #1 Alarm Set Point"
+   ::= { p223StatusCycleAlm 6 }
+
+pump1rvt   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Pump 1 Control Circuit Fault"
+   ::= { p223StatusCycleAlm 7 }
+
+pump2rvt   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Pump 2 Control Circuit Fault"
+   ::= { p223StatusCycleAlm 8 }
+
+comp1on   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Chiller/ Compressor 1 On"
+   ::= { p223StatusCycleOutput 1 }
+
+comp2on   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Chiller/ Compressor 2 On"
+   ::= { p223StatusCycleOutput 2 }
+
+comp3on   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Chiller/ Compressor 3 On"
+   ::= { p223StatusCycleOutput 3 }
+
+comp4on   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Chiller/ Compressor 4 On"
+   ::= { p223StatusCycleOutput 4 }
+
+pump1on   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Pump 1, Chiller 3 On"
+   ::= { p223StatusCycleOutput 5 }
+
+pump2on   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Pump 2, Chiller 4 On"
+   ::= { p223StatusCycleOutput 6 }
+
+flow1warn   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Flow 1 Low Secondary"
+   ::= { p223StatusWarnFlow 1 }
+
+flow2warn   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Flow 2 Low Primary"
+   ::= { p223StatusWarnFlow 2 }
+
+flow3warn   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Flow 3 Low"
+   ::= { p223StatusWarnFlow 3 }
+
+flow4warn   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Flow 4 Low"
+   ::= { p223StatusWarnFlow 4 }
+
+buffhiwarn   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Buffer Tank High Level"
+   ::= { p223StatusWarnLevel 1 }
+
+bufflowarn   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Buffer Tank Low Level"
+   ::= { p223StatusWarnLevel 2 }
+
+bufflowarn   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Buffer Tank Low Level"
+   ::= { p223StatusWarnLevel 2 }
+
+dewtempwarn   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Dew Point Breached"
+   ::= { p223StatusWarnOther 1 }
+
+aux1inwarn   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Aux 1 Input Activated"
+   ::= { p223StatusWarnOther 2 }
+
+aux2inwarn   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Aux 2 Input Activated"
+   ::= { p223StatusWarnOther 3 }
+
+hpwar   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "High Discharge Pressure Warning"
+   ::= { p223StatusWarnOther 4 }
+
+lpwar   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Low Suction Pressure Warning"
+   ::= { p223StatusWarnOther 5 }
+
+spumpdiswar   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Supply Pumps Disabled Warning"
+   ::= { p223StatusWarnOther 6 }
+
+localrun   OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+   ACCESS read-only
+   STATUS mandatory
+   DESCRIPTION
+      "Local HEX unit is running"
+   ::= { p223StatusRunSystem 1 }
+
+dewpoint OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Calculated Dew Point in 1 Degree or 0.1 Degree C"
+    ::= { p223ValueCalc 1 }
+
+heatld1 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Calculated Heat Load #1 in kW"
+    ::= { p223ValueCalc 2 }
+
+comptm1 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Chiller/ Compressor 1 Cumulative Run Time Minutes"
+    ::= { p223ValueRun 1 }
+
+comptm2 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Chiller/ Compressor 2 Cumulative Run Time Minutes"
+    ::= { p223ValueRun 2 }
+
+comptm3 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Chiller/ Compressor 3 Cumulative Run Time Minutes"
+    ::= { p223ValueRun 3 }
+
+comptm4 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Chiller/ Compressor 4 Cumulative Run Time Minutes"
+    ::= { p223ValueRun 4 }
+
+pumptm1 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Pump 1 Cumulative Run Time Minutes"
+    ::= { p223ValueRun 5 }
+
+pumptm2 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION 
+        "Pump 2 Cumulative Run Time Minutes"
+    ::= { p223ValueRun 6 }
+
+remalmreset OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Remote Chiller Alarms Reset"
+    ::= { p223ControlReset 1 }
+
+remsysreset OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Remote Chiller System Reset"
+    ::= { p223ControlReset 2 }
+
+remoteonoff OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Remote Chiller ON/OFF"
+    ::= { p223ControlSet 1 }
+
+setmainen OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Set Main Menu Enable - Timed Off"
+    ::= { p223ControlSet 2 }
+
+setparenable OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Set Parameter Menu Enable - Timed Off"
+    ::= { p223ControlSet 3 }
+
+
+supplyWaterTemp OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Operating Set Point supply water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 1 }
+
+supplyWaterHi1 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "High Temp Alarm 1 supply water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 2 }
+
+supplyWaterHi2 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "High Temp Alarm 2 supply water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 3 }
+
+supplyWaterHi3 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "High Temp Alarm 3 supply water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 4 }
+
+supplyWaterHi4 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "High Temp Alarm 4 supply water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 5 }
+
+supplyWaterLo1 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Low Temp Alarm 1 supply water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 6 }
+
+supplyWaterLo2 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Low Temp Alarm 2 supply water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 7 }
+
+supplyWaterLo3 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Low Temp Alarm 3 supply water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 8 }
+
+supplyWaterLo4 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Low Temp Alarm 4 supply water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 9 }
+
+returnWaterHi1 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "High Temp Alarm 1 return water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 10 }
+
+returnWaterHi2 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "High Temp Alarm 2 return water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 11 }
+
+returnWaterHi3 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "High Temp Alarm 3 return water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 12 }
+
+returnWaterHi4 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "High Temp Alarm 4 return water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 13 }
+
+returnWaterLo1 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Low Temp Alarm 1 return water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 14 }
+
+returnWaterLo2 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Low Temp Alarm 2 return water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 15 }
+
+returnWaterLo3 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Low Temp Alarm 3 return water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 16 }
+
+returnWaterLo4 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Low Temp Alarm 4 return water temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsMain 17 }
+
+
+setptamb1 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Ambient over-temp alarm 1 set point temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsParameter 1 }
+
+setptamb2 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Ambient over-temp alarm 2 set point temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsParameter 2 }
+
+setptamb3 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Ambient over-temp alarm 3 set point temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsParameter 3 }
+
+setptamb4 OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Ambient over-temp alarm 4 set point temperature in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsParameter 4 }
+
+flow1alm OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Secondary Flow rate alarm point in litres/ Sec"
+   ::= { p223SetupSetPtsParameter 5 }
+
+flow2alm OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Pump 2 Flow rate alarm point in litres/ Sec"
+   ::= { p223SetupSetPtsParameter 6 }
+
+flow3alm OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Pump 3 Flow rate alarm point in litres/ Sec"
+   ::= { p223SetupSetPtsParameter 7 }
+
+flow4alm OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Pump 4 Flow rate alarm point in litres/ Sec"
+   ::= { p223SetupSetPtsParameter 8 }
+
+heatldset OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Next Compressor Switch-on Heat Load Set Point (kW)"
+   ::= { p223SetupSetPtsParameter 9 }
+
+pressure1set OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Compressor 2 and 4 Switch-on Pressure Set Point (kpA)"
+   ::= { p223SetupSetPtsParameter 10 }
+
+pressure2set OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Compressor 3 Switch-on Pressure Set Point (kpA)"
+   ::= { p223SetupSetPtsParameter 11 }
+
+fanmindis OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Fan Control Min Speed Dis Pressure Set Point (kpA)"
+   ::= { p223SetupSetPtsParameter 12 }
+
+fanmaxdis OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Fan Control Max Speed Dis Pressure Set Point (kpA)"
+   ::= { p223SetupSetPtsParameter 13 }
+
+setptpdtemp OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Auto Chiller Staging Set Point Pull Dn Temp in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsParameter 14 }
+
+setptpdhyst OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Auto Chiller Staging Set Point Pull Dn Hyst in 1 Degree or 0.1 Degree C"
+   ::= { p223SetupSetPtsParameter 15 }
+
+flow1war OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Pump 1 Flow rate low warning point in litres/ Min"
+   ::= { p223SetupSetPtsWarnings 1 }
+
+flow2war OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Pump 2 Flow rate low warning point in litres/ Min"
+   ::= { p223SetupSetPtsWarnings 2 }
+
+flow3war OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Pump 3 Flow rate low warning point in litres/ Min"
+   ::= { p223SetupSetPtsWarnings 3 }
+
+flow4war OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Pump 4 Flow rate low warning point in litres/ Min"
+   ::= { p223SetupSetPtsWarnings 4 }
+
+sphpwar OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Set Point High Discharge Pressure Warning"
+   ::= { p223SetupSetPtsWarnings 5 }
+
+splpwar OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Set Point Low Suction Pressure Warning"
+   ::= { p223SetupSetPtsWarnings 6 }
+
+sphpalm OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Set Point High Discharge Pressure Alarm"
+   ::= { p223SetupSetPtsAlarms 1 }
+
+splpalm OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Set Point Low Suction Pressure Alarm"
+   ::= { p223SetupSetPtsAlarms 2 }
+
+splhys OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION 
+        "Set Point Low Suction Hysteresis Reset"
+   ::= { p223SetupSetPtsAlarms 3 }
+
+trapsTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF TrapEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Trap table"
+    ::= { p223TrapControl 1 }        
+    
+trapEntry OBJECT-TYPE
+    SYNTAX TrapEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+        "Single trap entry containing trap receiver info."
+    INDEX { trapReceiverNumber }
+     ::= { trapsTable 1 }
+     
+TrapEntry ::=
+    SEQUENCE {
+        trapReceiverNumber
+            INTEGER,
+        trapEnabled
+            INTEGER,
+        trapReceiverIPAddress
+            IpAddress,
+        trapCommunity
+            DisplayString
+    }            
+    
+trapReceiverNumber  OBJECT-TYPE
+    SYNTAX INTEGER (0.. 4)
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+        "Index of trap receiver"
+    ::= { trapEntry 1 }
+    
+trapEnabled OBJECT-TYPE
+    SYNTAX INTEGER {
+			off(1),
+			on(2)
+			}
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Indicates if this trap entry is enabled or not."
+    ::= { trapEntry 2 }
+
+
+trapReceiverIPAddress OBJECT-TYPE
+    SYNTAX  IpAddress
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Trap receiver IP address"
+    ::= { trapEntry 3 }
+
+trapCommunity OBJECT-TYPE
+    SYNTAX  DisplayString (SIZE (0..7))
+    ACCESS  read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Trap community to be used by agent to send trap"
+    ::= { trapEntry 4 }
+
+
+authenticatealarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { authenticate }
+    DESCRIPTION
+    "Authentication Failure Alarm"
+::= 1
+
+remoteonoffalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { remoteonoff }
+    DESCRIPTION
+    "Remote Control Switched OnOff"
+::= 2
+
+
+tempSensor1alarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { tempsensor1 }
+    DESCRIPTION
+    "Temperature Sensor1 Alarm"
+::= 3
+
+tempSensor2alarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { tempsensor2 }
+    DESCRIPTION
+    "Temperature Sensor2 Alarm"
+::= 4
+
+tempSensor3alarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { tempsensor3 }
+    DESCRIPTION
+    "Temperature Sensor3 Alarm"
+::= 5
+
+tempSensor4alarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { tempsensor4 }
+    DESCRIPTION
+    "Temperature Sensor4 Alarm"
+::= 6
+
+tempSensor9alarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { tempsensor9 }
+    DESCRIPTION
+    "Temperature Sensor9 Alarm"
+::= 7
+
+undertempalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { undertemp }
+    DESCRIPTION
+    "Heat Exchanger Under Temp"
+::= 8
+
+sys1alarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { sys1 }
+    DESCRIPTION
+    "Compressor System 1 Fault"
+::= 9
+
+sys2alarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { sys2 }
+    DESCRIPTION
+    "Compressor System 2 Fault"
+::= 10
+
+compsfailalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { compsfail }
+    DESCRIPTION
+    "Both Compressors Fail"
+::= 11
+
+htsupply1alarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { htsupply1 }
+    DESCRIPTION
+    "Supply Water 1 High Temp"
+::= 12
+
+ltsupply1alarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { ltsupply1 }
+    DESCRIPTION
+    "Supply Water 1 Low Temp"
+::= 13
+
+htreturn1alarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { htreturn1 }
+    DESCRIPTION
+    "Return Water 1 High Temp"
+::= 14
+
+ltreturn1alarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { ltreturn1 }
+    DESCRIPTION
+    "Return Water 1 Low Temp"
+::= 15
+
+htcndalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { htcnd }
+    DESCRIPTION
+    "Condensor Water High Temp"
+::= 16
+
+ltcndalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { ltcnd }
+    DESCRIPTION
+    "Condensor Water Low Temp"
+::= 17
+
+driptrayalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { driptray }
+    DESCRIPTION
+    "Drip Tray Water Full Alarm"
+::= 18
+
+bufftankxloalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { bufftankxlo }
+    DESCRIPTION
+    "Buffer Tank Extra Low Alarm"
+::= 19
+
+hpalmalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { hpalm }
+    DESCRIPTION
+    "High Discharge Pressure Alarm"
+::= 20
+
+lpalmalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { lpalm }
+    DESCRIPTION
+    "Low Suction Pressure Alarm"
+::= 21
+
+comp1flalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { comp1fl }
+    DESCRIPTION
+    "Chiller/ Compressor 1 Fail"
+::= 22
+
+comp2flalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { comp2fl }
+    DESCRIPTION
+    "Chiller/ Compressor 2 Fail"
+::= 23
+
+comp3flalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { comp3fl }
+    DESCRIPTION
+    "Chiller/ Compressor 3 Fail"
+::= 24
+
+comp4flalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { comp4fl }
+    DESCRIPTION
+    "Chiller/ Compressor 4 Fail"
+::= 25
+
+pump1flalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { pump1fl }
+    DESCRIPTION
+    "Pump 1 Failed to Raise Flow Rate above Flow #1 Alarm Set Point"
+::= 26
+
+pump2flalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { pump2fl }
+    DESCRIPTION
+    "Pump 2 Failed to Raise Flow Rate above Flow #1 Alarm Set Point"
+::= 27
+
+pump1rvtalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { pump1rvt }
+    DESCRIPTION
+    "Pump 1 Control Circuit Fault"
+::= 28
+
+pump2rvtalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { pump2rvt }
+    DESCRIPTION
+    "Pump 2 Control Circuit Fault"
+::= 29
+
+comp1onalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { comp1on }
+    DESCRIPTION
+    "Compressor 1 On"
+::= 30
+
+comp2onalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { comp2on }
+    DESCRIPTION
+    "Compressor 2 On"
+::= 31
+
+pump1onalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { pump1on }
+    DESCRIPTION
+    "Pump 1 On"
+::= 32
+
+pump2onalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { pump2on }
+    DESCRIPTION
+    "Pump 2 On"
+::= 33
+
+ambotemp1alarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { ambotemp1 }
+    DESCRIPTION
+    "Ambient Over-Temp Alarm"
+::= 34
+
+pump1alarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { pump1 }
+    DESCRIPTION
+    "Chilled Water Flow Fail"
+::= 35
+
+pump2alarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { pump2 }
+    DESCRIPTION
+    "Condensor Flow Fail"
+::= 36
+
+pumpsfailalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { pumpsfail }
+    DESCRIPTION
+    "Both Secondary Pumps Failed to raise secondary flow #1 above Flow #1 Alarm Set Point after 3 Cycle Retries"
+::= 37
+
+circfailalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { circfail }
+    DESCRIPTION
+    "Circulating Pump Fail"
+::= 38
+
+flow1warnalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { flow1warn }
+    DESCRIPTION
+    "Chilled Water Low Flow"
+::= 39
+
+flow2warnalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { flow2warn }
+    DESCRIPTION
+    "Flow2 Low Flow"
+::= 40
+
+flow3warnalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { flow3warn }
+    DESCRIPTION
+    "Flow3 Low Flow"
+::= 41
+
+flow4warnalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { flow4warn }
+    DESCRIPTION
+    "Flow4 Low Flow"
+::= 42
+
+buffhiwarnalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { buffhiwarn }
+    DESCRIPTION
+    "Buffer Tank High Level"
+::= 43
+
+bufflowarnalarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { bufflowarn }
+    DESCRIPTION
+    "Buffer Tank Low Level"
+::= 44
+
+dewtempwarnValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { dewtempwarn }
+    DESCRIPTION
+    "Dew Point Breached"
+::= 45
+
+aux1inwarnValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { aux1inwarn }
+    DESCRIPTION
+    "Aux 1 Input Activated"
+::= 46
+
+aux2inwarnValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { aux2inwarn }
+    DESCRIPTION
+    "Aux 2 Input Activated"
+::= 47
+
+hpwaralarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { hpwar }
+    DESCRIPTION
+    "High Discharge Pressure Warning"
+::= 48
+
+lpwaralarmValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { lpwar }
+    DESCRIPTION
+    "Low Suction Pressure Warning"
+::= 49
+
+spumpdiswarValue TRAP-TYPE
+    ENTERPRISE p223
+    VARIABLES { spumpdiswar }
+    DESCRIPTION
+    "Supply Pumps Disabled Warning"
+::= 50
+
+END   

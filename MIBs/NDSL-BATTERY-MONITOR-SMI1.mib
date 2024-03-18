@@ -1,0 +1,1320 @@
+--------------------------------------------------------------------------------
+-- NDSL, Inc. BATTERY MONITOR SMI-1 MIB
+--
+-- Revision 1.0.1 	23-July-2008	Initial creation
+-- Revision 1.0.2	30-July-2008	Moved traps to follow global var.
+--									Removed BatteryName from string table.
+-- Revision 1.0.3	17-Feb-2009		Corrected referenced traps variables to match data sent.
+-- Revision 1.0.4	26-Jun-2011		Bug fix: MonBatteryTable definition syntax error.
+-- Revision 1.0.5	19-Jul-2011		Changed STATUS from 'current' to 'mandatory' (to be SMIv1 compatible)
+--									Removed hyphens from monSysStatus (invalid)
+-- Revision 1.0.6 	30-Apr-2012		Bug Fix: MonSysScanning description incorrect.
+--									Bug Fix: Included additional thresholds for alarm changes.
+-- Revision 1.0.7	30-May-2012		Updated descriptions for alarm changes.
+-- Revision 1.0.8	06-Nov-2012		Added monJarTable and monAlarmHistoryTable
+-- Revision 1.0.9	28-Jan-2013		Corrected errors and warnings reported by smilint
+-- Revision 1.0.10	02-Oct-2013		Corrected typo; updated several descriptions.
+--									monAlarmString decription corrected to DisplayString was INTEGER
+-- Revision 1.1.0	31-Mar-2014		Changes for v4.1.0 of Snmp Agent
+--									Added traps and objects for thermal runaway alarm
+--									and string level voltage alarms
+--									monSysStatus - bits 7,8,9 indicate new system states
+--------------------------------------------------------------------------------
+
+NDSL-BATTERY-MONITOR-SMI1 DEFINITIONS ::= BEGIN
+    IMPORTS
+    	enterprises
+    		FROM RFC1155-SMI 
+        OBJECT-TYPE
+            FROM RFC-1212
+        TRAP-TYPE
+            FROM RFC-1215
+        DisplayString
+            FROM RFC1213-MIB;
+
+--------------------------------------------------------------------------------
+-- Customer OID hierarchy
+--------------------------------------------------------------------------------
+
+ndsl       	OBJECT IDENTIFIER ::= { enterprises 11504 }
+bmu		    OBJECT IDENTIFIER ::= { ndsl 1 }
+vars        OBJECT IDENTIFIER ::= { bmu 1 }
+alerts      OBJECT IDENTIFIER ::= { bmu 2 }
+
+-- a truth value
+Boolean ::= INTEGER { true(1), false(2) }
+
+--------------------------------------------------------------------------------
+-- Basic system info
+--------------------------------------------------------------------------------
+monSysName OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	
+	 "Cellwatch machine name (usually Windows machine name)"
+    ::= { vars 1 }
+
+monSysScanning OBJECT-TYPE
+    SYNTAX     INTEGER (0..32767)
+    ACCESS read-only
+    STATUS     mandatory
+    DESCRIPTION 
+	 "This value will be zero whenever the system has stopped scanning 
+	 and non-zero whenever the system is scanning. When the system is 
+	 not scanning all other information should be considered invalid as 
+	 Cellwatch may not have up to date battery information."
+    ::= { vars 2 }
+
+monSysStatus OBJECT-TYPE
+    SYNTAX      	INTEGER (0..1023)
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	
+	"System summary information. If a bit is 1 then there is an alarm:
+		0 (LSB)	-	Hardware comms error
+		1		-	General (Cellwatch running, not scanning)
+		2		-	Temperature alarm
+		3		-	Current alarm
+		4		-	Ohmic value alarm
+		5		-	Voltage alarm
+		6		-	System alarm: Set if any other bit is set
+		7 		-	Thermal runaway condition present
+		8		-	A string has been disconnected (must be reset at breaker and in Cellwatch)
+		9		- 	String voltage alarm
+		...
+		15 (MSB)-	Bits 10-15 are unused"
+    ::= { vars 3 }
+			
+monSysBatteryCount OBJECT-TYPE
+    SYNTAX     INTEGER (0..32767)
+    ACCESS read-only
+    STATUS     mandatory
+    DESCRIPTION
+     "Total number of batteries in this system.  
+	 Batteries may contain multi-string, multi-cell configurations."
+    ::= { vars 4 }
+
+monSysStringCount OBJECT-TYPE
+    SYNTAX     INTEGER (0..32767)
+    ACCESS read-only
+    STATUS     mandatory
+    DESCRIPTION
+     "Total number of strings in this system"
+    ::= { vars 5 }
+
+monSysAvgBatteryCurrent OBJECT-TYPE
+    SYNTAX     INTEGER (0..32767)
+    ACCESS read-only
+    STATUS     mandatory
+    DESCRIPTION
+     "Latest average of all battery currents on the system."
+    ::= { vars 6 }
+			
+monSysAvgBatteryVoltage OBJECT-TYPE
+    SYNTAX     INTEGER (0..32767)
+    ACCESS read-only
+    STATUS     mandatory
+    DESCRIPTION
+     "Latest average of all battery voltages of the system"
+    ::= { vars 7 }
+
+monSysAvgBatteryTemp OBJECT-TYPE
+    SYNTAX     INTEGER (0..32767)
+    ACCESS read-only
+    STATUS     mandatory
+    DESCRIPTION
+     "Average of all the latest average battery temperatures of the system."
+    ::= { vars 8 }
+
+monSysMinBatteryCurrent OBJECT-TYPE
+    SYNTAX     INTEGER (0..32767)
+    ACCESS read-only
+    STATUS     mandatory
+    DESCRIPTION
+     "Latest minimum battery current in the system."
+    ::= { vars 9 }
+
+monSysMinBatteryVoltage OBJECT-TYPE
+    SYNTAX     INTEGER (0..32767)
+    ACCESS read-only
+    STATUS     mandatory
+    DESCRIPTION
+     "Latest minimum battery voltage in the system."
+    ::= { vars 10 }
+
+monSysMinBatteryTemp OBJECT-TYPE
+    SYNTAX     INTEGER (0..32767)
+    ACCESS read-only
+    STATUS     mandatory
+    DESCRIPTION
+     "Latest minimum temperature in the system."
+    ::= { vars 11 }
+
+monSysMaxBatteryCurrent OBJECT-TYPE
+    SYNTAX     INTEGER (0..32767)
+    ACCESS read-only
+    STATUS     mandatory
+    DESCRIPTION
+     "Latest maximum battery current in the system."
+    ::= { vars 12 }
+
+monSysMaxBatteryVoltage OBJECT-TYPE
+    SYNTAX     INTEGER (0..32767)
+    ACCESS read-only
+    STATUS     mandatory
+    DESCRIPTION
+     "Latest maximum battery voltage in the system."
+    ::= { vars 13 }
+
+monSysMaxBatteryTemp OBJECT-TYPE
+    SYNTAX     INTEGER (0..32767)
+    ACCESS     read-only
+    STATUS     mandatory
+    DESCRIPTION
+     "Latest maximum temperature in the system."
+    ::= { vars 14 }		
+
+monSysOhmicDelay OBJECT-TYPE
+    SYNTAX     INTEGER (0..1439)
+    ACCESS     read-write
+    STATUS     mandatory
+    DESCRIPTION
+     "The number of minutes into the day that an ohmic value scan occurs.
+	 The delay is added to 12:00 AM (e.g., if the delay is set to 1, an
+	 ohmic value scan will run at 12:01 AM. If the delay is 60, an ohmic 
+	 value scan will run at 1:00 AM. If the delay is 600, the ohmic value 
+	 scan will occur at 10:00 AM.  This is often changed so that ohmic alarms 
+	 occur later in the day."
+    ::= { vars 15 }	
+
+monSysOhmicScanActive OBJECT-TYPE
+    SYNTAX     Boolean
+    ACCESS     read-write
+    STATUS     mandatory
+    DESCRIPTION
+     "A value of true(1) indicates that an ohmic value scan is active. false(2) 
+	 indicates that an ohmic value scan is not active.
+	 
+	 An ohmic value scan can be started by writing the value true(1) to this object. 
+	 An ohmic value scan can be cancelled by writing the value false(2) to this
+	 object.  Cell ohmic data is updated once a completed system ohmic scan 
+	 has finished. If an ohmic scan is cancelled before the scan has completed 
+	 the updated data will not be made available, instead the old ohmic data will be available.  
+				
+	 A general error will be returned if a value of false(2) is written to this
+	 object when an ohmic value scan is not active." 
+				
+    ::= { vars 16 }	
+			
+monSysVoltageScanActive OBJECT-TYPE
+    SYNTAX     Boolean
+    ACCESS     read-write
+    STATUS     mandatory
+    DESCRIPTION
+     "A value of true(1) indicates that a voltage scan is active. false(2) 
+	 indicates that no voltage scan is active. Voltage scans occur so rapidly that
+	 this object will usually return a value of false(2) when read unless the system
+	 is in constant voltage scanning mode.
+				
+	 A voltage scan can be started by writing the value true(1) to this object.
+	
+	 For systems with constant voltage scanning enabled, this value will always 
+	 remain as 1 and the user will not be able to initiate a new ohmic scan.
+				
+	 A general error will be returned if a value of false(2) is written to this 
+	 object."
+    ::= { vars 17 }	
+
+monSysVoltageScanInt OBJECT-TYPE
+    SYNTAX     INTEGER { continuously(1), everyHour(2), every6Hours(3) }
+    ACCESS     read-write
+    STATUS     mandatory
+    DESCRIPTION
+     "The number of hours between voltage scans. A value of continuously(1) 
+	 indicates that the system is operating in constant voltage scan mode.  
+	 everyHour(2) indicates that the system will perform a voltage scan 
+	 every hour. every6Hours(3) indicates that the system will perform a 
+	 voltage scan every 6 hours. 
+				
+	 The recommended voltage scan interval is continuously (1)."
+    ::= { vars 18 }	
+
+monSysOhmicScanInt OBJECT-TYPE
+    SYNTAX     INTEGER { every12Hours(1), every24Hours(2) }
+    ACCESS     read-write
+    STATUS     mandatory
+    DESCRIPTION
+     "The number of hours between ohmic value scans. A value of every12Hours(1)
+	 indicates that the system will perform an ohmic value scan every 12 hours. 
+	 every24Hours(2) indicates that the system will perform an ohmic value scan every
+	 24 hours.
+				
+	 The recommended ohmic scan interval is every24Hours(2).  
+	 Note that voltage scans will not occur during an ohmic scan."
+    ::= { vars 19 }	
+			
+--------------------------------------------------------------------------------
+-- Battery table
+--------------------------------------------------------------------------------
+monBatteryTable OBJECT-TYPE
+    SYNTAX      	SEQUENCE OF MonBatteryEntry
+    ACCESS      	not-accessible
+    STATUS      	mandatory
+    DESCRIPTION 	"This table contains an entry for each battery."
+    ::= { vars 1024 }
+
+monBatteryEntry OBJECT-TYPE
+    SYNTAX      	MonBatteryEntry
+    ACCESS      	not-accessible
+    STATUS      	mandatory
+    DESCRIPTION 	"This row defines a battery entry."
+    INDEX       	{ monBatteryIndex }
+    ::= { monBatteryTable 1 }
+
+MonBatteryEntry ::= SEQUENCE
+{ 
+    monBatteryIndex INTEGER,
+	monBatteryName DisplayString,
+    monBatteryStatus INTEGER,
+	monStringCount INTEGER,
+	monStringStartIndex INTEGER,
+	monBatteryCurrent INTEGER,
+	monBatteryVoltage INTEGER,
+	monStringAvgCurrent INTEGER,
+	monStringAvgVoltage INTEGER,
+	monStringAvgTemp INTEGER,
+	monStringMinCurrent INTEGER,
+	monStringMinVoltage INTEGER,
+	monStringMinTemp INTEGER,
+	monStringMaxCurrent INTEGER,
+	monStringMaxVoltage INTEGER,
+	monStringMaxTemp INTEGER
+}
+monBatteryIndex OBJECT-TYPE
+    SYNTAX      	INTEGER (1..128)
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION 	"A unique reference to this battery in the system used by Cellwatch."
+    ::= { monBatteryEntry 1 }
+	
+monBatteryName OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"User assigned battery name."
+    ::= { monBatteryEntry 2 }
+
+monBatteryStatus OBJECT-TYPE
+    SYNTAX      	INTEGER (0..1023)
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The status of the battery with the following bits:
+		0 (LSB)	-	Hardware comms error
+		1		-	General (Cellwatch running, not scanning)
+		2		-	Temperature alarm
+		3		-	Current alarm
+		4		-	Ohmic value alarm
+		5		-	Voltage alarm
+		6		-	System alarm
+		7 		-	Thermal runaway condition present
+		8		-	This string has been disconnected
+		9		- 	String voltage alarm
+		...
+		15 (MSB)-	Bits 10-15 are unused"
+    ::= { monBatteryEntry 3 }
+
+monStringCount OBJECT-TYPE
+    SYNTAX      	INTEGER 
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION 	"Number of strings on this battery."
+    ::= { monBatteryEntry 4 }
+	
+monStringStartIndex OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION 	"The unique ID of the first string on this battery."
+    ::= { monBatteryEntry 5 }
+
+monBatteryCurrent OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION 	"Sum of all string currents on this battery."
+    ::= { monBatteryEntry 6 }
+	
+monBatteryVoltage OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION 	"Average of all string voltages on this battery."
+    ::= { monBatteryEntry 7 }
+
+monStringAvgCurrent OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION 	"Average of all string currents on this battery."
+    ::= { monBatteryEntry 8 }
+
+monStringAvgVoltage OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION 	"Average of all string voltages on this battery."
+    ::= { monBatteryEntry 9 }
+
+monStringAvgTemp OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION 	"Average of all temperature sensor readings on this battery."
+    ::= { monBatteryEntry 10 }
+
+monStringMinCurrent OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION 	"Lowest individual string current on this battery."
+    ::= { monBatteryEntry 11 }
+
+monStringMinVoltage OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION 	"Lowest individual string voltageon this battery."
+    ::= { monBatteryEntry 12 }
+
+monStringMinTemp OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION 	"Lowest temperature sensor reading on this battery."
+    ::= { monBatteryEntry 13 }
+
+monStringMaxCurrent OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION 	"Highest individual string current on this battery."
+    ::= { monBatteryEntry 14 }
+
+monStringMaxVoltage OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION 	"Highest individual string voltage on this battery."
+    ::= { monBatteryEntry 15 }
+
+monStringMaxTemp OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION 	"Highest temperature sensor reading on this battery."
+    ::= { monBatteryEntry 16 }
+
+	
+--------------------------------------------------------------------------------
+-- String table
+--------------------------------------------------------------------------------
+
+monStringTable OBJECT-TYPE
+    SYNTAX      	SEQUENCE OF MonStringEntry
+    ACCESS      	not-accessible
+    STATUS      	mandatory
+    DESCRIPTION 	"This table contains an entry for each string in the system."
+    ::= { vars 1408 }
+
+monStringEntry OBJECT-TYPE
+    SYNTAX      	MonStringEntry
+    ACCESS      	not-accessible
+    STATUS      	mandatory
+    DESCRIPTION 	"This defines a string entry."
+    INDEX       	{ monStringIndex }
+    ::= { monStringTable 1 }
+
+MonStringEntry ::= SEQUENCE
+{ 
+    monStringIndex INTEGER,
+	monStringName DisplayString,
+	monStringStatus INTEGER,
+    monStringVoltage INTEGER,
+    monStringCurrent INTEGER,
+    monCellAvgVoltage INTEGER,
+    monCellAvgOhmic INTEGER,
+    monCellMinVoltage INTEGER,
+    monCellMinOhmic INTEGER,
+	monCellMaxVoltage INTEGER,
+	monCellMaxOhmic INTEGER,
+    monCountJarsInThermalWarning INTEGER,
+    monThermalDisconnectDateTime OCTET STRING,
+    monThermalProtectionEnabled INTEGER,
+    monThermalVoltageLimit INTEGER,
+    monThermalTempLimit INTEGER,
+	monHighStringVoltageLimit INTEGER,
+    monLowStringVoltageLimit INTEGER
+}
+
+monStringIndex OBJECT-TYPE
+    SYNTAX      	INTEGER (1..128)
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION		"A unique reference to this string in the system"
+    ::= { monStringEntry 1 }
+
+monStringName OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"User assigned string name."
+    ::= { monStringEntry 2 }
+	
+monStringStatus OBJECT-TYPE
+    SYNTAX      	INTEGER (0..1023)
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The status of the string with the following bits:
+		0 (LSB)	-	Hardware comms error
+		1		-	General (Cellwatch running, not scanning)
+		2		-	Temperature alarm
+		3		-	Current alarm
+		4		-	Ohmic value alarm
+		5		-	Voltage alarm
+		6		-	System alarm
+		7 		-	Thermal runaway condition present
+		8		-	This string has been disconnected
+		9		- 	String voltage alarm
+		...
+		15 (MSB)-	Bits 10-15 are unused"
+    ::= { monStringEntry 3 }
+	
+monStringVoltage  OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Sum of all cell voltages on this string (V) * 10"
+    ::= { monStringEntry 4 }
+
+monStringCurrent  OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"String current (A) * 10"
+    ::= { monStringEntry 5 }
+
+monCellAvgVoltage  OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Average cell voltage (V) * 100"
+    ::= { monStringEntry 6 }
+
+monCellAvgOhmic OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Average cell ohmic value (mOhms) * 1000"
+    ::= { monStringEntry 7 }
+
+monCellMinVoltage OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Lowest cell voltage on string (V) * 100"
+    ::= { monStringEntry 8 }
+	
+monCellMinOhmic  OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Lowest cell ohmic value on string (mOhms) * 1000"
+    ::= { monStringEntry 9 }
+
+monCellMaxVoltage OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Highest cell voltage on string (V) * 100"
+    ::= { monStringEntry 10 }
+	
+monCellMaxOhmic OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Highest cell ohmic value (mOhms) * 1000"
+    ::= { monStringEntry 11 }
+	
+monCountJarsInThermalWarning OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The count of jars that are in thermal warning on this string."
+    ::= { monStringEntry 12 }
+	
+monThermalDisconnectDateTime OBJECT-TYPE
+    SYNTAX      	OCTET STRING (SIZE (8))
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The time and date when a thermal runaway disconnect occurred on this string. 
+	The interpretation of this register depends upon several factors. If thermal protection is not enabled
+	for this string or no thermal runaway conditions have been detected, this value will be set to null - '' . 
+	
+	If the string has thermal runaway conditions, monStringStatus (bit #7 ON), but has not yet been disconnected (bit 
+	#8 OFF) then these registers show the time in the future when the disconnect relay for this 
+	string will be energized.
+	
+	If the string has already been disconnected, monStringStatus (bit #8 ON), then this shows the time in the past 
+	when this string was disconnected. Even once the user re-arms this string, the time will still 
+	reflect the time it was last disconnected, so the user should always consult monStringStatus bits #7 and #8 to 
+	determine the meaning of this time.
+	
+	
+            field  octets  contents                  range
+            -----  ------  --------                  -----
+              1      1-2   year*                     0..65536
+              2       3    month                     1..12
+              3       4    day                       1..31
+              4       5    hour                      0..23
+              5       6    minutes                   0..59
+              6       7    seconds                   0..60
+                           (use 60 for leap-second)
+              7       8    deci-seconds              0..9
+
+            * Notes:
+            - the value of year is in network-byte order
+
+            For example, Tuesday May 26, 1992 at 1:30:15 PM EDT would be
+            displayed as:
+
+                             1992-5-26,13:30:15.0"
+    ::= { monStringEntry 13 }
+	
+monThermalProtectionEnabled OBJECT-TYPE
+    SYNTAX     INTEGER { enabled(1), disabled(2) }
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Indicates if thermal runway protection is enabled(1) or disabled(2)"
+    ::= { monStringEntry 14 }
+	
+monThermalVoltageLimit OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The thermal runaway voltage level set for jar (V) * 10"
+    ::= { monStringEntry 15 }
+	
+monThermalTempLimit OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The thermal runaway temperature limit for this string.(Temperature units) * 10"
+    ::= { monStringEntry 16 }
+	
+monHighStringVoltageLimit OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"String voltage high threshold alarm (V) * 10"
+    ::= { monStringEntry 17 }
+	
+monLowStringVoltageLimit OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"String voltage low threshold alarm (V) * 10"
+    ::= { monStringEntry 18 }
+	
+
+
+
+--------------------------------------------------------------------------------
+-- Jar table
+--------------------------------------------------------------------------------
+
+monJarTable OBJECT-TYPE
+    SYNTAX      	SEQUENCE OF MonJarEntry
+    ACCESS      	not-accessible
+    STATUS      	mandatory
+    DESCRIPTION 	
+	 "This table contains an entry for each jar in the system.  
+	 A jar can refer to an individual cell, block, mono-block, or jar.  
+	 This often times is monitored as the lowest changeable unit."
+    ::= { vars 1792 }
+
+monJarEntry OBJECT-TYPE
+    SYNTAX      	MonJarEntry
+    ACCESS      	not-accessible
+    STATUS      	mandatory
+    DESCRIPTION 	"This defines a jar entry."
+    INDEX       	{ monJarIndex }
+    ::= { monJarTable 1 }
+
+MonJarEntry ::= SEQUENCE
+{ 
+    monJarIndex INTEGER,
+	monJarBatteryNo INTEGER,
+	monJarBatteryName DisplayString,
+    monJarStringNo INTEGER,
+	monJarStringName DisplayString,
+	monJarLabel DisplayString,
+    monJarBlkFr INTEGER,
+    monJarBlkTo INTEGER,
+    monJarVoltage INTEGER,
+    monJarOhmic INTEGER,
+	monJarHVAlarm INTEGER,
+	monJarLVAlarm INTEGER,
+	monJarHZAlarm INTEGER,
+	monJarLZAlarm INTEGER
+}
+
+monJarIndex OBJECT-TYPE
+    SYNTAX      	INTEGER (1..32767)
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION		"A unique reference to this jar in the system."
+    ::= { monJarEntry 1 }
+	
+monJarBatteryNo OBJECT-TYPE
+    SYNTAX      	INTEGER (1..256)
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"A unique reference to the battery of which this jar is a part."
+    ::= { monJarEntry 2 }
+
+monJarBatteryName OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The name of the battery of which this jar is a part."
+    ::= { monJarEntry 3 }
+	
+monJarStringNo  OBJECT-TYPE
+    SYNTAX      	INTEGER (1..256)
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	
+	 "A reference to the string of which this jar is a part. 
+	 The string belongs to the battery referenced by monBatteryNo."
+    ::= { monJarEntry 4 }
+	
+monJarStringName OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The name of the string of which this jar is a part."
+    ::= { monJarEntry 5 }
+
+monJarLabel OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The name of this jar or jars (in the case of spanning multiple jars)."
+    ::= { monJarEntry 6 }
+	
+monJarBlkFr  OBJECT-TYPE
+    SYNTAX      	INTEGER (1..32767)
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	
+	 "The jar being measured, or in the case of spanning multiple jars, 
+	 the first jar in the span.  (This starts at 1 and counts upward)."
+    ::= { monJarEntry 7 }
+
+monJarBlkTo  OBJECT-TYPE
+    SYNTAX      	INTEGER (1..32767)
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	
+	 "The end block covered by this span. 
+	 Same as monBlkFr if only one jar per channel is measured"
+    ::= { monJarEntry 8 }
+	
+monJarVoltage  OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Jar/block voltage (V) * 100"
+    ::= { monJarEntry 9 }
+
+monJarOhmic  OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Jar/block ohmic value (mOhms) * 1000"
+    ::= { monJarEntry 10 }
+
+
+monJarHVAlarm OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Jar/block voltage high threshold alarm (V) * 100"
+    ::= { monJarEntry 11 }
+
+monJarLVAlarm OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Jar/block voltage low threshold alarm (V) * 100"
+    ::= { monJarEntry 12 }
+	
+monJarHZAlarm OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Jar/block ohmic value high threshold alarm (mOhms) * 1000"
+    ::= { monJarEntry 13 }
+	
+monJarLZAlarm OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Jar/block ohmic value low threshold alarm (mOhms) * 1000"
+    ::= { monJarEntry 14 }
+
+--------------------------------------------------------------------------------
+-- Alarm History Table 
+--------------------------------------------------------------------------------
+	
+monAlarmHistoryTable OBJECT-TYPE
+    SYNTAX      	SEQUENCE OF MonAlarmHistoryEntry
+    ACCESS      	not-accessible
+    STATUS      	mandatory
+    DESCRIPTION 	"This table contains the 20 most recent Cellwatch alarms."
+    ::= { vars 1803  }
+
+monAlarmHistoryEntry OBJECT-TYPE
+    SYNTAX      	MonAlarmHistoryEntry
+    ACCESS      	not-accessible
+    STATUS      	mandatory
+    DESCRIPTION 	"This defines an alarm history entry."
+    INDEX       	{ monAlarmHistoryIndex }
+    ::= { monAlarmHistoryTable 1 }
+
+MonAlarmHistoryEntry ::= SEQUENCE
+{ 
+    monAlarmHistoryIndex INTEGER,
+	monAlarmId	INTEGER,
+	monAlarmSerial DisplayString,
+	monAlarmBatteryName DisplayString,
+	monAlarmStringName DisplayString,
+	monAlarmLabel DisplayString,
+	monAlarmType DisplayString,
+	monAlarmValue INTEGER,
+	monAlarmUnits DisplayString,
+	monAlarmHighLimit INTEGER,
+	monAlarmLowLimit INTEGER,
+	monAlarmStart INTEGER,
+	monAlarmEnd INTEGER
+}
+
+monAlarmHistoryIndex OBJECT-TYPE
+    SYNTAX      	INTEGER (1..100)
+    ACCESS      	read-only
+    STATUS      	mandatory
+	DESCRIPTION		"A unique reference to this alarm in the most recent set of alarms."
+    ::= { monAlarmHistoryEntry 1 }
+	
+monAlarmId OBJECT-TYPE	
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"This is a unique identifier for an alarm within a Cellwatch system."
+    ::= { monAlarmHistoryEntry 2 }
+		
+monAlarmSerial OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	
+	 "This is a unique identifier for an alarm within a Cellwatch system.
+	 This will be the same as monAlarmId with a prefix, by default CW, 
+	 then left padded with zeros."
+    ::= { monAlarmHistoryEntry 3 }
+
+monAlarmBatteryName OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The name of the battery from which the alarm originated."
+    ::= { monAlarmHistoryEntry 4 }
+	
+monAlarmStringName OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The name of the string from which the alarm originated."
+    ::= { monAlarmHistoryEntry 5 }
+
+monAlarmLabel OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	
+	 "The jar (voltage or ohmic) or probe label (for temperature and current) 
+	 on which this alarm occurred.."
+    ::= { monAlarmHistoryEntry 6 }
+	
+monAlarmType OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The alarm type."
+    ::= { monAlarmHistoryEntry 7 }
+	
+monAlarmValue OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The value that was read that triggered the alarm. "
+    ::= { monAlarmHistoryEntry 8 }
+
+monAlarmUnits OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The units associated with an alarm value."
+    ::= { monAlarmHistoryEntry 9 }
+
+monAlarmHighLimit OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The high threshold for an alarm that was crossed if this is a high alarm."
+    ::= { monAlarmHistoryEntry 10 }
+
+monAlarmLowLimit OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The low threshold for an alarm that was crossed if this is a low alarm."
+    ::= { monAlarmHistoryEntry 11 }
+
+monAlarmStart OBJECT-TYPE   
+	SYNTAX      	INTEGER (-1..2147483647)
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The starting date and time of the alarm.
+
+	 -1 = indicates that the alarm is still active.	 
+
+	 Values greater than or equal to 0 indicate the number of seconds since 1970/01/01."
+	 ::= { monAlarmHistoryEntry 12 }
+
+monAlarmEnd OBJECT-TYPE   
+	SYNTAX      	INTEGER (-1..2147483647)
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	
+	 "The ending date and time of the alarm. 
+
+	 -1 = indicates that the alarm is still active.	 
+
+	 Values greater than or equal to 0 indicate the number of seconds since 1970/01/01."
+    ::= { monAlarmHistoryEntry 13 }	
+	
+	
+--------------------------------------------------------------------------------
+-- Global variables (used in traps)
+--------------------------------------------------------------------------------
+
+monAlarmBattery OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The name of the battery."
+    ::= { alerts 100 }
+	
+monAlarmBatteryId OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The unique identifier of the battery."
+    ::= { alerts 101 }
+
+monAlarmString OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Name of the string which caused alarm."
+    ::= { alerts 102 }
+
+monAlarmStringId OBJECT-TYPE
+    SYNTAX      	INTEGER
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Unique ID of string which caused alarm."
+    ::= { alerts 103 }
+	
+monAlarmJar OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The jar number within a string which caused alarm."
+    ::= { alerts 104 }
+	
+monValueVoltage OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Identifies voltage value that tripped alarm."
+    ::= { alerts 105 }
+
+monValueTemp OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Identifies temperature in C that tripped alarm"
+    ::= { alerts 106 }
+
+monValueOhms OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Identifies ohmic value that tripped alarm."
+    ::= { alerts 107 }
+
+monValueAmps OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Identifies a value in amps"
+    ::= { alerts 108 }
+	
+monValueVoltageHigh OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The high voltage alarm threshold that was set."
+    ::= { alerts 109 }
+	
+monValueVoltageLow OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The low voltage alarm threshold that was set."
+    ::= { alerts 110 }
+
+monValueTempHigh OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The high temperature alarm threshold that was set."
+    ::= { alerts 111 }
+
+monValueTempLow OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The low temperature alarm threshold that was set."
+    ::= { alerts 112 }
+
+monValueOhmsHigh OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The high ohmic alarm threshold that was set."
+    ::= { alerts 113 }
+
+monValueOhmsLow OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The low ohmic alarm threshold that was set."
+    ::= { alerts 114 }
+
+monValueStringVoltageHigh OBJECT-TYPE
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The high string voltage alarm threshold that was set."
+    ::= { alerts 115 }
+
+monValueStringVoltageLow OBJECT-TYPE	
+    SYNTAX      	DisplayString
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"The low string voltage alarm threshold that was set."
+    ::= { alerts 116 }
+	
+	
+monValueThermalProtection OBJECT-TYPE
+    SYNTAX     INTEGER { enabled(1), disabled(2) }
+    ACCESS      	read-only
+    STATUS      	mandatory
+    DESCRIPTION 	"Indicates if thermal runway protection is enabled or disabled."
+    ::= { alerts 117 }
+--------------------------------------------------------------------------------
+-- Traps
+--------------------------------------------------------------------------------
+monScanningStart TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { monSysName }
+	DESCRIPTION 
+	 "The user has started Cellwatch scanning"  
+	::= 1
+
+monScanningStop TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { monSysName }
+	DESCRIPTION 
+	 "The user has stopped Cellwatch scanning"  
+	::= 2
+
+monAlarmVoltageHigh TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { monSysName,
+				  monAlarmBattery,
+				  monAlarmString,
+				  monAlarmJar,
+				  monValueVoltage }
+	DESCRIPTION 
+	 "A high voltage alarm has occurred on a jar."  
+	::= 3	
+
+monAlarmVoltageLow TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { monSysName,
+				  monAlarmBattery,
+				  monAlarmString,
+				  monAlarmJar,
+				  monValueVoltage }
+	DESCRIPTION 
+	 "A low voltage alarm has occurred on a jar."  
+	::= 4
+	
+monDischargeStart TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { monSysName,
+				  monAlarmBattery }
+	DESCRIPTION 
+	 "The system has gone into discharge."  
+	::= 6
+	
+monDischargeEnd TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { monSysName,
+				  monAlarmBattery }
+	DESCRIPTION 
+	 "The system has gone out of discharge."  
+	::= 7
+	
+monAlarmOhmicHigh TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { monSysName,
+				  monAlarmBattery,
+				  monAlarmString,
+				  monAlarmJar,
+				  monValueOhms }
+	DESCRIPTION 
+	 "A high ohmic alarm has occurerd on a string."  
+	::= 8
+	
+monAlarmOhmicLow TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { monSysName,
+				  monAlarmBattery,
+				  monAlarmString,
+				  monAlarmJar,
+				  monValueOhms }
+	DESCRIPTION 
+	 "A low ohmic alarm has occurred on a string."  
+	::= 9
+
+	
+monAlarmTempStart TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { monSysName,
+				  monAlarmBattery }
+	DESCRIPTION 
+	 "A delayed temperature alarm has occurred on a battery."  
+	::= 10
+
+monAlarmTempEnd TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { monSysName,
+				  monAlarmBattery }
+	DESCRIPTION 
+	 "A delayed temperature alarm has ended on a battery."  
+	::= 11
+	
+monAlarmBatteryEnd TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { monSysName,
+				  monAlarmBattery }
+	DESCRIPTION 
+	 "All alarms have ended on a battery."  
+	::= 20
+
+monAlarmStringVoltageHigh TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { monAlarmBattery,
+				  monAlarmString,
+				  monValueVoltage }
+	DESCRIPTION 
+	 "A high string voltage alarm has occurred on a string."  
+	::= 21 	
+
+monAlarmStringVoltageLow TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { monAlarmBattery,
+				  monAlarmString,
+				  monValueVoltage }
+	DESCRIPTION 
+	 "A low string voltage alarm has occurred on a string."  
+	::= 22
+
+monAlarmThermalRunawayWarning TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { monAlarmBattery,
+				  monAlarmString }
+	DESCRIPTION 
+	 "The Cellwatch system has identified that a string that has exceeded its 
+	 thermal runaway threshold. This string will be disconnected within 12 
+	 hours, unless delayed by the user. If delayed, the string will be 
+	 disconnected, at most, within 24 hours of the start of the TRS alarm."  
+	::= 23
+	
+monAlarmThermalRunawayWarningEnd TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { monAlarmBattery,
+				  monAlarmString }
+	DESCRIPTION 
+	 "A thermal runway warning ended on a string."  
+	::= 24
+
+monAlarmThermalRunwayDisconnect TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { monAlarmBattery,
+				  monAlarmString }
+	DESCRIPTION 
+	 "The Cellwatch system has identified and disconnected a string that is in
+	 thermal runaway."  
+	::= 25
+	
+monSetCellThresholds TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { 	monSysName,
+					monAlarmBattery,
+					monAlarmString,
+					monAlarmJar,
+					monValueOhmsHigh,
+					monValueOhmsLow,
+					monValueVoltageHigh,
+					monValueVoltageLow }
+	DESCRIPTION 
+	 "User has changed cell alarm settings"  
+	::= 30
+	
+monSetStringThresholds TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { 	monSysName,
+					monAlarmBattery,
+					monAlarmString,
+					monValueAmps,
+					monValueOhmsHigh,
+					monValueOhmsLow,
+					monValueVoltageHigh,
+					monValueVoltageLow,
+					monValueTempHigh,
+					monValueTempLow,
+					monValueStringVoltageHigh,
+					monValueStringVoltageLow }
+	DESCRIPTION 
+	 "User has changed string alarm settings. 
+	 An empty string indicates that a variable has more
+	 than one value associated with it. For example,
+	 a string that contains two cells with different
+	 high ohmic threshold alarms."  
+	::= 31
+	
+monSetBatteryThresholds TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { 	monSysName,
+					monAlarmBattery,
+					monValueAmps,
+					monValueOhmsHigh,
+					monValueOhmsLow,
+					monValueVoltageHigh,
+					monValueVoltageLow,
+					monValueTempHigh,
+					monValueTempLow,
+					monValueStringVoltageHigh,
+					monValueStringVoltageLow }
+	DESCRIPTION 
+	 "User has changed battery alarm settings. 
+	 An empty string indicates that a variable has more
+	 than one value associated with it. For example,
+	 a string that contains two cells with different
+	 high ohmic threshold alarms."  
+	::= 32
+	
+monSetSystemThresholds TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { 	monSysName,
+					monValueAmps,
+					monValueOhmsHigh,
+					monValueOhmsLow,
+					monValueVoltageHigh,
+					monValueVoltageLow,
+					monValueTempHigh,
+					monValueTempLow,
+					monValueStringVoltageHigh,
+					monValueStringVoltageLow }
+	DESCRIPTION 
+	 "User has changed system alarm settings. 
+	 An empty string indicates that a variable has more
+	 than one value associated with it. For example,
+	 a string that contains two cells with different
+	 high ohmic threshold alarms."  
+	::= 33
+		
+	monSetThermalRunaway TRAP-TYPE
+     ENTERPRISE  alerts
+     VARIABLES   { 	monAlarmBattery,
+					monAlarmString,
+					monValueThermalProtection,
+					monValueVoltage,
+					monValueTemp}
+     DESCRIPTION
+     "Indicates if thermal runaway settings have been changed for a string."  
+     ::= 34    
+	
+monScanOhmicStart TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { 	monSysName,
+					monAlarmBattery }
+	DESCRIPTION 
+	 "An ohmic scan has started on a battery."  
+	::= 50
+
+monScanOhmicEnd TRAP-TYPE
+	ENTERPRISE  alerts
+	DESCRIPTION 
+	 "An ohmic scan has ended."  
+	::= 51	
+
+monScanVoltageStart TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES   { 	monSysName,
+					monAlarmBattery }
+	DESCRIPTION 
+	 "A voltage scan has started on a battery."  
+	::= 52
+
+monScanVoltageEnd TRAP-TYPE
+	ENTERPRISE  alerts
+	DESCRIPTION 
+	 "A voltage scan has ended."  
+	::= 53
+	
+monTestTrap TRAP-TYPE
+	ENTERPRISE  alerts
+	VARIABLES 	{ monSysName }
+	DESCRIPTION 
+	 "This is a test trap sent out by the Cellwatch SNMP Agent
+	 at user request."  
+	::= 99	
+END

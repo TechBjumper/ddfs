@@ -1,0 +1,3878 @@
+-- ***********************************************************************************************************************
+-- *                                                                                                                     *
+-- *                                                                                                                     *
+-- *                                                                                                                     *
+-- *            DESCRIPTION:  SMIv2 MIB for the Schneider Electric Branch Circuit Power Meters (BCPM)                    *
+-- *                                                                                                                     *
+-- *                                                                                                                     *
+-- *            FILE:                   Schneider_BCPM_SMIv2.mib                                                         *
+-- *                                                                                                                     *
+-- *            MAIN REVISIONS:                                                                                          *
+-- * *********************************************************************************************************************
+-- *         REVISION                         *  DATE                    *  DESCRIPTION                                  *
+-- * *********************************************************************************************************************
+-- *          V01.01                          *  10April2013             *  Creation                                     *
+-- * *********************************************************************************************************************
+-- *          Vxx.xx                          *                          *                                               *
+-- * *********************************************************************************************************************
+--
+
+SCHNEIDER-ELECTRIC-BCPM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    MODULE-IDENTITY, 
+    OBJECT-TYPE, 
+    NOTIFICATION-TYPE,
+    Integer32, 
+    Counter32,
+    Counter64,
+    Unsigned32, 
+    enterprises
+        FROM SNMPv2-SMI
+    MODULE-COMPLIANCE,
+    NOTIFICATION-GROUP,
+    OBJECT-GROUP
+        FROM SNMPv2-CONF
+    DisplayString,
+    TEXTUAL-CONVENTION
+        FROM SNMPv2-TC;
+
+
+schneiderBcpmModuleID MODULE-IDENTITY
+    LAST-UPDATED "201312171400Z" 
+    ORGANIZATION "Schneider Electric"
+    CONTACT-INFO
+        "Customer Support
+        Postal: 
+        Web: http://www.schneider-electric.com/
+        E-Mail: info@schneider-electric.com"
+
+    DESCRIPTION "BCPM SMIv2 MIB"    -- module description
+    -- Revision history. Most recent first.
+    REVISION "201312171400Z" -- December 17 2013 14:00:00
+    DESCRIPTION "Release Version 01.00"
+    ::= { bcpm 3 }
+
+-- OID Structure **********************************************************************
+
+schneiderElectric  OBJECT IDENTIFIER ::= { enterprises 3833 }  --  1.3.6.1.4.1.3833 Schneider Electric Private Enterpise Number (PEN)
+
+    schneiderEnergy      OBJECT IDENTIFIER ::= { schneiderElectric 1 }  --  1.3.6.1.4.1.3833.1 
+    
+        bcpm          OBJECT IDENTIFIER ::= { schneiderEnergy 30 }  --  1.3.6.1.4.1.3833.1.30 
+        
+            panels           OBJECT IDENTIFIER ::= { bcpm 1 }  --  1.3.6.1.4.1.3833.1.30.1 
+
+                panel1           OBJECT IDENTIFIER ::= { panels 1 }  --  1.3.6.1.4.1.3833.1.30.1.1 
+    
+                    p1Alarms          OBJECT IDENTIFIER ::= { panel1 1 }  --  1.3.6.1.4.1.3833.1.30.1.1.1 
+                    p1VoltageInputs   OBJECT IDENTIFIER ::= { panel1 2 }  --  1.3.6.1.4.1.3833.1.30.1.1.2 
+                    p1AuxiliaryInputs OBJECT IDENTIFIER ::= { panel1 3 }  --  1.3.6.1.4.1.3833.1.30.1.1.3 
+                    p1BranchInputs    OBJECT IDENTIFIER ::= { panel1 4 }  --  1.3.6.1.4.1.3833.1.30.1.1.4 
+                    p1LogicalCircuits    OBJECT IDENTIFIER ::= { panel1 5 }  --  1.3.6.1.4.1.3833.1.30.1.1.5 
+                    p1Configuration   OBJECT IDENTIFIER ::= { panel1 6 }  --  1.3.6.1.4.1.3833.1.30.1.1.6
+        
+                panel2           OBJECT IDENTIFIER ::= { panels 2 }  --  1.3.6.1.4.1.3833.1.30.1.2 
+    
+                    p2Alarms          OBJECT IDENTIFIER ::= { panel2 1 }  --  1.3.6.1.4.1.3833.1.30.1.2.1 
+                    p2VoltageInputs   OBJECT IDENTIFIER ::= { panel2 2 }  --  1.3.6.1.4.1.3833.1.30.1.2.2 
+                    p2AuxiliaryInputs OBJECT IDENTIFIER ::= { panel2 3 }  --  1.3.6.1.4.1.3833.1.30.1.2.3 
+                    p2BranchInputs    OBJECT IDENTIFIER ::= { panel2 4 }  --  1.3.6.1.4.1.3833.1.30.1.2.4 
+                    p2LogicalCircuits    OBJECT IDENTIFIER ::= { panel2 5 }  --  1.3.6.1.4.1.3833.1.30.1.2.5 
+                    p2Configuration   OBJECT IDENTIFIER ::= { panel2 6 }  --  1.3.6.1.4.1.3833.1.30.1.2.6
+
+            conformance           OBJECT IDENTIFIER ::= { bcpm 2 }  --  1.3.6.1.4.1.3833.1.30.2 
+                compliances           OBJECT IDENTIFIER ::= { conformance 1 }  --  1.3.6.1.4.1.3833.1.30.2.1 
+                groups                OBJECT IDENTIFIER ::= { conformance 2 }  --  1.3.6.1.4.1.3833.1.30.2.2 
+                    p1ConformanceGroups   OBJECT IDENTIFIER ::= { groups 1 }   --  1.3.6.1.4.1.3833.1.30.2.2.1
+                    p2ConformanceGroups   OBJECT IDENTIFIER ::= { groups 2 }   --  1.3.6.1.4.1.3833.1.30.2.2.2
+
+
+
+-- UNITS ************************************************************************
+
+    -- V    Volts
+    -- A    Amps
+    -- W    Watts, Real Power
+    -- VA   Apparent Power
+    -- VAR  Reactive Power
+    -- Wh   Watt-Hours, Real Energy
+    -- VAh  Apparent Energy
+    -- VARh Reactive Energy
+    -- %    Percent (Ratio)
+    -- S    Seconds
+    
+    -- Notes: Most of the values reported from the E30 via modbus as floating point values 
+    -- also appear in this MIB, but multiplied by 1000 so that they can be returned in
+    -- an Integer32 without a significant loss of precision. So Volts (V) are reported in an Integer32 
+    -- as mV, and KW as Watts. DISPLAY-HINT's in the TEXTUAL-CONVENTIONs below are used to
+    -- move the decimal point in the values displayed in a MIB Browser. For example, an 
+    -- Integer32 containing a mV value will be displayed as Volts with a decimal with three 
+    -- digits to the right in the browser. Software that uses the Integer32 
+    -- data directly will need to observer the units reported in the value description.  
+
+-- Textual Conventions **********************************************************
+
+    -- For use with integer mVolts, mAmps, mWatts, mVA, mVAR, etc.
+    ThousandthsInt32 ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT      "d-3"
+        STATUS            current
+        DESCRIPTION       "Display milli values in 0.001 units divided by 1000, by moving the decimal to the left three places."
+        SYNTAX            Integer32
+    
+    --HundredthsInt32 ::= TEXTUAL-CONVENTION
+    --    DISPLAY-HINT      "d-2"
+    --    STATUS            current
+    --    DESCRIPTION       "Display values in 0.01 units divided by 100, by moving the decimal to the left two places."
+    --    SYNTAX            Integer32
+    
+    TenthsInt32 ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT      "d-1"
+        STATUS            current
+        DESCRIPTION       "Display values in 0.1 units divided by 10, by moving the decimal to the left one place."
+        SYNTAX            Integer32 (0..1000)
+    
+    TenthsCounter64 ::= TEXTUAL-CONVENTION
+        DISPLAY-HINT      "d-1"
+        STATUS            current
+        DESCRIPTION       "Display values in 0.1 units divided by 10, by moving the decimal to the left one place."
+        SYNTAX            Counter64
+    
+
+
+
+-- ******************************************************************************
+-- Panel 1 **********************************************************************
+-- ******************************************************************************
+
+
+-- Panel: Alarms **********************************************************************
+
+    -- Alarm Traps 
+
+    p1Traps OBJECT IDENTIFIER ::= { p1Alarms 0 } 
+          
+        p1GlobalLatchingAlarmStatusTrap NOTIFICATION-TYPE    -- 
+            OBJECTS
+            {
+                p1GlobalLatchingAlarmStatus
+            }
+            STATUS              current
+            DESCRIPTION         "Global Latching Alarm Status Bit Map: 0 HighHighCurrent, 1 HighCurrent, 2 LowCurrent, 3 LowLowCurrent, 4 AlarmOff, 8 HighVoltage, 9 LowVoltage"
+            ::= { p1Traps 1 }
+    
+        p1GlobalNonLatchingAlarmStatusTrap NOTIFICATION-TYPE    -- 
+            OBJECTS
+            {
+                p1GlobalLatchingAlarmStatus
+            }
+            STATUS              current
+            DESCRIPTION         "Global Non-Latching Alarm Status Bit Map: 0 HighCurrent, 1 LowCurrent, 8 HighVoltage, 9 LowVoltage"
+            ::= { p1Traps 2 }
+    
+        p1VoltagePhaseAlarmStatusTrap NOTIFICATION-TYPE    -- voltage alarms A, B, C. Return phase index & status register.
+            OBJECTS
+            {
+                p1AuxAlarmPhase,
+                p1VoltagePhaseAlarmStatus 
+            }
+            STATUS              current
+            DESCRIPTION         "Voltage Alarm Status Bit Map: 0 HighLatching, 1 LowLatching, 8 HighNonLatching, 9 LowNonLatching"
+            ::= { p1Traps 3 }
+    
+        p1AuxCurrentAlarmStatusTrap NOTIFICATION-TYPE    -- current alarms A, B, C, N. Return phase index & status register.
+            OBJECTS
+            {
+                p1AuxAlarmPhase,
+                p1AuxCurrentAlarmStatus  
+            }
+            STATUS              current
+            DESCRIPTION         "Auxiliary Current Alarm Status Bit Map: 0 HighHighLatching, 1 HighLatching, 2 LowLatching, 3 LowLowLatching, 4 AlarmOff, 8 HighNonLatching, 9 LowNonLatching"
+            ::= { p1Traps 4 }
+    
+        p1BranchCurrentAlarmStatusTrap NOTIFICATION-TYPE    -- branch current alarms 1-42. Return branch index & status register.
+            OBJECTS
+            {
+                p1BranchAlarmNumber,
+                p1BranchCurrentAlarmStatus   
+            }
+            STATUS              current
+            DESCRIPTION         "Branch Current Alarm Status Bit Map: 0 HighHighLatching, 1 HighLatching, 2 LowLatching, 3 LowLowLatching, 4 AlarmOff, 8 HighNonLatching, 9 LowNonLatching"
+            ::= { p1Traps 5 }
+
+    -- Global Alarm Status 
+
+    p1GlobalAlarmStatus OBJECT IDENTIFIER ::= { p1Alarms 1 } 
+      
+        p1GlobalLatchingAlarmStatus OBJECT-TYPE    -- 
+            SYNTAX              BITS 
+                                {
+                                    p1GlobalLatchingAlarmStatusHighHighCurrent (0),
+                                    p1GlobalLatchingAlarmStatusHighCurrent     (1),
+                                    p1GlobalLatchingAlarmStatusLowCurrent      (2),
+                                    p1GlobalLatchingAlarmStatusLowLowCurrent   (3),
+                                    p1GlobalLatchingAlarmStatusAlarmOff        (4),
+                                    p1GlobalLatchingAlarmStatusHighVoltage     (8),
+                                    p1GlobalLatchingAlarmStatusLowVoltage      (9)
+                                }
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Global Latching Alarm Status Bit Map: 0 HighHighCurrent, 1 HighCurrent, 2 LowCurrent, 3 LowLowCurrent, 4 AlarmOff, 8 HighVoltage, 9 LowVoltage"
+            ::= { p1GlobalAlarmStatus 1 }
+
+        p1GlobalNonLatchingAlarmStatus OBJECT-TYPE    -- 
+            SYNTAX              BITS 
+                                {
+                                    p1GlobalNonLatchingAlarmStatusHighCurrent (0),
+                                    p1GlobalNonLatchingAlarmStatusLowCurrent  (1),
+                                    p1GlobalNonLatchingAlarmStatusHighVoltage (8),
+                                    p1GlobalNonLatchingAlarmStatusLowVoltage  (9)
+                                }
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Global Non-Latching Alarm Status Bit Map: 0 HighCurrent, 1 LowCurrent, 8 HighVoltage, 9 LowVoltage"
+            ::= { p1GlobalAlarmStatus 2 }
+
+        p1GlobalMostRecentLatchingChannel OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..46)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Most Recent Branch or Aux in Latching Alarm: None = 0, Branches are 1-42, Auxiliary A, B, C, N = 43, 44, 45, 46"
+            ::= { p1GlobalAlarmStatus 3 }
+
+        p1GlobalMostRecentNonLatchingChannel OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..46)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Most Recent Branch or Aux in Non-Latching Alarm: None = 0, Branches are 1-42, Auxiliary A, B, C, N = 43, 44, 45, 46"
+            ::= { p1GlobalAlarmStatus 4 }
+
+        p1TotalLatchingChannelsInAlarm OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Total Number of Aux and Branch Channels in Latching Alarm"
+            ::= { p1GlobalAlarmStatus 5 }
+
+        p1TotalNonLatchingChannelsInAlarm OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Total Number of Aux and Branch Channels in Non-Latching Alarm"
+            ::= { p1GlobalAlarmStatus 6 }
+
+        p1DeviceHealth OBJECT-TYPE    -- 
+            SYNTAX              BITS 
+                                {
+                                    p1DeviceHealthReservedBit0            (0),
+                                    p1DeviceHealthPhaseAFrequencyOutRange (1),
+                                    p1DeviceHealthPhaseAVoltageClipping   (2),
+                                    p1DeviceHealthPhaseBVoltageClipping   (3),
+                                    p1DeviceHealthPhaseCVoltageClipping   (4),
+                                    p1DeviceHealthCurrentClipping         (5),
+                                    p1DeviceHealthStripConnectionError    (8),
+                                    p1DeviceHealthCurrentOnlyModel       (13),
+                                    p1DeviceHealthAuxPowerModel          (14),
+                                    p1DeviceHealthBranchPowerModel       (15)
+                                }
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Device Health Bit Map: 1 Phase A Frequency Out of 40-70Hz Range, 2 - Phase A Voltage Clipping, 3 - Phase B Voltage Clipping, 4 - Phase C Voltage Clipping, 5 - Current Clipping on 1 or more inputs, 8 - Strip Connection Error, 13 - Current only Model C, 14 - Aux Power Model B, 15 - Branch Power Model A"
+            ::= { p1GlobalAlarmStatus 7 }
+
+
+    -- Global Alarm Counters 
+
+    p1GlobalAlarmCounters  OBJECT IDENTIFIER ::= { p1Alarms 2 } 
+      
+        p1GlobalHighHighLatchingAlarmCount OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..32767)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of all High High Current Alarms"
+            ::= { p1GlobalAlarmCounters 1 }
+
+        p1GlobalHighLatchingAlarmCount OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..32767)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of all High Current Alarms"
+            ::= { p1GlobalAlarmCounters 2 }
+
+        p1GlobalLowLatchingAlarmCount OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..32767)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of all Low Current Alarms"
+            ::= { p1GlobalAlarmCounters 3 }
+
+        p1GlobalLowLowLatchingAlarmCount OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..32767)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of all Low Low Current Alarms"
+            ::= { p1GlobalAlarmCounters 4 }
+
+        p1GlobalOffStateLatchingAlarmCount OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..32767)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of all Off State Transitions"
+            ::= { p1GlobalAlarmCounters 5 }
+
+        p1PowerUpCount OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..32767)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of the number reboots"
+            ::= { p1GlobalAlarmCounters 6 }
+
+    -- Auxiliary Inputs Alarms (current and voltage)
+
+    p1AuxVoltageAndCurrentAlarmTable OBJECT-TYPE
+        SYNTAX              SEQUENCE OF P1AuxVoltageAndCurrentAlarmEntry 
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "Individual Auxiliary Phase Alarms: Index 1, 2, 3, 4 = Phase A, B, C, N"
+        ::= { p1Alarms 3 }
+
+        p1AuxVoltageAndCurrentAlarmEntry  OBJECT-TYPE
+            SYNTAX              P1AuxVoltageAndCurrentAlarmEntry
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Individual Auxiliary Phase Alarms: Index 1, 2, 3, 4 = Phase A, B, C, N"
+            INDEX               {
+                                    p1AuxAlarmIndex
+                                }
+            ::= { p1AuxVoltageAndCurrentAlarmTable 1 }
+    
+        P1AuxVoltageAndCurrentAlarmEntry ::= SEQUENCE {
+            p1AuxAlarmIndex  -- index 1, 2, 3, 4 = phase A, B, C, N
+                Unsigned32, 
+            p1AuxAlarmPhase  -- index 1, 2, 3, 4 = phase A, B, C, N
+                Unsigned32, 
+            p1VoltagePhaseAlarmStatus -- voltage alarms
+                BITS, 
+            p1AuxCurrentAlarmStatus -- current alarms
+                BITS, 
+            p1AuxHighHighAlarmCount -- 
+                Counter32, 
+            p1AuxHighAlarmCount -- 
+                Counter32, 
+            p1AuxLowAlarmCount -- 
+                Counter32, 
+            p1AuxLowLowAlarmCount -- 
+                Counter32, 
+            p1AuxOffStateAlarmCount -- 
+                Counter32 
+            }
+
+        p1AuxAlarmIndex OBJECT-TYPE    --  index 1, 2, 3, 4 = phase A, B, C, N
+            SYNTAX              Unsigned32 (1..4)
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Auxiliary Phase Number Index: 1, 2, 3, 4 = phase A, B, C, N"
+            ::= { p1AuxVoltageAndCurrentAlarmEntry 1 }
+
+        p1AuxAlarmPhase OBJECT-TYPE    --  index 1, 2, 3, 4 = phase A, B, C, N (same as Index, but readable)
+            SYNTAX              Unsigned32 (1..4)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Auxiliary Phase Number Index: 1, 2, 3, 4 = phase A, B, C, N"
+            ::= { p1AuxVoltageAndCurrentAlarmEntry 2 }
+
+        p1VoltagePhaseAlarmStatus OBJECT-TYPE    -- voltage alarms
+            SYNTAX              BITS 
+                                {
+                                    p1VoltagePhaseAlarmStatusHighLatching    (0),
+                                    p1VoltagePhaseAlarmStatusLowLatching     (1),
+                                    p1VoltagePhaseAlarmStatusHighNonLatching (8),
+                                    p1VoltagePhaseAlarmStatusLowNonLatching  (9)
+                                }
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Auxiliary Voltage Alarm Status Bit Map: 0 HighLatching, 1 LowLatching, 8 HighNonLatching, 9 LowNonLatching"
+            ::= { p1AuxVoltageAndCurrentAlarmEntry 3 }
+
+        p1AuxCurrentAlarmStatus OBJECT-TYPE    -- current alarms
+            SYNTAX              BITS 
+                                {
+                                    p1AuxCurrentAlarmStatusHighHighAmp (0),
+                                    p1AuxCurrentAlarmStatusHighAmp     (1),
+                                    p1AuxCurrentAlarmStatusLowAmp      (2),
+                                    p1AuxCurrentAlarmStatusLowLowAmp   (3),
+                                    p1AuxCurrentAlarmStatusAlarmOff    (4),
+                                    p1AuxCurrentAlarmStatusHighVolt    (8),
+                                    p1AuxCurrentAlarmStatusLowVolt     (9)
+                                }
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Auxiliary Current Alarm Status Bit Map: 0 HighHighAmp, 1 HighAmp, 2 LowAmp, 3 LowLowAmp, 4 AlarmOff, 8 HighVolt, 9 LowVolt"
+            ::= { p1AuxVoltageAndCurrentAlarmEntry 4 }
+
+        p1AuxHighHighAlarmCount OBJECT-TYPE    -- 
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Auxiliary Current High High Alarms"
+            ::= { p1AuxVoltageAndCurrentAlarmEntry 5 }
+
+        p1AuxHighAlarmCount OBJECT-TYPE    -- 
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Auxiliary Current High Alarms"
+            ::= { p1AuxVoltageAndCurrentAlarmEntry 6 }
+
+        p1AuxLowAlarmCount OBJECT-TYPE    --  
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Auxiliary Current Low Alarms"
+            ::= { p1AuxVoltageAndCurrentAlarmEntry 7 }
+
+        p1AuxLowLowAlarmCount OBJECT-TYPE    --  
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Auxiliary Current Low Low Alarms"
+            ::= { p1AuxVoltageAndCurrentAlarmEntry 8 }
+
+        p1AuxOffStateAlarmCount OBJECT-TYPE    --  
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Auxiliary Current Alarm Off State Transitions"
+            ::= { p1AuxVoltageAndCurrentAlarmEntry 9 }
+
+
+    -- Branch Current Input Alarms
+
+    p1BranchCurrentAlarmTable OBJECT-TYPE
+        SYNTAX              SEQUENCE OF P1BranchCurrentAlarmEntry 
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "Individual Branch Alarms: Index 1 to 42 = Branch Number"
+        ::= { p1Alarms 4 }
+
+        p1BranchCurrentAlarmEntry  OBJECT-TYPE
+            SYNTAX              P1BranchCurrentAlarmEntry
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Individual Branch Alarms: Index 1 to 42 = Branch Number"
+            INDEX               {
+                                    p1BranchAlarmIndex
+                                }
+            ::= { p1BranchCurrentAlarmTable 1 }
+    
+        P1BranchCurrentAlarmEntry ::= SEQUENCE {
+            p1BranchAlarmIndex  -- index 1 - 42 = branch
+                Unsigned32, 
+            p1BranchAlarmNumber  -- index 1 - 42 = branch (same as Index, but readable)
+                Unsigned32, 
+            p1BranchCurrentAlarmStatus -- 
+                BITS, 
+            p1BranchHighHighAlarmCount -- 
+                Counter32, 
+            p1BranchHighAlarmCount -- 
+                Counter32, 
+            p1BranchLowAlarmCount -- 
+                Counter32, 
+            p1BranchLowLowAlarmCount -- 
+                Counter32, 
+            p1BranchOffStateAlarmCount -- 
+                Counter32 
+            }
+
+        p1BranchAlarmIndex OBJECT-TYPE    -- index 1 - 42 = branch
+            SYNTAX              Unsigned32 (1..42)
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Branch Number Index"
+            ::= { p1BranchCurrentAlarmEntry 1 }
+
+        p1BranchAlarmNumber OBJECT-TYPE    -- index 1 - 42 = branch (same as Index, but readable)
+            SYNTAX              Unsigned32 (1..42)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Branch Number Index"
+            ::= { p1BranchCurrentAlarmEntry 2 }
+
+        p1BranchCurrentAlarmStatus OBJECT-TYPE    -- 
+            SYNTAX              BITS 
+                                {
+                                    p1BranchCurrentAlarmStatusHighHighLatching (0),
+                                    p1BranchCurrentAlarmStatusHighLatching     (1),
+                                    p1BranchCurrentAlarmStatusLowLatching      (2),
+                                    p1BranchCurrentAlarmStatusLowLowLatching   (3),
+                                    p1BranchCurrentAlarmStatusAlarmOff         (4),
+                                    p1BranchCurrentAlarmStatusHighNonLatching  (8),
+                                    p1BranchCurrentAlarmStatusLowNonLatching   (9)
+                                }
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Branch Current Alarm Status Bit Map: 0 HighHighLatching, 1 HighLatching, 2 LowLatching, 3 LowLowLatching, 4 AlarmOff, 8 HighNonLatching, 9 LowNonLatching"
+            ::= { p1BranchCurrentAlarmEntry 3 }
+
+        p1BranchHighHighAlarmCount OBJECT-TYPE    -- 
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Branch Current High High Alarms"
+            ::= { p1BranchCurrentAlarmEntry 4 }
+
+        p1BranchHighAlarmCount OBJECT-TYPE    --  
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Branch Current High Alarms"
+            ::= { p1BranchCurrentAlarmEntry 5 }
+
+        p1BranchLowAlarmCount OBJECT-TYPE    --  
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Branch Current Low Alarms"
+            ::= { p1BranchCurrentAlarmEntry 6 }
+
+        p1BranchLowLowAlarmCount OBJECT-TYPE    --  
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Branch Current Low Low Alarms"
+            ::= { p1BranchCurrentAlarmEntry 7 }
+
+        p1BranchOffStateAlarmCount OBJECT-TYPE    --  
+
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Branch Current Alarm Off State Transitions"
+            ::= { p1BranchCurrentAlarmEntry 8 }
+
+
+-- Panel: Voltage Inputs **********************************************************************
+
+    -- Voltage 3 Phase Averages
+
+    p1VoltageAverages OBJECT IDENTIFIER ::= { p1VoltageInputs 1 } 
+      
+        p1VoltsLineLine3PhaseAve OBJECT-TYPE    -- 
+            SYNTAX              ThousandthsInt32
+            UNITS               "V"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Average Line to Line Voltage of the active phases in mV"
+            ::= { p1VoltageAverages 1 }
+
+        p1VoltsLineNeutral3PhaseAve OBJECT-TYPE    -- 
+            SYNTAX              ThousandthsInt32
+            UNITS               "V"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Average Line to Neutral Voltage of the active phases in mV"
+            ::= { p1VoltageAverages 2 }
+
+        p1Frequency OBJECT-TYPE    -- 
+            SYNTAX              ThousandthsInt32
+            UNITS               "Hz"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Frequency measured on Phase A in mHz"
+            ::= { p1VoltageAverages 3 }
+
+    -- Auxiliary individual Phase Totals
+
+    p1VoltagePhaseTable  OBJECT-TYPE
+        SYNTAX              SEQUENCE OF P1VoltagePhaseEntry  
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "Individual Auxiliary Phase Index 1, 2, 3 = Phase A, B, C"
+        ::= { p1VoltageInputs 2 }
+
+        p1VoltagePhaseEntry   OBJECT-TYPE
+            SYNTAX              P1VoltagePhaseEntry
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Individual Voltage Phase Index 1, 2, 3 = Phase A, B, C"
+            INDEX               {
+                                    p1VoltagePhaseIndex
+                                }
+            ::= { p1VoltagePhaseTable 1 }
+    
+            P1VoltagePhaseEntry ::= SEQUENCE {
+                p1VoltagePhaseIndex  -- index 1, 2, 3 = phase A, B, C
+                    Unsigned32, 
+                p1VoltsLineToLine  -- 
+                    ThousandthsInt32, 
+                p1VoltsLineToNeutral  -- 
+                    ThousandthsInt32, 
+                p1VoltsPhaseAngle  -- 
+                    ThousandthsInt32 
+            }
+
+
+                p1VoltagePhaseIndex OBJECT-TYPE
+                    SYNTAX              Unsigned32 (1..4)
+                    MAX-ACCESS          not-accessible
+                    STATUS              current
+                    DESCRIPTION         "Index 1, 2, 3, 4 = phase A, B, C, N"
+                    ::= { p1VoltagePhaseEntry 1 }
+
+                p1VoltsLineToLine OBJECT-TYPE    -- 
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "V"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Line to Line RMS Voltage in mV: Phases 1-2, 2-3, 3-1 (AB, BC, CA)"     
+                    ::= { p1VoltagePhaseEntry 2 }
+
+                p1VoltsLineToNeutral OBJECT-TYPE    -- 
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "V"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Line to Neutral RMS Voltage in mV: Phases 1, 2, 3 (A, B, C)"     
+                    ::= { p1VoltagePhaseEntry 3 }
+
+                p1VoltsPhaseAngle OBJECT-TYPE    -- 
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "V"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Voltage Phase Angle relative to V1 in 0.001 degrees: Phases 1, 2, 3 (A, B, C)"     
+                    ::= { p1VoltagePhaseEntry 4 }
+
+
+-- Panel: Auxiliary Inputs **********************************************************************
+
+    -- Auxiliary 3 Phase Totals
+
+    p1Aux3PhaseTotals OBJECT IDENTIFIER ::= { p1AuxiliaryInputs 1 } 
+      
+        p1AuxTotalRealEnergy OBJECT-TYPE    --  
+            SYNTAX              TenthsCounter64
+            UNITS               "Wh"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "3 Phase Total Accumulated Real Energy in 0.1 Wh"
+            ::= { p1Aux3PhaseTotals 1 }
+
+        p1AuxTotalRealPower  OBJECT-TYPE    --  
+            SYNTAX              Integer32
+            UNITS               "W"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "3 Phase Total Real Power in Watts"
+            ::= { p1Aux3PhaseTotals 2 }
+
+        p1AuxTotalApparentPower  OBJECT-TYPE    --  
+            SYNTAX              Integer32
+            UNITS               "VA"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "3 Phase Total Apparent Power in VA"
+            ::= { p1Aux3PhaseTotals 3 }
+
+        p1AuxAveragePowerFactor  OBJECT-TYPE    --  
+            SYNTAX              ThousandthsInt32
+            UNITS               "%"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "3 Phase Average Power Factor in 0.001%"
+            ::= { p1Aux3PhaseTotals 4 }
+
+        p1AuxAverageCurrent  OBJECT-TYPE    --  
+            SYNTAX              ThousandthsInt32
+            UNITS               "A"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "3 Phase Average RMS Amps in mA"
+            ::= { p1Aux3PhaseTotals 5 }
+
+        p1AuxPresentTotalRealPowerDemand  OBJECT-TYPE    -- 
+            SYNTAX              Integer32
+            UNITS               "W"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "3 Phase Total Present Real Power Demand in Watts"
+            ::= { p1Aux3PhaseTotals 6 }
+
+        p1AuxTotalRealEnergySnapShot  OBJECT-TYPE    --  
+            SYNTAX              TenthsCounter64
+            UNITS               "Wh"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Snapshot of the 3 Phase Total Accumulated Real Energy in 0.1 Wh"
+            ::= { p1Aux3PhaseTotals 7 }
+
+        p1AuxMaximumTotalRealPowerDemand  OBJECT-TYPE    -- 
+            SYNTAX              ThousandthsInt32
+            UNITS               "A"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "3 Phase Total Maximum Amps Demand in mA"
+            ::= { p1Aux3PhaseTotals 8 }
+
+        p1AuxMaximumTotalRealPower  OBJECT-TYPE    -- 
+            SYNTAX              ThousandthsInt32
+            UNITS               "A"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "3 Phase Total Maximum Amps in a Calculation Interval in mA"
+            ::= { p1Aux3PhaseTotals 9 }
+
+        p1AuxReset  OBJECT-TYPE    -- 
+            SYNTAX              INTEGER 
+                                {
+                                    clearKWh            (10203),
+                                    clearMaxCurrentKW   (29877)
+                                }
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Write 10203 to Clear KWH to 0, 29877 to Clear Max Current and Max KW to 0"
+            ::= { p1Aux3PhaseTotals 10 }
+
+
+    -- Auxiliary individual Phase Totals
+
+    p1AuxPhaseTable OBJECT-TYPE
+        SYNTAX              SEQUENCE OF P1AuxPhaseEntry 
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "Individual Auxiliary Phases: Index 1, 2, 3, 4 = Phase A, B, C, N"
+        ::= { p1AuxiliaryInputs 2 }
+
+        p1AuxPhaseEntry  OBJECT-TYPE
+            SYNTAX              P1AuxPhaseEntry
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Individual Auxiliary Phases: Index 1, 2, 3, 4 = Phase A, B, C, N"
+            INDEX               {
+                                    p1BranchNumberIndex
+                                }
+            ::= { p1AuxPhaseTable 1 }
+    
+            P1AuxPhaseEntry ::= SEQUENCE {
+                p1AuxPhaseIndex  -- index 1, 2, 3, 4 = phase A, B, C, N
+                    Unsigned32, 
+                p1AuxRealPower -- no Neutral
+                    Integer32, 
+                p1AuxApparentPower -- no Neutral
+                    Integer32, 
+                p1AuxPowerFactor -- no Neutral
+                    ThousandthsInt32, 
+                p1AuxCurrent -- 
+                    ThousandthsInt32, 
+                p1AuxCurrentAngle -- 
+                    ThousandthsInt32, 
+                p1AuxPresentCurrentDemand --  
+                    ThousandthsInt32, 
+                p1AuxMaximumCurrentDemand -- 
+                    ThousandthsInt32, 
+                p1AuxMaximumCurrent -- 
+                    ThousandthsInt32 
+            }
+            
+                p1AuxPhaseIndex OBJECT-TYPE
+                    SYNTAX              Unsigned32 (1..4)
+                    MAX-ACCESS          not-accessible
+                    STATUS              current
+                    DESCRIPTION         "Index 1, 2, 3, 4 = phase A, B, C, N"
+                    ::= { p1AuxPhaseEntry 1 }
+            
+                p1AuxRealPower OBJECT-TYPE
+                    SYNTAX              Integer32
+                    UNITS               "W"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Real Power in Watts"
+                    ::= { p1AuxPhaseEntry 2 }
+            
+                p1AuxApparentPower OBJECT-TYPE
+                    SYNTAX              Integer32
+                    UNITS               "VA"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Apparent Power in VA"
+                    ::= { p1AuxPhaseEntry 3 }
+            
+                p1AuxPowerFactor OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "%"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Power Factor in 0.001%"
+                    ::= { p1AuxPhaseEntry 4 }
+            
+                p1AuxCurrent OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "RMS Amps in mA"
+                    ::= { p1AuxPhaseEntry 5 }
+            
+                p1AuxCurrentAngle OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "D"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Current Phase Angle in Thousandths of a Degree relative to Phase V1 or the associated V phase, see p1UserDefinedSettings"
+                    ::= { p1AuxPhaseEntry 6 }
+            
+                p1AuxPresentCurrentDemand OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Present Amps Demand in mA"
+                    ::= { p1AuxPhaseEntry 7 }
+            
+                p1AuxMaximumCurrentDemand OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Maximum Amps Demand in mA"
+                    ::= { p1AuxPhaseEntry 8 }
+            
+                p1AuxMaximumCurrent OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Maximum Amps in a Calculation Interval in mA"
+                    ::= { p1AuxPhaseEntry 9 }
+        
+        
+
+-- Panel: Branch Inputs **********************************************************************
+
+    p1BranchTable OBJECT-TYPE
+        SYNTAX              SEQUENCE OF P1BranchEntry 
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "Single Phase Branch (Channel) Meter"
+        ::= { p1BranchInputs 1 }
+
+        p1BranchEntry  OBJECT-TYPE
+            SYNTAX              P1BranchEntry
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Single Phase Branch (Channel) Meter"
+            INDEX               {
+                                    p1BranchNumberIndex
+                                }
+            ::= { p1BranchTable 1 }
+    
+        P1BranchEntry ::= SEQUENCE {
+            p1BranchNumberIndex
+                Unsigned32, 
+            p1BranchRealEnergy  -- 
+                TenthsCounter64, 
+            p1BranchRealPower  -- 
+                Integer32, 
+            p1BranchApparentPower  -- 
+                Integer32, 
+            p1BranchPowerFactor  -- 
+                ThousandthsInt32, 
+            p1BranchCurrent  --  
+                ThousandthsInt32,
+            p1BranchCurrentAngle -- 
+                ThousandthsInt32,
+            p1BranchPresentCurrentDemand  -- 
+                ThousandthsInt32, 
+            p1BranchPresentRealPowerDemand  -- 
+                Integer32, 
+            p1BranchMaximumCurrentDemand  -- 
+                ThousandthsInt32, 
+            p1BranchMaximumRealPowerDemand  -- 
+                Integer32, 
+            p1BranchRealEnergySnapShot  -- 
+                TenthsCounter64, 
+            p1BranchMaximumCurrent  -- 
+                ThousandthsInt32, 
+            p1BranchMaximumRealPower  -- 
+                Integer32, 
+            p1BranchReset  -- 
+                INTEGER 
+        }
+    
+            p1BranchNumberIndex OBJECT-TYPE
+                SYNTAX              Unsigned32 (1..42)
+                MAX-ACCESS          not-accessible
+                STATUS              current
+                DESCRIPTION         "Branch (channel) Number"
+                ::= { p1BranchEntry 1 }
+        
+            p1BranchRealEnergy OBJECT-TYPE
+                SYNTAX              TenthsCounter64
+                UNITS               "Wh"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Accumulated Real Energy in 0.1 Wh"
+                ::= { p1BranchEntry 2 }
+        
+            p1BranchRealPower OBJECT-TYPE
+                SYNTAX              Integer32
+                UNITS               "W"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Real Power in Watts"
+                ::= { p1BranchEntry 3 }
+        
+            p1BranchApparentPower OBJECT-TYPE
+                SYNTAX              Integer32
+                UNITS               "VA"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Apparent Power in VA"
+                ::= { p1BranchEntry 4 }
+        
+            p1BranchPowerFactor OBJECT-TYPE
+                SYNTAX              ThousandthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Power Factor in 0.001%"
+                ::= { p1BranchEntry 5 }
+        
+            p1BranchCurrent OBJECT-TYPE
+                SYNTAX              ThousandthsInt32
+                UNITS               "A"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "RMS Amps in mA"
+                ::= { p1BranchEntry 6 }
+        
+            p1BranchCurrentAngle OBJECT-TYPE
+                SYNTAX              ThousandthsInt32
+                UNITS               "D"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Current Phase Angle in Thousandths of a Degree relative to Phase V1 or the associated V phase, see p1UserDefinedSettings"
+                ::= { p1BranchEntry 7 }
+        
+            p1BranchPresentCurrentDemand OBJECT-TYPE
+                SYNTAX              ThousandthsInt32
+                UNITS               "A"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Present Amps Demand in mA"
+                ::= { p1BranchEntry 8 }
+        
+            p1BranchPresentRealPowerDemand OBJECT-TYPE
+                SYNTAX              Integer32
+                UNITS               "W"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Present Real Power Demand in Watts"
+                ::= { p1BranchEntry 9 }
+        
+            p1BranchMaximumCurrentDemand OBJECT-TYPE
+                SYNTAX              ThousandthsInt32
+                UNITS               "A"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Maximum Amps Demand in mA"
+                ::= { p1BranchEntry 10 }
+        
+            p1BranchMaximumRealPowerDemand OBJECT-TYPE
+                SYNTAX              Integer32
+                UNITS               "W"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Maximum Real Power Demand in Watts"
+                ::= { p1BranchEntry 11 }
+        
+            p1BranchRealEnergySnapShot OBJECT-TYPE
+                SYNTAX              TenthsCounter64
+                UNITS               "Wh"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Snap Shot of the Accumulated Real Energy in 0.1 Wh"
+                ::= { p1BranchEntry 12 }
+        
+            p1BranchMaximumCurrent OBJECT-TYPE
+                SYNTAX              ThousandthsInt32
+                UNITS               "A"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Maximum Amps in a Calculation Interval in mA"
+                ::= { p1BranchEntry 13 }
+        
+            p1BranchMaximumRealPower OBJECT-TYPE
+                SYNTAX              Integer32
+                UNITS               "W"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Maximum Real Power in a Calculation Interval in Watts"
+                ::= { p1BranchEntry 14 }
+        
+            p1BranchReset OBJECT-TYPE
+                SYNTAX              INTEGER 
+                                    {
+                                      clearKWh            (10203),
+                                      clearMaxCurrentKW   (29877)
+                                    }
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Write 10203 to Clear KWH to 0, 29877 to Clear Max Current and Max KW to 0"
+                ::= { p1BranchEntry 15 }
+        
+
+-- Panel: Flex Circuits **********************************************************************
+
+    p1LogicalCircuitTable  OBJECT-TYPE
+        SYNTAX              SEQUENCE OF P1LogicalCircuitEntry 
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "Flex circuit meter composed of 1 to 3 branch circuits associatied with a single breaker"
+        ::= { p1LogicalCircuits 1 }
+
+        p1LogicalCircuitEntry   OBJECT-TYPE
+            SYNTAX              P1LogicalCircuitEntry
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Flex circuit meter composed of 1 to 3 branch circuits associatied with a single breaker"
+            INDEX               {
+                                    p1LogicalCircuitIndex
+                                }
+            ::= { p1LogicalCircuitTable 1 }
+    
+            P1LogicalCircuitEntry  ::= SEQUENCE {
+                p1LogicalCircuitIndex                  -- 1 to 42
+                    Unsigned32, 
+                p1LogicalCircuitRealEnergy             -- 
+                    TenthsCounter64, 
+                p1LogicalCircuitRealPower              -- 
+                    Integer32, 
+                p1LogicalCircuitApparentPower          -- 
+                    Integer32, 
+                p1LogicalCircuitPowerFactor            -- 
+                    ThousandthsInt32, 
+                p1LogicalCircuitCurrent                -- average of active phases
+                    ThousandthsInt32, 
+                p1LogicalCircuitPresentRealPowerDemand -- 
+                    Integer32, 
+                p1LogicalCircuitPresentCurrentDemand   -- 
+                    ThousandthsInt32, 
+                p1LogicalCircuitMaximumRealPowerDemand -- 
+                    Integer32, 
+                p1LogicalCircuitMaximumCurrentDemand   -- 
+                    ThousandthsInt32, 
+                p1LogicalCircuitMaximumRealPower       -- 
+                    Integer32, 
+                p1LogicalCircuitMaximumCurrent         -- 
+                    ThousandthsInt32, 
+                p1LogicalCircuitSnapshotRealEnergy     -- 
+                    TenthsCounter64, 
+                p1LogicalCircuitLineLineVoltage        -- 
+                    ThousandthsInt32, 
+                p1LogicalCircuitLineNeutralVoltage     -- 
+                    ThousandthsInt32, 
+                p1LogicalCircuitFrequency              -- 
+                    ThousandthsInt32, 
+                p1LogicalCircuitLatchingAlarm          -- 
+                    BITS, 
+                p1LogicalCircuitNonLatchingAlarm       -- 
+                    BITS, 
+                p1LogicalCircuitReset                  -- 
+                    INTEGER, 
+                p1LogicalCircuitBranchAssignment1      -- 
+                    Unsigned32, 
+                p1LogicalCircuitBranchAssignment2      -- 
+                    Unsigned32, 
+                p1LogicalCircuitBranchAssignment3      -- 
+                    Unsigned32, 
+                p1LogicalCircuitCtSize                 -- 
+                    Unsigned32, 
+                p1LogicalCircuitBreakerSize            -- 
+                    Unsigned32 
+            }
+            
+                p1LogicalCircuitIndex OBJECT-TYPE
+                    SYNTAX              Unsigned32 (1..42)
+                    MAX-ACCESS          not-accessible
+                    STATUS              current
+                    DESCRIPTION         "Flex Circuit Number"
+                    ::= { p1LogicalCircuitEntry 1 }
+            
+                p1LogicalCircuitRealEnergy OBJECT-TYPE
+                    SYNTAX              TenthsCounter64
+                    UNITS               "Wh"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Accumulated Real Energy in 0.1 Wh"
+                    ::= { p1LogicalCircuitEntry 2 }
+            
+                p1LogicalCircuitRealPower OBJECT-TYPE
+                    SYNTAX              Integer32
+                    UNITS               "W"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Real Power in W"
+                    ::= { p1LogicalCircuitEntry 3 }
+            
+                p1LogicalCircuitApparentPower OBJECT-TYPE
+                    SYNTAX              Integer32
+                    UNITS               "VA"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Apparent Power in VA"
+                    ::= { p1LogicalCircuitEntry 4 }
+            
+                p1LogicalCircuitPowerFactor OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "%"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Power Factor in 0.001%"
+                    ::= { p1LogicalCircuitEntry 5 }
+            
+                p1LogicalCircuitCurrent OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "RMS Amps in mA"
+                    ::= { p1LogicalCircuitEntry 6 }
+            
+                p1LogicalCircuitPresentRealPowerDemand OBJECT-TYPE
+                    SYNTAX              Integer32
+                    UNITS               "W"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Present Real Power Demand in Watts"
+                    ::= { p1LogicalCircuitEntry 7 }
+            
+                p1LogicalCircuitPresentCurrentDemand  OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Present Current Demand in RMS mA"
+                    ::= { p1LogicalCircuitEntry 8 }
+            
+                p1LogicalCircuitMaximumRealPowerDemand OBJECT-TYPE
+                    SYNTAX              Integer32
+                    UNITS               "W"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Maximum Real Power Demand in Watts"
+                    ::= { p1LogicalCircuitEntry 9 }
+            
+                p1LogicalCircuitMaximumCurrentDemand  OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Maximum Current Demand in RMS mA"
+                    ::= { p1LogicalCircuitEntry 10 }
+            
+                p1LogicalCircuitMaximumRealPower OBJECT-TYPE
+                    SYNTAX              Integer32
+                    UNITS               "W"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Maximum Real Power in a Calculation Interval, in Watts"
+                    ::= { p1LogicalCircuitEntry 11 }
+            
+                p1LogicalCircuitMaximumCurrent  OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Maximum Current in a Calculation Interval, in RMS mA"
+                    ::= { p1LogicalCircuitEntry 12 }
+            
+                p1LogicalCircuitSnapshotRealEnergy OBJECT-TYPE
+                    SYNTAX              TenthsCounter64
+                    UNITS               "Wh"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Snapshot of the Accumulated Real Energy in 0.1 Wh"
+                    ::= { p1LogicalCircuitEntry 13 }
+            
+                p1LogicalCircuitLineLineVoltage OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "V"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Average Line to Line Voltage of phases used Flex Circuit in mV"
+                    ::= { p1LogicalCircuitEntry 14 }
+            
+                p1LogicalCircuitLineNeutralVoltage OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "V"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Average Line to Neutral Voltage of phases used Flex Circuit in mV"
+                    ::= { p1LogicalCircuitEntry 15 }
+            
+                p1LogicalCircuitFrequency OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "Hz"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Frequency in mHZ, derived from phase A"
+                    ::= { p1LogicalCircuitEntry 16 }
+            
+                p1LogicalCircuitLatchingAlarm OBJECT-TYPE
+                    SYNTAX              BITS 
+                                        {
+                                            p1LogicalCircuitLatchingAlarmHighHighCurrent (0),
+                                            p1LogicalCircuitLatchingAlarmHighCurrent     (1),
+                                            p1LogicalCircuitLatchingAlarmLowCurrent      (2),
+                                            p1LogicalCircuitLatchingAlarmLowLowCurrent   (3),
+                                            p1LogicalCircuitLatchingAlarmAlarmOff        (4),
+                                            p1LogicalCircuitLatchingAlarmHighVolt        (8),
+                                            p1LogicalCircuitLatchingAlarmLowVolt         (9)
+                                        }
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Flex Circuit Latching Alarm Bit Map: 0 HighHighCurrent, 1 HighCurrent, 2 LowCurrent, 3 LowLowCurrent, 4 AlarmOff, 8 HighVolt, 9 LowVolt"
+                    ::= { p1LogicalCircuitEntry 17 }
+            
+                p1LogicalCircuitNonLatchingAlarm OBJECT-TYPE
+                    SYNTAX              BITS 
+                                        {
+                                            p1LogicalCircuitNonLatchingAlarmHighCurrent (0),
+                                            p1LogicalCircuitNonLatchingAlarmLowCurrent  (1),
+                                            p1LogicalCircuitNonLatchingAlarmHighVolt    (8),
+                                            p1LogicalCircuitNonLatchingAlarmLowVolt     (9)
+                                        }
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Flex Circuit Non-Latching Alarm Bit Map: 0 HighCurrent, 1 LowCurrent, 8 HighVolt, 9 LowVolt"
+                    ::= { p1LogicalCircuitEntry 18 }
+            
+                p1LogicalCircuitReset OBJECT-TYPE
+                    SYNTAX              INTEGER 
+                                        { 
+                                            clearKWh            (10203),
+                                            clearMaxDemand      (20097),
+                                            beginDemandSubInt   (26012),
+                                            resetDemand         (26013),
+                                            clearMaxCurrentKW   (29877),
+                                            resetLatchingAlarms (31010)
+                                        }
+                    MAX-ACCESS          read-write
+                    STATUS              current
+                    DESCRIPTION         "Write code numbers to reset or clear to 0"
+                    ::= { p1LogicalCircuitEntry 24 }
+            
+                p1LogicalCircuitBranchAssignment1 OBJECT-TYPE
+                    SYNTAX              Unsigned32
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Branch assigned to Flex Circuit. MSB is panel, LSB is branch number assignment. 0 = unassigned."
+                    ::= { p1LogicalCircuitEntry 25 }
+            
+                p1LogicalCircuitBranchAssignment2 OBJECT-TYPE
+                    SYNTAX              Unsigned32
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Branch assigned to Flex Circuit. MSB is panel, LSB is branch number assignment. 0 = unassigned."
+                    ::= { p1LogicalCircuitEntry 26 }
+            
+                p1LogicalCircuitBranchAssignment3 OBJECT-TYPE
+                    SYNTAX              Unsigned32
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Branch assigned to Flex Circuit. MSB is panel, LSB is branch number assignment. 0 = unassigned."
+                    ::= { p1LogicalCircuitEntry 27 }
+            
+                p1LogicalCircuitCtSize OBJECT-TYPE
+                    SYNTAX              Unsigned32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Current Transducer size in Amps. Must be the same for all branches used in a Flex Circuit."
+                    ::= { p1LogicalCircuitEntry 28 }
+            
+                p1LogicalCircuitBreakerSize OBJECT-TYPE
+                    SYNTAX              Unsigned32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Breaker Rating in Amps for the Breaker associated with a Flex Circuit."
+                    ::= { p1LogicalCircuitEntry 29 }
+            
+        
+        
+-- Panel: Configuration **********************************************************************
+ 
+    -- Product Information
+
+    p1ProductInformation OBJECT IDENTIFIER ::= { p1Configuration 1 } 
+      
+        p1SerialNumber  OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Product Serial Number"
+            ::= { p1ProductInformation 1 }
+
+        p1FirmwareRevision   OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Product Firmwre Revision"
+            ::= { p1ProductInformation 2 }
+
+        p1DeviceID   OBJECT-TYPE    -- 
+            SYNTAX              INTEGER 
+                                {
+                                    e30modelC (15170),
+                                    e30modelB (15171),
+                                    e30modelA (15172)
+                                }
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "15170 = Model C, current only on all channels, no voltage; 15171 = Model B, current only on branch channels, power on AUX channels plus voltage; 15172 = Model A, current and power on all channels plus voltage"
+            ::= { p1ProductInformation 3 }
+
+        p1ProductID   OBJECT-TYPE    -- 
+            SYNTAX              BITS 
+                                {
+                                    p1ProductIDSolidCore  (0),
+                                    p1ProductIDSplitCore  (1)
+                                }
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Product Identification Bit Map: 0 = Default Solid-Core, 1 = Default Split-Core, Custom V-Phase Capable"
+            ::= { p1ProductInformation 4 }
+
+        p1LocationString   OBJECT-TYPE    --   
+            SYNTAX              DisplayString (SIZE(128))
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Null terminated Text String Describing Physical Installation"
+            ::= { p1ProductInformation 5 }
+
+
+    -- Global Reset 
+
+    p1GlobalResets   OBJECT-TYPE    -- 
+        SYNTAX              INTEGER 
+                            { 
+                                clearAllKWh            (10203),
+                                clearAllMaxDemand      (20097),
+                                beginNewDemandSubInt   (26012),
+                                resetDemand            (26013),
+                                clearAllMaxCurrentKW   (29877),
+                                resetAllLatchingAlarms (31010)
+                            }
+        MAX-ACCESS          read-write
+        STATUS              current
+        DESCRIPTION         "Global Panel Resets. Write Codes: 26012 = Begin new Demand Sub-interval, 26013 = Reset Demand, 31010 = Reset all Latching Alarms, 10203 = Clear all KWH values to zero, 29877 = Clear all Max Current and Max KW values to zero, 20097 = Clear all Max Demand values to zero"
+        ::= { p1Configuration 2 }
+
+
+    -- Panel Setup
+
+    p1Setup OBJECT IDENTIFIER ::= { p1Configuration 3 } 
+      
+        p1PanelConfiguration   OBJECT-TYPE    -- 
+            SYNTAX              INTEGER
+                                {
+                                    p1PanelConfigurationTopFeedDoubleRow    (0),
+                                    p1PanelConfigurationBottomFeedDoubleRow (1),
+                                    p1PanelConfigurationSingleRowSequential (2),
+                                    p1PanelConfigurationSingleRowOddEven    (3)
+                                }  
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Panel Configuration Bit Map. bit 0: 0 = normal / sequential, 1 = rotated / odd-even; bit 1: 0 = double-row, 1 = single-row.  Integer values:  0 = Top Feed, 1 = Bottom Feed, 2 = Single Row Sequential, 3 = Single Row Odd/Even."
+            ::= { p1Setup 1 }
+
+        p1NumSubIntervalsPerDemandInterval   OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32  (1..6)
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Number of Sub-Intervals per Demand Interval. Sets the number of sub-intervals that make up a single demand interval. For block demand, set this to 1."
+            ::= { p1Setup 2 }
+
+        p1SubIntervalSeconds   OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32   (0..32767)
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Sub-Interval Length in seconds. For sync-to-comms, set this to 0. Allowed lengths are 10-32767."
+            ::= { p1Setup 3 }
+
+        p1UserDefinedSettings  OBJECT-TYPE    -- 
+            SYNTAX              BITS 
+                                {
+                                    p1EnableUserCTtoVoltagePhaseAssignment (0),  -- lets user assign branches to different voltage phases
+                                    p1CurrentAngleVoltagePhaseRelative     (1),  -- otherwise angle is relative to V1 if False
+                                    p1EnableSignedPower                    (2),  -- split core only
+                                    p1EnableSignedPowerFactor              (3),  -- sign denotes lead lag
+                                    p1EnableLogicalCircuitsByTypeArrays       (4),  -- disables legacy static 2 and 3 phase tables 
+                                    p1DisablePanel2                        (5),  -- frees 2nd modbus address
+                                    p1EnableVector2PhaseVAandPFcalc        (6),  -- default is simple VA calculation
+                                    p1EnableRTCDemandSync                  (7)  -- default is free running demand timer
+                                }
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "User Defined Settings Bit Map: 
+                                 Bit 0 - Enable User CT to Voltage Phase Assignment
+                                 Bit 1 - Enable Current Phase Angle Relative to associated Voltage phase (0 = V1 Relative)
+                                 Bit 2 - Enable Signed Power (Split-Core Only)
+                                 Bit 3 - Enable Signed Power Factor (sign denotes lead/lag)
+                                 Bit 4 - Enable Flex Circuits By Data Type Arrays (Disables 2PH/3PH Pointmap)
+                                 Bit 5 - Disable Second Panel (Disables 2nd Modbus address)
+                                 Bit 6 - Enable Trig. Identity for 2PH KVA/PF Calculations (disables simple VA calculation)
+                                 Bit 7 - Enable RTC for Demand Sync (disables free running demand timer)
+                                 Bits 8-15  Reserved "
+            ::= { p1Setup 4 }
+
+
+    -- Auxiliary Input Configuration
+
+    p1AuxConfiguratonTable   OBJECT-TYPE
+        SYNTAX              SEQUENCE OF P1AuxConfiguratonEntry 
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "Auxiliary Input Configuration: Index 1, 2, 3, 4 = Phase A, B, C, N"
+        ::= { p1Configuration 4 }
+
+        p1AuxConfiguratonEntry  OBJECT-TYPE
+            SYNTAX              P1AuxConfiguratonEntry
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Auxiliary Input Configuration: Index 1, 2, 3, 4 = Phase A, B, C, N"
+            INDEX               {
+                                    p1AuxConfiguratonIndex
+                                }
+            ::= { p1AuxConfiguratonTable 1 }
+    
+        P1AuxConfiguratonEntry ::= SEQUENCE {
+            p1AuxConfiguratonIndex  -- index 1, 2, 3, 4 = phase A, B, C, N
+                Unsigned32, 
+            p1AuxCTSize -- 
+                Unsigned32, 
+            p1AuxBreakerSize -- 
+                Unsigned32, 
+            p1AuxToVoltagePhaseAssignment -- 
+                Unsigned32, 
+            p1AuxToCircuitAssignment -- 
+                Unsigned32 
+            }
+
+        p1AuxConfiguratonIndex OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (1..4)
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Auxiliary Phase Number Index: 1, 2, 3, 4 = phase A, B, C, N"
+            ::= { p1AuxConfiguratonEntry 1 }
+
+        p1AuxCTSize OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..32767)
+            UNITS               "A"
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Full scale rating of the Auxiliary circuit Current Transducer in amps."
+            ::= { p1AuxConfiguratonEntry 2 }
+
+        p1AuxBreakerSize OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..32767)
+            UNITS               "A"
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Rating of the Auxiliary Circuit breaker rating in Amps."
+            ::= { p1AuxConfiguratonEntry 3 }
+
+        p1AuxToVoltagePhaseAssignment OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32  (0..3)
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Voltage phase (1, 2, 3 = A, B, C) assigned to the auxiliary circuit."
+            ::= { p1AuxConfiguratonEntry 4 }
+
+        p1AuxToCircuitAssignment OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (1..46)
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Logical Circuit number (1-46) that the auxiliary input is assigned to. 0 = branch is unassigned. 1 to 3 branches may be assigned to any Logical Circuit. "
+            ::= { p1AuxConfiguratonEntry 5 }
+
+
+
+    -- Branch Input Configuration
+
+    p1BranchConfiguratonTable OBJECT-TYPE
+        SYNTAX              SEQUENCE OF P1BranchConfiguratonEntry 
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "Configuration for branch number 1-42"
+        ::= { p1Configuration 5 }
+
+        p1BranchConfiguratonEntry  OBJECT-TYPE
+            SYNTAX              P1BranchConfiguratonEntry
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Configuration for branch number 1-42"
+            INDEX               {
+                                    p1BranchConfiguratonIndex
+                                }
+            ::= { p1BranchConfiguratonTable 1 }
+    
+        P1BranchConfiguratonEntry ::= SEQUENCE {
+            p1BranchConfiguratonIndex  -- branch number 1-42
+                Unsigned32, 
+            p1BranchCTSize -- 
+                Unsigned32, 
+            p1BranchBreakerSize -- 
+                Unsigned32, 
+            p1BranchToVoltagePhaseAssignment -- 
+                Unsigned32, 
+            p1BranchToCircuitAssignment -- 
+                Unsigned32 
+            }
+
+            p1BranchConfiguratonIndex OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (1..42)
+                MAX-ACCESS          not-accessible
+                STATUS              current
+                DESCRIPTION         "branch number 1-42"
+                ::= { p1BranchConfiguratonEntry 1 }
+    
+            p1BranchCTSize OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "A"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Full scale rating of the branch circuit Current Transducer in amps."
+                ::= { p1BranchConfiguratonEntry 2 }
+    
+            p1BranchBreakerSize OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "A"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Rating of the Branch Circuit breaker rating in amps."
+                ::= { p1BranchConfiguratonEntry 3 }
+    
+            p1BranchToVoltagePhaseAssignment OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..3)
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Voltage phase (1, 2, 3 = A, B, C) assigned to the auxiliary circuit."
+                ::= { p1BranchConfiguratonEntry 4 }
+    
+            p1BranchToCircuitAssignment OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (1..42)
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Logical Circuit number 1-42 that the branch is assigned to. 0 = branch is unassigned. 1 to 3 branches may be assigned to any Logical Circuit. "
+                ::= { p1BranchConfiguratonEntry 5 }
+    
+    
+
+    -- Alarm Configuration
+
+    p1AlarmConfiguration OBJECT IDENTIFIER ::= { p1Configuration 6 } 
+      
+        p1AlarmTimeDelays OBJECT IDENTIFIER ::= { p1AlarmConfiguration 1 } 
+          
+            p1OverVoltageTimeDelay OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "S"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Over Voltage Alarm time delay in seconds."
+                ::= { p1AlarmTimeDelays 1 }
+
+            p1UnderVoltageTimeDelay OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "S"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Under Voltage Alarm time delay in seconds."
+                ::= { p1AlarmTimeDelays 2 }
+
+            p1HighHighLatchingAlarmTimeDelay OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "S"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "High High Latching Alarm Time Delay in seconds"
+                ::= { p1AlarmTimeDelays 3 }
+
+            p1HighLatchingAlarmTimeDelay OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "S"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "High Latching Alarm Time Delay in seconds"
+                ::= { p1AlarmTimeDelays 4 }
+
+            p1LowLatchingAlarmTimeDelay OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "S"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Low Latching Alarm Time Delay in seconds"
+                ::= { p1AlarmTimeDelays 5 }
+
+            p1LowLowLatchingAlarmTimeDelay OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "S"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Low Low Latching Alarm Time Delay in seconds"
+                ::= { p1AlarmTimeDelays 6 }
+
+            p1LatchingAlarmOnTime OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "S"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Latching Alarm ON Time in seconds (when current is above Low-Low alarm & ON Time elapses, then ON state is declared for all latching alarms, ON State enables Alarm Time Delays)"
+                ::= { p1AlarmTimeDelays 7 }
+
+            p1LatchingAlarmOffTime OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "S"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Latching Alarms time until OFF state declared (current is below Low-Low alarm and a ON state was declared)."
+                ::= { p1AlarmTimeDelays 8 }
+
+        p1AlarmThresholds OBJECT IDENTIFIER ::= { p1AlarmConfiguration 2 } 
+          
+            p1OverVoltageThreshold OBJECT-TYPE    -- Voltage
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "V"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Over Voltage Threshold in Volts. 0 disables alarm."
+                ::= { p1AlarmThresholds 1 }
+
+            p1UnderVoltageThreshold OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "V"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Under Voltage Threshold in Volts. 0 disables alarm."
+                ::= { p1AlarmThresholds 2 }
+
+            p1VoltageHysteresisThreshold OBJECT-TYPE    -- 
+                SYNTAX              TenthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Non-Latching Voltage Alarm hysteresis threshold in units of 0.1%"
+                ::= { p1AlarmThresholds 3 }
+
+            p1HighHighLatchingAlarmThreshold OBJECT-TYPE    -- in % of breaker size
+                SYNTAX              TenthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "High High current latching alarm threshold for all current inputs in 0.1% of the associated breaker size. 0 disables alarm."
+                ::= { p1AlarmThresholds 4 }
+
+            p1HighLatchingAlarmThreshold OBJECT-TYPE    -- 
+                SYNTAX              TenthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "High current latching alarm threshold for all current inputs in 0.1% of the associated breaker size. 0 disables alarm."
+                ::= { p1AlarmThresholds 5 }
+
+            p1LowLatchingAlarmThreshold OBJECT-TYPE    -- 
+                SYNTAX              TenthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Low current latching alarm threshold for all current inputs in 0.1% of the associated breaker size. 0 disables alarm."
+                ::= { p1AlarmThresholds 6 }
+
+            p1LowLowLatchingAlarmThreshold OBJECT-TYPE    -- 
+                SYNTAX              TenthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Low Low current latching alarm threshold for all current inputs in 0.1% of the associated breaker size. 0 disables alarm."
+                ::= { p1AlarmThresholds 7 }
+
+            p1NonLatchingHighThreshold OBJECT-TYPE    -- 
+                SYNTAX              TenthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Non-latching high current alarm threshold for all current inputs in 0.1% of the associated breaker size. 0 disables alarm."
+                ::= { p1AlarmThresholds 8 }
+
+            p1NonLatchingLowThreshold OBJECT-TYPE    -- 
+                SYNTAX              TenthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Non-latching low current alarm threshold for all current inputs in 0.1% of the associated breaker size. 0 disables alarm."
+                ::= { p1AlarmThresholds 9 }
+
+            p1NonLatchingHysteresisThreshold OBJECT-TYPE    -- 
+                SYNTAX              TenthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Non-latching alarm hysteresis threshold for all current inputs in 0.1% of setpoint."
+                ::= { p1AlarmThresholds 10 }
+
+    p1RealTimeClock OBJECT IDENTIFIER ::= { p1Configuration 7 } 
+      
+        p1PresentTime  OBJECT IDENTIFIER ::= { p1RealTimeClock 1 } 
+          
+            p1PresentYear OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "2 digit Year offset from 2000"
+                ::= { p1PresentTime 1 }
+
+            p1PresentDayMonth  OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Month in low byte, Day in 2nd byte"
+                ::= { p1PresentTime 2 }
+
+            p1PresentHourMinute  OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Minute in low byte, Hour in 2nd byte"
+                ::= { p1PresentTime 3 }
+
+            p1PresentMilliSeconds  OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Milli-Seconds"
+                ::= { p1PresentTime 4 }
+
+        p1SnapShotTime  OBJECT IDENTIFIER ::= { p1RealTimeClock 2 } 
+ 
+            p1SnapShotYear OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "2 digit Year offset from 2000"
+                ::= { p1SnapShotTime 1 }
+
+            p1SnapShotDayMonth  OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Month in low byte, Day in 2nd byte"
+                ::= { p1SnapShotTime 2 }
+
+            p1SnapShotHourMinute  OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Minute in low byte, Hour in 2nd byte"
+                ::= { p1SnapShotTime 3 }
+
+            p1SnapShotMilliSeconds  OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Milli-Seconds"
+                ::= { p1SnapShotTime 4 }
+
+ 
+ 
+ 
+ 
+ 
+-- ******************************************************************************
+-- Panel 2 **********************************************************************
+-- ******************************************************************************
+
+
+-- Panel: Alarms **********************************************************************
+
+    -- Alarm Traps 
+
+    p2Traps OBJECT IDENTIFIER ::= { p2Alarms 0 } 
+          
+        p2GlobalLatchingAlarmStatusTrap NOTIFICATION-TYPE    -- 
+            OBJECTS
+            {
+                p2GlobalLatchingAlarmStatus
+            }
+            STATUS              current
+            DESCRIPTION         "Global Latching Alarm Status Bit Map: 0 HighHighCurrent, 1 HighCurrent, 2 LowCurrent, 3 LowLowCurrent, 4 AlarmOff, 8 HighVoltage, 9 LowVoltage"
+            ::= { p2Traps 1 }
+    
+        p2GlobalNonLatchingAlarmStatusTrap NOTIFICATION-TYPE    -- 
+            OBJECTS
+            {
+                p2GlobalLatchingAlarmStatus
+            }
+            STATUS              current
+            DESCRIPTION         "Global Non-Latching Alarm Status Bit Map: 0 HighCurrent, 1 LowCurrent, 8 HighVoltage, 9 LowVoltage"
+            ::= { p2Traps 2 }
+    
+        p2VoltagePhaseAlarmStatusTrap NOTIFICATION-TYPE    -- voltage alarms A, B, C. Return phase index & status register.
+            OBJECTS
+            {
+                p2AuxAlarmPhase,
+                p2VoltagePhaseAlarmStatus 
+            }
+            STATUS              current
+            DESCRIPTION         "Voltage Alarm Status Bit Map: 0 HighLatching, 1 LowLatching, 8 HighNonLatching, 9 LowNonLatching"
+            ::= { p2Traps 3 }
+    
+        p2AuxCurrentAlarmStatusTrap NOTIFICATION-TYPE    -- current alarms A, B, C, N. Return phase index & status register.
+            OBJECTS
+            {
+                p2AuxAlarmPhase,
+                p2AuxCurrentAlarmStatus  
+            }
+            STATUS              current
+            DESCRIPTION         "Auxiliary Current Alarm Status Bit Map: 0 HighHighLatching, 1 HighLatching, 2 LowLatching, 3 LowLowLatching, 4 AlarmOff, 8 HighNonLatching, 9 LowNonLatching"
+            ::= { p2Traps 4 }
+    
+        p2BranchCurrentAlarmStatusTrap NOTIFICATION-TYPE    -- branch current alarms 1-42. Return branch index & status register.
+            OBJECTS
+            {
+                p2BranchAlarmNumber,
+                p2BranchCurrentAlarmStatus   
+            }
+            STATUS              current
+            DESCRIPTION         "Branch Current Alarm Status Bit Map: 0 HighHighLatching, 1 HighLatching, 2 LowLatching, 3 LowLowLatching, 4 AlarmOff, 8 HighNonLatching, 9 LowNonLatching"
+            ::= { p2Traps 5 }
+
+    -- Global Alarm Status 
+
+    p2GlobalAlarmStatus OBJECT IDENTIFIER ::= { p2Alarms 1 } 
+      
+        p2GlobalLatchingAlarmStatus OBJECT-TYPE    -- 
+            SYNTAX              BITS 
+                                {
+                                    p2GlobalLatchingAlarmStatusHighHighCurrent (0),
+                                    p2GlobalLatchingAlarmStatusHighCurrent     (1),
+                                    p2GlobalLatchingAlarmStatusLowCurrent      (2),
+                                    p2GlobalLatchingAlarmStatusLowLowCurrent   (3),
+                                    p2GlobalLatchingAlarmStatusAlarmOff        (4),
+                                    p2GlobalLatchingAlarmStatusHighVoltage     (8),
+                                    p2GlobalLatchingAlarmStatusLowVoltage      (9)
+                                }
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Global Latching Alarm Status Bit Map: 0 HighHighCurrent, 1 HighCurrent, 2 LowCurrent, 3 LowLowCurrent, 4 AlarmOff, 8 HighVoltage, 9 LowVoltage"
+            ::= { p2GlobalAlarmStatus 1 }
+
+        p2GlobalNonLatchingAlarmStatus OBJECT-TYPE    -- 
+            SYNTAX              BITS 
+                                {
+                                    p2GlobalNonLatchingAlarmStatusHighCurrent (0),
+                                    p2GlobalNonLatchingAlarmStatusLowCurrent  (1),
+                                    p2GlobalNonLatchingAlarmStatusHighVoltage (8),
+                                    p2GlobalNonLatchingAlarmStatusLowVoltage  (9)
+                                }
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Global Non-Latching Alarm Status Bit Map: 0 HighCurrent, 1 LowCurrent, 8 HighVoltage, 9 LowVoltage"
+            ::= { p2GlobalAlarmStatus 2 }
+
+        p2GlobalMostRecentLatchingChannel OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..46)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Most Recent Branch or Aux in Latching Alarm: None = 0, Branches are 1-42, Auxiliary A, B, C, N = 43, 44, 45, 46"
+            ::= { p2GlobalAlarmStatus 3 }
+
+        p2GlobalMostRecentNonLatchingChannel OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..46)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Most Recent Branch or Aux in Non-Latching Alarm: None = 0, Branches are 1-42, Auxiliary A, B, C, N = 43, 44, 45, 46"
+            ::= { p2GlobalAlarmStatus 4 }
+
+        p2TotalLatchingChannelsInAlarm OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Total Number of Aux and Branch Channels in Latching Alarm"
+            ::= { p2GlobalAlarmStatus 5 }
+
+        p2TotalNonLatchingChannelsInAlarm OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Total Number of Aux and Branch Channels in Non-Latching Alarm"
+            ::= { p2GlobalAlarmStatus 6 }
+
+        p2DeviceHealth OBJECT-TYPE    -- 
+            SYNTAX              BITS 
+                                {
+                                    p2DeviceHealthReservedBit0            (0),
+                                    p2DeviceHealthPhaseAFrequencyOutRange (1),
+                                    p2DeviceHealthPhaseAVoltageClipping   (2),
+                                    p2DeviceHealthPhaseBVoltageClipping   (3),
+                                    p2DeviceHealthPhaseCVoltageClipping   (4),
+                                    p2DeviceHealthCurrentClipping         (5),
+                                    p2DeviceHealthStripConnectionError    (8),
+                                    p2DeviceHealthCurrentOnlyModel       (13),
+                                    p2DeviceHealthAuxPowerModel          (14),
+                                    p2DeviceHealthBranchPowerModel       (15)
+                                }
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Device Health Bit Map: 1 Phase A Frequency Out of 40-70Hz Range, 2 - Phase A Voltage Clipping, 3 - Phase B Voltage Clipping, 4 - Phase C Voltage Clipping, 5 - Current Clipping on 1 or more inputs, 8 - Strip Connection Error, 13 - Current only Model C, 14 - Aux Power Model B, 15 - Branch Power Model A"
+            ::= { p2GlobalAlarmStatus 7 }
+
+
+    -- Global Alarm Counters 
+
+    p2GlobalAlarmCounters  OBJECT IDENTIFIER ::= { p2Alarms 2 } 
+      
+        p2GlobalHighHighLatchingAlarmCount OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..32767)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of all High High Current Alarms"
+            ::= { p2GlobalAlarmCounters 1 }
+
+        p2GlobalHighLatchingAlarmCount OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..32767)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of all High Current Alarms"
+            ::= { p2GlobalAlarmCounters 2 }
+
+        p2GlobalLowLatchingAlarmCount OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..32767)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of all Low Current Alarms"
+            ::= { p2GlobalAlarmCounters 3 }
+
+        p2GlobalLowLowLatchingAlarmCount OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..32767)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of all Low Low Current Alarms"
+            ::= { p2GlobalAlarmCounters 4 }
+
+        p2GlobalOffStateLatchingAlarmCount OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..32767)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of all Off State Transitions"
+            ::= { p2GlobalAlarmCounters 5 }
+
+        p2PowerUpCount OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..32767)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of the number reboots"
+            ::= { p2GlobalAlarmCounters 6 }
+
+    -- Auxiliary Inputs Alarms (current and voltage)
+
+    p2AuxVoltageAndCurrentAlarmTable OBJECT-TYPE
+        SYNTAX              SEQUENCE OF P2AuxVoltageAndCurrentAlarmEntry 
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "Individual Auxiliary Phase Alarms: Index 1, 2, 3, 4 = Phase A, B, C, N"
+        ::= { p2Alarms 3 }
+
+        p2AuxVoltageAndCurrentAlarmEntry  OBJECT-TYPE
+            SYNTAX              P2AuxVoltageAndCurrentAlarmEntry
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Individual Auxiliary Phase Alarms: Index 1, 2, 3, 4 = Phase A, B, C, N"
+            INDEX               {
+                                    p2AuxAlarmIndex
+                                }
+            ::= { p2AuxVoltageAndCurrentAlarmTable 1 }
+    
+        P2AuxVoltageAndCurrentAlarmEntry ::= SEQUENCE {
+            p2AuxAlarmIndex  -- index 1, 2, 3, 4 = phase A, B, C, N
+                Unsigned32, 
+            p2AuxAlarmPhase  -- index 1, 2, 3, 4 = phase A, B, C, N
+                Unsigned32, 
+            p2VoltagePhaseAlarmStatus -- voltage alarms
+                BITS, 
+            p2AuxCurrentAlarmStatus -- current alarms
+                BITS, 
+            p2AuxHighHighAlarmCount -- 
+                Counter32, 
+            p2AuxHighAlarmCount -- 
+                Counter32, 
+            p2AuxLowAlarmCount -- 
+                Counter32, 
+            p2AuxLowLowAlarmCount -- 
+                Counter32, 
+            p2AuxOffStateAlarmCount -- 
+                Counter32 
+            }
+
+        p2AuxAlarmIndex OBJECT-TYPE    --  index 1, 2, 3, 4 = phase A, B, C, N
+            SYNTAX              Unsigned32 (1..4)
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Auxiliary Phase Number Index: 1, 2, 3, 4 = phase A, B, C, N"
+            ::= { p2AuxVoltageAndCurrentAlarmEntry 1 }
+
+        p2AuxAlarmPhase OBJECT-TYPE    --  index 1, 2, 3, 4 = phase A, B, C, N (same as Index, but readable)
+            SYNTAX              Unsigned32 (1..4)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Auxiliary Phase Number Index: 1, 2, 3, 4 = phase A, B, C, N"
+            ::= { p2AuxVoltageAndCurrentAlarmEntry 2 }
+
+        p2VoltagePhaseAlarmStatus OBJECT-TYPE    -- voltage alarms
+            SYNTAX              BITS 
+                                {
+                                    p2VoltagePhaseAlarmStatusHighLatching    (0),
+                                    p2VoltagePhaseAlarmStatusLowLatching     (1),
+                                    p2VoltagePhaseAlarmStatusHighNonLatching (8),
+                                    p2VoltagePhaseAlarmStatusLowNonLatching  (9)
+                                }
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Auxiliary Voltage Alarm Status Bit Map: 0 HighLatching, 1 LowLatching, 8 HighNonLatching, 9 LowNonLatching"
+            ::= { p2AuxVoltageAndCurrentAlarmEntry 3 }
+
+        p2AuxCurrentAlarmStatus OBJECT-TYPE    -- current alarms
+            SYNTAX              BITS 
+                                {
+                                    p2AuxCurrentAlarmStatusHighHighAmp (0),
+                                    p2AuxCurrentAlarmStatusHighAmp     (1),
+                                    p2AuxCurrentAlarmStatusLowAmp      (2),
+                                    p2AuxCurrentAlarmStatusLowLowAmp   (3),
+                                    p2AuxCurrentAlarmStatusAlarmOff    (4),
+                                    p2AuxCurrentAlarmStatusHighVolt    (8),
+                                    p2AuxCurrentAlarmStatusLowVolt     (9)
+                                }
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Auxiliary Current Alarm Status Bit Map: 0 HighHighAmp, 1 HighAmp, 2 LowAmp, 3 LowLowAmp, 4 AlarmOff, 8 HighVolt, 9 LowVolt"
+            ::= { p2AuxVoltageAndCurrentAlarmEntry 4 }
+
+        p2AuxHighHighAlarmCount OBJECT-TYPE    -- 
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Auxiliary Current High High Alarms"
+            ::= { p2AuxVoltageAndCurrentAlarmEntry 5 }
+
+        p2AuxHighAlarmCount OBJECT-TYPE    -- 
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Auxiliary Current High Alarms"
+            ::= { p2AuxVoltageAndCurrentAlarmEntry 6 }
+
+        p2AuxLowAlarmCount OBJECT-TYPE    --  
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Auxiliary Current Low Alarms"
+            ::= { p2AuxVoltageAndCurrentAlarmEntry 7 }
+
+        p2AuxLowLowAlarmCount OBJECT-TYPE    --  
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Auxiliary Current Low Low Alarms"
+            ::= { p2AuxVoltageAndCurrentAlarmEntry 8 }
+
+        p2AuxOffStateAlarmCount OBJECT-TYPE    --  
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Auxiliary Current Alarm Off State Transitions"
+            ::= { p2AuxVoltageAndCurrentAlarmEntry 9 }
+
+
+    -- Branch Current Input Alarms
+
+    p2BranchCurrentAlarmTable OBJECT-TYPE
+        SYNTAX              SEQUENCE OF P2BranchCurrentAlarmEntry 
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "Individual Branch Alarms: Index 1 to 42 = Branch Number"
+        ::= { p2Alarms 4 }
+
+        p2BranchCurrentAlarmEntry  OBJECT-TYPE
+            SYNTAX              P2BranchCurrentAlarmEntry
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Individual Branch Alarms: Index 1 to 42 = Branch Number"
+            INDEX               {
+                                    p2BranchAlarmIndex
+                                }
+            ::= { p2BranchCurrentAlarmTable 1 }
+    
+        P2BranchCurrentAlarmEntry ::= SEQUENCE {
+            p2BranchAlarmIndex  -- index 1 - 42 = branch
+                Unsigned32, 
+            p2BranchAlarmNumber  -- index 1 - 42 = branch (same as Index, but readable)
+                Unsigned32, 
+            p2BranchCurrentAlarmStatus -- 
+                BITS, 
+            p2BranchHighHighAlarmCount -- 
+                Counter32, 
+            p2BranchHighAlarmCount -- 
+                Counter32, 
+            p2BranchLowAlarmCount -- 
+                Counter32, 
+            p2BranchLowLowAlarmCount -- 
+                Counter32, 
+            p2BranchOffStateAlarmCount -- 
+                Counter32 
+            }
+
+        p2BranchAlarmIndex OBJECT-TYPE    -- index 1 - 42 = branch
+            SYNTAX              Unsigned32 (1..42)
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Branch Number Index"
+            ::= { p2BranchCurrentAlarmEntry 1 }
+
+        p2BranchAlarmNumber OBJECT-TYPE    -- index 1 - 42 = branch (same as Index, but readable)
+            SYNTAX              Unsigned32 (1..42)
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Branch Number Index"
+            ::= { p2BranchCurrentAlarmEntry 2 }
+
+        p2BranchCurrentAlarmStatus OBJECT-TYPE    -- 
+            SYNTAX              BITS 
+                                {
+                                    p2BranchCurrentAlarmStatusHighHighLatching (0),
+                                    p2BranchCurrentAlarmStatusHighLatching     (1),
+                                    p2BranchCurrentAlarmStatusLowLatching      (2),
+                                    p2BranchCurrentAlarmStatusLowLowLatching   (3),
+                                    p2BranchCurrentAlarmStatusAlarmOff         (4),
+                                    p2BranchCurrentAlarmStatusHighNonLatching  (8),
+                                    p2BranchCurrentAlarmStatusLowNonLatching   (9)
+                                }
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Branch Current Alarm Status Bit Map: 0 HighHighLatching, 1 HighLatching, 2 LowLatching, 3 LowLowLatching, 4 AlarmOff, 8 HighNonLatching, 9 LowNonLatching"
+            ::= { p2BranchCurrentAlarmEntry 3 }
+
+        p2BranchHighHighAlarmCount OBJECT-TYPE    -- 
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Branch Current High High Alarms"
+            ::= { p2BranchCurrentAlarmEntry 4 }
+
+        p2BranchHighAlarmCount OBJECT-TYPE    --  
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Branch Current High Alarms"
+            ::= { p2BranchCurrentAlarmEntry 5 }
+
+        p2BranchLowAlarmCount OBJECT-TYPE    --  
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Branch Current Low Alarms"
+            ::= { p2BranchCurrentAlarmEntry 6 }
+
+        p2BranchLowLowAlarmCount OBJECT-TYPE    --  
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Branch Current Low Low Alarms"
+            ::= { p2BranchCurrentAlarmEntry 7 }
+
+        p2BranchOffStateAlarmCount OBJECT-TYPE    --  
+
+            SYNTAX              Counter32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Count of Branch Current Alarm Off State Transitions"
+            ::= { p2BranchCurrentAlarmEntry 8 }
+
+
+-- Panel: Voltage Inputs **********************************************************************
+
+    -- Voltage 3 Phase Averages
+
+    p2VoltageAverages OBJECT IDENTIFIER ::= { p2VoltageInputs 1 } 
+      
+        p2VoltsLineLine3PhaseAve OBJECT-TYPE    -- 
+            SYNTAX              ThousandthsInt32
+            UNITS               "V"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Average Line to Line Voltage of the active phases in mV"
+            ::= { p2VoltageAverages 1 }
+
+        p2VoltsLineNeutral3PhaseAve OBJECT-TYPE    -- 
+            SYNTAX              ThousandthsInt32
+            UNITS               "V"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Average Line to Neutral Voltage of the active phases in mV"
+            ::= { p2VoltageAverages 2 }
+
+        p2Frequency OBJECT-TYPE    -- 
+            SYNTAX              ThousandthsInt32
+            UNITS               "Hz"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Frequency measured on Phase A in mHz"
+            ::= { p2VoltageAverages 3 }
+
+    -- Auxiliary individual Phase Totals
+
+    p2VoltagePhaseTable  OBJECT-TYPE
+        SYNTAX              SEQUENCE OF P2VoltagePhaseEntry  
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "Individual Auxiliary Phase Index 1, 2, 3 = Phase A, B, C"
+        ::= { p2VoltageInputs 2 }
+
+        p2VoltagePhaseEntry   OBJECT-TYPE
+            SYNTAX              P2VoltagePhaseEntry
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Individual Voltage Phase Index 1, 2, 3 = Phase A, B, C"
+            INDEX               {
+                                    p2VoltagePhaseIndex
+                                }
+            ::= { p2VoltagePhaseTable 1 }
+    
+            P2VoltagePhaseEntry ::= SEQUENCE {
+                p2VoltagePhaseIndex  -- index 1, 2, 3 = phase A, B, C
+                    Unsigned32, 
+                p2VoltsLineToLine  -- 
+                    ThousandthsInt32, 
+                p2VoltsLineToNeutral  -- 
+                    ThousandthsInt32, 
+                p2VoltsPhaseAngle  -- 
+                    ThousandthsInt32 
+            }
+
+
+                p2VoltagePhaseIndex OBJECT-TYPE
+                    SYNTAX              Unsigned32 (1..4)
+                    MAX-ACCESS          not-accessible
+                    STATUS              current
+                    DESCRIPTION         "Index 1, 2, 3, 4 = phase A, B, C, N"
+                    ::= { p2VoltagePhaseEntry 1 }
+
+                p2VoltsLineToLine OBJECT-TYPE    -- 
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "V"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Line to Line RMS Voltage in mV: Phases 1-2, 2-3, 3-1 (AB, BC, CA)"     
+                    ::= { p2VoltagePhaseEntry 2 }
+
+                p2VoltsLineToNeutral OBJECT-TYPE    -- 
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "V"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Line to Neutral RMS Voltage in mV: Phases 1, 2, 3 (A, B, C)"     
+                    ::= { p2VoltagePhaseEntry 3 }
+
+                p2VoltsPhaseAngle OBJECT-TYPE    -- 
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "V"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Voltage Phase Angle relative to V1 in 0.001 degrees: Phases 1, 2, 3 (A, B, C)"     
+                    ::= { p2VoltagePhaseEntry 4 }
+
+
+-- Panel: Auxiliary Inputs **********************************************************************
+
+    -- Auxiliary 3 Phase Totals
+
+    p2Aux3PhaseTotals OBJECT IDENTIFIER ::= { p2AuxiliaryInputs 1 } 
+      
+        p2AuxTotalRealEnergy OBJECT-TYPE    --  
+            SYNTAX              TenthsCounter64
+            UNITS               "Wh"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "3 Phase Total Accumulated Real Energy in 0.1 Wh"
+            ::= { p2Aux3PhaseTotals 1 }
+
+        p2AuxTotalRealPower  OBJECT-TYPE    --  
+            SYNTAX              Integer32
+            UNITS               "W"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "3 Phase Total Real Power in Watts"
+            ::= { p2Aux3PhaseTotals 2 }
+
+        p2AuxTotalApparentPower  OBJECT-TYPE    --  
+            SYNTAX              Integer32
+            UNITS               "VA"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "3 Phase Total Apparent Power in VA"
+            ::= { p2Aux3PhaseTotals 3 }
+
+        p2AuxAveragePowerFactor  OBJECT-TYPE    --  
+            SYNTAX              ThousandthsInt32
+            UNITS               "%"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "3 Phase Average Power Factor in 0.001%"
+            ::= { p2Aux3PhaseTotals 4 }
+
+        p2AuxAverageCurrent  OBJECT-TYPE    --  
+            SYNTAX              ThousandthsInt32
+            UNITS               "A"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "3 Phase Average RMS Amps in mA"
+            ::= { p2Aux3PhaseTotals 5 }
+
+        p2AuxPresentTotalRealPowerDemand  OBJECT-TYPE    -- 
+            SYNTAX              Integer32
+            UNITS               "W"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "3 Phase Total Present Real Power Demand in Watts"
+            ::= { p2Aux3PhaseTotals 6 }
+
+        p2AuxTotalRealEnergySnapShot  OBJECT-TYPE    --  
+            SYNTAX              TenthsCounter64
+            UNITS               "Wh"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Snapshot of the 3 Phase Total Accumulated Real Energy in 0.1 Wh"
+            ::= { p2Aux3PhaseTotals 7 }
+
+        p2AuxMaximumTotalRealPowerDemand  OBJECT-TYPE    -- 
+            SYNTAX              ThousandthsInt32
+            UNITS               "A"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "3 Phase Total Maximum Amps Demand in mA"
+            ::= { p2Aux3PhaseTotals 8 }
+
+        p2AuxMaximumTotalRealPower  OBJECT-TYPE    -- 
+            SYNTAX              ThousandthsInt32
+            UNITS               "A"
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "3 Phase Total Maximum Amps in a Calculation Interval in mA"
+            ::= { p2Aux3PhaseTotals 9 }
+
+        p2AuxReset  OBJECT-TYPE    -- 
+            SYNTAX              INTEGER 
+                                {
+                                    clearKWh            (10203),
+                                    clearMaxCurrentKW   (29877)
+                                }
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Write 10203 to Clear KWH to 0, 29877 to Clear Max Current and Max KW to 0"
+            ::= { p2Aux3PhaseTotals 10 }
+
+
+    -- Auxiliary individual Phase Totals
+
+    p2AuxPhaseTable OBJECT-TYPE
+        SYNTAX              SEQUENCE OF P2AuxPhaseEntry 
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "Individual Auxiliary Phases: Index 1, 2, 3, 4 = Phase A, B, C, N"
+        ::= { p2AuxiliaryInputs 2 }
+
+        p2AuxPhaseEntry  OBJECT-TYPE
+            SYNTAX              P2AuxPhaseEntry
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Individual Auxiliary Phases: Index 1, 2, 3, 4 = Phase A, B, C, N"
+            INDEX               {
+                                    p2BranchNumberIndex
+                                }
+            ::= { p2AuxPhaseTable 1 }
+    
+            P2AuxPhaseEntry ::= SEQUENCE {
+                p2AuxPhaseIndex  -- index 1, 2, 3, 4 = phase A, B, C, N
+                    Unsigned32, 
+                p2AuxRealPower -- no Neutral
+                    Integer32, 
+                p2AuxApparentPower -- no Neutral
+                    Integer32, 
+                p2AuxPowerFactor -- no Neutral
+                    ThousandthsInt32, 
+                p2AuxCurrent -- 
+                    ThousandthsInt32, 
+                p2AuxCurrentAngle -- 
+                    ThousandthsInt32, 
+                p2AuxPresentCurrentDemand --  
+                    ThousandthsInt32, 
+                p2AuxMaximumCurrentDemand -- 
+                    ThousandthsInt32, 
+                p2AuxMaximumCurrent -- 
+                    ThousandthsInt32 
+            }
+            
+                p2AuxPhaseIndex OBJECT-TYPE
+                    SYNTAX              Unsigned32 (1..4)
+                    MAX-ACCESS          not-accessible
+                    STATUS              current
+                    DESCRIPTION         "Index 1, 2, 3, 4 = phase A, B, C, N"
+                    ::= { p2AuxPhaseEntry 1 }
+            
+                p2AuxRealPower OBJECT-TYPE
+                    SYNTAX              Integer32
+                    UNITS               "W"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Real Power in Watts"
+                    ::= { p2AuxPhaseEntry 2 }
+            
+                p2AuxApparentPower OBJECT-TYPE
+                    SYNTAX              Integer32
+                    UNITS               "VA"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Apparent Power in VA"
+                    ::= { p2AuxPhaseEntry 3 }
+            
+                p2AuxPowerFactor OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "%"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Power Factor in 0.001%"
+                    ::= { p2AuxPhaseEntry 4 }
+            
+                p2AuxCurrent OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "RMS Amps in mA"
+                    ::= { p2AuxPhaseEntry 5 }
+            
+                p2AuxCurrentAngle OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "D"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Current Phase Angle in Thousandths of a Degree relative to Phase V1 or the associated V phase, see p2UserDefinedSettings"
+                    ::= { p2AuxPhaseEntry 6 }
+            
+                p2AuxPresentCurrentDemand OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Present Amps Demand in mA"
+                    ::= { p2AuxPhaseEntry 7 }
+            
+                p2AuxMaximumCurrentDemand OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Maximum Amps Demand in mA"
+                    ::= { p2AuxPhaseEntry 8 }
+            
+                p2AuxMaximumCurrent OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Maximum Amps in a Calculation Interval in mA"
+                    ::= { p2AuxPhaseEntry 9 }
+        
+        
+
+-- Panel: Branch Inputs **********************************************************************
+
+    p2BranchTable OBJECT-TYPE
+        SYNTAX              SEQUENCE OF P2BranchEntry 
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "Single Phase Branch (Channel) Meter"
+        ::= { p2BranchInputs 1 }
+
+        p2BranchEntry  OBJECT-TYPE
+            SYNTAX              P2BranchEntry
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Single Phase Branch (Channel) Meter"
+            INDEX               {
+                                    p2BranchNumberIndex
+                                }
+            ::= { p2BranchTable 1 }
+    
+        P2BranchEntry ::= SEQUENCE {
+            p2BranchNumberIndex
+                Unsigned32, 
+            p2BranchRealEnergy  -- 
+                TenthsCounter64, 
+            p2BranchRealPower  -- 
+                Integer32, 
+            p2BranchApparentPower  -- 
+                Integer32, 
+            p2BranchPowerFactor  -- 
+                ThousandthsInt32, 
+            p2BranchCurrent  --  
+                ThousandthsInt32,
+            p2BranchCurrentAngle -- 
+                ThousandthsInt32,
+            p2BranchPresentCurrentDemand  -- 
+                ThousandthsInt32, 
+            p2BranchPresentRealPowerDemand  -- 
+                Integer32, 
+            p2BranchMaximumCurrentDemand  -- 
+                ThousandthsInt32, 
+            p2BranchMaximumRealPowerDemand  -- 
+                Integer32, 
+            p2BranchRealEnergySnapShot  -- 
+                TenthsCounter64, 
+            p2BranchMaximumCurrent  -- 
+                ThousandthsInt32, 
+            p2BranchMaximumRealPower  -- 
+                Integer32, 
+            p2BranchReset  -- 
+                INTEGER 
+        }
+    
+            p2BranchNumberIndex OBJECT-TYPE
+                SYNTAX              Unsigned32 (1..42)
+                MAX-ACCESS          not-accessible
+                STATUS              current
+                DESCRIPTION         "Branch (channel) Number"
+                ::= { p2BranchEntry 1 }
+        
+            p2BranchRealEnergy OBJECT-TYPE
+                SYNTAX              TenthsCounter64
+                UNITS               "Wh"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Accumulated Real Energy in 0.1 Wh"
+                ::= { p2BranchEntry 2 }
+        
+            p2BranchRealPower OBJECT-TYPE
+                SYNTAX              Integer32
+                UNITS               "W"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Real Power in Watts"
+                ::= { p2BranchEntry 3 }
+        
+            p2BranchApparentPower OBJECT-TYPE
+                SYNTAX              Integer32
+                UNITS               "VA"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Apparent Power in VA"
+                ::= { p2BranchEntry 4 }
+        
+            p2BranchPowerFactor OBJECT-TYPE
+                SYNTAX              ThousandthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Power Factor in 0.001%"
+                ::= { p2BranchEntry 5 }
+        
+            p2BranchCurrent OBJECT-TYPE
+                SYNTAX              ThousandthsInt32
+                UNITS               "A"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "RMS Amps in mA"
+                ::= { p2BranchEntry 6 }
+        
+            p2BranchCurrentAngle OBJECT-TYPE
+                SYNTAX              ThousandthsInt32
+                UNITS               "D"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Current Phase Angle in Thousandths of a Degree relative to Phase V1 or the associated V phase, see p2UserDefinedSettings"
+                ::= { p2BranchEntry 7 }
+        
+            p2BranchPresentCurrentDemand OBJECT-TYPE
+                SYNTAX              ThousandthsInt32
+                UNITS               "A"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Present Amps Demand in mA"
+                ::= { p2BranchEntry 8 }
+        
+            p2BranchPresentRealPowerDemand OBJECT-TYPE
+                SYNTAX              Integer32
+                UNITS               "W"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Present Real Power Demand in Watts"
+                ::= { p2BranchEntry 9 }
+        
+            p2BranchMaximumCurrentDemand OBJECT-TYPE
+                SYNTAX              ThousandthsInt32
+                UNITS               "A"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Maximum Amps Demand in mA"
+                ::= { p2BranchEntry 10 }
+        
+            p2BranchMaximumRealPowerDemand OBJECT-TYPE
+                SYNTAX              Integer32
+                UNITS               "W"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Maximum Real Power Demand in Watts"
+                ::= { p2BranchEntry 11 }
+        
+            p2BranchRealEnergySnapShot OBJECT-TYPE
+                SYNTAX              TenthsCounter64
+                UNITS               "Wh"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Snap Shot of the Accumulated Real Energy in 0.1 Wh"
+                ::= { p2BranchEntry 12 }
+        
+            p2BranchMaximumCurrent OBJECT-TYPE
+                SYNTAX              ThousandthsInt32
+                UNITS               "A"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Maximum Amps in a Calculation Interval in mA"
+                ::= { p2BranchEntry 13 }
+        
+            p2BranchMaximumRealPower OBJECT-TYPE
+                SYNTAX              Integer32
+                UNITS               "W"
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Maximum Real Power in a Calculation Interval in Watts"
+                ::= { p2BranchEntry 14 }
+        
+            p2BranchReset OBJECT-TYPE
+                SYNTAX              INTEGER 
+                                    {
+                                      clearKWh            (10203),
+                                      clearMaxCurrentKW   (29877)
+                                    }
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Write 10203 to Clear KWH to 0, 29877 to Clear Max Current and Max KW to 0"
+                ::= { p2BranchEntry 15 }
+        
+
+-- Panel: Flex Circuits **********************************************************************
+
+    p2LogicalCircuitTable  OBJECT-TYPE
+        SYNTAX              SEQUENCE OF P2LogicalCircuitEntry 
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "Flex circuit meter composed of 1 to 3 branch circuits associatied with a single breaker"
+        ::= { p2LogicalCircuits 1 }
+
+        p2LogicalCircuitEntry   OBJECT-TYPE
+            SYNTAX              P2LogicalCircuitEntry
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Flex circuit meter composed of 1 to 3 branch circuits associatied with a single breaker"
+            INDEX               {
+                                    p2LogicalCircuitIndex
+                                }
+            ::= { p2LogicalCircuitTable 1 }
+    
+            P2LogicalCircuitEntry  ::= SEQUENCE {
+                p2LogicalCircuitIndex                  -- 1 to 42
+                    Unsigned32, 
+                p2LogicalCircuitRealEnergy             -- 
+                    TenthsCounter64, 
+                p2LogicalCircuitRealPower              -- 
+                    Integer32, 
+                p2LogicalCircuitApparentPower          -- 
+                    Integer32, 
+                p2LogicalCircuitPowerFactor            -- 
+                    ThousandthsInt32, 
+                p2LogicalCircuitCurrent                -- average of active phases
+                    ThousandthsInt32, 
+                p2LogicalCircuitPresentRealPowerDemand -- 
+                    Integer32, 
+                p2LogicalCircuitPresentCurrentDemand   -- 
+                    ThousandthsInt32, 
+                p2LogicalCircuitMaximumRealPowerDemand -- 
+                    Integer32, 
+                p2LogicalCircuitMaximumCurrentDemand   -- 
+                    ThousandthsInt32, 
+                p2LogicalCircuitMaximumRealPower       -- 
+                    Integer32, 
+                p2LogicalCircuitMaximumCurrent         -- 
+                    ThousandthsInt32, 
+                p2LogicalCircuitSnapshotRealEnergy     -- 
+                    TenthsCounter64, 
+                p2LogicalCircuitLineLineVoltage        -- 
+                    ThousandthsInt32, 
+                p2LogicalCircuitLineNeutralVoltage     -- 
+                    ThousandthsInt32, 
+                p2LogicalCircuitFrequency              -- 
+                    ThousandthsInt32, 
+                p2LogicalCircuitLatchingAlarm          -- 
+                    BITS, 
+                p2LogicalCircuitNonLatchingAlarm       -- 
+                    BITS, 
+                p2LogicalCircuitReset                  -- 
+                    INTEGER, 
+                p2LogicalCircuitBranchAssignment1      -- 
+                    Unsigned32, 
+                p2LogicalCircuitBranchAssignment2      -- 
+                    Unsigned32, 
+                p2LogicalCircuitBranchAssignment3      -- 
+                    Unsigned32, 
+                p2LogicalCircuitCtSize                 -- 
+                    Unsigned32, 
+                p2LogicalCircuitBreakerSize            -- 
+                    Unsigned32 
+            }
+            
+                p2LogicalCircuitIndex OBJECT-TYPE
+                    SYNTAX              Unsigned32 (1..42)
+                    MAX-ACCESS          not-accessible
+                    STATUS              current
+                    DESCRIPTION         "Flex Circuit Number"
+                    ::= { p2LogicalCircuitEntry 1 }
+            
+                p2LogicalCircuitRealEnergy OBJECT-TYPE
+                    SYNTAX              TenthsCounter64
+                    UNITS               "Wh"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Accumulated Real Energy in 0.1 Wh"
+                    ::= { p2LogicalCircuitEntry 2 }
+            
+                p2LogicalCircuitRealPower OBJECT-TYPE
+                    SYNTAX              Integer32
+                    UNITS               "W"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Real Power in W"
+                    ::= { p2LogicalCircuitEntry 3 }
+            
+                p2LogicalCircuitApparentPower OBJECT-TYPE
+                    SYNTAX              Integer32
+                    UNITS               "VA"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Apparent Power in VA"
+                    ::= { p2LogicalCircuitEntry 4 }
+            
+                p2LogicalCircuitPowerFactor OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "%"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Power Factor in 0.001%"
+                    ::= { p2LogicalCircuitEntry 5 }
+            
+                p2LogicalCircuitCurrent OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "RMS Amps in mA"
+                    ::= { p2LogicalCircuitEntry 6 }
+            
+                p2LogicalCircuitPresentRealPowerDemand OBJECT-TYPE
+                    SYNTAX              Integer32
+                    UNITS               "W"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Present Real Power Demand in Watts"
+                    ::= { p2LogicalCircuitEntry 7 }
+            
+                p2LogicalCircuitPresentCurrentDemand  OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Present Current Demand in RMS mA"
+                    ::= { p2LogicalCircuitEntry 8 }
+            
+                p2LogicalCircuitMaximumRealPowerDemand OBJECT-TYPE
+                    SYNTAX              Integer32
+                    UNITS               "W"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Maximum Real Power Demand in Watts"
+                    ::= { p2LogicalCircuitEntry 9 }
+            
+                p2LogicalCircuitMaximumCurrentDemand  OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Maximum Current Demand in RMS mA"
+                    ::= { p2LogicalCircuitEntry 10 }
+            
+                p2LogicalCircuitMaximumRealPower OBJECT-TYPE
+                    SYNTAX              Integer32
+                    UNITS               "W"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Maximum Real Power in a Calculation Interval, in Watts"
+                    ::= { p2LogicalCircuitEntry 11 }
+            
+                p2LogicalCircuitMaximumCurrent  OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Maximum Current in a Calculation Interval, in RMS mA"
+                    ::= { p2LogicalCircuitEntry 12 }
+            
+                p2LogicalCircuitSnapshotRealEnergy OBJECT-TYPE
+                    SYNTAX              TenthsCounter64
+                    UNITS               "Wh"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Snapshot of the Accumulated Real Energy in 0.1 Wh"
+                    ::= { p2LogicalCircuitEntry 13 }
+            
+                p2LogicalCircuitLineLineVoltage OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "V"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Average Line to Line Voltage of phases used Flex Circuit in mV"
+                    ::= { p2LogicalCircuitEntry 14 }
+            
+                p2LogicalCircuitLineNeutralVoltage OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "V"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Average Line to Neutral Voltage of phases used Flex Circuit in mV"
+                    ::= { p2LogicalCircuitEntry 15 }
+            
+                p2LogicalCircuitFrequency OBJECT-TYPE
+                    SYNTAX              ThousandthsInt32
+                    UNITS               "Hz"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Frequency in mHZ, derived from phase A"
+                    ::= { p2LogicalCircuitEntry 16 }
+            
+                p2LogicalCircuitLatchingAlarm OBJECT-TYPE
+                    SYNTAX              BITS 
+                                        {
+                                            p2LogicalCircuitLatchingAlarmHighHighCurrent (0),
+                                            p2LogicalCircuitLatchingAlarmHighCurrent     (1),
+                                            p2LogicalCircuitLatchingAlarmLowCurrent      (2),
+                                            p2LogicalCircuitLatchingAlarmLowLowCurrent   (3),
+                                            p2LogicalCircuitLatchingAlarmAlarmOff        (4),
+                                            p2LogicalCircuitLatchingAlarmHighVolt        (8),
+                                            p2LogicalCircuitLatchingAlarmLowVolt         (9)
+                                        }
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Flex Circuit Latching Alarm Bit Map: 0 HighHighCurrent, 1 HighCurrent, 2 LowCurrent, 3 LowLowCurrent, 4 AlarmOff, 8 HighVolt, 9 LowVolt"
+                    ::= { p2LogicalCircuitEntry 17 }
+            
+                p2LogicalCircuitNonLatchingAlarm OBJECT-TYPE
+                    SYNTAX              BITS 
+                                        {
+                                            p2LogicalCircuitNonLatchingAlarmHighCurrent (0),
+                                            p2LogicalCircuitNonLatchingAlarmLowCurrent  (1),
+                                            p2LogicalCircuitNonLatchingAlarmHighVolt    (8),
+                                            p2LogicalCircuitNonLatchingAlarmLowVolt     (9)
+                                        }
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Flex Circuit Non-Latching Alarm Bit Map: 0 HighCurrent, 1 LowCurrent, 8 HighVolt, 9 LowVolt"
+                    ::= { p2LogicalCircuitEntry 18 }
+            
+                p2LogicalCircuitReset OBJECT-TYPE
+                    SYNTAX              INTEGER 
+                                        { 
+                                            clearKWh            (10203),
+                                            clearMaxDemand      (20097),
+                                            beginDemandSubInt   (26012),
+                                            resetDemand         (26013),
+                                            clearMaxCurrentKW   (29877),
+                                            resetLatchingAlarms (31010)
+                                        }
+                    MAX-ACCESS          read-write
+                    STATUS              current
+                    DESCRIPTION         "Write code numbers to reset or clear to 0"
+                    ::= { p2LogicalCircuitEntry 24 }
+            
+                p2LogicalCircuitBranchAssignment1 OBJECT-TYPE
+                    SYNTAX              Unsigned32
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Branch assigned to Flex Circuit. MSB is panel, LSB is branch number assignment. 0 = unassigned."
+                    ::= { p2LogicalCircuitEntry 25 }
+            
+                p2LogicalCircuitBranchAssignment2 OBJECT-TYPE
+                    SYNTAX              Unsigned32
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Branch assigned to Flex Circuit. MSB is panel, LSB is branch number assignment. 0 = unassigned."
+                    ::= { p2LogicalCircuitEntry 26 }
+            
+                p2LogicalCircuitBranchAssignment3 OBJECT-TYPE
+                    SYNTAX              Unsigned32
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Branch assigned to Flex Circuit. MSB is panel, LSB is branch number assignment. 0 = unassigned."
+                    ::= { p2LogicalCircuitEntry 27 }
+            
+                p2LogicalCircuitCtSize OBJECT-TYPE
+                    SYNTAX              Unsigned32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Current Transducer size in Amps. Must be the same for all branches used in a Flex Circuit."
+                    ::= { p2LogicalCircuitEntry 28 }
+            
+                p2LogicalCircuitBreakerSize OBJECT-TYPE
+                    SYNTAX              Unsigned32
+                    UNITS               "A"
+                    MAX-ACCESS          read-only
+                    STATUS              current
+                    DESCRIPTION         "Breaker Rating in Amps for the Breaker associated with a Flex Circuit."
+                    ::= { p2LogicalCircuitEntry 29 }
+            
+        
+        
+-- Panel: Configuration **********************************************************************
+ 
+    -- Product Information
+
+    p2ProductInformation OBJECT IDENTIFIER ::= { p2Configuration 1 } 
+      
+        p2SerialNumber  OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Product Serial Number"
+            ::= { p2ProductInformation 1 }
+
+        p2FirmwareRevision   OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Product Firmwre Revision"
+            ::= { p2ProductInformation 2 }
+
+        p2DeviceID   OBJECT-TYPE    -- 
+            SYNTAX              INTEGER 
+                                {
+                                    e30modelC (15170),
+                                    e30modelB (15171),
+                                    e30modelA (15172)
+                                }
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "15170 = Model C, current only on all channels, no voltage; 15171 = Model B, current only on branch channels, power on AUX channels plus voltage; 15172 = Model A, current and power on all channels plus voltage"
+            ::= { p2ProductInformation 3 }
+
+        p2ProductID   OBJECT-TYPE    -- 
+            SYNTAX              BITS 
+                                {
+                                    p2ProductIDSolidCore  (0),
+                                    p2ProductIDSplitCore  (1)
+                                }
+            MAX-ACCESS          read-only
+            STATUS              current
+            DESCRIPTION         "Product Identification Bit Map: 0 = Default Solid-Core, 1 = Default Split-Core, Custom V-Phase Capable"
+            ::= { p2ProductInformation 4 }
+
+        p2LocationString   OBJECT-TYPE    --   
+            SYNTAX              DisplayString (SIZE(128))
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Null terminated Text String Describing Physical Installation"
+            ::= { p2ProductInformation 5 }
+
+
+    -- Global Reset 
+
+    p2GlobalResets   OBJECT-TYPE    -- 
+        SYNTAX              INTEGER 
+                            { 
+                                clearAllKWh            (10203),
+                                clearAllMaxDemand      (20097),
+                                beginNewDemandSubInt   (26012),
+                                resetDemand            (26013),
+                                clearAllMaxCurrentKW   (29877),
+                                resetAllLatchingAlarms (31010)
+                            }
+        MAX-ACCESS          read-write
+        STATUS              current
+        DESCRIPTION         "Global Panel Resets. Write Codes: 26012 = Begin new Demand Sub-interval, 26013 = Reset Demand, 31010 = Reset all Latching Alarms, 10203 = Clear all KWH values to zero, 29877 = Clear all Max Current and Max KW values to zero, 20097 = Clear all Max Demand values to zero"
+        ::= { p2Configuration 2 }
+
+
+    -- Panel Setup
+
+    p2Setup OBJECT IDENTIFIER ::= { p2Configuration 3 } 
+      
+        p2PanelConfiguration   OBJECT-TYPE    -- 
+            SYNTAX              INTEGER
+                                {
+                                    p2PanelConfigurationTopFeedDoubleRow    (0),
+                                    p2PanelConfigurationBottomFeedDoubleRow (1),
+                                    p2PanelConfigurationSingleRowSequential (2),
+                                    p2PanelConfigurationSingleRowOddEven    (3)
+                                }  
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Panel Configuration Bit Map. bit 0: 0 = normal / sequential, 1 = rotated / odd-even; bit 1: 0 = double-row, 1 = single-row.  Integer values:  0 = Top Feed, 1 = Bottom Feed, 2 = Single Row Sequential, 3 = Single Row Odd/Even."
+            ::= { p2Setup 1 }
+
+        p2NumSubIntervalsPerDemandInterval   OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32  (1..6)
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Number of Sub-Intervals per Demand Interval. Sets the number of sub-intervals that make up a single demand interval. For block demand, set this to 1."
+            ::= { p2Setup 2 }
+
+        p2SubIntervalSeconds   OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32   (0..32767)
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Sub-Interval Length in seconds. For sync-to-comms, set this to 0. Allowed lengths are 10-32767."
+            ::= { p2Setup 3 }
+
+        p2UserDefinedSettings  OBJECT-TYPE    -- 
+            SYNTAX              BITS 
+                                {
+                                    p2EnableUserCTtoVoltagePhaseAssignment (0),  -- lets user assign branches to different voltage phases
+                                    p2CurrentAngleVoltagePhaseRelative     (1),  -- otherwise angle is relative to V1 if False
+                                    p2EnableSignedPower                    (2),  -- split core only
+                                    p2EnableSignedPowerFactor              (3),  -- sign denotes lead lag
+                                    p2EnableLogicalCircuitsByTypeArrays       (4),  -- disables legacy static 2 and 3 phase tables 
+                                    p2DisablePanel2                        (5),  -- frees 2nd modbus address
+                                    p2EnableVector2PhaseVAandPFcalc        (6),  -- default is simple VA calculation
+                                    p2EnableRTCDemandSync                  (7)  -- default is free running demand timer
+                                }
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "User Defined Settings Bit Map: 
+                                 Bit 0 - Enable User CT to Voltage Phase Assignment
+                                 Bit 1 - Enable Current Phase Angle Relative to associated Voltage phase (0 = V1 Relative)
+                                 Bit 2 - Enable Signed Power (Split-Core Only)
+                                 Bit 3 - Enable Signed Power Factor (sign denotes lead/lag)
+                                 Bit 4 - Enable Flex Circuits By Data Type Arrays (Disables 2PH/3PH Pointmap)
+                                 Bit 5 - Disable Second Panel (Disables 2nd Modbus address)
+                                 Bit 6 - Enable Trig. Identity for 2PH KVA/PF Calculations (disables simple VA calculation)
+                                 Bit 7 - Enable RTC for Demand Sync (disables free running demand timer)
+                                 Bits 8-15  Reserved "
+            ::= { p2Setup 4 }
+
+
+    -- Auxiliary Input Configuration
+
+    p2AuxConfiguratonTable   OBJECT-TYPE
+        SYNTAX              SEQUENCE OF P2AuxConfiguratonEntry 
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "Auxiliary Input Configuration: Index 1, 2, 3, 4 = Phase A, B, C, N"
+        ::= { p2Configuration 4 }
+
+        p2AuxConfiguratonEntry  OBJECT-TYPE
+            SYNTAX              P2AuxConfiguratonEntry
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Auxiliary Input Configuration: Index 1, 2, 3, 4 = Phase A, B, C, N"
+            INDEX               {
+                                    p2AuxConfiguratonIndex
+                                }
+            ::= { p2AuxConfiguratonTable 1 }
+    
+        P2AuxConfiguratonEntry ::= SEQUENCE {
+            p2AuxConfiguratonIndex  -- index 1, 2, 3, 4 = phase A, B, C, N
+                Unsigned32, 
+            p2AuxCTSize -- 
+                Unsigned32, 
+            p2AuxBreakerSize -- 
+                Unsigned32, 
+            p2AuxToVoltagePhaseAssignment -- 
+                Unsigned32, 
+            p2AuxToCircuitAssignment -- 
+                Unsigned32 
+            }
+
+        p2AuxConfiguratonIndex OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (1..4)
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Auxiliary Phase Number Index: 1, 2, 3, 4 = phase A, B, C, N"
+            ::= { p2AuxConfiguratonEntry 1 }
+
+        p2AuxCTSize OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..32767)
+            UNITS               "A"
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Full scale rating of the Auxiliary circuit Current Transducer in amps."
+            ::= { p2AuxConfiguratonEntry 2 }
+
+        p2AuxBreakerSize OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (0..32767)
+            UNITS               "A"
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Rating of the Auxiliary Circuit breaker rating in Amps."
+            ::= { p2AuxConfiguratonEntry 3 }
+
+        p2AuxToVoltagePhaseAssignment OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32  (0..3)
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Voltage phase (1, 2, 3 = A, B, C) assigned to the auxiliary circuit."
+            ::= { p2AuxConfiguratonEntry 4 }
+
+        p2AuxToCircuitAssignment OBJECT-TYPE    -- 
+            SYNTAX              Unsigned32 (1..46)
+            MAX-ACCESS          read-write
+            STATUS              current
+            DESCRIPTION         "Logical Circuit number (1-46) that the auxiliary input is assigned to. 0 = branch is unassigned. 1 to 3 branches may be assigned to any Logical Circuit. "
+            ::= { p2AuxConfiguratonEntry 5 }
+
+
+
+    -- Branch Input Configuration
+
+    p2BranchConfiguratonTable OBJECT-TYPE
+        SYNTAX              SEQUENCE OF P2BranchConfiguratonEntry 
+        MAX-ACCESS          not-accessible
+        STATUS              current
+        DESCRIPTION         "Configuration for branch number 1-42"
+        ::= { p2Configuration 5 }
+
+        p2BranchConfiguratonEntry  OBJECT-TYPE
+            SYNTAX              P2BranchConfiguratonEntry
+            MAX-ACCESS          not-accessible
+            STATUS              current
+            DESCRIPTION         "Configuration for branch number 1-42"
+            INDEX               {
+                                    p2BranchConfiguratonIndex
+                                }
+            ::= { p2BranchConfiguratonTable 1 }
+    
+        P2BranchConfiguratonEntry ::= SEQUENCE {
+            p2BranchConfiguratonIndex  -- branch number 1-42
+                Unsigned32, 
+            p2BranchCTSize -- 
+                Unsigned32, 
+            p2BranchBreakerSize -- 
+                Unsigned32, 
+            p2BranchToVoltagePhaseAssignment -- 
+                Unsigned32, 
+            p2BranchToCircuitAssignment -- 
+                Unsigned32 
+            }
+
+            p2BranchConfiguratonIndex OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (1..42)
+                MAX-ACCESS          not-accessible
+                STATUS              current
+                DESCRIPTION         "branch number 1-42"
+                ::= { p2BranchConfiguratonEntry 1 }
+    
+            p2BranchCTSize OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "A"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Full scale rating of the branch circuit Current Transducer in amps."
+                ::= { p2BranchConfiguratonEntry 2 }
+    
+            p2BranchBreakerSize OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "A"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Rating of the Branch Circuit breaker rating in amps."
+                ::= { p2BranchConfiguratonEntry 3 }
+    
+            p2BranchToVoltagePhaseAssignment OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..3)
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Voltage phase (1, 2, 3 = A, B, C) assigned to the auxiliary circuit."
+                ::= { p2BranchConfiguratonEntry 4 }
+    
+            p2BranchToCircuitAssignment OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (1..42)
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Logical Circuit number 1-42 that the branch is assigned to. 0 = branch is unassigned. 1 to 3 branches may be assigned to any Logical Circuit. "
+                ::= { p2BranchConfiguratonEntry 5 }
+    
+    
+
+    -- Alarm Configuration
+
+    p2AlarmConfiguration OBJECT IDENTIFIER ::= { p2Configuration 6 } 
+      
+        p2AlarmTimeDelays OBJECT IDENTIFIER ::= { p2AlarmConfiguration 1 } 
+          
+            p2OverVoltageTimeDelay OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "S"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Over Voltage Alarm time delay in seconds."
+                ::= { p2AlarmTimeDelays 1 }
+
+            p2UnderVoltageTimeDelay OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "S"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Under Voltage Alarm time delay in seconds."
+                ::= { p2AlarmTimeDelays 2 }
+
+            p2HighHighLatchingAlarmTimeDelay OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "S"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "High High Latching Alarm Time Delay in seconds"
+                ::= { p2AlarmTimeDelays 3 }
+
+            p2HighLatchingAlarmTimeDelay OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "S"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "High Latching Alarm Time Delay in seconds"
+                ::= { p2AlarmTimeDelays 4 }
+
+            p2LowLatchingAlarmTimeDelay OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "S"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Low Latching Alarm Time Delay in seconds"
+                ::= { p2AlarmTimeDelays 5 }
+
+            p2LowLowLatchingAlarmTimeDelay OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "S"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Low Low Latching Alarm Time Delay in seconds"
+                ::= { p2AlarmTimeDelays 6 }
+
+            p2LatchingAlarmOnTime OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "S"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Latching Alarm ON Time in seconds (when current is above Low-Low alarm & ON Time elapses, then ON state is declared for all latching alarms, ON State enables Alarm Time Delays)"
+                ::= { p2AlarmTimeDelays 7 }
+
+            p2LatchingAlarmOffTime OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "S"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Latching Alarms time until OFF state declared (current is below Low-Low alarm and a ON state was declared)."
+                ::= { p2AlarmTimeDelays 8 }
+
+        p2AlarmThresholds OBJECT IDENTIFIER ::= { p2AlarmConfiguration 2 } 
+          
+            p2OverVoltageThreshold OBJECT-TYPE    -- Voltage
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "V"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Over Voltage Threshold in Volts. 0 disables alarm."
+                ::= { p2AlarmThresholds 1 }
+
+            p2UnderVoltageThreshold OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32 (0..32767)
+                UNITS               "V"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Under Voltage Threshold in Volts. 0 disables alarm."
+                ::= { p2AlarmThresholds 2 }
+
+            p2VoltageHysteresisThreshold OBJECT-TYPE    -- 
+                SYNTAX              TenthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Non-Latching Voltage Alarm hysteresis threshold in units of 0.1%"
+                ::= { p2AlarmThresholds 3 }
+
+            p2HighHighLatchingAlarmThreshold OBJECT-TYPE    -- in % of breaker size
+                SYNTAX              TenthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "High High current latching alarm threshold for all current inputs in 0.1% of the associated breaker size. 0 disables alarm."
+                ::= { p2AlarmThresholds 4 }
+
+            p2HighLatchingAlarmThreshold OBJECT-TYPE    -- 
+                SYNTAX              TenthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "High current latching alarm threshold for all current inputs in 0.1% of the associated breaker size. 0 disables alarm."
+                ::= { p2AlarmThresholds 5 }
+
+            p2LowLatchingAlarmThreshold OBJECT-TYPE    -- 
+                SYNTAX              TenthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Low current latching alarm threshold for all current inputs in 0.1% of the associated breaker size. 0 disables alarm."
+                ::= { p2AlarmThresholds 6 }
+
+            p2LowLowLatchingAlarmThreshold OBJECT-TYPE    -- 
+                SYNTAX              TenthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Low Low current latching alarm threshold for all current inputs in 0.1% of the associated breaker size. 0 disables alarm."
+                ::= { p2AlarmThresholds 7 }
+
+            p2NonLatchingHighThreshold OBJECT-TYPE    -- 
+                SYNTAX              TenthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Non-latching high current alarm threshold for all current inputs in 0.1% of the associated breaker size. 0 disables alarm."
+                ::= { p2AlarmThresholds 8 }
+
+            p2NonLatchingLowThreshold OBJECT-TYPE    -- 
+                SYNTAX              TenthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Non-latching low current alarm threshold for all current inputs in 0.1% of the associated breaker size. 0 disables alarm."
+                ::= { p2AlarmThresholds 9 }
+
+            p2NonLatchingHysteresisThreshold OBJECT-TYPE    -- 
+                SYNTAX              TenthsInt32
+                UNITS               "%"
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Non-latching alarm hysteresis threshold for all current inputs in 0.1% of setpoint."
+                ::= { p2AlarmThresholds 10 }
+
+    p2RealTimeClock OBJECT IDENTIFIER ::= { p2Configuration 7 } 
+      
+        p2PresentTime  OBJECT IDENTIFIER ::= { p2RealTimeClock 1 } 
+          
+            p2PresentYear OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "2 digit Year offset from 2000"
+                ::= { p2PresentTime 1 }
+
+            p2PresentDayMonth  OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Month in low byte, Day in 2nd byte"
+                ::= { p2PresentTime 2 }
+
+            p2PresentHourMinute  OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Minute in low byte, Hour in 2nd byte"
+                ::= { p2PresentTime 3 }
+
+            p2PresentMilliSeconds  OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32
+                MAX-ACCESS          read-write
+                STATUS              current
+                DESCRIPTION         "Milli-Seconds"
+                ::= { p2PresentTime 4 }
+
+        p2SnapShotTime  OBJECT IDENTIFIER ::= { p2RealTimeClock 2 } 
+ 
+            p2SnapShotYear OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "2 digit Year offset from 2000"
+                ::= { p2SnapShotTime 1 }
+
+            p2SnapShotDayMonth  OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Month in low byte, Day in 2nd byte"
+                ::= { p2SnapShotTime 2 }
+
+            p2SnapShotHourMinute  OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Minute in low byte, Hour in 2nd byte"
+                ::= { p2SnapShotTime 3 }
+
+            p2SnapShotMilliSeconds  OBJECT-TYPE    -- 
+                SYNTAX              Unsigned32
+                MAX-ACCESS          read-only
+                STATUS              current
+                DESCRIPTION         "Milli-Seconds"
+                ::= { p2SnapShotTime 4 }
+
+ 
+ 
+ 
+ 
+-- ******************************************************************************
+-- Conformance: Mandatory Groups ************************************************
+-- ******************************************************************************
+ 
+verisE3xCompliance MODULE-COMPLIANCE
+    STATUS          current
+    DESCRIPTION     "E3x Agent requirements for MIB compliance"
+    MODULE          -- this module
+        MANDATORY-GROUPS
+        {
+            p1TrapGroup,
+            p1AlarmGroup,
+            p1VoltageInputGroup,
+            p1AuxiliaryInputGroup,
+            p1BranchInputGroup,
+            p1FlexMeterGroup,
+            p1ConfigurationGroup,
+            p2TrapGroup,
+            p2AlarmGroup,
+            p2VoltageInputGroup,
+            p2AuxiliaryInputGroup,
+            p2BranchInputGroup,
+            p2FlexMeterGroup,
+            p2ConfigurationGroup
+        }
+    ::= { compliances 3 }
+
+
+
+-- ******************************************************************************
+-- Panel 1 Conformance Groups ***************************************************                                                                                                        
+-- ******************************************************************************
+                                                                                                        
+    p1TrapGroup NOTIFICATION-GROUP
+        NOTIFICATIONS 
+        {
+            p1GlobalLatchingAlarmStatusTrap,
+            p1GlobalNonLatchingAlarmStatusTrap,
+            p1VoltagePhaseAlarmStatusTrap,
+            p1AuxCurrentAlarmStatusTrap,
+            p1BranchCurrentAlarmStatusTrap
+        }
+        STATUS              current
+        DESCRIPTION "Alarm Notifications"
+        ::= { p1ConformanceGroups 1 }
+    
+    p1AlarmGroup OBJECT-GROUP
+        OBJECTS 
+        {
+            p1GlobalLatchingAlarmStatus,
+            p1GlobalNonLatchingAlarmStatus,
+            p1GlobalMostRecentLatchingChannel,
+            p1GlobalMostRecentNonLatchingChannel,
+            p1TotalLatchingChannelsInAlarm,
+            p1TotalNonLatchingChannelsInAlarm,
+            p1DeviceHealth,
+            p1GlobalHighHighLatchingAlarmCount,
+            p1GlobalHighLatchingAlarmCount,
+            p1GlobalLowLatchingAlarmCount,
+            p1GlobalLowLowLatchingAlarmCount,
+            p1GlobalOffStateLatchingAlarmCount,
+            p1PowerUpCount,
+            p1AuxAlarmPhase,
+            p1VoltagePhaseAlarmStatus,
+            p1AuxCurrentAlarmStatus,
+            p1AuxHighHighAlarmCount,
+            p1AuxHighAlarmCount,
+            p1AuxLowAlarmCount,
+            p1AuxLowLowAlarmCount,
+            p1AuxOffStateAlarmCount,
+            p1BranchAlarmNumber,
+            p1BranchCurrentAlarmStatus,
+            p1BranchHighHighAlarmCount,
+            p1BranchHighAlarmCount,
+            p1BranchLowAlarmCount,
+            p1BranchLowLowAlarmCount,
+            p1BranchOffStateAlarmCount
+        }
+        STATUS              current
+        DESCRIPTION "Alarm Conformance Group"
+        ::= { p1ConformanceGroups 2 }
+    
+    p1VoltageInputGroup OBJECT-GROUP
+        OBJECTS 
+        {
+            p1VoltsLineLine3PhaseAve,
+            p1VoltsLineNeutral3PhaseAve,
+            p1Frequency,
+            p1VoltsLineToLine,   
+            p1VoltsLineToNeutral,   
+            p1VoltsPhaseAngle   
+        }
+        STATUS              current
+        DESCRIPTION "Voltage Input Conformance Group"
+        ::= { p1ConformanceGroups 3 }
+
+    p1AuxiliaryInputGroup OBJECT-GROUP
+        OBJECTS 
+        {
+            p1AuxTotalRealEnergy,
+            p1AuxTotalRealPower,
+            p1AuxTotalApparentPower,
+            p1AuxAveragePowerFactor,
+            p1AuxAverageCurrent,
+            p1AuxPresentTotalRealPowerDemand,
+            p1AuxTotalRealEnergySnapShot,
+            p1AuxMaximumTotalRealPowerDemand,
+            p1AuxMaximumTotalRealPower,
+            p1AuxReset,
+            p1AuxRealPower,
+            p1AuxApparentPower,
+            p1AuxPowerFactor,
+            p1AuxCurrent,
+            p1AuxCurrentAngle,
+            p1AuxPresentCurrentDemand,
+            p1AuxMaximumCurrentDemand,
+            p1AuxMaximumCurrent
+        }
+        STATUS              current
+        DESCRIPTION "Auxiliary Input Conformance Group"
+        ::= { p1ConformanceGroups 4 }
+
+    p1BranchInputGroup OBJECT-GROUP
+        OBJECTS 
+        {
+            p1BranchRealEnergy,
+            p1BranchRealPower,
+            p1BranchApparentPower,
+            p1BranchPowerFactor,
+            p1BranchCurrent,
+            p1BranchCurrentAngle,
+            p1BranchPresentCurrentDemand,
+            p1BranchPresentRealPowerDemand,
+            p1BranchMaximumCurrentDemand,
+            p1BranchMaximumRealPowerDemand,
+            p1BranchRealEnergySnapShot, 
+            p1BranchMaximumCurrent,
+            p1BranchMaximumRealPower,
+            p1BranchReset
+        }
+        STATUS              current
+        DESCRIPTION "Branch Input Conformance Group"
+        ::= { p1ConformanceGroups 5 }
+
+    p1FlexMeterGroup OBJECT-GROUP
+        OBJECTS 
+        {
+            p1LogicalCircuitRealEnergy,
+            p1LogicalCircuitRealPower,
+            p1LogicalCircuitApparentPower,
+            p1LogicalCircuitPowerFactor,
+            p1LogicalCircuitCurrent,
+            p1LogicalCircuitPresentRealPowerDemand,
+            p1LogicalCircuitPresentCurrentDemand,
+            p1LogicalCircuitMaximumRealPowerDemand,
+            p1LogicalCircuitMaximumCurrentDemand,
+            p1LogicalCircuitMaximumRealPower,
+            p1LogicalCircuitMaximumCurrent,
+            p1LogicalCircuitSnapshotRealEnergy,
+            p1LogicalCircuitLineLineVoltage,
+            p1LogicalCircuitLineNeutralVoltage,
+            p1LogicalCircuitFrequency,
+            p1LogicalCircuitLatchingAlarm,
+            p1LogicalCircuitNonLatchingAlarm,
+            p1LogicalCircuitReset,
+            p1LogicalCircuitBranchAssignment1,
+            p1LogicalCircuitBranchAssignment2,
+            p1LogicalCircuitBranchAssignment3,
+            p1LogicalCircuitCtSize,
+            p1LogicalCircuitBreakerSize
+        }
+        STATUS              current
+        DESCRIPTION "Flex Meter Conformance Group"
+        ::= { p1ConformanceGroups 6 }
+
+    p1ConfigurationGroup OBJECT-GROUP
+        OBJECTS 
+        {
+            p1SerialNumber,
+            p1FirmwareRevision,
+            p1DeviceID,
+            p1ProductID,
+            p1LocationString,
+            p1GlobalResets,
+            p1PanelConfiguration,
+            p1NumSubIntervalsPerDemandInterval,
+            p1SubIntervalSeconds,
+            p1UserDefinedSettings,
+            p1AuxCTSize,
+            p1AuxBreakerSize,
+            p1AuxToVoltagePhaseAssignment,
+            p1AuxToCircuitAssignment,
+            p1BranchCTSize,
+            p1BranchBreakerSize,
+            p1BranchToVoltagePhaseAssignment,
+            p1BranchToCircuitAssignment,
+            p1OverVoltageTimeDelay,
+            p1UnderVoltageTimeDelay,
+            p1HighHighLatchingAlarmTimeDelay,
+            p1HighLatchingAlarmTimeDelay,
+            p1LowLatchingAlarmTimeDelay,
+            p1LowLowLatchingAlarmTimeDelay,
+            p1LatchingAlarmOnTime,
+            p1LatchingAlarmOffTime,
+            p1OverVoltageThreshold,
+            p1UnderVoltageThreshold,
+            p1VoltageHysteresisThreshold,
+            p1HighHighLatchingAlarmThreshold,
+            p1HighLatchingAlarmThreshold,
+            p1LowLatchingAlarmThreshold,
+            p1LowLowLatchingAlarmThreshold,
+            p1NonLatchingHighThreshold,
+            p1NonLatchingLowThreshold,
+            p1NonLatchingHysteresisThreshold,
+            p1PresentYear,
+            p1PresentDayMonth,
+            p1PresentHourMinute,
+            p1PresentMilliSeconds,  
+            p1SnapShotYear,
+            p1SnapShotDayMonth,
+            p1SnapShotHourMinute,
+            p1SnapShotMilliSeconds  
+        }
+        STATUS              current
+        DESCRIPTION "Configuration Conformance Group"
+        ::= { p1ConformanceGroups 7 }
+
+ 
+ 
+ 
+-- ******************************************************************************
+-- Panel 2 Conformance Groups ***************************************************                                                                                                        
+-- ******************************************************************************
+                                                                                                        
+    p2TrapGroup NOTIFICATION-GROUP
+        NOTIFICATIONS 
+        {
+            p2GlobalLatchingAlarmStatusTrap,
+            p2GlobalNonLatchingAlarmStatusTrap,
+            p2VoltagePhaseAlarmStatusTrap,
+            p2AuxCurrentAlarmStatusTrap,
+            p2BranchCurrentAlarmStatusTrap
+        }
+        STATUS              current
+        DESCRIPTION "Alarm Notifications"
+        ::= { p2ConformanceGroups 1 }
+    
+    p2AlarmGroup OBJECT-GROUP
+        OBJECTS 
+        {
+            p2GlobalLatchingAlarmStatus,
+            p2GlobalNonLatchingAlarmStatus,
+            p2GlobalMostRecentLatchingChannel,
+            p2GlobalMostRecentNonLatchingChannel,
+            p2TotalLatchingChannelsInAlarm,
+            p2TotalNonLatchingChannelsInAlarm,
+            p2DeviceHealth,
+            p2GlobalHighHighLatchingAlarmCount,
+            p2GlobalHighLatchingAlarmCount,
+            p2GlobalLowLatchingAlarmCount,
+            p2GlobalLowLowLatchingAlarmCount,
+            p2GlobalOffStateLatchingAlarmCount,
+            p2PowerUpCount,
+            p2AuxAlarmPhase,
+            p2VoltagePhaseAlarmStatus,
+            p2AuxCurrentAlarmStatus,
+            p2AuxHighHighAlarmCount,
+            p2AuxHighAlarmCount,
+            p2AuxLowAlarmCount,
+            p2AuxLowLowAlarmCount,
+            p2AuxOffStateAlarmCount,
+            p2BranchAlarmNumber,
+            p2BranchCurrentAlarmStatus,
+            p2BranchHighHighAlarmCount,
+            p2BranchHighAlarmCount,
+            p2BranchLowAlarmCount,
+            p2BranchLowLowAlarmCount,
+            p2BranchOffStateAlarmCount
+        }
+        STATUS              current
+        DESCRIPTION "Alarm Conformance Group"
+        ::= { p2ConformanceGroups 2 }
+    
+    p2VoltageInputGroup OBJECT-GROUP
+        OBJECTS 
+        {
+            p2VoltsLineLine3PhaseAve,
+            p2VoltsLineNeutral3PhaseAve,
+            p2Frequency,
+            p2VoltsLineToLine,   
+            p2VoltsLineToNeutral,   
+            p2VoltsPhaseAngle   
+        }
+        STATUS              current
+        DESCRIPTION "Voltage Input Conformance Group"
+        ::= { p2ConformanceGroups 3 }
+
+    p2AuxiliaryInputGroup OBJECT-GROUP
+        OBJECTS 
+        {
+            p2AuxTotalRealEnergy,
+            p2AuxTotalRealPower,
+            p2AuxTotalApparentPower,
+            p2AuxAveragePowerFactor,
+            p2AuxAverageCurrent,
+            p2AuxPresentTotalRealPowerDemand,
+            p2AuxTotalRealEnergySnapShot,
+            p2AuxMaximumTotalRealPowerDemand,
+            p2AuxMaximumTotalRealPower,
+            p2AuxReset,
+            p2AuxRealPower,
+            p2AuxApparentPower,
+            p2AuxPowerFactor,
+            p2AuxCurrent,
+            p2AuxCurrentAngle,
+            p2AuxPresentCurrentDemand,
+            p2AuxMaximumCurrentDemand,
+            p2AuxMaximumCurrent
+        }
+        STATUS              current
+        DESCRIPTION "Auxiliary Input Conformance Group"
+        ::= { p2ConformanceGroups 4 }
+
+    p2BranchInputGroup OBJECT-GROUP
+        OBJECTS 
+        {
+            p2BranchRealEnergy,
+            p2BranchRealPower,
+            p2BranchApparentPower,
+            p2BranchPowerFactor,
+            p2BranchCurrent,
+            p2BranchCurrentAngle,
+            p2BranchPresentCurrentDemand,
+            p2BranchPresentRealPowerDemand,
+            p2BranchMaximumCurrentDemand,
+            p2BranchMaximumRealPowerDemand,
+            p2BranchRealEnergySnapShot, 
+            p2BranchMaximumCurrent,
+            p2BranchMaximumRealPower,
+            p2BranchReset
+        }
+        STATUS              current
+        DESCRIPTION "Branch Input Conformance Group"
+        ::= { p2ConformanceGroups 5 }
+
+    p2FlexMeterGroup OBJECT-GROUP
+        OBJECTS 
+        {
+            p2LogicalCircuitRealEnergy,
+            p2LogicalCircuitRealPower,
+            p2LogicalCircuitApparentPower,
+            p2LogicalCircuitPowerFactor,
+            p2LogicalCircuitCurrent,
+            p2LogicalCircuitPresentRealPowerDemand,
+            p2LogicalCircuitPresentCurrentDemand,
+            p2LogicalCircuitMaximumRealPowerDemand,
+            p2LogicalCircuitMaximumCurrentDemand,
+            p2LogicalCircuitMaximumRealPower,
+            p2LogicalCircuitMaximumCurrent,
+            p2LogicalCircuitSnapshotRealEnergy,
+            p2LogicalCircuitLineLineVoltage,
+            p2LogicalCircuitLineNeutralVoltage,
+            p2LogicalCircuitFrequency,
+            p2LogicalCircuitLatchingAlarm,
+            p2LogicalCircuitNonLatchingAlarm,
+            p2LogicalCircuitReset,
+            p2LogicalCircuitBranchAssignment1,
+            p2LogicalCircuitBranchAssignment2,
+            p2LogicalCircuitBranchAssignment3,
+            p2LogicalCircuitCtSize,
+            p2LogicalCircuitBreakerSize
+        }
+        STATUS              current
+        DESCRIPTION "Flex Meter Conformance Group"
+        ::= { p2ConformanceGroups 6 }
+
+    p2ConfigurationGroup OBJECT-GROUP
+        OBJECTS 
+        {
+            p2SerialNumber,
+            p2FirmwareRevision,
+            p2DeviceID,
+            p2ProductID,
+            p2LocationString,
+            p2GlobalResets,
+            p2PanelConfiguration,
+            p2NumSubIntervalsPerDemandInterval,
+            p2SubIntervalSeconds,
+            p2UserDefinedSettings,
+            p2AuxCTSize,
+            p2AuxBreakerSize,
+            p2AuxToVoltagePhaseAssignment,
+            p2AuxToCircuitAssignment,
+            p2BranchCTSize,
+            p2BranchBreakerSize,
+            p2BranchToVoltagePhaseAssignment,
+            p2BranchToCircuitAssignment,
+            p2OverVoltageTimeDelay,
+            p2UnderVoltageTimeDelay,
+            p2HighHighLatchingAlarmTimeDelay,
+            p2HighLatchingAlarmTimeDelay,
+            p2LowLatchingAlarmTimeDelay,
+            p2LowLowLatchingAlarmTimeDelay,
+            p2LatchingAlarmOnTime,
+            p2LatchingAlarmOffTime,
+            p2OverVoltageThreshold,
+            p2UnderVoltageThreshold,
+            p2VoltageHysteresisThreshold,
+            p2HighHighLatchingAlarmThreshold,
+            p2HighLatchingAlarmThreshold,
+            p2LowLatchingAlarmThreshold,
+            p2LowLowLatchingAlarmThreshold,
+            p2NonLatchingHighThreshold,
+            p2NonLatchingLowThreshold,
+            p2NonLatchingHysteresisThreshold,
+            p2PresentYear,
+            p2PresentDayMonth,
+            p2PresentHourMinute,
+            p2PresentMilliSeconds,  
+            p2SnapShotYear,
+            p2SnapShotDayMonth,
+            p2SnapShotHourMinute,
+            p2SnapShotMilliSeconds  
+        }
+        STATUS              current
+        DESCRIPTION "Configuration Conformance Group"
+        ::= { p2ConformanceGroups 7 }
+
+ 
+ 
+
+-- ******************************************************************************
+-- ******************************************************************************
+-- ******************************************************************************
+                                                                                                        
+ 
+END 
+

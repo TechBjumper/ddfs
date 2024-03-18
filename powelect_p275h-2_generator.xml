@@ -1,0 +1,612 @@
+<?xml version="1.0"?>
+<APC_DDF
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+	ddfid="powelect_p275h-2_generator"
+	ddfname="Power Electronics P275H-2 Generator"
+	ddfversion="4"
+	canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+
+	<device deviceid="gencomm_generator">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<setProductData ruleid="vendordata" field="vendor">Power Electrics</setProductData>
+		<setProductData ruleid="modeldata" field="model">P275H-2</setProductData>
+		<setProductData ruleid="typedata" field="type">Generator</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+		<valueMap ruleid="4state-vm">					
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>2</valueIn><valueOut>2</valueOut>
+			<valueIn>3</valueIn><valueOut>3</valueOut>
+			<valueIn>*</valueIn><valueOut>4</valueOut>
+		</valueMap>
+		<enumMap ruleid="pf-codes-em">
+			<label>PF Leading</label>
+			<label>PF Lagging</label>
+			<label>Error</label>
+			<label>Not Available</label>
+			<label>Unknown</label>
+		</enumMap>
+		<valueMap ruleid="8state-vm">					
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>2</valueIn><valueOut>2</valueOut>
+			<valueIn>3</valueIn><valueOut>3</valueOut>
+			<valueIn>4</valueIn><valueOut>4</valueOut>
+			<valueIn>5</valueIn><valueOut>5</valueOut>
+			<valueIn>6</valueIn><valueOut>6</valueOut>
+			<valueIn>7</valueIn><valueOut>7</valueOut>
+			<valueIn>*</valueIn><valueOut>8</valueOut>
+		</valueMap>
+		<enumMap ruleid="start-stop-em">
+			<label>INIT</label>
+			<label>Pre Crank</label>
+			<label>Starting</label>
+			<label>Running</label>
+			<label>Pre Cooldown</label>
+			<label>Cooldown</label>
+			<label>Not Available</label>
+			<label>Stopping</label>
+			<label>Stopped</label>
+			<label>Unknown</label>
+		</enumMap>
+
+		<!-- generator sensors -->
+		<numSensor ruleid="gen_avg_ll_voltage">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_100</getOid></op><op>64255</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>voltage</type>
+			<sensorId>GEN_AVG_LL_VOLTAGE</sensorId>
+			<value>
+				<getOid>reg_100</getOid>
+			</value>
+			<label>Average Line-to-Line Voltage</label>
+			<sensorSet>Generator Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_avg_current">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_101</getOid></op><op>64255</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>amperage</type>
+			<sensorId>GEN_AVG_CURRENT</sensorId>
+			<value>
+				<getOid>reg_101</getOid>
+			</value>
+			<label>Average Current</label>
+			<sensorSet>Generator Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_avg_freq">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_102</getOid></op><op>64255</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>frequency</type>
+			<sensorId>GEN_AVG_FREQ</sensorId>
+			<value>
+				<div><op><getOid>reg_102</getOid></op><op>128</op></div>	<!-- 0.0078125 Hz/bit-->
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Average Frequency</label>
+			<sensorSet>Generator Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_overall_pf">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_103</getOid></op><op>64255</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>num/powerfactor</type>
+			<sensorId>GEN_OVERALL_PF</sensorId>
+			<value>
+                <sub>
+                    <op><div><op><getOid>reg_103</getOid></op><op>16384</op></div></op>
+                    <op>1</op>
+                </sub>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Power Factor, Overall</label>
+			<sensorSet>Generator Power Sensors</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="overall_pf_state">
+			<type>state</type>
+			<sensorId>GEN_OVERALL_PF_STATE</sensorId>
+			<value>
+				<mapValue mapid="4state-vm"><getOid>reg_104</getOid></mapValue>
+			</value>
+			<label>PF lag/lead State, overall</label>
+			<enum>pf-codes-em</enum>
+			<sensorSet>Generator Power Sensors</sensorSet>
+		</stateSensor>
+
+		<numSensor ruleid="gen_ll_voltage_a">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_108</getOid></op><op>64255</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>voltage</type>
+			<sensorId>GEN_LL_VOLTAGE_A</sensorId>
+			<value>
+				<getOid>reg_108</getOid>
+			</value>
+			<label>Line-to-Line Voltage, A</label>
+			<sensorSet>Generator Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_ll_voltage_b">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_109</getOid></op><op>64255</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>voltage</type>
+			<sensorId>GEN_LL_VOLTAGE_B</sensorId>
+			<value>
+				<getOid>reg_109</getOid>
+			</value>
+			<label>Line-to-Line Voltage, B</label>
+			<sensorSet>Generator Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_ll_voltage_c">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_110</getOid></op><op>64255</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>voltage</type>
+			<sensorId>GEN_LL_VOLTAGE_C</sensorId>
+			<value>
+				<getOid>reg_110</getOid>
+			</value>
+			<label>Line-to-Line Voltage, C</label>
+			<sensorSet>Generator Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_currrent_a">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_111</getOid></op><op>64255</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>amperage</type>
+			<sensorId>GEN_CURRENT_A</sensorId>
+			<value>
+				<getOid>reg_111</getOid>
+			</value>
+			<label>Current, A</label>
+			<sensorSet>Generator Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_current_b">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_112</getOid></op><op>64255</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>amperage</type>
+			<sensorId>GEN_CURRENT_B</sensorId>
+			<value>
+				<getOid>reg_112</getOid>
+			</value>
+			<label>Current, B</label>
+			<sensorSet>Generator Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_current_c">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_113</getOid></op><op>64255</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>amperage</type>
+			<sensorId>GEN_CURRENT_C</sensorId>
+			<value>
+				<getOid>reg_113</getOid>
+			</value>
+			<label>Current, C</label>
+			<sensorSet>Generator Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_apparent_power_a">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_123</getOid></op><op>4211081215</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>GEN_APPARENT_POWER_A</sensorId>
+			<value>
+				<mult>
+                    <op>0.001</op>
+                    <op><sub><op><getOid>reg_123</getOid></op><op>2000000000</op></sub></op>
+                </mult>
+			</value>
+            <valueInc>0.001</valueInc>
+			<label>Apparent Power, A</label>
+			<sensorSet>Generator Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_apparent_power_b">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_125</getOid></op><op>4211081215</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>GEN_APPARENT_POWER_B</sensorId>
+			<value>
+				<mult>
+                    <op>0.001</op>
+                    <op><sub><op><getOid>reg_125</getOid></op><op>2000000000</op></sub></op>
+                </mult>
+			</value>
+            <valueInc>0.001</valueInc>
+			<label>Apparent Power, B</label>
+			<sensorSet>Generator Power Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_apparent_power_c">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_127</getOid></op><op>4211081215</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>GEN_APPARENT_POWER_C</sensorId>
+			<value>
+				<mult>
+                    <op>0.001</op>
+                    <op><sub><op><getOid>reg_127</getOid></op><op>2000000000</op></sub></op>
+                </mult>
+			</value>
+            <valueInc>0.001</valueInc>
+			<label>Apparent Power, C</label>
+			<sensorSet>Generator Power Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_apparent_power_tot">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_138</getOid></op><op>4211081215</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>GEN_APPARENT_POWER_TOT</sensorId>
+			<value>
+				<mult>
+                    <op>0.001</op>
+                    <op><sub><op><getOid>reg_138</getOid></op><op>2000000000</op></sub></op>
+                </mult>
+			</value>
+            <valueInc>0.001</valueInc>
+			<label>Apparent Power, Total</label>
+			<sensorSet>Generator Power Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_kwhrs_export">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_144</getOid></op><op>4211081215</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>num/kwatthr</type>
+			<sensorId>GEN_KWHRS_EXPORT</sensorId>
+			<value>
+				<getOid>reg_144</getOid>
+			</value>
+			<label>Total kWatt Hrs export</label>
+			<sensorSet>Generator Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_avg_ln_voltage">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_148</getOid></op><op>64255</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>voltage</type>
+			<sensorId>GEN_AVG_LN_VOLTAGE</sensorId>
+			<value>
+				<getOid>reg_148</getOid>
+			</value>
+			<label>Average Line-to-Neutral Voltage</label>
+			<sensorSet>Generator Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="engine_oil_pressure">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_200</getOid></op><op>64255</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>pressure</type>
+			<sensorId>ENG_OIL_PRESSURE</sensorId>
+			<value>
+                <div><op><getOid>reg_200</getOid></op><op>8</op></div>	<!-- 0.125 kPa/bit-->
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Oil Pressure</label>
+			<sensorSet>Engine Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="engine_coolant_temperature">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_201</getOid></op><op>64255</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>temp</type>
+			<sensorId>ENG_COOLANT_TEMPERATURE</sensorId>
+			<value>
+				<sub>
+                    <op><div><op><getOid>reg_201</getOid></op><op>32</op></div></op>	<!-- 0.03125 C/bit -->
+                    <op>273</op>
+                </sub>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Coolant Temperature</label>
+			<sensorSet>Engine Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="engine_battery_voltage">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_202</getOid></op><op>64255</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>voltage</type>
+			<sensorId>ENG_BATT_VOLTAGE</sensorId>
+			<value>
+				<div><op><getOid>reg_202</getOid></op><op>20</op></div>	<!-- 0.05 V/bit-->
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Battery Voltage</label>
+			<sensorSet>Engine Sensors</sensorSet>
+		</numSensor>	  
+		<numSensor ruleid="engine_speed">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_203</getOid></op><op>64255</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>fanspeed</type>
+			<sensorId>ENGINE_SPEED</sensorId>
+			<value>
+				<div><op><getOid>reg_203</getOid></op><op>8</op></div>	<!-- 0.125 RPM/bit-->
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Engine Speed</label>
+			<sensorSet>Engine Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="engine_opeating_hours">
+            <rowTest>
+                <if>
+                    <op><gt><op><getOid>reg_204</getOid></op><op>4211081215</op></gt></op>
+                    <op>[false]</op>
+                    <op>[true]</op>
+                </if>
+            </rowTest>
+			<type>timeinhrs</type>
+			<sensorId>ENG_OP__HOURS</sensorId>
+			<value>
+				<div><op><getOid>reg_204</getOid></op><op>20</op></div>	<!-- 0.05 hrs/bit-->
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Operating Hours</label>
+			<sensorSet>Engine Sensors</sensorSet>
+		</numSensor>
+
+		<stateSensor ruleid="engine_start_stop_state">
+			<type>state</type>
+			<sensorId>ENG_START_STOP_STATE</sensorId>
+			<value>
+				<mapValue mapid="8state-vm"><getOid>reg_206</getOid></mapValue>
+			</value>
+			<label>Start/Stop State</label>
+			<enum>start-stop-em</enum>
+			<sensorSet>Engine Sensors</sensorSet>
+		</stateSensor>
+
+        </device>
+
+	<protocol>
+		<modbus>	
+			<value_ref_id valid="reg_100">	<!-- average AC RMS voltage	-->
+				<function>3</function>
+				<start_addr>99</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_101">	<!-- average AC RMS current	-->
+				<function>3</function>
+				<start_addr>100</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_102">	<!-- average AC RMS frequency   -->
+				<function>3</function>
+				<start_addr>101</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_103">	<!-- overall power factor  -->
+				<function>3</function>
+				<start_addr>102</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_104">	<!-- power factor state	-->
+				<function>3</function>
+				<start_addr>103</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="reg_108">	<!-- generator voltage A line-to-line	-->
+				<function>3</function>
+				<start_addr>107</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_109">	<!-- generator voltage B line-to-line	-->
+				<function>3</function>
+				<start_addr>108</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_110">	<!-- generator voltage C line-to-line	-->
+				<function>3</function>
+				<start_addr>109</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_111">	<!-- generator current L1	-->
+				<function>3</function>
+				<start_addr>110</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_112">	<!-- generator current L2	-->
+				<function>3</function>
+				<start_addr>111</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_113">	<!-- generator current L3	-->
+				<function>3</function>
+				<start_addr>112</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="reg_123">	<!-- generator apparent power A -->
+				<function>3</function>
+				<start_addr>122</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_125">	<!-- generator apparent power B -->
+				<function>3</function>
+				<start_addr>124</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_127">	<!-- generator apparent power C -->
+				<function>3</function>
+				<start_addr>126</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+
+			<value_ref_id valid="reg_138">	<!-- total apparent power -->
+				<function>3</function>
+				<start_addr>137</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+
+			<value_ref_id valid="reg_144">	<!-- total kW hrs export -->
+				<function>3</function>
+				<start_addr>143</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+
+			<value_ref_id valid="reg_148">	<!-- average line-to-neutral voltage	-->
+				<function>3</function>
+				<start_addr>147</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="reg_200">	<!-- engine oil pressure	-->
+				<function>3</function>
+				<start_addr>199</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_201">	<!-- engine coolant temperature	-->
+				<function>3</function>
+				<start_addr>200</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_202">	<!-- battery voltage	-->
+				<function>3</function>
+				<start_addr>201</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_203">	<!-- engine RPM	-->
+				<function>3</function>
+				<start_addr>202</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_204">	<!-- engine operating hours	-->
+				<function>3</function>
+				<start_addr>203</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="reg_206">	<!-- start/stop state	-->
+				<function>3</function>
+				<start_addr>205</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<packet>
+				<function>3</function>
+				<start_addr>99</start_addr>
+				<quantity>54</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>199</start_addr>
+				<quantity>7</quantity>
+			</packet>
+		</modbus>
+	</protocol>
+</APC_DDF>		

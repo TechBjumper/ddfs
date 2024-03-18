@@ -1,0 +1,1364 @@
+<?xml version="1.0"?>
+<!-- Shenzhen Smart Cubic Intelligent Technology BHM2 -->
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+		ddfid="shenzhen_smart3_BHM2" ddfname="Shenzhen Smart3 BHM2" 
+		ddfversion="1" canremove="yes"> 
+  <schemaVersion>1.6</schemaVersion>
+<!-- DDF-414 -->
+  <device deviceid="shenzhen_smart3_BHM2">
+    <oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+    <setProductData ruleid="vendordata" field="vendor">Shenzhen</setProductData>
+    <setProductData ruleid="modeldata" field="model">BHM2</setProductData>
+    <setProductData ruleid="typedata" field="type">Battery Manager</setProductData>
+    <setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+	<!-- Class A overall voltage scale this value: mult by 0.1 -->
+    <numSensor ruleid="system_voltage" >
+		<type>voltage</type>
+		<sensorId>SYSTEM_VOLTAGE</sensorId>
+		<value>
+			<mult>
+				<op>0.1</op>
+				<op><getOid>sys_voltage_value</getOid></op>
+			</mult>
+		</value>
+		<valueInc>0.1</valueInc>
+		<label>Class A Overall Voltage</label>
+		<sensorSet>System Sensors</sensorSet>
+    </numSensor>
+    
+	<!-- Class A current scale this value: mult by 0.1 -->
+    <numSensor ruleid="system_current" >
+		<type>amperage</type>
+		<sensorId>SYSTEM_CURRENT</sensorId>
+		<value>
+			<mult>
+				<op>0.1</op>
+				<op><getOid>sys_current_value</getOid></op>
+			</mult>
+		</value>
+		<valueInc>0.1</valueInc>
+		<label>Class A Current</label>
+		<sensorSet>System Sensors</sensorSet>
+    </numSensor>
+
+	<!-- Individual cell voltage -->
+	<numSensor ruleid="individual_cell_voltage" index="cell_voltage">
+		<type>voltage</type>
+		<sensorId>CELL_<formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber>_VOLTAGE</sensorId>
+		<value>
+			<mult>
+				<op><getRowOid>cell_voltage</getRowOid></op>
+				<op>0.01</op>
+			</mult>
+		</value>
+		<valueInc>0.01</valueInc>
+		<label>Cell <formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber> Voltage</label>
+		<sensorSet>System Summary</sensorSet>
+	</numSensor>
+
+	<!-- Individual cell impedance -->
+	<numSensor ruleid="individual_cell_impedance" index="cell_impedance">
+		<type>num</type>
+		<sensorId>CELL_<formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber>_IMPEDANCE</sensorId>
+		<value>
+			<mult>
+				<op><getRowOid>cell_impedance</getRowOid></op>
+				<op>0.01</op>
+			</mult>
+		</value>
+		<valueInc>0.01</valueInc>
+		<label>Cell <formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber> Impedance </label>
+		<sensorSet>System Summary</sensorSet>
+	</numSensor>
+
+	<!-- Individual cell temperature -->
+	<numSensor ruleid="individual_cell_temperature" index="cell_temperature">
+		<type>temp</type>
+		<sensorId>CELL_<formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber>_TEMPERATURE</sensorId>
+		<value>
+			<mult>
+				<op><getRowOid>cell_temperature</getRowOid></op>
+				<op>0.1</op>
+			</mult>
+		</value>
+		<valueInc>0.1</valueInc>
+		<label>Cell <formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber> Temperature</label>
+		<sensorSet>System Summary</sensorSet>
+	</numSensor>
+	
+	<!-- System Status; mask and report each bit field (there are 16) in this status regidter -->
+	<valueMap ruleid="inactive_active-vm">
+		<valueIn>0</valueIn><valueOut>0</valueOut>
+		<valueIn>1</valueIn><valueOut>1</valueOut>
+		<valueIn>*</valueIn><valueOut>1</valueOut>
+	</valueMap>
+
+	<enumMap ruleid="charge-discharge-em">
+		<label>Charging</label>
+		<label>Discharging</label>
+	</enumMap>
+
+	<enumMap ruleid="norm-alarm-em">
+		<label>Normal</label>
+		<label>Alarm</label>
+	</enumMap>
+
+	<enumMap ruleid="inject-auto-em">
+		<label>Inject</label>
+		<label>Auto</label>
+	</enumMap>
+
+	<enumMap ruleid="yes-no-em">
+		<label>No</label>
+		<label>Yes</label>
+	</enumMap>
+
+    <stateSensor ruleid="system_status">
+		<type>state</type>
+		<sensorId>SYSTEM_STATUS_0</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getOid>sys_status_value</getOid></op>
+								<op>0</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>norm-alarm-em</enum>
+		<label>BHM Status</label>
+		<sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="system_status">
+		<type>state</type>
+		<sensorId>SYSTEM_STATUS_1</sensorId>
+ 		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getOid>sys_status_value</getOid></op>
+								<op>1</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>norm-alarm-em</enum>
+		<label>Emergency Alarm</label>
+		<sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="system_status">
+		<type>state</type>
+		<sensorId>SYSTEM_STATUS_2</sensorId>
+ 		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getOid>sys_status_value</getOid></op>
+								<op>2</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>norm-alarm-em</enum>
+		<label>Maintenance Alarm</label>
+		<sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="system_status">
+		<type>state</type>
+		<sensorId>SYSTEM_STATUS_3</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getOid>sys_status_value</getOid></op>
+								<op>3</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>charge-discharge-em</enum>
+		<label>Battery Status</label>
+		<sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="system_status">
+		<type>state</type>
+		<sensorId>SYSTEM_STATUS_4</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getOid>sys_status_value</getOid></op>
+								<op>4</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>inject-auto-em</enum>
+		<label>Measure Method</label>
+		<sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="system_status">
+		<type>state</type>
+		<sensorId>SYSTEM_STATUS_5</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getOid>sys_status_value</getOid></op>
+								<op>5</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>yes-no-em</enum>
+		<label>Reserved 1</label>
+		<sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="system_status">
+		<type>state</type>
+		<sensorId>SYSTEM_STATUS_6</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getOid>sys_status_value</getOid></op>
+								<op>6</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>yes-no-em</enum>
+		<label>Reserved 2</label>
+		<sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="system_status">
+		<type>state</type>
+		<sensorId>SYSTEM_STATUS_7</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getOid>sys_status_value</getOid></op>
+								<op>7</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>yes-no-em</enum>
+		<label>Reserved 3</label>
+		<sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="system_status">
+		<type>state</type>
+		<sensorId>SYSTEM_STATUS_8</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getOid>sys_status_value</getOid></op>
+								<op>8</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>yes-no-em</enum>
+		<label>Reserved 4</label>
+		<sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="system_status">
+		<type>state</type>
+		<sensorId>SYSTEM_STATUS_9</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getOid>sys_status_value</getOid></op>
+								<op>9</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>yes-no-em</enum>
+		<label>Reserved 5</label>
+		<sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="system_status">
+		<type>state</type>
+		<sensorId>SYSTEM_STATUS_10</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getOid>sys_status_value</getOid></op>
+								<op>10</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>yes-no-em</enum>
+		<label>Reserved 6</label>
+		<sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="system_status">
+		<type>state</type>
+		<sensorId>SYSTEM_STATUS_11</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getOid>sys_status_value</getOid></op>
+								<op>11</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>yes-no-em</enum>
+		<label>Reserved 7</label>
+		<sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="system_status">
+		<type>state</type>
+		<sensorId>SYSTEM_STATUS_12</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getOid>sys_status_value</getOid></op>
+								<op>12</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>yes-no-em</enum>
+		<label>Reserved 8</label>
+		<sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="system_status">
+		<type>state</type>
+		<sensorId>SYSTEM_STATUS_13</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getOid>sys_status_value</getOid></op>
+								<op>13</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>yes-no-em</enum>
+		<label>Reserved 9</label>
+		<sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="system_status">
+		<type>state</type>
+		<sensorId>SYSTEM_STATUS_14</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getOid>sys_status_value</getOid></op>
+								<op>14</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>yes-no-em</enum>
+		<label>Reserved 10</label>
+		<sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="system_status">
+		<type>state</type>
+		<sensorId>SYSTEM_STATUS_15</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getOid>sys_status_value</getOid></op>
+								<op>15</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>yes-no-em</enum>
+		<label>Reserved 11</label>
+		<sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+	<!-- BHM Alarms : 14 sensors in each register; mask and report the bit field for each of the 10 registers -->
+	<enumMap ruleid="inactive_active-em">
+		<label>Inactive</label>
+		<label>Active</label>
+	</enumMap>
+	
+	<stateSensor ruleid="alarm_sensor0" index="alarm_status">
+		<type>state</type>
+		<sensorId>ALARM_<formatNumber><add><op>1</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber>_STATUS_BIT0</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getRowOid>alarm_status</getRowOid></op>
+								<op>0</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>inactive_active-em</enum>
+		<label>Number <formatNumber><add><op>1</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber> High Voltage Alarm</label>
+		<sensorSet>System Summary</sensorSet>
+	</stateSensor>
+
+	<stateSensor ruleid="alarm_sensor1" index="alarm_status">
+		<type>state</type>
+		<sensorId>ALARM_<formatNumber><add><op>1</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber>_STATUS_BIT1</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getRowOid>alarm_status</getRowOid></op>
+								<op>1</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>inactive_active-em</enum>
+		<label>Number <formatNumber><add><op>1</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber> Low Voltage Alarm</label>
+		<sensorSet>System Summary</sensorSet>
+	</stateSensor>
+
+	<stateSensor ruleid="alarm_sensor2" index="alarm_status">
+		<type>state</type>
+		<sensorId>ALARM_<formatNumber><add><op>1</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber>_STATUS_BIT2</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getRowOid>alarm_status</getRowOid></op>
+								<op>2</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>inactive_active-em</enum>
+		<label>Number <formatNumber><add><op>1</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber> Voltage Imbalance Alarm</label>
+		<sensorSet>System Summary</sensorSet>
+	</stateSensor>
+
+	<stateSensor ruleid="alarm_sensor3" index="alarm_status">
+		<type>state</type>
+		<sensorId>ALARM_<formatNumber><add><op>1</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber>_STATUS_BIT3</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getRowOid>alarm_status</getRowOid></op>
+								<op>3</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>inactive_active-em</enum>
+		<label>Number <formatNumber><add><op>1</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber> High Impedance Alarm</label>
+		<sensorSet>System Summary</sensorSet>
+	</stateSensor>
+
+	<stateSensor ruleid="alarm_sensor4" index="alarm_status">
+		<type>state</type>
+		<sensorId>ALARM_<formatNumber><add><op>1</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber>_STATUS_BIT4</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getRowOid>alarm_status</getRowOid></op>
+								<op>4</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>inactive_active-em</enum>
+		<label>Number <formatNumber><add><op>1</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber> Impedance Imbalance Alarm</label>
+		<sensorSet>System Summary</sensorSet>
+	</stateSensor>
+
+	<stateSensor ruleid="alarm_sensor5" index="alarm_status">
+		<type>state</type>
+		<sensorId>ALARM_<formatNumber><add><op>1</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber>_STATUS_BIT5</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getRowOid>alarm_status</getRowOid></op>
+								<op>5</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>inactive_active-em</enum>
+		<label>Number <formatNumber><add><op>1</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber> High Temperature Alarm</label>
+		<sensorSet>System Summary</sensorSet>
+	</stateSensor>
+
+	<stateSensor ruleid="alarm_sensor6" index="alarm_status">
+		<type>state</type>
+		<sensorId>ALARM_<formatNumber><add><op>1</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber>_STATUS_BIT6</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getRowOid>alarm_status</getRowOid></op>
+								<op>6</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>inactive_active-em</enum>
+		<label>Number <formatNumber><add><op>1</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber> Low Temperature Alarm</label>
+		<sensorSet>System Summary</sensorSet>
+	</stateSensor>
+
+	<stateSensor ruleid="alarm_sensor8" index="alarm_status">
+		<type>state</type>
+		<sensorId>ALARM_<formatNumber><add><op>2</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber>_STATUS_BIT8</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getRowOid>alarm_status</getRowOid></op>
+								<op>8</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>inactive_active-em</enum>
+		<label>Number <formatNumber><add><op>2</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber> High Voltage Alarm</label>
+		<sensorSet>System Summary</sensorSet>
+	</stateSensor>
+
+	<stateSensor ruleid="alarm_sensor9" index="alarm_status">
+		<type>state</type>
+		<sensorId>ALARM_<formatNumber><add><op>2</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber>_STATUS_BIT9</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getRowOid>alarm_status</getRowOid></op>
+								<op>9</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>inactive_active-em</enum>
+		<label>Number <formatNumber><add><op>2</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber> Low Voltage Alarm</label>
+		<sensorSet>System Summary</sensorSet>
+	</stateSensor>
+
+	<stateSensor ruleid="alarm_sensor10" index="alarm_status">
+		<type>state</type>
+		<sensorId>ALARM_<formatNumber><add><op>2</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber>_STATUS_BIT10</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getRowOid>alarm_status</getRowOid></op>
+								<op>10</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>inactive_active-em</enum>
+		<label>Number <formatNumber><add><op>2</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber> Voltage Imbalance Alarm</label>
+		<sensorSet>System Summary</sensorSet>
+	</stateSensor>
+
+	<stateSensor ruleid="alarm_sensor11" index="alarm_status">
+		<type>state</type>
+		<sensorId>ALARM_<formatNumber><add><op>2</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber>_STATUS_BIT11</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getRowOid>alarm_status</getRowOid></op>
+								<op>11</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>inactive_active-em</enum>
+		<label>Number <formatNumber><add><op>2</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber> High Impedance Alarm</label>
+		<sensorSet>System Summary</sensorSet>
+	</stateSensor>
+
+	<stateSensor ruleid="alarm_sensor12" index="alarm_status">
+		<type>state</type>
+		<sensorId>ALARM_<formatNumber><add><op>2</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber>_STATUS_BIT12</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getRowOid>alarm_status</getRowOid></op>
+								<op>12</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>inactive_active-em</enum>
+		<label>Number <formatNumber><add><op>2</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber> Impedance Imbalance Alarm</label>
+		<sensorSet>System Summary</sensorSet>
+	</stateSensor>
+
+	<stateSensor ruleid="alarm_sensor13" index="alarm_status">
+		<type>state</type>
+		<sensorId>ALARM_<formatNumber><add><op>2</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber>_STATUS_BIT13</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getRowOid>alarm_status</getRowOid></op>
+								<op>13</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>inactive_active-em</enum>
+		<label>Number <formatNumber><add><op>2</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber> High Temperature Alarm</label>
+		<sensorSet>System Summary</sensorSet>
+	</stateSensor>
+
+	<stateSensor ruleid="alarm_sensor14" index="alarm_status">
+		<type>state</type>
+		<sensorId>ALARM_<formatNumber><add><op>2</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber>_STATUS_BIT14</sensorId>
+		<value>
+			<mapValue mapid="inactive_active-vm">
+				<formatNumber>
+					<bitwise_and>
+						<op>
+							<right_shift>
+								<op><getRowOid>alarm_status</getRowOid></op>
+								<op>14</op>
+							</right_shift>
+						</op>
+						<op>1</op>
+					</bitwise_and>
+				</formatNumber>
+			</mapValue>
+		</value>
+		<enum>inactive_active-em</enum>
+		<label>Number <formatNumber><add><op>2</op><op><mult><op>2</op><op><rowNumber/></op></mult></op></add></formatNumber> Low Temperature Alarm</label>
+		<sensorSet>System Summary</sensorSet>
+	</stateSensor>
+		
+	</device>
+
+  <protocol>
+    <modbus>
+	
+      <value_ref_id valid="sys_voltage_value">
+        <function>3</function>
+        <start_addr>1100</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>  
+      </value_ref_id>
+
+      <value_ref_id valid="sys_current_value">
+        <function>3</function>
+        <start_addr>1102</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>  
+      </value_ref_id>
+
+      <value_ref_id valid="sys_status_value">
+        <function>3</function>
+        <start_addr>1300</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>  
+      </value_ref_id>
+
+      <table_ref_id indexid="cell_voltage">
+        <entry num="0">cell_0_volt</entry>
+        <entry num="1">cell_1_volt</entry>
+        <entry num="2">cell_2_volt</entry>
+        <entry num="3">cell_3_volt</entry>
+        <entry num="4">cell_4_volt</entry>
+        <entry num="5">cell_5_volt</entry>
+        <entry num="6">cell_6_volt</entry>
+        <entry num="7">cell_7_volt</entry>
+        <entry num="8">cell_8_volt</entry>
+        <entry num="9">cell_9_volt</entry>
+        <entry num="10">cell_10_volt</entry>
+        <entry num="11">cell_11_volt</entry>
+        <entry num="12">cell_12_volt</entry>
+        <entry num="13">cell_13_volt</entry>
+        <entry num="14">cell_14_volt</entry>
+        <entry num="15">cell_15_volt</entry>
+        <entry num="16">cell_16_volt</entry>
+        <entry num="17">cell_17_volt</entry>
+        <entry num="18">cell_18_volt</entry>
+        <entry num="19">cell_19_volt</entry>
+      </table_ref_id>
+
+		<value_ref_id valid="cell_0_volt">
+			<function>3</function>
+			<start_addr>1104</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_1_volt">
+			<function>3</function>
+			<start_addr>1105</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_2_volt">
+			<function>3</function>
+			<start_addr>1106</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_3_volt">
+			<function>3</function>
+			<start_addr>1107</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_4_volt">
+			<function>3</function>
+			<start_addr>1108</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_5_volt">
+			<function>3</function>
+			<start_addr>1109</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_6_volt">
+			<function>3</function>
+			<start_addr>1110</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_7_volt">
+			<function>3</function>
+			<start_addr>1111</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_8_volt">
+			<function>3</function>
+			<start_addr>1112</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_9_volt">
+			<function>3</function>
+			<start_addr>1113</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_10_volt">
+			<function>3</function>
+			<start_addr>1114</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_11_volt">
+			<function>3</function>
+			<start_addr>1115</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_12_volt">
+			<function>3</function>
+			<start_addr>1116</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_13_volt">
+			<function>3</function>
+			<start_addr>1117</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_14_volt">
+			<function>3</function>
+			<start_addr>1118</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_15_volt">
+			<function>3</function>
+			<start_addr>1119</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_16_volt">
+			<function>3</function>
+			<start_addr>1120</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_17_volt">
+			<function>3</function>
+			<start_addr>1121</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_18_volt">
+			<function>3</function>
+			<start_addr>1122</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_19_volt">
+			<function>3</function>
+			<start_addr>1123</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+      
+      <table_ref_id indexid="cell_impedance">
+        <entry num="0">cell_0_impedance</entry>
+        <entry num="1">cell_1_impedance</entry>
+        <entry num="2">cell_2_impedance</entry>
+        <entry num="3">cell_3_impedance</entry>
+        <entry num="4">cell_4_impedance</entry>
+        <entry num="5">cell_5_impedance</entry>
+        <entry num="6">cell_6_impedance</entry>
+        <entry num="7">cell_7_impedance</entry>
+        <entry num="8">cell_8_impedance</entry>
+        <entry num="9">cell_9_impedance</entry>
+        <entry num="10">cell_10_impedance</entry>
+        <entry num="11">cell_11_impedance</entry>
+        <entry num="12">cell_12_impedance</entry>
+        <entry num="13">cell_13_impedance</entry>
+        <entry num="14">cell_14_impedance</entry>
+        <entry num="15">cell_15_impedance</entry>
+        <entry num="16">cell_16_impedance</entry>
+        <entry num="17">cell_17_impedance</entry>
+        <entry num="18">cell_18_impedance</entry>
+        <entry num="19">cell_19_impedance</entry>
+      </table_ref_id>
+		<value_ref_id valid="cell_0_impedance">
+			<function>3</function>
+			<start_addr>1200</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_1_impedance">
+			<function>3</function>
+			<start_addr>1201</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_2_impedance">
+			<function>3</function>
+			<start_addr>1202</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_3_impedance">
+			<function>3</function>
+			<start_addr>1203</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_4_impedance">
+			<function>3</function>
+			<start_addr>1204</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_5_impedance">
+			<function>3</function>
+			<start_addr>1205</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_6_impedance">
+			<function>3</function>
+			<start_addr>1206</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_7_impedance">
+			<function>3</function>
+			<start_addr>1207</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_8_impedance">
+			<function>3</function>
+			<start_addr>1208</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_9_impedance">
+			<function>3</function>
+			<start_addr>1209</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_10_impedance">
+			<function>3</function>
+			<start_addr>1210</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_11_impedance">
+			<function>3</function>
+			<start_addr>1211</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_12_impedance">
+			<function>3</function>
+			<start_addr>1212</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_13_impedance">
+			<function>3</function>
+			<start_addr>1213</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_14_impedance">
+			<function>3</function>
+			<start_addr>1214</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_15_impedance">
+			<function>3</function>
+			<start_addr>1215</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_16_impedance">
+			<function>3</function>
+			<start_addr>1216</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_17_impedance">
+			<function>3</function>
+			<start_addr>1217</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_18_impedance">
+			<function>3</function>
+			<start_addr>1218</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_19_impedance">
+			<function>3</function>
+			<start_addr>1219</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+
+      <table_ref_id indexid="cell_temperature">
+        <entry num="0">cell_0_temp</entry>
+        <entry num="1">cell_1_temp</entry>
+        <entry num="2">cell_2_temp</entry>
+        <entry num="3">cell_3_temp</entry>
+        <entry num="4">cell_4_temp</entry>
+        <entry num="5">cell_5_temp</entry>
+        <entry num="6">cell_6_temp</entry>
+        <entry num="7">cell_7_temp</entry>
+        <entry num="8">cell_8_temp</entry>
+        <entry num="9">cell_9_temp</entry>
+        <entry num="10">cell_10_temp</entry>
+        <entry num="11">cell_11_temp</entry>
+        <entry num="12">cell_12_temp</entry>
+        <entry num="13">cell_13_temp</entry>
+        <entry num="14">cell_14_temp</entry>
+        <entry num="15">cell_15_temp</entry>
+        <entry num="16">cell_16_temp</entry>
+        <entry num="17">cell_17_temp</entry>
+        <entry num="18">cell_18_temp</entry>
+        <entry num="19">cell_19_temp</entry>
+      </table_ref_id>
+		<value_ref_id valid="cell_0_temp">
+			<function>3</function>
+			<start_addr>1248</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_1_temp">
+			<function>3</function>
+			<start_addr>1249</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_2_temp">
+			<function>3</function>
+			<start_addr>1250</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_3_temp">
+			<function>3</function>
+			<start_addr>1251</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_4_temp">
+			<function>3</function>
+			<start_addr>1252</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_5_temp">
+			<function>3</function>
+			<start_addr>1253</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_6_temp">
+			<function>3</function>
+			<start_addr>1254</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_7_temp">
+			<function>3</function>
+			<start_addr>1255</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_8_temp">
+			<function>3</function>
+			<start_addr>1256</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_9_temp">
+			<function>3</function>
+			<start_addr>1257</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_10_temp">
+			<function>3</function>
+			<start_addr>1258</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_11_temp">
+			<function>3</function>
+			<start_addr>1259</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_12_temp">
+			<function>3</function>
+			<start_addr>1260</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_13_temp">
+			<function>3</function>
+			<start_addr>1261</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_14_temp">
+			<function>3</function>
+			<start_addr>1262</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_15_temp">
+			<function>3</function>
+			<start_addr>1263</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_16_temp">
+			<function>3</function>
+			<start_addr>1264</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_17_temp">
+			<function>3</function>
+			<start_addr>1265</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_18_temp">
+			<function>3</function>
+			<start_addr>1266</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+		<value_ref_id valid="cell_19_temp">
+			<function>3</function>
+			<start_addr>1267</start_addr>
+			<quantity>1</quantity>
+			<type>uint_16</type>  
+		</value_ref_id>
+      
+	  <table_ref_id indexid="alarm_status">
+        <entry num="0">bhm_alarm0</entry>
+        <entry num="1">bhm_alarm1</entry>
+        <entry num="2">bhm_alarm2</entry>
+        <entry num="3">bhm_alarm3</entry>
+        <entry num="4">bhm_alarm4</entry>
+        <entry num="5">bhm_alarm5</entry>
+        <entry num="6">bhm_alarm6</entry>
+        <entry num="7">bhm_alarm7</entry>
+        <entry num="8">bhm_alarm8</entry>
+        <entry num="9">bhm_alarm9</entry>
+      </table_ref_id>
+      <value_ref_id valid="bhm_alarm0">
+        <function>3</function>
+        <start_addr>1400</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>  
+      </value_ref_id>
+      <value_ref_id valid="bhm_alarm1">
+        <function>3</function>
+        <start_addr>1401</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>  
+      </value_ref_id>
+      <value_ref_id valid="bhm_alarm2">
+        <function>3</function>
+        <start_addr>1402</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>  
+      </value_ref_id>
+      <value_ref_id valid="bhm_alarm3">
+        <function>3</function>
+        <start_addr>1403</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>  
+      </value_ref_id>
+      <value_ref_id valid="bhm_alarm4">
+        <function>3</function>
+        <start_addr>1404</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>  
+      </value_ref_id>
+      <value_ref_id valid="bhm_alarm5">
+        <function>3</function>
+        <start_addr>1405</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>  
+      </value_ref_id>
+      <value_ref_id valid="bhm_alarm6">
+        <function>3</function>
+        <start_addr>1406</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>  
+      </value_ref_id>
+      <value_ref_id valid="bhm_alarm7">
+        <function>3</function>
+        <start_addr>1407</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>  
+      </value_ref_id>
+      <value_ref_id valid="bhm_alarm8">
+        <function>3</function>
+        <start_addr>1408</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>  
+      </value_ref_id>
+      <value_ref_id valid="bhm_alarm9">
+        <function>3</function>
+        <start_addr>1409</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>  
+      </value_ref_id>
+   
+	  <packet>
+        <start_addr>1100</start_addr>
+        <quantity>24</quantity>
+      </packet>
+	  <packet>
+        <start_addr>1200</start_addr>
+        <quantity>96</quantity>
+      </packet>
+      <packet>
+        <start_addr>1300</start_addr>
+        <quantity>1</quantity>
+      </packet>
+      <packet>
+        <start_addr>1400</start_addr>
+        <quantity>25</quantity>
+      </packet>
+      
+    </modbus>
+  </protocol>
+</APC_DDF>
+
+

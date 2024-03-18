@@ -1,0 +1,2033 @@
+  -- ----------------------------------------------------------------------------
+--                    iTrustII UPS MIB
+--                    ITRUSTII-UPS-MIB
+--
+--      Copyright (c) 1999-2000 HUAWEI ELECTRIC TECH. CO., LTD, SHENZHEN.
+--      Copyright (c) 2000-2001 AVANSYS POWER CO., LTD., SHENZHEN.
+--      Copyright (c) 2001-2004 EMERSON NETWORK POWER CO., LTD.
+--      All rights reserved.
+--
+--      Created    by: Su Chunlei
+--      Created  date: 2004-03-03
+--      Modified Date: 2004-12-17     Modified the OID. by suchunlei
+-- ----------------------------------------------------------------------------
+
+ITRUSTII-UPS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE
+        FROM RFC-1212
+
+    TRAP-TYPE
+        FROM RFC-1215
+
+    enterprises, IpAddress
+        FROM RFC1155-SMI;
+
+    DisplayString ::= OCTET STRING
+
+
+    -- ------------------------------------------------------------------------
+    -- the location of UPS group in ENP enterprise.
+    -- ------------------------------------------------------------------------ 
+    emersonNetworkPower     OBJECT IDENTIFIER ::= { enterprises 13400 }
+    products                OBJECT IDENTIFIER ::= { emersonNetworkPower 2 }
+    emersonUps              OBJECT IDENTIFIER ::= { products 1 }
+    iTrustIIUps             OBJECT IDENTIFIER ::= { products 2 }
+    
+    -- ------------------------------------------------------------------------
+    -- the main objects about UPS
+    -- ------------------------------------------------------------------------ 
+    upsAgent        OBJECT IDENTIFIER ::= { emersonUps 1 }
+    upsCommon       OBJECT IDENTIFIER ::= { emersonUps 2 }
+    upsSpecial      OBJECT IDENTIFIER ::= { iTrustIIUps 3 }
+    upsAlarm        OBJECT IDENTIFIER ::= { emersonUps 4 }
+
+    upsIdent        OBJECT IDENTIFIER ::= { upsCommon 1 }
+
+    -- ------------------------------------------------------------------------
+    -- the common objects about a  UPS
+    -- ------------------------------------------------------------------------ 
+    upsBaseIdent    OBJECT IDENTIFIER ::=  { upsIdent 1 }
+    upsSmartIdent   OBJECT IDENTIFIER ::=  { upsIdent 2 }
+
+    upsBaseAlaram   OBJECT IDENTIFIER ::=  { upsAlarm 1 }
+    upsSmartAlarm   OBJECT IDENTIFIER ::=  { upsAlarm 2 }
+
+    -- ------------------------------------------------------------------------
+    -- the detail objects about a special UPS
+    -- ------------------------------------------------------------------------ 
+    upsBattery      OBJECT IDENTIFIER ::=  { upsSpecial 2 }
+    upsInput        OBJECT IDENTIFIER ::=  { upsSpecial 3 }
+    upsOutput       OBJECT IDENTIFIER ::=  { upsSpecial 4 }
+    upsStatus       OBJECT IDENTIFIER ::=  { upsSpecial 5 }
+    upsTest         OBJECT IDENTIFIER ::=  { upsSpecial 6 }
+    upsControl      OBJECT IDENTIFIER ::=  { upsSpecial 7 }
+    upsConfig       OBJECT IDENTIFIER ::=  { upsSpecial 8 }
+
+    upsBaseBattery  OBJECT IDENTIFIER ::=  { upsBattery 1 }
+    upsSmartBattery OBJECT IDENTIFIER ::=  { upsBattery 2 }
+    
+    upsBaseInput    OBJECT IDENTIFIER ::=  { upsInput 1 }
+    upsSmartInput   OBJECT IDENTIFIER ::=  { upsInput 2 }
+    upsSmartBypass  OBJECT IDENTIFIER ::=  { upsInput 3 }
+    
+    upsBaseOutput   OBJECT IDENTIFIER ::=  { upsOutput 1 }
+    upsSmartOutput  OBJECT IDENTIFIER ::=  { upsOutput 2 }
+
+    upsBaseStatus   OBJECT IDENTIFIER ::=  { upsStatus 1 }
+    upsSmartStatus  OBJECT IDENTIFIER ::=  { upsStatus 2 }
+    
+    upsBaseControl  OBJECT IDENTIFIER ::=  { upsControl 1 }
+    upsSmartControl OBJECT IDENTIFIER ::=  { upsControl 2 }
+    
+    upsBaseTest     OBJECT IDENTIFIER ::=  { upsTest 1 }
+    upsSmartTest    OBJECT IDENTIFIER ::=  { upsTest 2 }
+    
+    upsBaseConfig   OBJECT IDENTIFIER ::=  { upsConfig 1 }
+    upsSmartConfig  OBJECT IDENTIFIER ::=  { upsConfig 2 }
+    upsPlanConfig   OBJECT IDENTIFIER ::=  { upsConfig 3 }
+
+    -- ------------------------------------------------------------------------
+    -- 1. upsAgent group
+    -- ------------------------------------------------------------------------ 
+   
+    agentRevision OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The software version of the agent."
+        ::= { upsAgent 1 }
+
+    agentManagersNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of managers that can manage the agent. "
+        ::= { upsAgent 2 }
+ 
+    agentManagersTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF AgentManagersEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of managers of the agent.  The number of
+            entries is given by the value of agentManagersNum."
+        ::= { upsAgent 3 }
+ 
+    agentManagersEntry OBJECT-TYPE
+        SYNTAX AgentManagersEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The managers of the agent."
+        INDEX  { managerIndex}
+        ::= { agentManagersTable 1 }
+ 
+    AgentManagersEntry ::=
+        SEQUENCE {
+            managerIndex
+                INTEGER,
+            managerAddr
+                IpAddress,
+            publicCommunityString
+                 DisplayString,
+            privateCommunityString
+                 DisplayString,
+            managerPrivilege
+                INTEGER,
+            acceptTrapLevel
+                INTEGER,
+            managerAccept
+                INTEGER
+        }
+ 
+    managerIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the managers entry."
+        ::= { agentManagersEntry 1 }
+    
+    managerAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The IP address of the manager."
+        ::= { agentManagersEntry 2 }
+
+    publicCommunityString OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "The public community name to use in the query request."
+        ::= { agentManagersEntry 3 }
+ 
+    privateCommunityString OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "The private community name to use int the control request."
+        ::= { agentManagersEntry 4 }
+ 
+    managerPrivilege OBJECT-TYPE
+        SYNTAX INTEGER {
+            forbidden(0),
+            query(1),
+            control(2),
+            administrator(3)
+       }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The privilege of the manager to access the agent.
+            setting forbidden(0) indicates the manager have no any privilege to access the agent,
+            setting query(1) indicates the manager can GET information from agent only,
+            setting control(2) indicates the manager can GET information from agent and 
+            send control command to the agent.
+            setting administrator(3) indicates the manager has all management privilege
+            including set or modify this managers table."
+       ::= { agentManagersEntry 5 }
+
+    acceptTrapLevel OBJECT-TYPE
+         SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3),
+            noTraps(4)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "The severity threshold of traps to send to the manager.
+            traps are labeled in severity as informational(1), warning(2),
+            severe(3).  Only traps of equal or greater severity than
+            this value are sent to the manager. setting noTraps(4) indicates
+            agent do not send any traps to the manager."
+       ::= { agentManagersEntry 6 }
+
+    managerAccept OBJECT-TYPE
+        SYNTAX INTEGER   {
+            view(0),
+            new(1),
+            modify(2),
+            delete(3)
+        }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "An entry will be added if new(1), will be modified if modify(2), 
+           and will be removed if delete(3)."
+        ::= { agentManagersEntry 7 }
+
+    -- ------------------------------------------------------------------------
+    -- 2. upsCommon group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------
+    -- 2.1 upsIdent group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------ 
+    -- 2.1.1 the upsBaseIdent group
+    -- ------------------------------------------------------------------------ 
+
+    upsBaseIdentModel OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The UPS model name (e.g. 'iTrustII UPS 6KVA')."
+        ::= { upsBaseIdent 1 }
+
+    upsBaseIdentUpsName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+            "An 8 byte ID string identifying the UPS.  This object
+             can be set by the administrator."
+        ::= { upsBaseIdent 2 }
+                
+    
+    -- ------------------------------------------------------------------------ 
+    -- 2.1.2 the upsSmartIdent group
+    -- ------------------------------------------------------------------------ 
+            
+    upsSmartIdentFirmwareRevision OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The firmware revision of the UPS system."
+        ::= { upsSmartIdent 1 }
+        
+    -- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    -- IMPORTANT: iTrustII UPS does NOT support manu-date and product-serial
+    --            to read these variables will get 'reserved'
+    upsSmartIdentDateOfManufacture OBJECT-TYPE
+        SYNTAX DisplayString
+       ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The date when the UPS was manufactured in yyyy/mm/dd format."
+        ::= { upsSmartIdent 2 }
+
+    upsSmartIdentUpsSerialNumber OBJECT-TYPE
+         SYNTAX DisplayString
+        ACCESS read-only
+         STATUS mandatory
+         DESCRIPTION
+            "An 8-character string identifying the serial number of
+              the UPS internal microprocessor.  This number is set at
+              the factory.  NOTE: This number does NOT correspond to
+             the serial number on the rear of the UPS."
+        ::= { upsSmartIdent 3 }
+    
+    upsSmartIdentUpsFactory OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The name of the factory that manufactured this UPS."
+        ::= { upsSmartIdent 4 }
+    
+    -- ------------------------------------------------------------------------
+    -- 3. upsSpecial group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------
+    -- 3.2. the upsBattery group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.2.1 the upsBaseBattery group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.2.2 the upsSmartBattery group
+    ------------------------------------------------------------------------
+    upsSmartBatteryVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Voltage of the UPS system expressed in 1/10 V."
+        ::= { upsSmartBattery 1 }
+
+    upsSmartBatteryRemainsTime OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Remains Time of the UPS system expressed in minute."
+        ::= { upsSmartBattery 2 }
+
+
+    -- ------------------------------------------------------------------------
+    -- 3.3. the upsInout group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.3.1 the upsBaseInput group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.3.2 the upsSmartInput group
+    -- ------------------------------------------------------------------------
+    upsSmartInputVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Voltage of the UPS system expressed in 1/10 V."
+        ::= { upsSmartInput 1 }
+
+    upsSmartInputCurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Current of the UPS system expressed in 1/10 A."
+        ::= { upsSmartInput 4 }
+
+    upsSmartInputFrequency OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Frequency of the UPS system expressed in 1/10 Hz."
+        ::= { upsSmartInput 7 }
+
+    upsSmartInputReactivePower OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Input Reactive Power of the UPS system expressed in 1/10 kW."
+        ::= { upsSmartInput 8 }
+
+    -- ------------------------------------------------------------------------
+    -- 3.3.3. the upsSmartBypass group
+    -- ------------------------------------------------------------------------
+    upsSmartBypassVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Voltage of the UPS system expressed in 1/10 V."
+        ::= { upsSmartBypass 1 }
+
+    upsSmartBypassCurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Current of the UPS system expressed in 1/10 A."
+        ::= { upsSmartBypass 4 }
+
+    upsSmartBypassFrequency OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Frequency of the UPS system expressed in 1/10 Hz."
+        ::= { upsSmartBypass 7 }
+
+    -- ------------------------------------------------------------------------
+    -- 3.4. the upsOutput group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 3.4.1 the upsBaseOutput group
+    -- ------------------------------------------------------------------------
+    -- ------------------------------------------------------------------------
+    -- 3.4.2 the upsSmartOutput group
+    ------------------------------------------------------------------------
+    upsSmartOutputVoltage OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Voltage of the UPS system expressed in 1/10 V."
+        ::= { upsSmartOutput 1 }
+
+    upsSmartOutputCurrent OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Current of the UPS system expressed in 1/10 A."
+        ::= { upsSmartOutput 4 }
+
+    upsSmartOutputFrequency OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Frequency of the UPS system expressed in 1/10 Hz."
+        ::= { upsSmartOutput 7 }
+
+    upsSmartOutputReactivePower OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Reactive Power of the UPS system expressed in 1/10 kW."
+        ::= { upsSmartOutput 8 }
+
+    upsSmartOutputApparentPower OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Apparent Power of the UPS system expressed in 1/10 kVA."
+        ::= { upsSmartOutput 11 }
+
+    upsSmartOutputLoadRate OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Output Load Rate of the UPS system expressed in 1/10 percent."
+        ::= { upsSmartOutput 14 }
+
+    -- ---------------------------------------------------------------------
+    -- 3.5. the upsStatus group
+    ------------------------------------------------------------------------
+    -- ---------------------------------------------------------------------
+    -- 3.5.1 the upsBaseStatus group
+    ------------------------------------------------------------------------
+    upsBaseStatusCommunication OBJECT-TYPE
+        SYNTAX INTEGER {
+            unknown(1),
+            ok(2),
+            lostCommunication(3),
+            notEstablished(4)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The status of communication to UPS. lostCommunication(3) indicates
+            some errors occurred between UPS and agent. notEstablished(4) indicates
+            agent can not connect to UPS, maybe error on communication port or port
+            settings error."
+        ::= { upsBaseStatus 1 }
+
+    -- ---------------------------------------------------------------------
+    -- 3.5.2 the upsSmartStatus group
+    ------------------------------------------------------------------------
+    upsSmartStatusUPSOperatingMode OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            upsShutdown(2),
+            onLine(3),
+            onBattery(4),
+            onBypass(5)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "UPS Operating Mode."
+        ::= { upsSmartStatus 1 }
+
+    upsSmartStatusInverterONOFFStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            on(2),
+            off(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Inverter ON/OFF Status."
+        ::= { upsSmartStatus 2 }
+
+    upsSmartStatusBatteryTestEnableStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            enable(2),
+            forbidden(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Test Enable Status."
+        ::= { upsSmartStatus 3 }
+
+    upsSmartStatusExcessiveAutoRetransfersStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            no(2),
+            yes(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Excessive auto retransfers status."
+        ::= { upsSmartStatus 4 }
+
+    upsSmartStatusRedundancyStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            fault(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Redundancy Status."
+        ::= { upsSmartStatus 5 }
+
+    upsSmartStatusUtilityVoltageStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            undervoltage(3),
+	    overvoltage(4),
+	    fault(5)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Utility Voltage Status."
+        ::= { upsSmartStatus 6 }
+
+    upsSmartStatusBypassVoltageStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            undervoltage(3),
+	    overvoltage(4),
+            abnormal(5)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Voltage Status."
+        ::= { upsSmartStatus 7 }
+
+    upsSmartStatusUtilityFrequencyStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            abnormal(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Utility Frequency Status."
+        ::= { upsSmartStatus 8 }
+
+    upsSmartStatusBypassFrequencyStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            abnormal(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Bypass Frequency Status."
+        ::= { upsSmartStatus 9 }
+
+    upsSmartStatusChargerModuleStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            fault(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Charger Module Status."
+        ::= { upsSmartStatus 10 }
+
+    upsSmartStatusBatteryStatus OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            float-charging(2),
+            fault(3),
+            battery-low-prewarning(4),
+            testing(5),
+            discharging(6),
+            eOD(7),
+            boost-charging(8),
+            not-charging(9)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Battery Status."
+        ::= { upsSmartStatus 11 }
+
+    upsSmartStatusModule1Status OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            fault(3),
+            protection(4),
+            abnormal(5),
+            communication-interrupt(6)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Module 1 Status."
+        ::= { upsSmartStatus 12 }
+
+    upsSmartStatusModule2Status OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            fault(3),
+            protection(4),
+            abnormal(5),
+            communication-interrupt(6)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Module 2 Status."
+        ::= { upsSmartStatus 13 }
+
+    upsSmartStatusModule3Status OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            fault(3),
+            protection(4),
+            abnormal(5),
+            communication-interrupt(6)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Module 3 Status."
+        ::= { upsSmartStatus 14 }
+
+    upsSmartStatusModule4Status OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            fault(3),
+            protection(4),
+            abnormal(5),
+            communication-interrupt(6)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Module 4 Status."
+        ::= { upsSmartStatus 15 }
+
+    upsSmartStatusModule5Status OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            fault(3),
+            protection(4),
+            abnormal(5),
+            communication-interrupt(6)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Module 5 Status."
+        ::= { upsSmartStatus 16 }
+
+    upsSmartStatusModule6Status OBJECT-TYPE
+        SYNTAX INTEGER  {
+            unknown(1),
+            normal(2),
+            fault(3),
+            protection(4),
+            abnormal(5),
+            communication-interrupt(6)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "Module 6 Status."
+        ::= { upsSmartStatus 17 }
+
+
+    -- ------------------------------------------------------------------------ 
+    -- 3.6. the upsTest group
+    -- ------------------------------------------------------------------------ 
+
+    -- ------------------------------------------------------------------------ 
+    -- 3.6.1 the upsBaseTest group
+    -- ------------------------------------------------------------------------ 
+    
+    -- no upsBaseTest variables
+
+    -- ------------------------------------------------------------------------ 
+    -- 3.6.2 the upsSmartTest group
+    -- ------------------------------------------------------------------------ 
+
+    -- no upsSmartTest variables
+
+    -- ------------------------------------------------------------------------ 
+    -- 3.7. the upsControl group
+    -- ------------------------------------------------------------------------ 
+    -- 
+    -- ------------------------------------------------------------------------ 
+    -- 3.7.1 the upsBaseControl group
+    -- ------------------------------------------------------------------------ 
+    
+    -- no variables
+
+    -- ------------------------------------------------------------------------ 
+    -- 3.7.2 the upsSmartControl group
+    -- ------------------------------------------------------------------------ 
+
+    -- no variables
+
+    -- ------------------------------------------------------------------------
+    -- 3.8. the upsConfig group
+    -- ------------------------------------------------------------------------
+
+
+    -- ------------------------------------------------------------------------
+    -- 4. the upsAlarm group
+    -- ------------------------------------------------------------------------
+
+    -- ------------------------------------------------------------------------
+    -- 4.1. the upsBaseAlaram group
+    -- ------------------------------------------------------------------------
+
+    -- no upsBaseAlaram variables
+
+    -- ------------------------------------------------------------------------
+    -- 4.2. the upsSmartAlarm group
+    -- ------------------------------------------------------------------------
+    upsSmartAlarmPresentNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The present number of active alarams."
+        ::= { upsSmartAlarm 1 }
+
+    upsSmartAlarmPresentTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UpsSmartAlarmPresentEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of current UPS alarms, The number of entries is given
+            by the value of upsSmartAlarmPresentNum."
+        ::= { upsSmartAlarm 2 }
+
+    upsSmartAlarmPresentEntry OBJECT-TYPE
+        SYNTAX UpsSmartAlarmPresentEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The present alarms list."
+        INDEX  { presentAlarmIndex}
+        ::= { upsSmartAlarmPresentTable 1 }
+
+    UpsSmartAlarmPresentEntry ::=
+        SEQUENCE {
+            presentAlarmIndex
+                INTEGER,
+            presentAlarmTime
+                DisplayString,
+            presentAlarmId
+                INTEGER,
+            presentAlarmName
+                DisplayString,
+            presentAlaramLevel
+                INTEGER
+        }
+
+    presentAlarmIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the present alaram entry."
+        ::= { upsSmartAlarmPresentEntry 1 }
+
+    presentAlarmTime OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The time of the alarm generated, format as yyyy/mm/dd hh:mm:ss."
+        ::= { upsSmartAlarmPresentEntry 2 }
+
+    presentAlarmId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm ID."
+       ::= { upsSmartAlarmPresentEntry 3 }
+
+    presentAlarmName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The name of the alarm."
+        ::= { upsSmartAlarmPresentEntry 4 }
+
+    presentAlaramLevel OBJECT-TYPE
+        SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm level."
+       ::= { upsSmartAlarmPresentEntry 5 }
+
+    -- historical alarms
+    upsSmartAlarmHistoryNum OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The number of historical alarms."
+        ::= { upsSmartAlarm 3 }
+
+    upsSmartAlarmHistoryTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF UpsSmartAlarmHistoryEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "A list of historical UPS alarms, The number of entries is given
+            by the value of upsSmartAlarmHistoryNum."
+        ::= { upsSmartAlarm 4 }
+
+    upsSmartAlarmHistoryEntry OBJECT-TYPE
+        SYNTAX UpsSmartAlarmHistoryEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "The historical alarms list."
+        INDEX  { historyAlarmIndex}
+        ::= { upsSmartAlarmHistoryTable 1 }
+
+    UpsSmartAlarmHistoryEntry ::=
+        SEQUENCE {
+            historyAlarmIndex
+                INTEGER,
+            historyAlarmTime
+                DisplayString,
+            historyAlarmId
+                INTEGER,
+            historyAlarmName
+                DisplayString,
+            historyAlaramLevel
+                INTEGER
+        }
+
+    historyAlarmIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The index of the historical alaram entry."
+        ::= { upsSmartAlarmHistoryEntry 1 }
+
+    historyAlarmTime OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The time of the alarm generated, format as yyyy/mm/dd hh:mm:ss."
+        ::= { upsSmartAlarmHistoryEntry 2 }
+
+    historyAlarmId OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm ID."
+       ::= { upsSmartAlarmHistoryEntry 3 }
+
+    historyAlarmName OBJECT-TYPE
+        SYNTAX DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+           "The name of the alarm."
+        ::= { upsSmartAlarmHistoryEntry 4 }
+
+    historyAlaramLevel OBJECT-TYPE
+        SYNTAX INTEGER {
+            information(1),
+            warning(2),
+            severe(3)
+        }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "The alarm level."
+       ::= { upsSmartAlarmHistoryEntry 5 }
+
+
+
+    -- ------------------------------------------------------------------------
+    -- Traps
+    -- ------------------------------------------------------------------------
+
+    --
+    -- trap args
+    --
+    trapArgsString OBJECT-TYPE
+        SYNTAX  DisplayString
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+            "This OID allows iTrustII UPS traps to be sent with an octet string argument
+             that may not be defined in the iTrustII UPS MIB.
+
+             A get of this OID will return a NULL string."
+        ::= { upsAlarm 2002 }
+
+
+    communicationInterrupt TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Communication Interrupt."
+       --#TYPE "iTrustII UPS: Communication Interrupt"
+       --#SUMMARY "Communication Interrupt."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 1
+
+
+    communicationRestored TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Communication Restored."
+       --#TYPE "iTrustII UPS: Communication Restored"
+       --#SUMMARY "Communication Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 2
+
+
+    uPSShutdown TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS Shutdown."
+       --#TYPE "iTrustII UPS: UPS Shutdown"
+       --#SUMMARY "UPS Shutdown."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 3
+
+
+    uPSinNormalMode TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: UPS in Normal Mode."
+       --#TYPE "iTrustII UPS: UPS in Normal Mode"
+       --#SUMMARY "UPS in Normal Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 4
+
+
+    uPSinBatteryMode TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS in Battery Mode."
+       --#TYPE "iTrustII UPS: UPS in Battery Mode"
+       --#SUMMARY "UPS in Battery Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 5
+
+
+    uPSinBypassMode TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS in Bypass Mode."
+       --#TYPE "iTrustII UPS: UPS in Bypass Mode"
+       --#SUMMARY "UPS in Bypass Mode."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 6
+
+
+    uPSInverterOn TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: UPS Inverter On."
+       --#TYPE "iTrustII UPS: UPS Inverter On"
+       --#SUMMARY "UPS Inverter On."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 7
+
+
+    uPSInverterOff TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: UPS Inverter Off."
+       --#TYPE "iTrustII UPS: UPS Inverter Off"
+       --#SUMMARY "UPS Inverter Off."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 8
+
+
+    batteryTestEnable TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Test Enable."
+       --#TYPE "iTrustII UPS: Battery Test Enable"
+       --#SUMMARY "Battery Test Enable."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 9
+
+
+    batteryTestForbidden TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Test Forbidden."
+       --#TYPE "iTrustII UPS: Battery Test Forbidden"
+       --#SUMMARY "Battery Test Forbidden."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 10
+
+
+    autoRetransfersRestored TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Auto Retransfers Restored."
+       --#TYPE "iTrustII UPS: Auto Retransfers Restored"
+       --#SUMMARY "Auto Retransfers Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 11
+
+
+    excessiveAutoRetransfers TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Excessive Auto Retransfers, Retransfers Forbidden."
+       --#TYPE "iTrustII UPS: Excessive Auto Retransfers, Retransfers Forbidden"
+       --#SUMMARY "Excessive Auto Retransfers, Retransfers Forbidden."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 12
+
+
+    redundancyNormal TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Redundancy Normal."
+       --#TYPE "iTrustII UPS: Redundancy Normal"
+       --#SUMMARY "Redundancy Normal."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 13
+
+
+    redundancyFault TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Redundancy Fault."
+       --#TYPE "iTrustII UPS: Redundancy Fault"
+       --#SUMMARY "Redundancy Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 14
+
+
+    utilityVoltageRestored TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Utility Voltage Restored."
+       --#TYPE "iTrustII UPS: Utility Voltage Restored"
+       --#SUMMARY "Utility Voltage Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 15
+
+
+    utilityUndervoltage TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Utility Undervoltage."
+       --#TYPE "iTrustII UPS: Utility Undervoltage"
+       --#SUMMARY "Utility Undervoltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 16
+
+
+    utilityOvervoltage TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Utility Overvoltage."
+       --#TYPE "iTrustII UPS: Utility Overvoltage"
+       --#SUMMARY "Utility Overvoltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 17
+
+
+    utilityVoltageAbnormal TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Utility Voltage Abnormal."
+       --#TYPE "iTrustII UPS: Utility Voltage Abnormal"
+       --#SUMMARY "Utility Voltage Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 18
+
+
+    bypassVoltageRestored TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass Voltage Restored."
+       --#TYPE "iTrustII UPS: Bypass Voltage Restored"
+       --#SUMMARY "Bypass Voltage Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 19
+
+
+    bypassUndervoltage TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass Undervoltage."
+       --#TYPE "iTrustII UPS: Bypass Undervoltage"
+       --#SUMMARY "Bypass Undervoltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 20
+
+
+    bypassOvervoltage TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass Overvoltage."
+       --#TYPE "iTrustII UPS: Bypass Overvoltage"
+       --#SUMMARY "Bypass Overvoltage."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 21
+
+
+    bypassVoltageAbnormal TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass Voltage Abnormal."
+       --#TYPE "iTrustII UPS: Bypass Voltage Abnormal"
+       --#SUMMARY "Bypass Voltage Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 22
+
+
+    utilityFrequencyRestored TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Utility Frequency Restored."
+       --#TYPE "iTrustII UPS: Utility Frequency Restored"
+       --#SUMMARY "Utility Frequency Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 23
+
+
+    utilityFrequencyAbnormal TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Utility Frequency Abnormal."
+       --#TYPE "iTrustII UPS: Utility Frequency Abnormal"
+       --#SUMMARY "Utility Frequency Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 24
+
+
+    bypassFrequencyRestored TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Bypass Frequency Restored."
+       --#TYPE "iTrustII UPS: Bypass Frequency Restored"
+       --#SUMMARY "Bypass Frequency Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 25
+
+
+    bypassFrequencyAbnormal TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Bypass Frequency Abnormal."
+       --#TYPE "iTrustII UPS: Bypass Frequency Abnormal"
+       --#SUMMARY "Bypass Frequency Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 26
+
+
+    chargerModuleRestored TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Charger Module Restored."
+       --#TYPE "iTrustII UPS: Charger Module Restored"
+       --#SUMMARY "Charger Module Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 27
+
+
+    chargerModuleFault TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Charger Module Fault."
+       --#TYPE "iTrustII UPS: Charger Module Fault"
+       --#SUMMARY "Charger Module Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 28
+
+
+    batteryFloatCharging TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Float Charging."
+       --#TYPE "iTrustII UPS: Battery Float Charging"
+       --#SUMMARY "Battery Float Charging."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 29
+
+
+    batteryFault TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Fault."
+       --#TYPE "iTrustII UPS: Battery Fault"
+       --#SUMMARY "Battery Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 30
+
+
+    batteryLowPrewarning TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery Low Pre-warning."
+       --#TYPE "iTrustII UPS: Battery Low Pre-warning"
+       --#SUMMARY "Battery Low Pre-warning."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 31
+
+
+    batteryInTesting TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery In Testing."
+       --#TYPE "iTrustII UPS: Battery In Testing"
+       --#SUMMARY "Battery In Testing."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 32
+
+
+    batteryDischarging TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Discharging."
+       --#TYPE "iTrustII UPS: Battery Discharging"
+       --#SUMMARY "Battery Discharging."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 33
+
+
+    batteryEOD TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Battery EOD."
+       --#TYPE "iTrustII UPS: Battery EOD"
+       --#SUMMARY "Battery EOD."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 34
+
+
+    batteryBoostCharging TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Boost Charging."
+       --#TYPE "iTrustII UPS: Battery Boost Charging"
+       --#SUMMARY "Battery Boost Charging."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 35
+
+
+    batteryNotCharging TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Battery Not Charging."
+       --#TYPE "iTrustII UPS: Battery Not Charging"
+       --#SUMMARY "Battery Not Charging."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 36
+
+
+    utilityFailure TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Utility Failure."
+       --#TYPE "iTrustII UPS: Utility Failure"
+       --#SUMMARY "Utility Failure."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 37
+
+
+    module1Restored TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Module 1 Restored."
+       --#TYPE "iTrustII UPS: Module 1 Restored"
+       --#SUMMARY "Module 1 Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 38
+
+
+    module1Fault TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 1 Fault."
+       --#TYPE "iTrustII UPS: Module 1 Fault"
+       --#SUMMARY "Module 1 Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 39
+
+
+    module1Protection TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 1 Protection."
+       --#TYPE "iTrustII UPS: Module 1 Protection"
+       --#SUMMARY "Module 1 Protection."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 40
+
+
+    module1Abnormal TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 1 Abnormal."
+       --#TYPE "iTrustII UPS: Module 1 Abnormal"
+       --#SUMMARY "Module 1 Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 41
+
+
+    module1CommunicationInterrupt TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 1 Communication Interrupt."
+       --#TYPE "iTrustII UPS: Module 1 Communication Interrupt"
+       --#SUMMARY "Module 1 Communication Interrupt."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 42
+
+
+    module2Restored TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Module 2 Restored."
+       --#TYPE "iTrustII UPS: Module 2 Restored"
+       --#SUMMARY "Module 2 Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 43
+
+
+    module2Fault TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 2 Fault."
+       --#TYPE "iTrustII UPS: Module 2 Fault"
+       --#SUMMARY "Module 2 Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 44
+
+
+    module2Protection TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 2 Protection."
+       --#TYPE "iTrustII UPS: Module 2 Protection"
+       --#SUMMARY "Module 2 Protection."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 45
+
+
+    module2Abnormal TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 2 Abnormal."
+       --#TYPE "iTrustII UPS: Module 2 Abnormal"
+       --#SUMMARY "Module 2 Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 46
+
+
+    module2CommunicationInterrupt TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 2 Communication Interrupt."
+       --#TYPE "iTrustII UPS: Module 2 Communication Interrupt"
+       --#SUMMARY "Module 2 Communication Interrupt."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 47
+
+
+    module3Restored TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Module 3 Restored."
+       --#TYPE "iTrustII UPS: Module 3 Restored"
+       --#SUMMARY "Module 3 Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 48
+
+
+    module3Fault TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 3 Fault."
+       --#TYPE "iTrustII UPS: Module 3 Fault"
+       --#SUMMARY "Module 3 Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 49
+
+
+    module3Protection TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 3 Protection."
+       --#TYPE "iTrustII UPS: Module 31 Protection"
+       --#SUMMARY "Module 3 Protection."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 50
+
+
+    module3Abnormal TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 3 Abnormal."
+       --#TYPE "iTrustII UPS: Module 3 Abnormal"
+       --#SUMMARY "Module 3 Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 51
+
+
+    module3CommunicationInterrupt TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 3 Communication Interrupt."
+       --#TYPE "iTrustII UPS: Module 3 Communication Interrupt"
+       --#SUMMARY "Module 3 Communication Interrupt."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 52
+
+
+    module4Restored TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Module 4 Restored."
+       --#TYPE "iTrustII UPS: Module 4 Restored"
+       --#SUMMARY "Module 4 Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 53
+
+
+    module4Fault TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 4 Fault."
+       --#TYPE "iTrustII UPS: Module 4 Fault"
+       --#SUMMARY "Module 4 Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 54
+
+
+    module4Protection TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 4 Protection."
+       --#TYPE "iTrustII UPS: Module 4 Protection"
+       --#SUMMARY "Module 4 Protection."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 55
+
+
+    module4Abnormal TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 4 Abnormal."
+       --#TYPE "iTrustII UPS: Module 4 Abnormal"
+       --#SUMMARY "Module 4 Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 56
+
+
+    module4CommunicationInterrupt TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 4 Communication Interrupt."
+       --#TYPE "iTrustII UPS: Module 4 Communication Interrupt"
+       --#SUMMARY "Module 4 Communication Interrupt."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 57
+
+
+    module5Restored TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Module 5 Restored."
+       --#TYPE "iTrustII UPS: Module 5 Restored"
+       --#SUMMARY "Module 5 Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 58
+
+
+    module5Fault TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 5 Fault."
+       --#TYPE "iTrustII UPS: Module 5 Fault"
+       --#SUMMARY "Module 5 Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 59
+
+
+    module5Protection TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 5 Protection."
+       --#TYPE "iTrustII UPS: Module 5 Protection"
+       --#SUMMARY "Module 5 Protection."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 60
+
+
+    module5Abnormal TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 5 Abnormal."
+       --#TYPE "iTrustII UPS: Module 5 Abnormal"
+       --#SUMMARY "Module 5 Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 61
+
+
+    module5CommunicationInterrupt TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 5 Communication Interrupt."
+       --#TYPE "iTrustII UPS: Module 5 Communication Interrupt"
+       --#SUMMARY "Module 5 Communication Interrupt."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 62
+
+
+    module6Restored TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "INFORMATION: Module 6 Restored."
+       --#TYPE "iTrustII UPS: Module 6 Restored"
+       --#SUMMARY "Module 6 Restored."
+       --#ARGUMENTS { }
+       --#SEVERITY INFORMATIONAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE OPERATIONAL
+        ::= 63
+
+
+    module6Fault TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 6 Fault."
+       --#TYPE "iTrustII UPS: Module 6 Fault"
+       --#SUMMARY "Module 6 Fault."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 64
+
+
+    module6Protection TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 6 Protection."
+       --#TYPE "iTrustII UPS: Module 6 Protection"
+       --#SUMMARY "Module 6 Protection."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 65
+
+
+    module6Abnormal TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 6 Abnormal."
+       --#TYPE "iTrustII UPS: Module 6 Abnormal"
+       --#SUMMARY "Module 6 Abnormal."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 66
+
+
+    module6CommunicationInterrupt TRAP-TYPE
+        ENTERPRISE iTrustIIUps
+        VARIABLES { trapArgsString }
+        DESCRIPTION
+            "SEVERE: Module 6 Communication Interrupt."
+       --#TYPE "iTrustII UPS: Module 6 Communication Interrupt"
+       --#SUMMARY "Module 6 Communication Interrupt."
+       --#ARGUMENTS { }
+       --#SEVERITY CRITICAL
+       --#TIMEINDEX 1
+       --#HELP ""
+       --#HELPTAG 0
+       --#STATE DEGRADED
+        ::= 67
+
+
+END -- end of ITRUSTII-UPS-MIB

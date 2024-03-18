@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="apc_ddf_1_6.xsl"?>
+<APC_DDF
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+	ddfid="ptype_bcm"
+	ddfname="PType BCM"
+	ddfversion="1"
+	canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+	<device deviceid="ptype_bcm">
+		<setProductData ruleid="vendordata" field="vendor">PType</setProductData>
+		<setProductData ruleid="modeldata" field="model">BCM</setProductData>
+		<setProductData ruleid="typedata" field="type">Branch Circuit Monitor</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<stateSensor ruleid="breaker-status">
+			<type>state</type>
+			<sensorId>BREAKER_STATUS</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+				<bitwise_and>
+				<op>
+					<right_shift>
+					<op><getOid>BREAKER_STATUS</getOid></op>
+					<op>0</op>
+					</right_shift>					
+				</op>
+				<op>1</op>
+				</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>Breaker Status</label>
+			<enum>breakerStatus-em</enum>
+			<sensorSet>Breaker</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="breaker-tripped">
+			<type>state</type>
+			<sensorId>BREAKER_TRIPPED</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<formatNumber printffmt="%1.0f">
+				<bitwise_and>
+				<op>
+					<right_shift>
+					<op><getOid>BREAKER_STATUS</getOid></op>
+					<op>2</op>
+					</right_shift>					
+				</op>
+				<op>1</op>
+				</bitwise_and>
+				</formatNumber>
+				</mapValue>
+			</value>
+			<label>Breaker Tripped</label>
+			<enum>breakerTrip-em</enum>
+			<sensorSet>Breaker</sensorSet>
+		</stateSensor>
+		<valueMap ruleid="binaryDefaultZero-vm">
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>*</valueIn><valueOut>0</valueOut>
+		</valueMap>
+		<enumMap ruleid="breakerStatus-em">
+			<label>Open</label>
+			<label>Closed</label>
+		</enumMap>
+		<enumMap ruleid="breakerTrip-em">
+			<label>Not Tripped</label>
+			<label>Tripped</label>
+		</enumMap>
+
+	</device>
+	<protocol>
+		<modbus>
+			<value_ref_id valid="BREAKER_STATUS">
+				<function>3</function>
+				<start_addr>660</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+		</modbus>
+	</protocol>
+</APC_DDF>

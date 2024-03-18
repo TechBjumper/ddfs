@@ -1,0 +1,1741 @@
+<?xml version="1.0"?>
+<!-- Test Modbus related information -->
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+        ddfid="sices_ac3000_gateway" ddfname="S.I.C.E.S AC3000 Gateway" ddfversion="1" canremove="yes">
+  <schemaVersion>1.6</schemaVersion>
+
+    <!-- 
+         This DDF is written for the SICES AC3000 Gateway (Which has an identical register map as the DST4400).
+         The device behind the gateway is a Pramac generator.  
+    
+         Customer provided 2 documents, one which uses data formats but does not describe them, and another
+         which describes the formats.  Including the formats here, for ease.
+         UL_08, SL_08: (int_32 or uint_32 value) / 256
+                       The documentation steps are (high reg * 2^16 = high reg * 65536 - - - this is already handled by using uint_32 or int_32)
+         US_08, SS_08: register / 256
+    -->
+
+  <device deviceid="pramac_generator">
+    <oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+    <setProductData ruleid="vendordata" field="vendor">Pramac Group</setProductData>
+    <setProductData ruleid="typedata" field="type">Generator</setProductData>
+    <setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+    <numSensor ruleid="voltages_Sensor" index="voltage_table">
+      <type>voltageAC</type>
+      <sensorId><rowIndex/></sensorId>
+      <!-- Data format: UL_08 (See definition above) -->
+      <value>
+        <div>
+          <op>
+            <getRowOid>voltage_table</getRowOid>
+          </op>
+          <op>256</op>
+        </div>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label><mapValue mapid="voltage_label-vm"><rowNumber/></mapValue></label>
+      <sensorSet><mapValue mapid="voltage_sensorset-vm"><rowNumber/></mapValue></sensorSet>
+    </numSensor>
+
+    <valueMap ruleid="voltage_label-vm">
+      <valueIn>0</valueIn><valueOut>Mains Voltage L1-L2</valueOut>
+      <valueIn>1</valueIn><valueOut>Mains Voltage L2-L3</valueOut>
+      <valueIn>2</valueIn><valueOut>Mains Voltage L3-L1</valueOut>
+      <valueIn>3</valueIn><valueOut>Generator Voltage L1-L2</valueOut>
+      <valueIn>4</valueIn><valueOut>Generator Voltage L2-L3</valueOut>
+      <valueIn>5</valueIn><valueOut>Generator Voltage L3-L1</valueOut>
+    </valueMap>
+
+    <valueMap ruleid="voltage_sensorset-vm">
+      <valueIn>0</valueIn><valueOut>Mains</valueOut>
+      <valueIn>1</valueIn><valueOut>Mains</valueOut>
+      <valueIn>2</valueIn><valueOut>Mains</valueOut>
+      <valueIn>3</valueIn><valueOut>Generator</valueOut>
+      <valueIn>4</valueIn><valueOut>Generator</valueOut>
+      <valueIn>5</valueIn><valueOut>Generator</valueOut>
+    </valueMap>
+
+    <valueMap ruleid="current_label-vm">
+      <valueIn>0</valueIn><valueOut>Generator Current Phase 1</valueOut>
+      <valueIn>1</valueIn><valueOut>Generator Current Phase 2</valueOut>
+      <valueIn>2</valueIn><valueOut>Generator Current Phase 3</valueOut>
+    </valueMap>
+
+    <numSensor ruleid="gen_current_Sensor" index="current_table">
+      <type>amperage</type>
+      <sensorId><rowIndex/></sensorId>
+      <!-- Data format: UL_08 (See definition above) -->
+      <value>
+        <div>
+          <op>
+            <getRowOid>current_table</getRowOid>
+          </op>
+          <op>256</op>
+        </div>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label><mapValue mapid="current_label-vm"><rowNumber/></mapValue></label>
+      <sensorSet>Generator</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_total_active_pwrSensor">
+      <type>num/powerKW</type>
+      <sensorId>GEN_TOTAL_ACTIVE_POWER</sensorId>
+      <!-- Data format: SL_08 (See definition above) -->
+      <value>
+        <div>
+          <op>
+            <getOid>generator_total_active_power</getOid>
+          </op>
+          <op>256</op>
+        </div>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Generator Total Active Power</label>
+      <sensorSet>Generator</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_total_reactive_prwSensor">
+      <type>num/powerKVAR</type>
+      <sensorId>GEN_TOTAL_REACTIVE_POWER</sensorId>
+      <!-- Data format: SL_08 (See definition above) -->
+      <value>
+        <div>
+          <op>
+            <getOid>generator_total_reactive_power</getOid>
+          </op>
+          <op>256</op>
+        </div>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Generator Total Reactive Power</label>
+      <sensorSet>Generator</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_total_apparent_pwrSensor">
+      <type>num/powerKVA</type>
+      <sensorId>GEN_TOTAL_APPARENT_POWER</sensorId>
+      <!-- Data format: UL_08 (See definition above) -->
+      <value>
+        <div>
+          <op>
+            <getOid>generator_total_apparent_power</getOid>
+          </op>
+          <op>256</op>
+        </div>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Generator Total Apparent Power</label>
+      <sensorSet>Generator</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_total_pfSensor">
+      <type>num/powerfactor</type>
+      <sensorId>GENERATOR_TOTAL_POWERFACTOR</sensorId>
+      <!-- Data format: SS_08 (See definition above) -->
+      <value>
+        <div>
+          <op>
+            <getOid>generator_total_power_factor</getOid>
+          </op>
+          <op>256</op>
+        </div>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Generator Total Power Factor</label>
+      <sensorSet>Generator</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_freqSensor">
+      <type>frequency</type>
+      <sensorId>GENERATOR_FREQUENCY</sensorId>
+      <!-- Data format: UL_08 (See definition above) -->
+      <value>
+        <div>
+          <op>
+            <getRowOid>generator_frequency</getRowOid>
+          </op>
+          <op>256</op>
+        </div>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Generator Frequency</label>
+      <sensorSet>Generator</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="starter_batt_voltageSensor">
+      <type>voltageDC/battvoltage</type>
+      <sensorId>STARTER_BATTERY_VOLTAGE</sensorId>
+      <!-- Data format: US_08 (See definition above) -->
+      <value>
+        <div>
+          <op>
+            <getOid>starter_batt_voltage</getOid>
+          </op>
+          <op>256</op>
+        </div>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Starter Battery Voltage</label>
+      <sensorSet>System</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="engine_oil_pressureSensor">
+      <type>pressure</type>
+      <sensorId>ENGINE_OIL_PRESSURE</sensorId>
+      <!-- Data format: US_08 (See definition above) -->
+      <!-- Double conversion, first divide by 256 to get value in bar -->
+      <!-- then convert bar into kPa:  1 bar = 100 kPa-->
+      <value>
+        <mult>
+          <op>
+            <div>
+              <op>
+                <getOid>engine_oil_pressure</getOid>
+              </op>
+              <op>256</op>
+            </div>
+          </op>
+          <op>100</op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Engine Oil Pressure</label>
+      <sensorSet>System</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="engine_coolant_tempSensor">
+      <type>temp</type>
+      <sensorId>ENGINE_COOLANT_TEMP</sensorId>
+      <!-- Data format: SL_08 (See definition above) -->
+      <value>
+        <div>
+          <op>
+            <getOid>engine_coolant_temp</getOid>
+          </op>
+          <op>256</op>
+        </div>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label>Engine Coolant Temperature</label>
+      <sensorSet>System</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="fuel_levelSensor">
+      <type>pctofcapacity</type>
+      <sensorId>FUEL_LEVEL</sensorId>
+      <!-- Data format: US_08 (See definition above) -->
+      <value>
+        <div>
+          <op>
+            <getOid>fuel_level</getOid>
+          </op>
+          <op>256</op>
+        </div>
+      </value>
+      <label>Fuel Level</label>
+      <sensorSet>System</sensorSet>
+    </numSensor>
+
+    <stateSensor ruleid="anomalies_1_bit0_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_1_BIT_0</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <getOid>anomalies_1</getOid>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Overcrank Alarm</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_1_bit1_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_1_BIT_1</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>1</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Engine Not Stopped Alarm</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_1_bit2_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_1_BIT_2</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>1</op>
+                </right_shift>
+              </op>
+              <op>2</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Belt Break Alarm</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_1_bit3_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_1_BIT_3</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>3</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Over-speed alarm (contact closure)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_1_bit4_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_1_BIT_4</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>4</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Over-speed alarm (pick up)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_1_bit5_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_1_BIT_5</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>5</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Over-speed alarm (frequency)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_1_bit6_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_1_BIT_6</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>6</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Fuel empty alarm (contact closure)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_1_bit7_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_1_BIT_7</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>7</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Fuel empty alarm (analog sensor)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_1_bit8_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_1_BIT_8</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>8</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Low fuel level warning (contact closure)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_1_bit9_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_1_BIT_9</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>9</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Low fuel level warning (analog sensor)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_1_bit10_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_1_BIT_10</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>10</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>High fuel level warning (contact closure)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_1_bit11_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_1_BIT_11</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>11</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>High fuel level warning (analog sensor)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_1_bit12_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_1_BIT_12</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>12</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>High coolant temperature warning (contact closure)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_1_bit13_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_1_BIT_13</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>13</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>High coolant temperature warning (analog sensor)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_1_bit14_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_1_BIT_14</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>14</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Max coolant temperature alarm (contact closure)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_1_bit15_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_1_BIT_15</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>15</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Max coolant temperature alarm (analog sensor)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_2_bit0_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_2_BIT_0</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <getOid>anomalies_2</getOid>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Minimum oil pressure alarm (contact closure)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_2_bit1_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_2_BIT_1</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_2</getOid></op>
+                  <op>1</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Minimum oil pressure alarm (analog sensor)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_2_bit2_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_2_BIT_2</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_2</getOid></op>
+                  <op>1</op>
+                </right_shift>
+              </op>
+              <op>2</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Low oil pressure warning (contact closure)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_2_bit3_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_2_BIT_3</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_2</getOid></op>
+                  <op>3</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Low oil pressure warning (analog sensor)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_2_bit4_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_2_BIT_4</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_2</getOid></op>
+                  <op>4</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Max power warning</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_2_bit5_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_2_BIT_5</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_2</getOid></op>
+                  <op>5</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>CANBUS link error warning</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <!-- No alarm for bits 6,7 -->
+
+    <stateSensor ruleid="anomalies_2_bit8_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_2_BIT_8</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_2</getOid></op>
+                  <op>8</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Steady state conditions not achieved alarm</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_2_bit9_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_2_BIT_9</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_2</getOid></op>
+                  <op>9</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Disabling due to generator minumum voltage</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_2_bit10_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_2_BIT_10</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_2</getOid></op>
+                  <op>10</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Disabling due to generator minumum frequency</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_2_bit11_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_2_BIT_11</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_2</getOid></op>
+                  <op>11</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Disabling due to maximum generator voltage </label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_2_bit12_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_2_BIT_12</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_2</getOid></op>
+                  <op>12</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Disabling due to maximum generator frequency</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_2_bit13_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_2_BIT_13</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_2</getOid></op>
+                  <op>13</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Overload alarm (contact closure)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_2_bit14_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_2_BIT_14</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_2</getOid></op>
+                  <op>14</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Overload alarm (current meter)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_2_bit15_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_2_BIT_15</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_2</getOid></op>
+                  <op>15</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Short circuit alarm (current meter)</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <!-- No sensors for bits 1,2,4,5,6,7,12,13,14,15 -->
+
+    <stateSensor ruleid="anomalies_3_bit0_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_3_BIT_0</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <getOid>anomalies_3</getOid>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Power reverse alarm</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_3_bit3_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_3_BIT_3</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_3</getOid></op>
+                  <op>3</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Wrong phase sequence alarm</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_3_bit8_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_3_BIT_8</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_3</getOid></op>
+                  <op>8</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Mains breaker not closed warning</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_3_bit9_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_3_BIT_9</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_3</getOid></op>
+                  <op>9</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Generator breaker not closed warning</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_3_bit10_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_3_BIT_10</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_3</getOid></op>
+                  <op>10</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Mains breaker not open warning</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_3_bit11_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_3_BIT_11</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_3</getOid></op>
+                  <op>11</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Generator breaker not open warning</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_4_bit3_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_4_BIT_3</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_4</getOid></op>
+                  <op>3</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Emergency stop alarm</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_4_bit4_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_4_BIT_4</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_4</getOid></op>
+                  <op>4</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Low starter battery voltage warning</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_4_bit5_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_4_BIT_5</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_4</getOid></op>
+                  <op>5</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>High starter battery voltage warning</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_4_bit6_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_4_BIT_6</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_4</getOid></op>
+                  <op>6</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Manual stop alarm while in auto mode</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_4_bit7_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_4_BIT_7</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_4</getOid></op>
+                  <op>7</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Generator set operations inhibition alarm</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_4_bit8_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_4_BIT_8</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_4</getOid></op>
+                  <op>8</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Maintenance request warning</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_4_bit12_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_4_BIT_12</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_4</getOid></op>
+                  <op>12</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Invalid time setting warning</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <!-- Anomalies Management Status Bits -->
+
+    <stateSensor ruleid="anomalies_mgt_status_4_bit0_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_MGT_STATUS_4_BIT_0</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <getOid>anomalies_1</getOid>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>At least one warning is present</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_mgt_status_4_bit1_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_MGT_STATUS_4_BIT_1</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>1</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>At least one disabling is present</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_mgt_status_4_bit2_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_MGT_STATUS_4_BIT_2</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>1</op>
+                </right_shift>
+              </op>
+              <op>2</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>At least one alarm is present</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_mgt_status_4_bit3_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_MGT_STATUS_4_BIT_3</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_1</getOid></op>
+                  <op>3</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>At least one not achnolwedged warning is present</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_mgt_status_4_bit4_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_MGT_STATUS_4_BIT_4</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_mgt_status</getOid></op>
+                  <op>4</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>At least one not achnolwedged inhibition is present</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="anomalies_mgt_status_4_bit5_sensor">
+      <type>state</type>
+      <sensorId>ANOMALIES_MGT_STATUS_4_BIT_5</sensorId>
+      <value>
+        <mapValue mapid="boolean-value-vm">
+          <formatNumber>
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op><getOid>anomalies_mgt_status</getOid></op>
+                  <op>5</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>At least one not achnolwedged alarm is present</label>
+      <enum>present-absent-em</enum>
+      <sensorSet>Anomalies</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="changeover_status_sensor">
+      <type>state</type>
+      <sensorId>CHANGEOVER_STATUS</sensorId>
+      <value>
+        <mapValue mapid="changeover-status-vm">
+          <formatNumber>
+                <getOid>changeover_status</getOid>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Changeover Status</label>
+      <enum>changeover-status-em</enum>
+      <sensorSet>Status</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="engine_status_sensor">
+      <type>state</type>
+      <sensorId>ENGINE_STATUS</sensorId>
+      <value>
+        <mapValue mapid="engine-status-vm">
+          <formatNumber>
+                <getOid>engine_status</getOid>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Engine Status</label>
+      <enum>engine-status-em</enum>
+      <sensorSet>Status</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="keyswitch-position_sensor">
+      <type>state</type>
+      <sensorId>KEYSWITCH_POSITION</sensorId>
+      <value>
+        <mapValue mapid="keyswitch-position-vm">
+          <formatNumber>
+                <getOid>keyswitch_position</getOid>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Keyswitch  Position</label>
+      <enum>keyswitch-position-em</enum>
+      <sensorSet>Status</sensorSet>
+    </stateSensor>
+
+    <valueMap ruleid="changeover-status-vm">
+      <valueIn>0</valueIn><valueOut>0</valueOut>
+      <valueIn>1</valueIn><valueOut>1</valueOut>
+      <valueIn>2</valueIn><valueOut>2</valueOut>
+      <valueIn>3</valueIn><valueOut>3</valueOut>
+      <valueIn>*</valueIn><valueOut>4</valueOut>
+    </valueMap>
+
+    <enumMap ruleid="changeover-status-em">
+      <label>Loads supplied by mains</label>
+      <label>Loads transfer to motor generator</label>
+      <label>Loads supplied by motor generator</label>
+      <label>Loads transfer to mains</label>
+      <label>Unknown</label>
+    </enumMap>
+
+    <valueMap ruleid="engine-status-vm">
+      <valueIn>0</valueIn><valueOut>0</valueOut>
+      <valueIn>1</valueIn><valueOut>1</valueOut>
+      <valueIn>2</valueIn><valueOut>2</valueOut>
+      <valueIn>3</valueIn><valueOut>3</valueOut>
+      <valueIn>4</valueIn><valueOut>4</valueOut>
+      <valueIn>5</valueIn><valueOut>5</valueOut>
+      <valueIn>6</valueIn><valueOut>6</valueOut>
+      <valueIn>7</valueIn><valueOut>7</valueOut>
+      <valueIn>8</valueIn><valueOut>8</valueOut>
+      <valueIn>9</valueIn><valueOut>9</valueOut>
+      <valueIn>10</valueIn><valueOut>10</valueOut>
+      <valueIn>11</valueIn><valueOut>11</valueOut>
+      <valueIn>12</valueIn><valueOut>12</valueOut>
+      <valueIn>13</valueIn><valueOut>13</valueOut>
+      <valueIn>14</valueIn><valueOut>14</valueOut>
+      <valueIn>*</valueIn><valueOut>15</valueOut>
+    </valueMap>
+
+    <enumMap ruleid="engine-status-em">
+      <label>Stop sequence running</label>
+      <label>Stop sequence halted</label>
+      <label>Engine stopped</label>
+      <label>Stop sequnce completed but engine still running</label>
+      <label>Deisel engines glow plugs preheating</label>
+      <label>Delay between fuel electro-valve activation and engine start</label>
+      <label>Engine start attempt </label>
+      <label>Stand by time between engine start up attempts</label>
+      <label>Manual mode engine start verification</label>
+      <label>Auto mode engine start verification</label>
+      <label>Started</label>
+      <label>Cooling cycle</label>
+      <label>Washing cycle (gas engines)</label>
+      <label>Waiting for stop status</label>
+      <label>Idle speed status</label>
+      <label>Unknown</label>
+    </enumMap>
+
+    <valueMap ruleid="keyswitch-position-vm">
+      <valueIn>0</valueIn><valueOut>0</valueOut>
+      <valueIn>1</valueIn><valueOut>1</valueOut>
+      <valueIn>2</valueIn><valueOut>2</valueOut>
+      <valueIn>3</valueIn><valueOut>3</valueOut>
+      <valueIn>255</valueIn><valueOut>4</valueOut>
+      <valueIn>*</valueIn><valueOut>5</valueOut>
+    </valueMap>
+
+    <enumMap ruleid="keyswitch-position-em">
+      <label>Intermediate position</label>
+      <label>OFF/RESET position</label>
+      <label>MAN position</label>
+      <label>AUTO position</label>
+      <label>Data avquisition error</label>
+      <label>Unknown</label>
+    </enumMap>
+
+    <valueMap ruleid="boolean-value-vm">
+      <valueIn>0</valueIn><valueOut>0</valueOut>
+      <valueIn>*</valueIn><valueOut>1</valueOut>
+    </valueMap>
+
+    <enumMap ruleid="inactive_active-em">
+      <label>Inactive</label>
+      <label>Active</label>
+    </enumMap>
+
+    <enumMap ruleid="present-absent-em">
+      <label>Absent</label>
+      <label>Present</label>
+    </enumMap>
+
+    <valueMap ruleid="is_alarm-vm">
+      <valueIn>0</valueIn><valueOut>0</valueOut>
+      <valueIn>*</valueIn><valueOut>1</valueOut>
+    </valueMap>
+
+  </device>
+
+  <protocol>
+    <modbus>
+      <!-- Input Register values -->
+      <table_ref_id indexid="voltage_table">
+        <entry num="0">MAINS_VOLTAGE_L1_L2</entry>
+        <entry num="1">MAINS_VOLTAGE_L2_L3</entry>
+        <entry num="2">MAINS_VOLTAGE_L3_L1</entry>
+        <entry num="3">GENERATOR_VOLTAGE_L1_L2</entry>
+        <entry num="4">GENERATOR_VOLTAGE_L2_L3</entry>
+        <entry num="5">GENERATOR_VOLTAGE_L3_L1</entry>
+      </table_ref_id>
+
+      <value_ref_id valid="MAINS_VOLTAGE_L1_L2">
+        <function>4</function>
+        <start_addr>0</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_uint_32</type>
+      </value_ref_id>
+
+      <value_ref_id valid="MAINS_VOLTAGE_L2_L3">
+        <function>4</function>
+        <start_addr>2</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_uint_32</type>
+      </value_ref_id>
+
+      <value_ref_id valid="MAINS_VOLTAGE_L3_L1">
+        <function>4</function>
+        <start_addr>4</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_uint_32</type>
+      </value_ref_id>
+
+      <value_ref_id valid="GENERATOR_VOLTAGE_L1_L2">
+        <function>4</function>
+        <start_addr>6</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_uint_32</type>
+      </value_ref_id>
+
+      <value_ref_id valid="GENERATOR_VOLTAGE_L2_L3">
+        <function>4</function>
+        <start_addr>8</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_uint_32</type>
+      </value_ref_id>
+
+      <value_ref_id valid="GENERATOR_VOLTAGE_L3_L1">
+        <function>4</function>
+        <start_addr>10</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_uint_32</type>
+      </value_ref_id>
+
+      <table_ref_id indexid="current_table">
+        <entry num="0">GENERATOR_CURRENT_PHASE1</entry>
+        <entry num="1">GENERATOR_CURRENT_PHASE2</entry>
+        <entry num="2">GENERATOR_CURRENT_PHASE3</entry>
+      </table_ref_id>
+
+
+      <value_ref_id valid="GENERATOR_CURRENT_PHASE1">
+        <function>4</function>
+        <start_addr>20</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_uint_32</type>
+      </value_ref_id>
+
+      <value_ref_id valid="GENERATOR_CURRENT_PHASE2">
+        <function>4</function>
+        <start_addr>22</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_uint_32</type>
+      </value_ref_id>
+
+      <value_ref_id valid="GENERATOR_CURRENT_PHASE3">
+        <function>4</function>
+        <start_addr>24</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_uint_32</type>
+      </value_ref_id>
+
+      <value_ref_id valid="keyswitch_position">
+        <function>4</function>
+        <start_addr>119</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="engine_status">
+        <function>4</function>
+        <start_addr>131</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="changeover_status">
+        <function>4</function>
+        <start_addr>132</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="starter_batt_voltage">
+        <function>4</function>
+        <start_addr>73</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="engine_oil_pressure">  <!-- Bar -->
+        <function>4</function>
+        <start_addr>76</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="engine_coolant_temp">
+        <function>4</function>
+        <start_addr>77</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_int_32</type>
+      </value_ref_id>
+
+      <value_ref_id valid="fuel_level">
+        <function>4</function>
+        <start_addr>79</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="generator_total_active_power">
+        <function>4</function>
+        <start_addr>60</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_int_32</type>
+      </value_ref_id>
+
+      <value_ref_id valid="generator_total_reactive_power">
+        <function>4</function>
+        <start_addr>62</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_int_32</type>
+      </value_ref_id>
+
+      <value_ref_id valid="generator_total_apparent_power">
+        <function>4</function>
+        <start_addr>64</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_uint_32</type>
+      </value_ref_id>
+
+      <value_ref_id valid="generator_total_power_factor">
+        <function>4</function>
+        <start_addr>68</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="generator_frequency">
+        <function>4</function>
+        <start_addr>28</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_uint_32</type>
+      </value_ref_id>
+
+      <value_ref_id valid="anomalies_1">
+        <function>4</function>
+        <start_addr>110</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_uint_32</type>
+      </value_ref_id>
+
+      <value_ref_id valid="anomalies_2">
+        <function>4</function>
+        <start_addr>111</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="anomalies_3">
+        <function>4</function>
+        <start_addr>112</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="anomalies_4">
+        <function>4</function>
+        <start_addr>113</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <value_ref_id valid="anomalies_mgt_status">
+        <function>4</function>
+        <start_addr>118</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <type_definition type_name="swapped_int_32">
+        <type>int_32</type>                <!-- must be one of our 'normal' modbus types -->
+        <byte_order>1,0,3,2</byte_order>   <!-- mapping of device's byte string into the order which we want -->
+      </type_definition>
+
+      <type_definition type_name="swapped_uint_32">
+        <type>uint_32</type>                <!-- must be one of our 'normal' modbus types -->
+        <byte_order>1,0,3,2</byte_order>   <!-- mapping of device's byte string into the order which we want -->
+      </type_definition>
+
+
+      <packet>
+        <function>4</function>
+        <start_addr>0</start_addr>
+        <quantity>12</quantity>
+      </packet>
+      <packet>
+        <function>4</function>
+        <start_addr>20</start_addr>
+        <quantity>10</quantity>
+      </packet>
+      <packet>
+        <function>4</function>
+        <start_addr>60</start_addr>
+        <quantity>10</quantity>
+      </packet>
+      <packet>
+        <function>4</function>
+        <start_addr>110</start_addr>
+        <quantity>4</quantity>
+      </packet>
+      <packet>
+        <function>4</function>
+        <start_addr>131</start_addr>
+        <quantity>2</quantity>
+      </packet>
+    </modbus>
+  </protocol>
+</APC_DDF>

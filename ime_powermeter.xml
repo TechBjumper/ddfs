@@ -1,0 +1,2428 @@
+<?xml version="1.0"?>
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+		ddfid="ime_powermeter" ddfname="IME Power Meter" ddfversion="1" canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+	<!--
+		ATTENTION
+		This DDF is deprecated. Use /modbus/unverified/ime_nemo96hdpowermeter.xml instead.
+	-->
+	<device deviceid="ime_powermeter">
+		<oidMustExist ruleid="ime_powermeter_exists" oid="MODBUS_OID_MUST_EXIST"/>
+		
+		<setProductData ruleid="vendordata" field="vendor">IME</setProductData>
+		<setProductData ruleid="typedata" field="type">Power Meter</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+		<valueMap ruleid="zerobased2onebased-vm">
+			<valueIn>0</valueIn><valueOut>1</valueOut>
+			<valueIn>1</valueIn><valueOut>2</valueOut>
+			<valueIn>2</valueIn><valueOut>3</valueOut>
+			<valueIn>*</valueIn><valueOut>*</valueOut>
+		</valueMap>
+
+		<valueMap ruleid="zerobased2linetoline-vm">
+			<valueIn>0</valueIn><valueOut>L1-L2</valueOut>
+			<valueIn>1</valueIn><valueOut>L2-L3</valueOut>
+			<valueIn>2</valueIn><valueOut>L3-L1</valueOut>
+			<valueIn>*</valueIn><valueOut>*</valueOut>
+		</valueMap>
+
+		<!-- I would not normally make this a sensor, but so
+		     much of the scaling in this DDF is based on it,
+			 that I wanted to be able to see the value -->
+		<numSensor ruleid="current_trans_ratio">
+			<type>num</type>
+			<sensorId>CURRENT_TRANS_RATIO</sensorId>
+			<value>
+				<getOid>address0x100</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Current Transformer Ratio (KTA)</label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+
+		<!-- I would not normally make this a sensor, but so
+		     much of the scaling in this DDF is based on it,
+			 that I wanted to be able to see the value -->
+		<numSensor ruleid="voltage_trans_ratio">
+			<type>num</type>
+			<sensorId>VOLTAGE_TRANS_RATIO</sensorId>
+			<value>
+				<mult>
+					<op><getOid>address0x102</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Voltage Transformer Ratio (KTV)</label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="phase_voltage" index="addresses0x301-0x309">
+			<type>voltage</type>
+			<sensorId>VOLTAGE_PHASE_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>addresses0x301-0x309</getRowOid></op>
+					<op>0.001</op> <!-- to mV -->
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Voltage Phase <mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="phase_current" index="addresses0x30d-0x315">
+			<type>amperage</type>
+			<sensorId>CURRENT_PHASE_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>addresses0x30d-0x315</getRowOid></op>
+					<op>0.001</op> <!-- to mA -->
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Current Phase <mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="active_power">
+			<type>powerW</type>
+			<sensorId>ACTIVE_POWER</sensorId>
+			<value>
+				<!--
+					if KTA*KTV >= 5000, divide by 1
+					else divide by 100
+				-->
+				<mult>
+					<op><getOid>address0x319</getOid></op> <!-- sensor value address -->
+					<op>
+						<if>
+							<op>
+								<ge>
+									<op>
+										<mult>
+											<!-- KTA -->
+											<op><getOid>address0x100</getOid></op>
+											<!-- KTV is given in tenths, according to docs -->
+											<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+										</mult>
+									</op>
+									<op>5000</op>
+								</ge>
+							</op>
+							<op>1</op> <!-- if KTA*KTV >= 5000 -->
+							<op>0.01</op> <!-- if KTA*KTV < 5000 -->
+						</if>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Active Power</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="reactive_power">
+			<type>powerVA/powerVAR</type>
+			<sensorId>REACTIVE_POWER</sensorId>
+			<value>
+				<!--
+					if KTA*KTV >= 5000, divide by 1
+					else divide by 100
+				-->
+				<mult>
+					<op><getOid>address0x31d</getOid></op> <!-- sensor value address -->
+					<op>
+						<if>
+							<op>
+								<ge>
+									<op>
+										<mult>
+											<!-- KTA -->
+											<op><getOid>address0x100</getOid></op>
+											<!-- KTV is given in tenths, according to docs -->
+											<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+										</mult>
+									</op>
+									<op>5000</op>
+								</ge>
+							</op>
+							<op>1</op> <!-- if KTA*KTV >= 5000 -->
+							<op>0.01</op> <!-- if KTA*KTV < 5000 -->
+						</if>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Reactive Power</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="apparent_power">
+			<type>powerVA</type>
+			<sensorId>APPARENT_POWER</sensorId>
+			<value>
+				<!--
+					if KTA*KTV >= 5000, divide by 1
+					else divide by 100
+				-->
+				<mult>
+					<op><getOid>address0x321</getOid></op> <!-- sensor value address -->
+					<op>
+						<if>
+							<op>
+								<ge>
+									<op>
+										<mult>
+											<!-- KTA -->
+											<op><getOid>address0x100</getOid></op>
+											<!-- KTV is given in tenths, according to docs -->
+											<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+										</mult>
+									</op>
+									<op>5000</op>
+								</ge>
+							</op>
+							<op>1</op> <!-- if KTA*KTV >= 5000 -->
+							<op>0.01</op> <!-- if KTA*KTV < 5000 -->
+						</if>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Apparent Power</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="positive_active_energy">
+			<type>num/kVARhr</type>
+			<sensorId>POSITIVE_ACTIVE_ENERGY</sensorId>
+			<value>
+				<!--
+					     if KTA*KTV >= 10000, divide by 100
+					else if KTA*KTV >= 1000, divide by 10
+					else if KTA*KTV >= 100, divide by 1
+					else if KTA*KTV >= 10, multiply by 10
+					else if KTA*KTV >= 1, multiply by 100
+					else multiply by 1 (this is not defined in the docs, so just default to no scale)
+				-->
+				<mult>
+					<op><getOid>address0x325</getOid></op> <!-- sensor value address -->
+					<op>
+						<if>
+							<op>
+								<ge>
+									<op>
+										<mult>
+											<!-- KTA -->
+											<op><getOid>address0x100</getOid></op>
+											<!-- KTV is given in tenths, according to docs -->
+											<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+										</mult>
+									</op>
+									<op>10000</op>
+								</ge>
+							</op>
+							<op>0.01</op> <!-- if KTA * KTV >= 10000, use this scale -->
+							<op>
+								<if>
+									<op>
+										<ge>
+											<op>
+												<mult> <!-- KTA * KTV -->
+													<op><getOid>address0x100</getOid></op>
+													<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+												</mult>
+											</op>
+											<op>1000</op>
+										</ge>
+									</op>
+									<op>0.1</op> <!-- if KTA * KTV >= 1000, use this scale -->
+									<op>
+										<if>
+											<op>
+												<ge>
+													<op>
+														<mult> <!-- KTA * KTV -->
+															<op><getOid>address0x100</getOid></op>
+															<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+														</mult>
+													</op>
+													<op>100</op>
+												</ge>
+											</op>
+											<op>1</op> <!-- if KTA * KTV >= 100, use this scale -->
+											<op>
+												<if>
+													<op>
+														<ge>
+															<op>
+																<mult> <!-- KTA * KTV -->
+																	<op><getOid>address0x100</getOid></op>
+																	<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+																</mult>
+															</op>
+															<op>10</op>
+														</ge>
+													</op>
+													<op>10</op> <!-- if KTA * KTV >= 10, use this scale -->
+													<op>
+														<if>
+															<op>
+																<ge>
+																	<op>
+																		<mult> <!-- KTA * KTV -->
+																			<op><getOid>address0x100</getOid></op>
+																			<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+																		</mult>
+																	</op>
+																	<op>1</op>
+																</ge>
+															</op>
+															<op>100</op> <!-- if KTA * KTV >= 1, use this scale -->
+															<op>1</op> <!-- note that docs don't define this case -->
+														</if>
+													</op>
+												</if>
+											</op>
+										</if>
+									</op>
+								</if>
+							</op>
+						</if>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Positive Active Energy</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="phase_voltage_ll" index="addresses0x329-0x331">
+			<type>voltage</type>
+			<sensorId>VOLTAGE_LL_PHASE_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>addresses0x329-0x331</getRowOid></op>
+					<op>0.001</op> <!-- to mV -->
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Voltage <mapValue mapid="zerobased2linetoline-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="negative_active_energy">
+			<type>num/kVARhr</type>
+			<sensorId>NEGATIVE_ACTIVE_ENERGY</sensorId>
+			<value>
+				<!--
+					     if KTA*KTV >= 10000, divide by 100
+					else if KTA*KTV >= 1000, divide by 10
+					else if KTA*KTV >= 100, divide by 1
+					else if KTA*KTV >= 10, multiply by 10
+					else if KTA*KTV >= 1, multiply by 100
+					else multiply by 1 (this is not defined in the docs, so just default to no scale)
+				-->
+				<mult>
+					<op><getOid>address0x335</getOid></op> <!-- sensor value address -->
+					<op>
+						<if>
+							<op>
+								<ge>
+									<op>
+										<mult>
+											<!-- KTA -->
+											<op><getOid>address0x100</getOid></op>
+											<!-- KTV is given in tenths, according to docs -->
+											<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+										</mult>
+									</op>
+									<op>10000</op>
+								</ge>
+							</op>
+							<op>0.01</op> <!-- if KTA * KTV >= 10000, use this scale -->
+							<op>
+								<if>
+									<op>
+										<ge>
+											<op>
+												<mult> <!-- KTA * KTV -->
+													<op><getOid>address0x100</getOid></op>
+													<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+												</mult>
+											</op>
+											<op>1000</op>
+										</ge>
+									</op>
+									<op>0.1</op> <!-- if KTA * KTV >= 1000, use this scale -->
+									<op>
+										<if>
+											<op>
+												<ge>
+													<op>
+														<mult> <!-- KTA * KTV -->
+															<op><getOid>address0x100</getOid></op>
+															<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+														</mult>
+													</op>
+													<op>100</op>
+												</ge>
+											</op>
+											<op>1</op> <!-- if KTA * KTV >= 100, use this scale -->
+											<op>
+												<if>
+													<op>
+														<ge>
+															<op>
+																<mult> <!-- KTA * KTV -->
+																	<op><getOid>address0x100</getOid></op>
+																	<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+																</mult>
+															</op>
+															<op>10</op>
+														</ge>
+													</op>
+													<op>10</op> <!-- if KTA * KTV >= 10, use this scale -->
+													<op>
+														<if>
+															<op>
+																<ge>
+																	<op>
+																		<mult> <!-- KTA * KTV -->
+																			<op><getOid>address0x100</getOid></op>
+																			<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+																		</mult>
+																	</op>
+																	<op>1</op>
+																</ge>
+															</op>
+															<op>100</op> <!-- if KTA * KTV >= 1, use this scale -->
+															<op>1</op> <!-- note that docs don't define this case -->
+														</if>
+													</op>
+												</if>
+											</op>
+										</if>
+									</op>
+								</if>
+							</op>
+						</if>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Negative Active Energy</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="frequency">
+			<type>frequency</type>
+			<sensorId>FREQUENCY</sensorId>
+			<value>
+				<mult>
+					<op><getOid>address0x339</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Frequency</label>
+		</numSensor>
+
+		<numSensor ruleid="op_time_counter">
+			<type>timeinhrs</type>
+			<sensorId>OP_TIME_COUNTER</sensorId>
+			<value>
+				<getOid>address0x33b</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Operating Timer Counter</label>
+			<sensorSet>Time</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="3p_powerfactor">
+			<type>powerfactor</type>
+			<sensorId>3P_POWER_FACTOR</sensorId>
+			<value>
+				<mult>
+					<op><getOid>address0x33d</getOid></op>
+					<op>0.01</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Power Factor</label>
+		</numSensor>
+
+		<stateSensor ruleid="sect_power_factor">
+			<type>state</type>
+			<sensorId>SECT_POWER_FACTOR</sensorId>
+			<value>
+				<mapValue mapid="indcap-vm">
+					<formatNumber>
+						<!-- this value is a byte, rather than a full register
+						     so, shift the value 8 bits -->
+						<right_shift>
+							<op><getOid>address0x33f</getOid></op>
+							<op>8</op>
+						</right_shift>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Sector of Power Factor</label>
+			<enum>indcap-em</enum>
+			<sensorSet>Power</sensorSet>
+		</stateSensor>
+
+		<valueMap ruleid="indcap-vm">
+			<valueIn>1</valueIn><valueOut>0</valueOut>
+			<valueIn>2</valueIn><valueOut>1</valueOut>
+			<valueIn>*</valueIn><valueOut>2</valueOut>
+		</valueMap>
+
+		<enumMap ruleid="indcap-em">
+			<label>Ind</label>
+			<label>Cap</label>
+			<label>Unknown</label>
+		</enumMap>
+
+		<stateSensor ruleid="volt_seq_diagnostic">
+			<type>state</type>
+			<sensorId>VOLT_SEQ_DIAGNOSTIC</sensorId>
+			<value>
+				<mapValue mapid="okerror-vm">
+					<formatNumber>
+						<!-- this value is a byte, rather than a full register
+						     so, shift the value 8 bits -->
+						<right_shift>
+							<op><getOid>address0x340</getOid></op>
+							<op>8</op>
+						</right_shift>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Voltages Sequence Diagnostic</label>
+			<enum>okerror-em</enum>
+			<sensorSet>Voltage</sensorSet>
+		</stateSensor>
+
+		<valueMap ruleid="okerror-vm">
+			<valueIn>1</valueIn><valueOut>0</valueOut>
+			<valueIn>2</valueIn><valueOut>1</valueOut>
+			<valueIn>*</valueIn><valueOut>2</valueOut>
+		</valueMap>
+
+		<enumMap ruleid="okerror-em">
+			<label>OK</label>
+			<label>Error</label>
+			<label>Unknown</label>
+		</enumMap>
+
+		<stateSensor ruleid="output_relay_status_alarm0">
+			<type>state</type>
+			<sensorId>OUTPUT_RELAY_STATUS_ALARM0</sensorId>
+			<value>
+				<mapValue mapid="inactiveactive-vm">
+					<formatNumber>
+						<bitwise_and>
+							<op>
+								<right_shift>
+									<op><getOid>address0x341</getOid></op>
+									<op>0</op>
+								</right_shift>
+							</op>
+							<op>1</op>
+						</bitwise_and>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Output Relay Status, Alarm 0</label>
+			<enum>inactiveactive-em</enum>
+			<sensorSet>Output Relay Status</sensorSet>
+		</stateSensor>
+		
+		<valueMap ruleid="inactiveactive-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>*</valueIn><valueOut>1</valueOut>
+		</valueMap>
+
+		<enumMap ruleid="inactiveactive-em">
+			<label>Inactive</label>
+			<label>Active</label>
+		</enumMap>
+
+		<stateSensor ruleid="output_relay_status_alarm1">
+			<type>state</type>
+			<sensorId>OUTPUT_RELAY_STATUS_ALARM1</sensorId>
+			<value>
+				<mapValue mapid="inactiveactive-vm">
+					<formatNumber>
+						<bitwise_and>
+							<op>
+								<right_shift>
+									<op><getOid>address0x341</getOid></op>
+									<op>1</op>
+								</right_shift>
+							</op>
+							<op>1</op>
+						</bitwise_and>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Output Relay Status, Alarm 1</label>
+			<enum>inactiveactive-em</enum>
+			<sensorSet>Output Relay Status</sensorSet>
+		</stateSensor>
+		
+		<stateSensor ruleid="output_relay_status_alarm2">
+			<type>state</type>
+			<sensorId>OUTPUT_RELAY_STATUS_ALARM2</sensorId>
+			<value>
+				<mapValue mapid="inactiveactive-vm">
+					<formatNumber>
+						<bitwise_and>
+							<op>
+								<right_shift>
+									<op><getOid>address0x341</getOid></op>
+									<op>2</op>
+								</right_shift>
+							</op>
+							<op>1</op>
+						</bitwise_and>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Output Relay Status, Alarm 2</label>
+			<enum>inactiveactive-em</enum>
+			<sensorSet>Output Relay Status</sensorSet>
+		</stateSensor>
+		
+		<stateSensor ruleid="output_relay_status_alarm3">
+			<type>state</type>
+			<sensorId>OUTPUT_RELAY_STATUS_ALARM3</sensorId>
+			<value>
+				<mapValue mapid="inactiveactive-vm">
+					<formatNumber>
+						<bitwise_and>
+							<op>
+								<right_shift>
+									<op><getOid>address0x341</getOid></op>
+									<op>3</op>
+								</right_shift>
+							</op>
+							<op>1</op>
+						</bitwise_and>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Output Relay Status, Alarm 3</label>
+			<enum>inactiveactive-em</enum>
+			<sensorSet>Output Relay Status</sensorSet>
+		</stateSensor>
+		
+		<numSensor ruleid="positive_reactive_energy">
+			<type>num/kVARhr</type>
+			<sensorId>POSITIVE_REACTIVE_ENERGY</sensorId>
+			<value>
+				<!--
+					     if KTA*KTV >= 10000, divide by 100
+					else if KTA*KTV >= 1000, divide by 10
+					else if KTA*KTV >= 100, divide by 1
+					else if KTA*KTV >= 10, multiply by 10
+					else if KTA*KTV >= 1, multiply by 100
+					else multiply by 1 (this is not defined in the docs, so just default to no scale)
+				-->
+				<mult>
+					<op><getOid>address0x343</getOid></op> <!-- sensor value address -->
+					<op>
+						<if>
+							<op>
+								<ge>
+									<op>
+										<mult>
+											<!-- KTA -->
+											<op><getOid>address0x100</getOid></op>
+											<!-- KTV is given in tenths, according to docs -->
+											<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+										</mult>
+									</op>
+									<op>10000</op>
+								</ge>
+							</op>
+							<op>0.01</op> <!-- if KTA * KTV >= 10000, use this scale -->
+							<op>
+								<if>
+									<op>
+										<ge>
+											<op>
+												<mult> <!-- KTA * KTV -->
+													<op><getOid>address0x100</getOid></op>
+													<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+												</mult>
+											</op>
+											<op>1000</op>
+										</ge>
+									</op>
+									<op>0.1</op> <!-- if KTA * KTV >= 1000, use this scale -->
+									<op>
+										<if>
+											<op>
+												<ge>
+													<op>
+														<mult> <!-- KTA * KTV -->
+															<op><getOid>address0x100</getOid></op>
+															<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+														</mult>
+													</op>
+													<op>100</op>
+												</ge>
+											</op>
+											<op>1</op> <!-- if KTA * KTV >= 100, use this scale -->
+											<op>
+												<if>
+													<op>
+														<ge>
+															<op>
+																<mult> <!-- KTA * KTV -->
+																	<op><getOid>address0x100</getOid></op>
+																	<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+																</mult>
+															</op>
+															<op>10</op>
+														</ge>
+													</op>
+													<op>10</op> <!-- if KTA * KTV >= 10, use this scale -->
+													<op>
+														<if>
+															<op>
+																<ge>
+																	<op>
+																		<mult> <!-- KTA * KTV -->
+																			<op><getOid>address0x100</getOid></op>
+																			<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+																		</mult>
+																	</op>
+																	<op>1</op>
+																</ge>
+															</op>
+															<op>100</op> <!-- if KTA * KTV >= 1, use this scale -->
+															<op>1</op> <!-- note that docs don't define this case -->
+														</if>
+													</op>
+												</if>
+											</op>
+										</if>
+									</op>
+								</if>
+							</op>
+						</if>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Positive Reactive Energy</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<stateSensor ruleid="sign_of_active_power">
+			<type>state</type>
+			<sensorId>SIGN_OF_ACTIVE_POWER</sensorId>
+			<value>
+				<mapValue mapid="positivenegative-vm">
+					<formatNumber>
+						<!-- this value is a byte, rather than a full register
+						     so, shift the value 8 bits -->
+						<right_shift>
+							<op><getOid>address0x341</getOid></op>
+							<op>8</op>
+						</right_shift>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Sign of Active Power</label>
+			<enum>positivenegative-em</enum>
+			<sensorSet>Power</sensorSet>
+		</stateSensor>
+		
+		<valueMap ruleid="positivenegative-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>*</valueIn><valueOut>2</valueOut>
+		</valueMap>
+
+		<enumMap ruleid="positivenegative-em">
+			<label>Positive</label>
+			<label>Negative</label>
+			<label>Unknown</label>
+		</enumMap>
+
+		<numSensor ruleid="negative_reactive_energy">
+			<type>num/kVARhr</type>
+			<sensorId>NEGATIVE_REACTIVE_ENERGY</sensorId>
+			<value>
+				<!--
+					     if KTA*KTV >= 10000, divide by 100
+					else if KTA*KTV >= 1000, divide by 10
+					else if KTA*KTV >= 100, divide by 1
+					else if KTA*KTV >= 10, multiply by 10
+					else if KTA*KTV >= 1, multiply by 100
+					else multiply by 1 (this is not defined in the docs, so just default to no scale)
+				-->
+				<mult>
+					<op><getOid>address0x348</getOid></op> <!-- sensor value address -->
+					<op>
+						<if>
+							<op>
+								<ge>
+									<op>
+										<mult>
+											<!-- KTA -->
+											<op><getOid>address0x100</getOid></op>
+											<!-- KTV is given in tenths, according to docs -->
+											<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+										</mult>
+									</op>
+									<op>10000</op>
+								</ge>
+							</op>
+							<op>0.01</op> <!-- if KTA * KTV >= 10000, use this scale -->
+							<op>
+								<if>
+									<op>
+										<ge>
+											<op>
+												<mult> <!-- KTA * KTV -->
+													<op><getOid>address0x100</getOid></op>
+													<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+												</mult>
+											</op>
+											<op>1000</op>
+										</ge>
+									</op>
+									<op>0.1</op> <!-- if KTA * KTV >= 1000, use this scale -->
+									<op>
+										<if>
+											<op>
+												<ge>
+													<op>
+														<mult> <!-- KTA * KTV -->
+															<op><getOid>address0x100</getOid></op>
+															<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+														</mult>
+													</op>
+													<op>100</op>
+												</ge>
+											</op>
+											<op>1</op> <!-- if KTA * KTV >= 100, use this scale -->
+											<op>
+												<if>
+													<op>
+														<ge>
+															<op>
+																<mult> <!-- KTA * KTV -->
+																	<op><getOid>address0x100</getOid></op>
+																	<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+																</mult>
+															</op>
+															<op>10</op>
+														</ge>
+													</op>
+													<op>10</op> <!-- if KTA * KTV >= 10, use this scale -->
+													<op>
+														<if>
+															<op>
+																<ge>
+																	<op>
+																		<mult> <!-- KTA * KTV -->
+																			<op><getOid>address0x100</getOid></op>
+																			<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+																		</mult>
+																	</op>
+																	<op>1</op>
+																</ge>
+															</op>
+															<op>100</op> <!-- if KTA * KTV >= 1, use this scale -->
+															<op>1</op> <!-- note that docs don't define this case -->
+														</if>
+													</op>
+												</if>
+											</op>
+										</if>
+									</op>
+								</if>
+							</op>
+						</if>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Negative Reactive Energy</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<stateSensor ruleid="sign_of_reactive_power">
+			<type>state</type>
+			<sensorId>SIGN_OF_REACTIVE_POWER</sensorId>
+			<value>
+				<mapValue mapid="positivenegative-vm">
+					<formatNumber>
+						<!-- this value is a byte, rather than a full register
+						     so, shift the value 8 bits -->
+						<right_shift>
+							<op><getOid>address0x34c</getOid></op>
+							<op>8</op>
+						</right_shift>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Sign of Reactive Power</label>
+			<enum>positivenegative-em</enum>
+			<sensorSet>Power</sensorSet>
+		</stateSensor>
+		
+		<numSensor ruleid="average_power">
+			<type>powerW</type>
+			<sensorId>AVERAGE_POWER</sensorId>
+			<value>
+				<!--
+					if KTA*KTV >= 5000, divide by 1
+					else divide by 100
+				-->
+				<mult>
+					<op><getOid>address0x350</getOid></op> <!-- sensor value address -->
+					<op>
+						<if>
+							<op>
+								<ge>
+									<op>
+										<mult>
+											<!-- KTA -->
+											<op><getOid>address0x100</getOid></op>
+											<!-- KTV is given in tenths, according to docs -->
+											<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+										</mult>
+									</op>
+									<op>5000</op>
+								</ge>
+							</op>
+							<op>1</op> <!-- if KTA*KTV >= 5000 -->
+							<op>0.01</op> <!-- if KTA*KTV < 5000 -->
+						</if>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Average Power</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="peak_max_demand">
+			<type>powerW</type>
+			<sensorId>PEAK_MAX_DEMAND</sensorId>
+			<value>
+				<!--
+					if KTA*KTV >= 5000, divide by 1
+					else divide by 100
+				-->
+				<mult>
+					<op><getOid>address0x354</getOid></op> <!-- sensor value address -->
+					<op>
+						<if>
+							<op>
+								<ge>
+									<op>
+										<mult>
+											<!-- KTA -->
+											<op><getOid>address0x100</getOid></op>
+											<!-- KTV is given in tenths, according to docs -->
+											<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+										</mult>
+									</op>
+									<op>5000</op>
+								</ge>
+							</op>
+							<op>1</op> <!-- if KTA*KTV >= 5000 -->
+							<op>0.01</op> <!-- if KTA*KTV < 5000 -->
+						</if>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Peak Max Demand</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="time_average_power">
+			<type>timeinmin</type>
+			<sensorId>TIME_AVERAGE_POWER</sensorId>
+			<value>
+				<!-- this value is a byte, rather than a full register
+					 so, shift the value 8 bits -->
+				<right_shift>
+					<op><getOid>address0x358</getOid></op>
+					<op>8</op>
+				</right_shift>
+			</value>
+			<label>Time Counter for Average Power</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="neutral_current">
+			<type>amperage</type>
+			<sensorId>NEUTRAL_CURRENT</sensorId>
+			<value>
+				<mult>
+					<op><getOid>address0x359</getOid></op>
+					<op>0.001</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Neutral Current</label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="active_power_phase" index="addresses0x35d-0x365">
+			<type>powerW</type>
+			<sensorId>ACTIVE_POWER_PH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<!--
+					if KTA*KTV >= 5000, divide by 1
+					else divide by 100
+				-->
+				<mult>
+					<op><getRowOid>addresses0x35d-0x365</getRowOid></op> <!-- sensor value address -->
+					<op>
+						<if>
+							<op>
+								<ge>
+									<op>
+										<mult>
+											<!-- KTA -->
+											<op><getOid>address0x100</getOid></op>
+											<!-- KTV is given in tenths, according to docs -->
+											<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+										</mult>
+									</op>
+									<op>5000</op>
+								</ge>
+							</op>
+							<op>1</op> <!-- if KTA*KTV >= 5000 -->
+							<op>0.01</op> <!-- if KTA*KTV < 5000 -->
+						</if>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Active Power Phase <mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<stateSensor ruleid="sign_of_active_power" index="addresses0x369-0x36b">
+			<type>state</type>
+			<sensorId>SIGN_OF_ACTIVE_POWER_PH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mapValue mapid="positivenegative-vm">
+					<formatNumber>
+						<!-- this value is a byte, rather than a full register
+						     so, shift the value 8 bits -->
+						<right_shift>
+							<op><getRowOid>addresses0x369-0x36b</getRowOid></op>
+							<op>8</op>
+						</right_shift>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Sign of Active Power Phase <mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></label>
+			<enum>positivenegative-em</enum>
+			<sensorSet>Power</sensorSet>
+		</stateSensor>
+		
+		<numSensor ruleid="reactive_power_phase" index="addresses0x36c-0x374">
+			<type>powerVA/powerVAR</type>
+			<sensorId>REACTIVE_POWER_PH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<!--
+					if KTA*KTV >= 5000, divide by 1
+					else divide by 100
+				-->
+				<mult>
+					<op><getRowOid>addresses0x36c-0x374</getRowOid></op> <!-- sensor value address -->
+					<op>
+						<if>
+							<op>
+								<ge>
+									<op>
+										<mult>
+											<!-- KTA -->
+											<op><getOid>address0x100</getOid></op>
+											<!-- KTV is given in tenths, according to docs -->
+											<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+										</mult>
+									</op>
+									<op>5000</op>
+								</ge>
+							</op>
+							<op>1</op> <!-- if KTA*KTV >= 5000 -->
+							<op>0.01</op> <!-- if KTA*KTV < 5000 -->
+						</if>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Reactive Power Phase <mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<stateSensor ruleid="sign_of_reactive_power" index="addresses0x378-0x37a">
+			<type>state</type>
+			<sensorId>SIGN_OF_REACTIVE_POWER_PH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mapValue mapid="positivenegative-vm">
+					<formatNumber>
+						<!-- this value is a byte, rather than a full register
+						     so, shift the value 8 bits -->
+						<right_shift>
+							<op><getRowOid>addresses0x378-0x37a</getRowOid></op>
+							<op>8</op>
+						</right_shift>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Sign of Reactive Power Phase <mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></label>
+			<enum>positivenegative-em</enum>
+			<sensorSet>Power</sensorSet>
+		</stateSensor>
+		
+		<numSensor ruleid="apparent_power_phase" index="addresses0x37b-0x383">
+			<type>powerVA</type>
+			<sensorId>APPARENT_POWER_PH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<!--
+					if KTA*KTV >= 5000, divide by 1
+					else divide by 100
+				-->
+				<mult>
+					<op><getRowOid>addresses0x37b-0x383</getRowOid></op> <!-- sensor value address -->
+					<op>
+						<if>
+							<op>
+								<ge>
+									<op>
+										<mult>
+											<!-- KTA -->
+											<op><getOid>address0x100</getOid></op>
+											<!-- KTV is given in tenths, according to docs -->
+											<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+										</mult>
+									</op>
+									<op>5000</op>
+								</ge>
+							</op>
+							<op>1</op> <!-- if KTA*KTV >= 5000 -->
+							<op>0.01</op> <!-- if KTA*KTV < 5000 -->
+						</if>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Apparent Power Phase <mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="power_factor_phase" index="addresses0x387-0x38b">
+			<type>powerfactor</type>
+			<sensorId>POWER_FACTOR_PH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>addresses0x387-0x38b</getRowOid></op>
+					<op>0.01</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Power Factor Phase <mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<stateSensor ruleid="sect_power_factor_phase" index="addresses0x38d-0x38f">
+			<type>state</type>
+			<sensorId>SECT_POWER_FACTOR_PH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mapValue mapid="indcap-vm">
+					<formatNumber>
+						<!-- this value is a byte, rather than a full register
+						     so, shift the value 8 bits -->
+						<right_shift>
+							<op><getRowOid>addresses0x38d-0x38f</getRowOid></op>
+							<op>8</op>
+						</right_shift>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Sector of Power Factor Phase <mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></label>
+			<enum>indcap-em</enum>
+			<sensorSet>Power</sensorSet>
+		</stateSensor>
+
+		<numSensor ruleid="thd_v" index="addresses0x390-0x394">
+			<type>num</type>
+			<units>percent</units>
+			<sensorId>THD_V_PH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<getRowOid>addresses0x390-0x394</getRowOid>
+			</value>
+			<label>Voltage THD Phase <mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="thd_i" index="addresses0x396-0x39a">
+			<type>num</type>
+			<units>percent</units>
+			<sensorId>THD_I_PH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<getRowOid>addresses0x396-0x39a</getRowOid>
+			</value>
+			<label>Current THD Phase <mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="i_average" index="addresses0x39c-0x3a4">
+			<type>amperage</type>
+			<sensorId>I_AVERAGE_PH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>addresses0x39c-0x3a4</getRowOid></op>
+					<op>0.001</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Average Current Phase <mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="i_peak" index="addresses0x3a8-0x3b0">
+			<type>amperage</type>
+			<sensorId>I_PEAK_PH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>addresses0x3a8-0x3b0</getRowOid></op>
+					<op>0.001</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Peak Maximum Current Phase <mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="average_current">
+			<type>amperage</type>
+			<sensorId>AVERAGE_CURRENT</sensorId>
+			<value>
+				<mult>
+					<op><getOid>address0x3b4</getOid></op>
+					<op>0.001</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Average Current</label>
+			<sensorSet>Current</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="v_min" index="addresses0x3b8-0x3c0">
+			<type>voltage</type>
+			<sensorId>V_MIN_PH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>addresses0x3b8-0x3c0</getRowOid></op>
+					<op>0.001</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Minimum Voltage Phase <mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="v_max" index="addresses0x3c4-0x3cc">
+			<type>voltage</type>
+			<sensorId>V_MAX_PH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>addresses0x3c4-0x3cc</getRowOid></op>
+					<op>0.001</op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Maximum Voltage Phase <mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Voltage</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="active_partial_energy">
+			<type>num/kVARhr</type>
+			<sensorId>ACTIVE_PARTIAL_ENERGY</sensorId>
+			<value>
+				<!--
+					     if KTA*KTV >= 10000, divide by 100
+					else if KTA*KTV >= 1000, divide by 10
+					else if KTA*KTV >= 100, divide by 1
+					else if KTA*KTV >= 10, multiply by 10
+					else if KTA*KTV >= 1, multiply by 100
+					else multiply by 1 (this is not defined in the docs, so just default to no scale)
+				-->
+				<mult>
+					<op><getOid>address0x3d0</getOid></op> <!-- sensor value address -->
+					<op>
+						<if>
+							<op>
+								<ge>
+									<op>
+										<mult>
+											<!-- KTA -->
+											<op><getOid>address0x100</getOid></op>
+											<!-- KTV is given in tenths, according to docs -->
+											<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+										</mult>
+									</op>
+									<op>10000</op>
+								</ge>
+							</op>
+							<op>0.01</op> <!-- if KTA * KTV >= 10000, use this scale -->
+							<op>
+								<if>
+									<op>
+										<ge>
+											<op>
+												<mult> <!-- KTA * KTV -->
+													<op><getOid>address0x100</getOid></op>
+													<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+												</mult>
+											</op>
+											<op>1000</op>
+										</ge>
+									</op>
+									<op>0.1</op> <!-- if KTA * KTV >= 1000, use this scale -->
+									<op>
+										<if>
+											<op>
+												<ge>
+													<op>
+														<mult> <!-- KTA * KTV -->
+															<op><getOid>address0x100</getOid></op>
+															<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+														</mult>
+													</op>
+													<op>100</op>
+												</ge>
+											</op>
+											<op>1</op> <!-- if KTA * KTV >= 100, use this scale -->
+											<op>
+												<if>
+													<op>
+														<ge>
+															<op>
+																<mult> <!-- KTA * KTV -->
+																	<op><getOid>address0x100</getOid></op>
+																	<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+																</mult>
+															</op>
+															<op>10</op>
+														</ge>
+													</op>
+													<op>10</op> <!-- if KTA * KTV >= 10, use this scale -->
+													<op>
+														<if>
+															<op>
+																<ge>
+																	<op>
+																		<mult> <!-- KTA * KTV -->
+																			<op><getOid>address0x100</getOid></op>
+																			<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+																		</mult>
+																	</op>
+																	<op>1</op>
+																</ge>
+															</op>
+															<op>100</op> <!-- if KTA * KTV >= 1, use this scale -->
+															<op>1</op> <!-- note that docs don't define this case -->
+														</if>
+													</op>
+												</if>
+											</op>
+										</if>
+									</op>
+								</if>
+							</op>
+						</if>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Active Partial Energy</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="reactive_partial_energy">
+			<type>num/kVARhr</type>
+			<sensorId>REACTIVE_PARTIAL_ENERGY</sensorId>
+			<value>
+				<!--
+					     if KTA*KTV >= 10000, divide by 100
+					else if KTA*KTV >= 1000, divide by 10
+					else if KTA*KTV >= 100, divide by 1
+					else if KTA*KTV >= 10, multiply by 10
+					else if KTA*KTV >= 1, multiply by 100
+					else multiply by 1 (this is not defined in the docs, so just default to no scale)
+				-->
+				<mult>
+					<op><getOid>address0x3d4</getOid></op> <!-- sensor value address -->
+					<op>
+						<if>
+							<op>
+								<ge>
+									<op>
+										<mult>
+											<!-- KTA -->
+											<op><getOid>address0x100</getOid></op>
+											<!-- KTV is given in tenths, according to docs -->
+											<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+										</mult>
+									</op>
+									<op>10000</op>
+								</ge>
+							</op>
+							<op>0.01</op> <!-- if KTA * KTV >= 10000, use this scale -->
+							<op>
+								<if>
+									<op>
+										<ge>
+											<op>
+												<mult> <!-- KTA * KTV -->
+													<op><getOid>address0x100</getOid></op>
+													<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+												</mult>
+											</op>
+											<op>1000</op>
+										</ge>
+									</op>
+									<op>0.1</op> <!-- if KTA * KTV >= 1000, use this scale -->
+									<op>
+										<if>
+											<op>
+												<ge>
+													<op>
+														<mult> <!-- KTA * KTV -->
+															<op><getOid>address0x100</getOid></op>
+															<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+														</mult>
+													</op>
+													<op>100</op>
+												</ge>
+											</op>
+											<op>1</op> <!-- if KTA * KTV >= 100, use this scale -->
+											<op>
+												<if>
+													<op>
+														<ge>
+															<op>
+																<mult> <!-- KTA * KTV -->
+																	<op><getOid>address0x100</getOid></op>
+																	<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+																</mult>
+															</op>
+															<op>10</op>
+														</ge>
+													</op>
+													<op>10</op> <!-- if KTA * KTV >= 10, use this scale -->
+													<op>
+														<if>
+															<op>
+																<ge>
+																	<op>
+																		<mult> <!-- KTA * KTV -->
+																			<op><getOid>address0x100</getOid></op>
+																			<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+																		</mult>
+																	</op>
+																	<op>1</op>
+																</ge>
+															</op>
+															<op>100</op> <!-- if KTA * KTV >= 1, use this scale -->
+															<op>1</op> <!-- note that docs don't define this case -->
+														</if>
+													</op>
+												</if>
+											</op>
+										</if>
+									</op>
+								</if>
+							</op>
+						</if>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Reactive Partial Energy</label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+		<valueMap ruleid="power_label-vm">
+			<valueIn>0</valueIn><valueOut>Active Average Power</valueOut>
+			<valueIn>1</valueIn><valueOut>Reactive Average Power</valueOut>
+			<valueIn>2</valueIn><valueOut>Apparent Average Power</valueOut>
+			<valueIn>3</valueIn><valueOut>Active PMD Power</valueOut>
+			<valueIn>4</valueIn><valueOut>Reactive PMD Power</valueOut>
+			<valueIn>5</valueIn><valueOut>Apparent PMD Power</valueOut>
+			<valueIn>*</valueIn><valueOut>Undefined Sensor</valueOut>
+		</valueMap>
+
+		<valueMap ruleid="power_type-vm">
+			<valueIn>0</valueIn><valueOut>powerW</valueOut>
+			<valueIn>1</valueIn><valueOut>powerVA/powerVAR</valueOut>
+			<valueIn>2</valueIn><valueOut>powerVA</valueOut>
+			<valueIn>3</valueIn><valueOut>powerW</valueOut>
+			<valueIn>4</valueIn><valueOut>powerVA/powerVA</valueOut>
+			<valueIn>5</valueIn><valueOut>powerVA</valueOut>
+			<valueIn>*</valueIn><valueOut>num</valueOut>
+		</valueMap>
+
+		<valueMap ruleid="power_sensorid-vm">
+			<valueIn>0</valueIn><valueOut>ACTIVE_AVERAGE_POWER</valueOut>
+			<valueIn>1</valueIn><valueOut>REACTIVE_AVERAGE_POWER</valueOut>
+			<valueIn>2</valueIn><valueOut>APPARENT_AVERAGE_POWER</valueOut>
+			<valueIn>3</valueIn><valueOut>ACTIVE_PMD_POWER</valueOut>
+			<valueIn>4</valueIn><valueOut>REACTIVE_PMD_POWER</valueOut>
+			<valueIn>5</valueIn><valueOut>APPARENT_PMD_POWER</valueOut>
+			<valueIn>*</valueIn><valueOut>*</valueOut>
+		</valueMap>
+
+		<!-- last six sensors are handled the same way, so lumping them together -->
+		<numSensor ruleid="multi_power_type" index="addresses0x3d8-0x3ec">
+			<type><mapValue mapid="power_type-vm"><rowNumber/></mapValue></type>
+			<sensorId><mapValue mapid="power_sensorid-vm"><rowNumber/></mapValue></sensorId>
+			<value>
+				<!--
+					if KTA*KTV >= 5000, divide by 1
+					else divide by 100
+				-->
+				<mult>
+					<op><getRowOid>addresses0x3d8-0x3ec</getRowOid></op> <!-- sensor value address -->
+					<op>
+						<if>
+							<op>
+								<ge>
+									<op>
+										<mult>
+											<!-- KTA -->
+											<op><getOid>address0x100</getOid></op>
+											<!-- KTV is given in tenths, according to docs -->
+											<op><mult><op><getOid>address0x102</getOid></op><op>0.1</op></mult></op>
+										</mult>
+									</op>
+									<op>5000</op>
+								</ge>
+							</op>
+							<op>1</op> <!-- if KTA*KTV >= 5000 -->
+							<op>0.01</op> <!-- if KTA*KTV < 5000 -->
+						</if>
+					</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label><mapValue mapid="power_label-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Power</sensorSet>
+		</numSensor>
+		
+	</device>
+
+	<protocol>
+		<modbus>
+			<value_ref_id valid="address0x100"> <!-- KTA -->
+				<function>3</function>
+				<start_addr>256</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x102"> <!-- KTV -->
+				<function>3</function>
+				<start_addr>258</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="address0x301"> <!-- voltage, phase 1 -->
+				<function>3</function>
+				<start_addr>769</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x305"> <!-- voltage, phase 2 -->
+				<function>3</function>
+				<start_addr>773</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x309"> <!-- voltage, phase 3 -->
+				<function>3</function>
+				<start_addr>777</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x301-0x309">
+				<entry num="0">address0x301</entry>
+				<entry num="1">address0x305</entry>
+				<entry num="2">address0x309</entry>
+			</table_ref_id>
+
+			<value_ref_id valid="address0x30d"> <!-- current, phase 1 -->
+				<function>3</function>
+				<start_addr>781</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x311"> <!-- current, phase 2 -->
+				<function>3</function>
+				<start_addr>785</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x315"> <!-- current, phase 3 -->
+				<function>3</function>
+				<start_addr>789</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x30d-0x315">
+				<entry num="0">address0x30d</entry>
+				<entry num="1">address0x311</entry>
+				<entry num="2">address0x315</entry>
+			</table_ref_id>
+			
+			<value_ref_id valid="address0x319"> <!-- active power -->
+				<function>3</function>
+				<start_addr>793</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x31d"> <!-- reactive power -->
+				<function>3</function>
+				<start_addr>797</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x321"> <!-- apparent power -->
+				<function>3</function>
+				<start_addr>801</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x325"> <!-- positive active energy -->
+				<function>3</function>
+				<start_addr>805</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			
+			<value_ref_id valid="address0x329"> <!-- voltage, L1-L2 -->
+				<function>3</function>
+				<start_addr>809</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x32d"> <!-- voltage, L2-L3 -->
+				<function>3</function>
+				<start_addr>813</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x331"> <!-- voltage, L3-L1 -->
+				<function>3</function>
+				<start_addr>817</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x329-0x331">
+				<entry num="0">address0x329</entry>
+				<entry num="1">address0x32d</entry>
+				<entry num="2">address0x331</entry>
+			</table_ref_id>
+			
+			<value_ref_id valid="address0x335"> <!-- negative active energy -->
+				<function>3</function>
+				<start_addr>821</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x339"> <!-- frequency -->
+				<function>3</function>
+				<start_addr>825</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x33d"> <!-- 3 phase power factor -->
+				<function>3</function>
+				<start_addr>829</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="address0x33f"> <!-- sector of power factor -->
+				<function>3</function>
+				<start_addr>831</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> <!-- this is actually a byte, which we don't support, so just grab full 16 -->
+			</value_ref_id>
+			<value_ref_id valid="address0x340"> <!-- voltages sequence diagnostic -->
+				<function>3</function>
+				<start_addr>832</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> <!-- this is actually a byte, which we don't support, so just grab full 16 -->
+			</value_ref_id>
+			<value_ref_id valid="address0x341"> <!-- output relay status -->
+				<function>3</function>
+				<start_addr>833</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x343"> <!-- positive reactive energy -->
+				<function>3</function>
+				<start_addr>835</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x347"> <!-- sign of active power -->
+				<function>3</function>
+				<start_addr>839</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> <!-- this is actually a byte, which we don't support, so just grab full 16 -->
+			</value_ref_id>
+			<value_ref_id valid="address0x348"> <!-- negative reactive energy -->
+				<function>3</function>
+				<start_addr>840</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x34c"> <!-- sign of reactive power -->
+				<function>3</function>
+				<start_addr>844</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> <!-- this is actually a byte, which we don't support, so just grab full 16 -->
+			</value_ref_id>
+			<value_ref_id valid="address0x350"> <!-- average power -->
+				<function>3</function>
+				<start_addr>848</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x354"> <!-- peak maximum demand -->
+				<function>3</function>
+				<start_addr>852</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x358"> <!-- time counter for average power -->
+				<function>3</function>
+				<start_addr>856</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> <!-- this is actually a byte, which we don't support, so just grab full 16 -->
+			</value_ref_id>
+			<value_ref_id valid="address0x359"> <!-- neutral current -->
+				<function>3</function>
+				<start_addr>857</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			
+			<value_ref_id valid="address0x35d"> <!-- active power, phase 1 -->
+				<function>3</function>
+				<start_addr>861</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x361"> <!-- active power, phase 2 -->
+				<function>3</function>
+				<start_addr>865</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x365"> <!-- active power, phase 3 -->
+				<function>3</function>
+				<start_addr>869</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x35d-0x365">
+				<entry num="0">address0x35d</entry>
+				<entry num="1">address0x361</entry>
+				<entry num="2">address0x365</entry>
+			</table_ref_id>
+	
+			<value_ref_id valid="address0x369"> <!-- sign of active power, phase 1 -->
+				<function>3</function>
+				<start_addr>873</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> <!-- this is actually a byte, which we don't support, so just grab full 16 -->
+			</value_ref_id>
+			<value_ref_id valid="address0x36a"> <!-- sign of active power, phase 2 -->
+				<function>3</function>
+				<start_addr>874</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> <!-- this is actually a byte, which we don't support, so just grab full 16 -->
+			</value_ref_id>
+			<value_ref_id valid="address0x36b"> <!-- sign of active power, phase 3 -->
+				<function>3</function>
+				<start_addr>875</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> <!-- this is actually a byte, which we don't support, so just grab full 16 -->
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x369-0x36b">
+				<entry num="0">address0x369</entry>
+				<entry num="1">address0x36a</entry>
+				<entry num="2">address0x36b</entry>
+			</table_ref_id>
+			
+			<value_ref_id valid="address0x36c"> <!-- reactive power, phase 1 -->
+				<function>3</function>
+				<start_addr>876</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x370"> <!-- reactive power, phase 2 -->
+				<function>3</function>
+				<start_addr>880</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x374"> <!-- reactive power, phase 3 -->
+				<function>3</function>
+				<start_addr>884</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x36c-0x374">
+				<entry num="0">address0x36c</entry>
+				<entry num="1">address0x370</entry>
+				<entry num="2">address0x374</entry>
+			</table_ref_id>
+
+			<value_ref_id valid="address0x378"> <!-- sign of reactive power, phase 1 -->
+				<function>3</function>
+				<start_addr>888</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> <!-- this is actually a byte, which we don't support, so just grab full 16 -->
+			</value_ref_id>
+			<value_ref_id valid="address0x379"> <!-- sign of reactive power, phase 2 -->
+				<function>3</function>
+				<start_addr>889</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> <!-- this is actually a byte, which we don't support, so just grab full 16 -->
+			</value_ref_id>
+			<value_ref_id valid="address0x37a"> <!-- sign of reactive power, phase 3 -->
+				<function>3</function>
+				<start_addr>890</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> <!-- this is actually a byte, which we don't support, so just grab full 16 -->
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x378-0x37a">
+				<entry num="0">address0x378</entry>
+				<entry num="1">address0x379</entry>
+				<entry num="2">address0x37a</entry>
+			</table_ref_id>
+
+			<value_ref_id valid="address0x37b"> <!-- apparent power, phase 1 -->
+				<function>3</function>
+				<start_addr>891</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x37f"> <!-- apparent power, phase 2 -->
+				<function>3</function>
+				<start_addr>895</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x383"> <!-- apparent power, phase 3 -->
+				<function>3</function>
+				<start_addr>899</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x37b-0x383">
+				<entry num="0">address0x37b</entry>
+				<entry num="1">address0x37f</entry>
+				<entry num="2">address0x383</entry>
+			</table_ref_id>
+
+			<value_ref_id valid="address0x387"> <!-- power factor, phase 1 -->
+				<function>3</function>
+				<start_addr>903</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x389"> <!-- power factor, phase 2 -->
+				<function>3</function>
+				<start_addr>905</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x38b"> <!-- power factor, phase 3 -->
+				<function>3</function>
+				<start_addr>907</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> 
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x387-0x38b">
+				<entry num="0">address0x387</entry>
+				<entry num="1">address0x389</entry>
+				<entry num="2">address0x38b</entry>
+			</table_ref_id>
+
+			<value_ref_id valid="address0x38d"> <!-- power factor sector, phase 1 -->
+				<function>3</function>
+				<start_addr>909</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x38e"> <!-- power factor sector, phase 2 -->
+				<function>3</function>
+				<start_addr>910</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x38f"> <!-- power factor sector, phase 3 -->
+				<function>3</function>
+				<start_addr>911</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> 
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x38d-0x38f">
+				<entry num="0">address0x38d</entry>
+				<entry num="1">address0x38e</entry>
+				<entry num="2">address0x38f</entry>
+			</table_ref_id>
+
+			<value_ref_id valid="address0x390"> <!-- THD voltage, phase 1 -->
+				<function>3</function>
+				<start_addr>912</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x392"> <!-- THD voltage, phase 2 -->
+				<function>3</function>
+				<start_addr>914</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x394"> <!-- THD voltage, phase 3 -->
+				<function>3</function>
+				<start_addr>916</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> 
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x390-0x394">
+				<entry num="0">address0x390</entry>
+				<entry num="1">address0x392</entry>
+				<entry num="2">address0x394</entry>
+			</table_ref_id>
+
+			<value_ref_id valid="address0x396"> <!-- THD current, phase 1 -->
+				<function>3</function>
+				<start_addr>918</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x398"> <!-- THD current, phase 2 -->
+				<function>3</function>
+				<start_addr>920</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x39a"> <!-- THD current, phase 3 -->
+				<function>3</function>
+				<start_addr>922</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type> 
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x396-0x39a">
+				<entry num="0">address0x396</entry>
+				<entry num="1">address0x398</entry>
+				<entry num="2">address0x39a</entry>
+			</table_ref_id>
+
+			<value_ref_id valid="address0x39c"> <!-- average current, phase 1 -->
+				<function>3</function>
+				<start_addr>924</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x3a0"> <!-- average current, phase 2 -->
+				<function>3</function>
+				<start_addr>928</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x3a4"> <!-- average current, phase 3 -->
+				<function>3</function>
+				<start_addr>932</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x39c-0x3a4">
+				<entry num="0">address0x39c</entry>
+				<entry num="1">address0x3a0</entry>
+				<entry num="2">address0x3a4</entry>
+			</table_ref_id>
+
+			<value_ref_id valid="address0x3a8"> <!-- peak current, phase 1 -->
+				<function>3</function>
+				<start_addr>936</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x3ac"> <!-- peak current, phase 2 -->
+				<function>3</function>
+				<start_addr>940</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x3b0"> <!-- peak current, phase 3 -->
+				<function>3</function>
+				<start_addr>944</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x3a8-0x3b0">
+				<entry num="0">address0x3a8</entry>
+				<entry num="1">address0x3ac</entry>
+				<entry num="2">address0x3b0</entry>
+			</table_ref_id>
+
+			<value_ref_id valid="address0x3b4"> <!-- average current (across phases) -->
+				<function>3</function>
+				<start_addr>948</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+
+			<value_ref_id valid="address0x3b8"> <!-- min voltage, phase 1 -->
+				<function>3</function>
+				<start_addr>952</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x3bc"> <!-- min voltage, phase 2 -->
+				<function>3</function>
+				<start_addr>956</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x3c0"> <!-- min voltage, phase 3 -->
+				<function>3</function>
+				<start_addr>960</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x3b8-0x3c0">
+				<entry num="0">address0x3b8</entry>
+				<entry num="1">address0x3bc</entry>
+				<entry num="2">address0x3c0</entry>
+			</table_ref_id>
+
+			<value_ref_id valid="address0x3c4"> <!-- max voltage, phase 1 -->
+				<function>3</function>
+				<start_addr>964</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x3c8"> <!-- max voltage, phase 2 -->
+				<function>3</function>
+				<start_addr>968</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x3cc"> <!-- max voltage, phase 3 -->
+				<function>3</function>
+				<start_addr>972</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x3c4-0x3cc">
+				<entry num="0">address0x3c4</entry>
+				<entry num="1">address0x3c8</entry>
+				<entry num="2">address0x3cc</entry>
+			</table_ref_id>
+
+			<value_ref_id valid="address0x3d0"> <!-- active partial energy -->
+				<function>3</function>
+				<start_addr>976</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			
+			<value_ref_id valid="address0x3d4"> <!-- reactive partial energy -->
+				<function>3</function>
+				<start_addr>980</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+
+			<value_ref_id valid="address0x3d8"> <!-- active average power -->
+				<function>3</function>
+				<start_addr>984</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x3dc"> <!-- reactive average power -->
+				<function>3</function>
+				<start_addr>988</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x3e0"> <!-- apparent average power -->
+				<function>3</function>
+				<start_addr>990</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x3e4"> <!-- active PMD power -->
+				<function>3</function>
+				<start_addr>996</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x3e8"> <!-- reactive PMD power -->
+				<function>3</function>
+				<start_addr>1000</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<value_ref_id valid="address0x3ec"> <!-- apparent PMD power -->
+				<function>3</function>
+				<start_addr>1004</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type> 
+			</value_ref_id>
+			<table_ref_id indexid="addresses0x3d8-0x3ec">
+				<entry num="0">address0x3d8</entry>
+				<entry num="1">address0x3dc</entry>
+				<entry num="2">address0x3e0</entry>
+				<entry num="3">address0x3e4</entry>
+				<entry num="4">address0x3e8</entry>
+				<entry num="5">address0x3ec</entry>
+			</table_ref_id>
+
+			<!-- very little combining of register retrievals,
+			     but, did what I could -->
+			<packet>
+				<function>3</function>
+				<start_addr>256</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>258</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>769</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>773</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>777</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>781</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>785</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>789</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>793</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>797</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>801</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>805</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>809</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>813</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>817</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>821</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>825</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>829</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>831</start_addr>
+				<quantity>3</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>835</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>839</start_addr>
+				<quantity>3</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>844</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>848</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>852</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>856</start_addr>
+				<quantity>3</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>861</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>865</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>869</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>873</start_addr>
+				<quantity>5</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>880</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>884</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>888</start_addr>
+				<quantity>5</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>895</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>899</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>903</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>905</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>907</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>909</start_addr>
+				<quantity>4</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>914</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>916</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>918</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>920</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>922</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>924</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>928</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>932</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>936</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>940</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>944</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>948</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>952</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>956</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>960</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>964</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>968</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>972</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>976</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>980</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>984</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>988</start_addr>
+				<quantity>4</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>996</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>1000</start_addr>
+				<quantity>2</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>1004</start_addr>
+				<quantity>2</quantity>
+			</packet>
+		</modbus>
+	</protocol>
+</APC_DDF>

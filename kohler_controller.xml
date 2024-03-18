@@ -1,0 +1,1943 @@
+<?xml version="1.0"?>
+<!-- Test Modbus related information -->
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+         ddfid="kohler_controller" ddfname="Kohler Controller" ddfversion="5" canremove="yes">
+  <schemaVersion>1.6</schemaVersion>
+
+  <device deviceid="kohler_generic_modbus">
+      <oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+      <setProductData ruleid="vendordata" field="vendor">Kohler</setProductData>
+      <setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+  </device>
+
+  <device deviceid="kohler_3plus_controller">
+      <oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+      <oidMustMatch ruleid="decision_3plus_device_id" oid="device_id">
+          <valueList>
+              <value>18</value> <!-- Decision Maker 3+ -->
+          </valueList>
+      </oidMustMatch>
+
+      <!-- Decision-Maker 3+ Generator Set Controller used to monitor generators -->
+      <setProductData ruleid="modeldata" field="model">Decision-Maker 3+ Controller</setProductData>
+
+      <!-- Generator -->
+      <setProductData ruleid="typedata" field="type">Generator</setProductData> 
+
+      <stateSensor ruleid="runmodestatus">
+          <type>state</type>
+          <sensorId>RUN_MODE_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 0 -->
+                  <bitwise_and>
+                      <op><getOid>register1</getOid></op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Run Mode Status</label>
+          <enum>enabled-em</enum>
+          <sensorSet>State Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="cooldownmodestatus">
+          <type>state</type>
+          <sensorId>COOLDOWN_MODE_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 1 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register1</getOid></op>
+                            <op>1</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Cooldown Mode Status</label>
+          <enum>enabled-em</enum>
+          <sensorSet>State Sensors</sensorSet>
+      </stateSensor>
+
+      <!-- could be a numSensor, but register map includes it in status register
+           as one of two states -->
+      <stateSensor ruleid="frequencystatus">
+          <type>state</type>
+          <sensorId>FREQUENCY_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 2 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register1</getOid></op>
+                            <op>2</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Frequency Status</label>
+          <enum>frequency-em</enum>
+          <sensorSet>State Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="crankstatus">
+          <type>state</type>
+          <sensorId>CRANK_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 3 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register1</getOid></op>
+                            <op>3</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Crank Status</label>
+          <enum>crank-em</enum>
+          <sensorSet>State Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="generatorstatus">
+          <type>state</type>
+          <sensorId>GENERATOR_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 4 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register1</getOid></op>
+                            <op>4</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Generator Status</label>
+          <enum>running-em</enum>
+          <sensorSet>State Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="systemstatus">
+          <type>state</type>
+          <sensorId>SYSTEM_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 5 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register1</getOid></op>
+                            <op>5</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>System Status</label>
+          <enum>system-em</enum>
+          <sensorSet>State Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="common_fault_status">
+          <type>state</type>
+          <sensorId>COMMON_FAULT_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 0 -->
+                  <bitwise_and>
+                      <op><getOid>register2</getOid></op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Common Fault</label>
+          <enum>fault-em</enum>
+          <sensorSet>Remote Input Status Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="low_fuel_fault_status">
+          <type>state</type>
+          <sensorId>LOW_FUEL_FAULT_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 1 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register2</getOid></op>
+                            <op>1</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Low Fuel Fault</label>
+          <enum>fault-em</enum>
+          <sensorSet>Remote Input Status Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="battery_charger_fault_status">
+          <type>state</type>
+          <sensorId>BATTERY_CHARGER_FAULT_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 2 -->
+                  <bitwise_and>
+                      <op>
+
+
+
+                          <right_shift>
+                            <op><getOid>register2</getOid></op>
+                            <op>2</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Battery Charger Fault</label>
+          <enum>fault-em</enum>
+          <sensorSet>Remote Input Status Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="low_battery_fault_status">
+          <type>state</type>
+          <sensorId>LOW_BATTERY_FAULT_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 3 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register2</getOid></op>
+                            <op>3</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Low Battery Fault</label>
+          <enum>fault-em</enum>
+          <sensorSet>Remote Input Status Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="air_damper_switch_status">
+          <type>state</type>
+          <sensorId>AIR_DAMPER_SWITCH_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 4 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register2</getOid></op>
+                            <op>4</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Air Damper Switch</label>
+          <enum>switch-em</enum>
+          <sensorSet>Remote Input Status Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="low_coolant_temp_fault_status">
+          <type>state</type>
+          <sensorId>LOW_COOLANT_TEMP_FAULT_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 5 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register2</getOid></op>
+                            <op>5</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Low Coolant Temperature Fault</label>
+          <enum>fault-em</enum>
+          <sensorSet>Remote Input Status Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="pre_high_coolant_temp_fault_status">
+          <type>state</type>
+          <sensorId>PREHIGH_COOLANT_TEMP_FAULT_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 6 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register2</getOid></op>
+                            <op>6</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Pre-high Coolant Temperature Fault</label>
+          <enum>fault-em</enum>
+          <sensorSet>Remote Input Status Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="emergency_stop_fault_status">
+          <type>state</type>
+          <sensorId>EMERGENCY_STOP_FAULT_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 7 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register2</getOid></op>
+                            <op>7</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Emergency Stop Fault</label>
+          <enum>fault-em</enum>
+          <sensorSet>Remote Input Status Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="ats_emergency_fault_status">
+          <type>state</type>
+          <sensorId>ATS_EMERGENCY_FAULT_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 8 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register2</getOid></op>
+                            <op>8</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>ATS Emergency On Fault</label>
+          <enum>fault-em</enum>
+          <sensorSet>Remote Input Status Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="user_input1_status">
+          <type>state</type>
+          <sensorId>USER_INPUT1_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 9 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register2</getOid></op>
+                            <op>9</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>User Input #1</label>
+          <enum>switch-em</enum>
+          <sensorSet>Remote Input Status Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="user_input2_status">
+          <type>state</type>
+          <sensorId>USER_INPUT2_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 10 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register2</getOid></op>
+                            <op>10</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>User Input #2</label>
+          <enum>switch-em</enum>
+          <sensorSet>Remote Input Status Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="user_input3_status">
+          <type>state</type>
+          <sensorId>USER_INPUT3_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 11 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register2</getOid></op>
+                            <op>11</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>User Input #3</label>
+          <enum>switch-em</enum>
+          <sensorSet>Remote Input Status Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="dip_switch1_status">
+          <type>state</type>
+          <sensorId>DIP_SWITCH1_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 12 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register2</getOid></op>
+                            <op>12</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Communication Module DIP Switch #1</label>
+          <enum>switch-em</enum>
+          <sensorSet>Remote Input Status Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="dip_switch2_status">
+          <type>state</type>
+          <sensorId>DIP_SWITCH2_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 13 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register2</getOid></op>
+                            <op>13</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Communication Module DIP Switch #2</label>
+          <enum>switch-em</enum>
+          <sensorSet>Remote Input Status Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="dip_switch3_status">
+          <type>state</type>
+          <sensorId>DIP_SWITCH3_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 14 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register2</getOid></op>
+                            <op>14</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Communication Module DIP Switch #3</label>
+          <enum>switch-em</enum>
+          <sensorSet>Remote Input Status Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="dip_switch4_status">
+          <type>state</type>
+          <sensorId>DIP_SWITCH4_STATUS</sensorId>
+          <value>
+              <mapValue mapid="enabled-vm">
+                <formatNumber>
+                  <!-- Determined by bit 15 -->
+                  <bitwise_and>
+                      <op>
+                          <right_shift>
+                            <op><getOid>register2</getOid></op>
+                            <op>15</op>
+                          </right_shift>
+                      </op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Communication Module DIP Switch #4</label>
+          <enum>switch-em</enum>
+          <sensorSet>Remote Input Status Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="masterswitchposition">
+          <type>state</type>
+          <sensorId>MASTER_SWITCH_POSITION</sensorId>
+          <value>
+              <mapValue mapid="msposition-vm">
+                  <getOid>register3</getOid>
+              </mapValue>
+          </value>
+          <label>Master Switch Position</label>
+          <enum>msposition-em</enum>
+          <sensorSet>State Sensors</sensorSet>
+      </stateSensor>
+
+      <!-- Enabled value map -->
+      <valueMap ruleid="enabled-vm">
+          <valueIn>0</valueIn><valueOut>0</valueOut>
+          <valueIn>1</valueIn><valueOut>1</valueOut>
+          <valueIn>*</valueIn><valueOut>0</valueOut>
+      </valueMap>
+
+      <!-- Enabled Enums -->
+      <enumMap ruleid="enabled-em">
+          <label>Disabled</label>
+          <label>Enabled</label>
+      </enumMap>
+
+      <!-- Frequency Enums -->
+      <enumMap ruleid="frequency-em">
+          <label>50 Hz</label>
+          <label>60 Hz</label>
+      </enumMap>
+
+      <!-- Crank Enums -->
+      <enumMap ruleid="crank-em">
+          <label>Cyclic</label>
+          <label>Continuous</label>
+      </enumMap>
+
+      <!-- Running Enums -->
+      <enumMap ruleid="running-em">
+          <label>Not Running</label>
+          <label>Running</label>
+      </enumMap>
+
+      <!-- System Enums -->
+      <enumMap ruleid="system-em">
+          <label>Not Ready</label>
+          <label>Ready</label>
+      </enumMap>
+
+      <!-- Fault Enums -->
+      <enumMap ruleid="fault-em">
+          <label>Normal</label>
+          <label>Fault</label>
+      </enumMap>
+
+      <!-- Switch Enums -->
+      <enumMap ruleid="switch-em">
+          <label>Open</label>
+          <label>Close</label>
+      </enumMap>
+
+      <!-- Master Switch Position value map -->
+      <valueMap ruleid="msposition-vm">
+          <valueIn>0</valueIn><valueOut>0</valueOut>
+          <valueIn>1</valueIn><valueOut>1</valueOut>
+          <valueIn>2</valueIn><valueOut>2</valueOut>
+          <valueIn>4</valueIn><valueOut>4</valueOut>
+          <valueIn>*</valueIn><valueOut>3</valueOut>
+      </valueMap>
+
+      <!-- Master Switch Position Enums -->
+      <enumMap ruleid="msposition-em">
+          <label>Fault</label>
+          <label>Run</label>
+          <label>Auto</label>
+          <label>Unknown</label>
+          <label>Off</label>
+      </enumMap>
+
+  </device>
+    
+  <device deviceid="kohler_mpac1000ats_controller">
+      <oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+      <oidMustMatch ruleid="mpac1000_device_id" oid="device_id">
+          <valueList>
+              <value>19</value> <!-- MPAC 1000 ATS -->
+          </valueList>
+      </oidMustMatch>
+
+      <!-- MPAC 1000 ATS -->
+      <setProductData ruleid="modeldata" field="model">MPAC 1000 Controller</setProductData>
+
+      <!-- ATS -->
+      <setProductData ruleid="typedata" field="type">Transfer Switch</setProductData> 
+
+      <stateSensor ruleid="contactorposition">
+          <type>state</type>
+          <sensorId>_ATS_SELECTED_SOURCE</sensorId>
+          <value>
+              <mapValue mapid="contactor_position-vm">
+                <formatNumber>
+                  <!-- Determined by bits 0 and 1-->
+                  <bitwise_and>
+                      <op><getOid>register1</getOid></op>
+                      <op>3</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Contactor Position</label>
+          <enum>contactor_position-em</enum>
+          <sensorSet>State Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="preferredsource">
+          <type>state</type>
+          <sensorId>PREFERRED_SOURCE</sensorId>
+          <value>
+              <mapValue mapid="preferred_source-vm">
+                <formatNumber>
+                  <!-- Determined by bit 2-->
+                  <bitwise_and>
+                      <op><getOid>register1</getOid></op>
+                      <op>4</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Preferred Source</label>
+          <enum>preferred_source-em</enum>
+          <sensorSet>State Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="preferredsourceavailable">
+          <type>state</type>
+          <sensorId>PREFERRED_SOURCE_AVAILABLE</sensorId>
+          <value>
+              <mapValue mapid="available-vm">
+                <formatNumber>
+                  <!-- Determined by bit 13-->
+                  <bitwise_and>
+                      <op><getOid>register1</getOid></op>
+                      <op>8192</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Preferred Source Available</label>
+          <enum>available-em</enum>
+          <sensorSet>State Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="standbysourceavailable">
+          <type>state</type>
+          <sensorId>STANDBY_SOURCE_AVAILABLE</sensorId>
+          <value>
+              <mapValue mapid="available-vm">
+                <formatNumber>
+                  <!-- Determined by bit 14-->
+                  <bitwise_and>
+                      <op><getOid>register1</getOid></op>
+                      <op>16384</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Standby Source Available</label>
+          <enum>available-em</enum>
+          <sensorSet>State Sensors</sensorSet>
+      </stateSensor>
+
+      <numSensor ruleid="sourcea_voltage_ln_1">
+          <type>voltage</type>
+          <sensorId>XATS_SOURCE1_PHASE_1_VOLTAGE_L2N</sensorId>
+          <value>
+              <mult>
+                  <op><getOid>register2</getOid></op>
+                  <op>0.1</op>
+              </mult>
+          </value>
+          <label>Source A Voltage Phase A-N</label>
+          <sensorSet>Voltage Sensors</sensorSet>
+      </numSensor>
+
+      <numSensor ruleid="sourcea_voltage_ln_2">
+          <type>voltage</type>
+          <sensorId>XATS_SOURCE1_PHASE_2_VOLTAGE_L2N</sensorId>
+          <value>
+              <mult>
+                  <op><getOid>register3</getOid></op>
+                  <op>0.1</op>
+              </mult>
+          </value>
+          <label>Source A Voltage Phase B-N</label>
+          <sensorSet>Voltage Sensors</sensorSet>
+      </numSensor>
+
+      <numSensor ruleid="sourcea_voltage_ln_3">
+          <type>voltage</type>
+          <sensorId>XATS_SOURCE1_PHASE_3_VOLTAGE_L2N</sensorId>
+          <value>
+              <mult>
+                  <op><getOid>register4</getOid></op>
+                  <op>0.1</op>
+              </mult>
+          </value>
+          <label>Source A Voltage Phase C-N</label>
+          <sensorSet>Voltage Sensors</sensorSet>
+      </numSensor>
+
+      <numSensor ruleid="sourceb_voltage_ln_1">
+          <type>voltage</type>
+          <sensorId>XATS_SOURCE2_PHASE_1_VOLTAGE_L2N</sensorId>
+          <value>
+              <mult>
+                  <op><getOid>register5</getOid></op>
+                  <op>0.1</op>
+              </mult>
+          </value>
+          <label>Source B Voltage Phase A-N</label>
+          <sensorSet>Voltage Sensors</sensorSet>
+      </numSensor>
+
+      <numSensor ruleid="sourceb_voltage_ln_2">
+          <type>voltage</type>
+          <sensorId>XATS_SOURCE2_PHASE_2_VOLTAGE_L2N</sensorId>
+          <value>
+              <mult>
+                  <op><getOid>register6</getOid></op>
+                  <op>0.1</op>
+              </mult>
+          </value>
+          <label>Source B Voltage Phase B-N</label>
+          <sensorSet>Voltage Sensors</sensorSet>
+      </numSensor>
+
+      <numSensor ruleid="sourceb_voltage_ln_3">
+          <type>voltage</type>
+          <sensorId>XATS_SOURCE2_PHASE_3_VOLTAGE_L2N</sensorId>
+          <value>
+              <mult>
+                  <op><getOid>register7</getOid></op>
+                  <op>0.1</op>
+              </mult>
+          </value>
+          <label>Source B Voltage Phase C-N</label>
+          <sensorSet>Voltage Sensors</sensorSet>
+      </numSensor>
+
+      <numSensor ruleid="sourcea_voltage_ll_1">
+          <type>voltage</type>
+          <sensorId>XATS_SOURCE1_PHASE_1_VOLTAGE_L2L</sensorId>
+          <value>
+              <mult>
+                  <op><getOid>register8</getOid></op>
+                  <op>0.1</op>
+              </mult>
+          </value>
+          <label>Source A Voltage Phase A-B</label>
+          <sensorSet>Voltage Sensors</sensorSet>
+      </numSensor>
+
+      <numSensor ruleid="sourcea_voltage_ll_2">
+          <type>voltage</type>
+          <sensorId>XATS_SOURCE1_PHASE_2_VOLTAGE_L2L</sensorId>
+          <value>
+              <mult>
+                  <op><getOid>register9</getOid></op>
+                  <op>0.1</op>
+              </mult>
+          </value>
+          <label>Source A Voltage Phase B-C</label>
+          <sensorSet>Voltage Sensors</sensorSet>
+      </numSensor>
+
+      <numSensor ruleid="sourcea_voltage_ll_3">
+          <type>voltage</type>
+          <sensorId>XATS_SOURCE1_PHASE_3_VOLTAGE_L2L</sensorId>
+          <value>
+              <mult>
+                  <op><getOid>register10</getOid></op>
+                  <op>0.1</op>
+              </mult>
+          </value>
+          <label>Source A Voltage Phase C-A</label>
+          <sensorSet>Voltage Sensors</sensorSet>
+      </numSensor>
+
+      <numSensor ruleid="sourceb_voltage_ll_1">
+          <type>voltage</type>
+          <sensorId>XATS_SOURCE2_PHASE_1_VOLTAGE_L2L</sensorId>
+          <value>
+              <mult>
+                  <op><getOid>register11</getOid></op>
+                  <op>0.1</op>
+              </mult>
+          </value>
+          <label>Source B Voltage Phase A-B</label>
+          <sensorSet>Voltage Sensors</sensorSet>
+      </numSensor>
+
+      <numSensor ruleid="sourceb_voltage_ll_2">
+          <type>voltage</type>
+          <sensorId>XATS_SOURCE2_PHASE_2_VOLTAGE_L2L</sensorId>
+          <value>
+              <mult>
+                  <op><getOid>register12</getOid></op>
+                  <op>0.1</op>
+              </mult>
+          </value>
+          <label>Source B Voltage Phase B-C</label>
+          <sensorSet>Voltage Sensors</sensorSet>
+      </numSensor>
+
+      <numSensor ruleid="sourceb_voltage_ll_3">
+          <type>voltage</type>
+          <sensorId>XATS_SOURCE2_PHASE_3_VOLTAGE_L2L</sensorId>
+          <value>
+              <mult>
+                  <op><getOid>register13</getOid></op>
+                  <op>0.1</op>
+              </mult>
+          </value>
+          <label>Source B Voltage Phase C-A</label>
+          <sensorSet>Voltage Sensors</sensorSet>
+      </numSensor>
+
+      <numSensor ruleid="sourcea_frequency">
+          <type>frequency</type>
+          <sensorId>XATS_SOURCE1_FREQUENCY</sensorId>
+          <value>
+              <mult>
+                  <op><getOid>register14</getOid></op>
+                  <op>0.1</op>
+              </mult>
+          </value>
+          <label>Source A Frequency</label>
+          <sensorSet>Voltage Sensors</sensorSet>
+      </numSensor>
+
+      <numSensor ruleid="sourceb_frequency">
+          <type>frequency</type>
+          <sensorId>XATS_SOURCE2_FREQUENCY</sensorId>
+          <value>
+              <mult>
+                  <op><getOid>register15</getOid></op>
+                  <op>0.1</op>
+              </mult>
+          </value>
+          <label>Source B Frequency</label>
+          <sensorSet>Voltage Sensors</sensorSet>
+      </numSensor>
+
+      <stateSensor ruleid="sourceaphasesequenceactual">
+          <type>state</type>
+          <sensorId>SOURCEA_PHASE_SEQUENCE_ACTUAL</sensorId>
+          <value>
+              <mapValue mapid="phasesequence-vm">
+                <formatNumber>
+                  <!-- Determined by bit 0-1-->
+                  <bitwise_and>
+                      <op><getOid>register22</getOid></op>
+                      <op>3</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Phase Sequence Actual Source A</label>
+          <enum>phasesequence-em</enum>
+          <sensorSet>State Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="sourcebphasesequenceactual">
+          <type>state</type>
+          <sensorId>SOURCEB_PHASE_SEQUENCE_ACTUAL</sensorId>
+          <value>
+              <mapValue mapid="phasesequence-vm">
+                <formatNumber>
+                  <!-- Determined by bits 2-3-->
+                  <bitwise_and>
+                      <op><getOid>register22</getOid></op>
+                      <op>12</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Phase Sequence Actual Source B</label>
+          <enum>phasesequence-em</enum>
+          <sensorSet>State Sensors</sensorSet>
+      </stateSensor>
+
+      <stateSensor ruleid="sourcephasesequenceexpected">
+          <type>state</type>
+          <sensorId>PHASE_SEQUENCE_EXPECTED</sensorId>
+          <value>
+              <mapValue mapid="phasesequence-vm">
+                <formatNumber>
+                  <!-- Determined by bit 0-->
+                  <bitwise_and>
+                      <op><getOid>register23</getOid></op>
+                      <op>1</op>
+                  </bitwise_and>
+                </formatNumber>
+              </mapValue>
+          </value>
+          <label>Phase Sequence Expected</label>
+          <enum>phasesequence-em</enum>
+          <sensorSet>State Sensors</sensorSet>
+      </stateSensor>
+
+      <!-- ATS Controller Output -->
+      <stateSensor ruleid="atscontrolleroutput">
+          <type>state</type>
+          <sensorId>ATS_CONTROLLER_OUTPUT</sensorId>
+          <value>
+              <mapValue mapid="eventcode-vm">
+                  <getOid>register65</getOid>
+              </mapValue>
+          </value>
+          <label>ATS Controller Output</label>
+          <enum>eventcode-em</enum>
+          <sensorSet>I/O Output Sensors</sensorSet>
+      </stateSensor>
+
+      <!-- I/O Module 1 Outputs -->
+      <stateSensor ruleid="io_module1_output" index="MODULE1_OUTPUTS_TABLE">
+          <type>state</type>
+          <sensorId>IO_MODULE1_OUTPUT<mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue>_STATUS</sensorId>
+          <value>
+              <mapValue mapid="eventcode-vm">
+                  <getRowOid>MODULE1_OUTPUTS_TABLE</getRowOid>
+              </mapValue>
+          </value>
+          <label>I/O Module 1 Output <mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue></label>
+          <enum>eventcode-em</enum>
+          <sensorSet>I/O Module 1 Output Sensors</sensorSet>
+      </stateSensor>
+
+      <!-- I/O Module 2 Outputs -->
+      <stateSensor ruleid="io_module2_output" index="MODULE2_OUTPUTS_TABLE">
+          <type>state</type>
+          <sensorId>IO_MODULE2_OUTPUT<mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue>_STATUS</sensorId>
+          <value>
+              <mapValue mapid="eventcode-vm">
+                  <getRowOid>MODULE2_OUTPUTS_TABLE</getRowOid>
+              </mapValue>
+          </value>
+          <label>I/O Module 2 Output <mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue></label>
+          <enum>eventcode-em</enum>
+          <sensorSet>I/O Module 2 Output Sensors</sensorSet>
+      </stateSensor>
+
+      <!-- I/O Module 3 Outputs -->
+      <stateSensor ruleid="io_module3_output" index="MODULE3_OUTPUTS_TABLE">
+          <type>state</type>
+          <sensorId>IO_MODULE3_OUTPUT<mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue>_STATUS</sensorId>
+          <value>
+              <mapValue mapid="eventcode-vm">
+                  <getRowOid>MODULE3_OUTPUTS_TABLE</getRowOid>
+              </mapValue>
+          </value>
+          <label>I/O Module 3 Output <mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue></label>
+          <enum>eventcode-em</enum>
+          <sensorSet>I/O Module 3 Output Sensors</sensorSet>
+      </stateSensor>
+
+      <!-- I/O Module 4 Outputs -->
+      <stateSensor ruleid="io_module4_output" index="MODULE4_OUTPUTS_TABLE">
+          <type>state</type>
+          <sensorId>IO_MODULE4_OUTPUT<mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue>_STATUS</sensorId>
+          <value>
+              <mapValue mapid="eventcode-vm">
+                  <getRowOid>MODULE4_OUTPUTS_TABLE</getRowOid>
+              </mapValue>
+          </value>
+          <label>I/O Module 4 Output <mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue></label>
+          <enum>eventcode-em</enum>
+          <sensorSet>I/O Module 4 Output Sensors</sensorSet>
+      </stateSensor>
+
+      <!-- TSI Events -->
+      <stateSensor ruleid="io_module4_output" index="TSI_EVENTS_TABLE">
+          <type>state</type>
+          <sensorId>TSI<mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue>_EVENT_STATUS</sensorId>
+          <value>
+              <mapValue mapid="eventcode-vm">
+                  <getRowOid>TSI_EVENTS_TABLE</getRowOid>
+              </mapValue>
+          </value>
+          <label>TSI<mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue> Event</label>
+          <enum>eventcode-em</enum>
+          <sensorSet>TSI Event Sensors</sensorSet>
+      </stateSensor>
+
+      <!-- I/O Module 1 Inputs -->
+      <stateSensor ruleid="io_module1_input" index="MODULE1_INPUTS_TABLE">
+          <type>state</type>
+          <sensorId>IO_MODULE1_INPUT<mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue>_STATUS</sensorId>
+          <value>
+              <mapValue mapid="eventcode-vm">
+                  <getRowOid>MODULE1_INPUTS_TABLE</getRowOid>
+              </mapValue>
+          </value>
+          <label>I/O Module 1 Input <mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue></label>
+          <enum>eventcode-em</enum>
+          <sensorSet>I/O Module 1 Input Sensors</sensorSet>
+      </stateSensor>
+
+      <!-- I/O Module 2 Inputs -->
+      <stateSensor ruleid="io_module2_input" index="MODULE2_INPUTS_TABLE">
+          <type>state</type>
+          <sensorId>IO_MODULE2_INPUT<mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue>_STATUS</sensorId>
+          <value>
+              <mapValue mapid="eventcode-vm">
+                  <getRowOid>MODULE2_INPUTS_TABLE</getRowOid>
+              </mapValue>
+          </value>
+          <label>I/O Module 2 Input <mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue></label>
+          <enum>eventcode-em</enum>
+          <sensorSet>I/O Module 2 Input Sensors</sensorSet>
+      </stateSensor>
+
+      <!-- I/O Module 3 Inputs -->
+      <stateSensor ruleid="io_module3_input" index="MODULE3_INPUTS_TABLE">
+          <type>state</type>
+          <sensorId>IO_MODULE3_INPUT<mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue>_STATUS</sensorId>
+          <value>
+              <mapValue mapid="eventcode-vm">
+                  <getRowOid>MODULE3_INPUTS_TABLE</getRowOid>
+              </mapValue>
+          </value>
+          <label>I/O Module 3 Input <mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue></label>
+          <enum>eventcode-em</enum>
+          <sensorSet>I/O Module 3 Input Sensors</sensorSet>
+      </stateSensor>
+
+      <!-- I/O Module 4 Inputs -->
+      <stateSensor ruleid="io_module4_input" index="MODULE4_INPUTS_TABLE">
+          <type>state</type>
+          <sensorId>IO_MODULE4_INPUT<mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue>_STATUS</sensorId>
+          <value>
+              <mapValue mapid="eventcode-vm">
+                  <getRowOid>MODULE4_INPUTS_TABLE</getRowOid>
+              </mapValue>
+          </value>
+          <label>I/O Module 4 Input <mapValue mapid="rownum_rowindex_64"><rowNumber/></mapValue></label>
+          <enum>eventcode-em</enum>
+          <sensorSet>I/O Module 4 Input Sensors</sensorSet>
+      </stateSensor>
+
+      <!-- Contactor Position value map -->
+      <valueMap ruleid="contactor_position-vm">
+          <valueIn>0</valueIn><valueOut>0</valueOut>
+          <valueIn>1</valueIn><valueOut>1</valueOut>
+          <valueIn>2</valueIn><valueOut>2</valueOut>
+          <valueIn>3</valueIn><valueOut>3</valueOut>
+          <valueIn>*</valueIn><valueOut>0</valueOut>
+      </valueMap>
+
+      <!-- Contactor Position Enums -->
+      <enumMap ruleid="contactor_position-em">
+          <label>Off</label>
+          <label>Normal</label>
+          <label>Emergency</label>
+          <label>Fault</label>
+      </enumMap>
+
+      <!-- Preferred Source value map -->
+      <valueMap ruleid="preferred_source-vm">
+          <valueIn>0</valueIn><valueOut>0</valueOut>
+          <valueIn>1</valueIn><valueOut>1</valueOut>
+          <valueIn>*</valueIn><valueOut>0</valueOut>
+      </valueMap>
+
+      <!-- Preferred Source Enums -->
+      <enumMap ruleid="preferred_source-em">
+          <label>Source1</label>
+          <label>Source2</label>
+      </enumMap>
+
+      <!-- Available value map -->
+      <valueMap ruleid="available-vm">
+          <valueIn>0</valueIn><valueOut>0</valueOut>
+          <valueIn>1</valueIn><valueOut>1</valueOut>
+          <valueIn>*</valueIn><valueOut>0</valueOut>
+      </valueMap>
+
+      <!-- Available Enums -->
+      <enumMap ruleid="available-em">
+          <label>No</label>
+          <label>Yes</label>
+      </enumMap>
+
+      <!-- Phase Sequence map -->
+      <valueMap ruleid="phasesequence-vm">
+          <valueIn>0</valueIn><valueOut>1</valueOut>
+          <valueIn>1</valueIn><valueOut>2</valueOut>
+          <valueIn>2</valueIn><valueOut>3</valueOut>
+          <valueIn>3</valueIn><valueOut>4</valueOut>
+          <valueIn>*</valueIn><valueOut>0</valueOut>
+      </valueMap>
+
+      <!-- Phase Sequence Enums -->
+      <enumMap ruleid="phasesequence-em">
+          <label>Unknown</label>
+          <label>CBA</label>
+          <label>ABC</label>
+          <label>N/A</label>
+          <label>ERR</label>
+      </enumMap>
+
+      <!-- Event Codes map -->
+      <valueMap ruleid="eventcode-vm">
+          <valueIn>1</valueIn><valueOut>1</valueOut>
+          <valueIn>2</valueIn><valueOut>2</valueOut>
+          <valueIn>3</valueIn><valueOut>3</valueOut>
+          <valueIn>4</valueIn><valueOut>4</valueOut>
+          <valueIn>5</valueIn><valueOut>5</valueOut>
+          <valueIn>6</valueIn><valueOut>6</valueOut>
+          <valueIn>7</valueIn><valueOut>7</valueOut>
+          <valueIn>8</valueIn><valueOut>8</valueOut>
+          <valueIn>9</valueIn><valueOut>9</valueOut>
+          <valueIn>10</valueIn><valueOut>10</valueOut>
+          <valueIn>11</valueIn><valueOut>11</valueOut>
+          <valueIn>12</valueIn><valueOut>12</valueOut>
+          <valueIn>13</valueIn><valueOut>13</valueOut>
+          <valueIn>14</valueIn><valueOut>14</valueOut>
+          <valueIn>15</valueIn><valueOut>15</valueOut>
+          <valueIn>16</valueIn><valueOut>16</valueOut>
+          <valueIn>46</valueIn><valueOut>17</valueOut>
+          <valueIn>47</valueIn><valueOut>18</valueOut>
+          <valueIn>55</valueIn><valueOut>19</valueOut>
+          <valueIn>56</valueIn><valueOut>20</valueOut>
+          <valueIn>57</valueIn><valueOut>21</valueOut>
+          <valueIn>58</valueIn><valueOut>22</valueOut>
+          <valueIn>59</valueIn><valueOut>23</valueOut>
+          <valueIn>60</valueIn><valueOut>24</valueOut>
+          <valueIn>61</valueIn><valueOut>25</valueOut>
+          <valueIn>62</valueIn><valueOut>26</valueOut>
+          <valueIn>63</valueIn><valueOut>27</valueOut>
+          <valueIn>64</valueIn><valueOut>28</valueOut>
+          <valueIn>65</valueIn><valueOut>29</valueOut>
+          <valueIn>66</valueIn><valueOut>30</valueOut>
+          <valueIn>67</valueIn><valueOut>31</valueOut>
+          <valueIn>68</valueIn><valueOut>32</valueOut>
+          <valueIn>69</valueIn><valueOut>33</valueOut>
+          <valueIn>70</valueIn><valueOut>34</valueOut>
+          <valueIn>71</valueIn><valueOut>35</valueOut>
+          <valueIn>72</valueIn><valueOut>36</valueOut>
+          <valueIn>73</valueIn><valueOut>37</valueOut>
+          <valueIn>74</valueIn><valueOut>38</valueOut>
+          <valueIn>75</valueIn><valueOut>39</valueOut>
+          <valueIn>76</valueIn><valueOut>40</valueOut>
+          <valueIn>77</valueIn><valueOut>41</valueOut>
+          <valueIn>78</valueIn><valueOut>42</valueOut>
+          <valueIn>79</valueIn><valueOut>43</valueOut>
+          <valueIn>80</valueIn><valueOut>44</valueOut>
+          <valueIn>81</valueIn><valueOut>45</valueOut>
+          <valueIn>82</valueIn><valueOut>46</valueOut>
+          <valueIn>83</valueIn><valueOut>47</valueOut>
+          <valueIn>84</valueIn><valueOut>48</valueOut>
+          <valueIn>85</valueIn><valueOut>49</valueOut>
+          <valueIn>86</valueIn><valueOut>50</valueOut>
+          <valueIn>87</valueIn><valueOut>51</valueOut>
+          <valueIn>88</valueIn><valueOut>52</valueOut>
+          <valueIn>89</valueIn><valueOut>53</valueOut>
+          <valueIn>90</valueIn><valueOut>54</valueOut>
+          <valueIn>91</valueIn><valueOut>55</valueOut>
+          <valueIn>92</valueIn><valueOut>56</valueOut>
+          <valueIn>93</valueIn><valueOut>57</valueOut>
+          <valueIn>94</valueIn><valueOut>58</valueOut>
+          <valueIn>95</valueIn><valueOut>59</valueOut>
+          <valueIn>96</valueIn><valueOut>60</valueOut>
+          <valueIn>97</valueIn><valueOut>61</valueOut>
+          <valueIn>98</valueIn><valueOut>62</valueOut>
+          <valueIn>99</valueIn><valueOut>63</valueOut>
+          <valueIn>100</valueIn><valueOut>64</valueOut>
+          <valueIn>101</valueIn><valueOut>65</valueOut>
+          <valueIn>102</valueIn><valueOut>66</valueOut>
+          <valueIn>103</valueIn><valueOut>67</valueOut>
+          <valueIn>104</valueIn><valueOut>68</valueOut>
+          <valueIn>105</valueIn><valueOut>69</valueOut>
+          <valueIn>106</valueIn><valueOut>70</valueOut>
+          <valueIn>107</valueIn><valueOut>71</valueOut>
+          <valueIn>115</valueIn><valueOut>72</valueOut>
+          <valueIn>116</valueIn><valueOut>73</valueOut>
+          <valueIn>117</valueIn><valueOut>74</valueOut>
+          <valueIn>118</valueIn><valueOut>75</valueOut>
+          <valueIn>119</valueIn><valueOut>76</valueOut>
+          <valueIn>120</valueIn><valueOut>77</valueOut>
+          <valueIn>121</valueIn><valueOut>78</valueOut>
+          <valueIn>122</valueIn><valueOut>79</valueOut>
+          <valueIn>123</valueIn><valueOut>80</valueOut>
+          <valueIn>124</valueIn><valueOut>81</valueOut>
+          <valueIn>132</valueIn><valueOut>82</valueOut>
+          <valueIn>133</valueIn><valueOut>83</valueOut>
+          <valueIn>134</valueIn><valueOut>84</valueOut>
+          <valueIn>135</valueIn><valueOut>85</valueOut>
+          <valueIn>136</valueIn><valueOut>86</valueOut>
+          <valueIn>137</valueIn><valueOut>87</valueOut>
+          <valueIn>138</valueIn><valueOut>88</valueOut>
+          <valueIn>139</valueIn><valueOut>89</valueOut>
+          <valueIn>140</valueIn><valueOut>90</valueOut>
+          <valueIn>141</valueIn><valueOut>91</valueOut>
+          <valueIn>142</valueIn><valueOut>92</valueOut>
+          <valueIn>143</valueIn><valueOut>93</valueOut>
+          <valueIn>144</valueIn><valueOut>94</valueOut>
+          <valueIn>145</valueIn><valueOut>95</valueOut>
+          <valueIn>146</valueIn><valueOut>96</valueOut>
+          <valueIn>147</valueIn><valueOut>97</valueOut>
+          <valueIn>148</valueIn><valueOut>98</valueOut>
+          <valueIn>149</valueIn><valueOut>99</valueOut>
+          <valueIn>150</valueIn><valueOut>100</valueOut>
+          <valueIn>202</valueIn><valueOut>101</valueOut>
+          <valueIn>210</valueIn><valueOut>102</valueOut>
+          <valueIn>211</valueIn><valueOut>103</valueOut>
+          <valueIn>212</valueIn><valueOut>104</valueOut>
+          <valueIn>213</valueIn><valueOut>105</valueOut>
+          <valueIn>214</valueIn><valueOut>106</valueOut>
+          <valueIn>215</valueIn><valueOut>107</valueOut>
+          <valueIn>216</valueIn><valueOut>108</valueOut>
+          <valueIn>217</valueIn><valueOut>109</valueOut>
+          <valueIn>218</valueIn><valueOut>110</valueOut>
+          <valueIn>223</valueIn><valueOut>111</valueOut>
+          <valueIn>224</valueIn><valueOut>112</valueOut>
+          <valueIn>225</valueIn><valueOut>113</valueOut>
+          <valueIn>232</valueIn><valueOut>114</valueOut>
+          <valueIn>*</valueIn><valueOut>0</valueOut>
+      </valueMap>
+
+      <!-- Event Codes Enums -->
+      <enumMap ruleid="eventcode-em">
+          <label>Unknown</label>
+          <label>End Time Delay Button</label>
+          <label>Test Button</label>
+          <label>Exercise Button</label>
+          <label>Lamp Test Button</label>
+          <label>Service Required Reset</label>
+          <label>Exerciser Set</label>
+          <label>Maintenance DIP Switch</label>
+          <label>Exerciser Loaded DIP Switch</label>
+          <label>Test Loaded DIP Switch</label>
+          <label>One/Two Week DIP Switch</label>
+          <label>Disable Exercise DIP Switch</label>
+          <label>Supervised Switch in Manual</label>
+          <label>Supervised Immediate Transfer</label>
+          <label>Supervised Switch in Auto</label>
+          <label>Source N Preferred</label>
+          <label>Source E Preferred</label>
+          <label>I/O Module Timeout</label>
+          <label>I/O Module Bus Error</label>
+          <label>No Function Defined</label>
+          <label>Preferred Source Available</label>
+          <label>Standby Source Available</label>
+          <label>Contactor in Preferred Position</label>
+          <label>Contactor in Standby Position</label>
+          <label>Contactor in Off Position</label>
+          <label>Contactor in Source N Position</label>
+          <label>Contactor in Source E Position</label>
+          <label>Not in Auto</label>
+          <label>Load Control Active</label>
+          <label>Low Battery on Standby Source</label>
+          <label>Exerciser Started</label>
+          <label>Test Mode Active</label>
+          <label>Peak Shave Active</label>
+          <label>Non-Emergency Transfer</label>          
+          <label>Load Bank Activate</label>
+          <label>Start Source N Generator</label>
+          <label>Start Source E Generator</label>
+          <label>In Phase Monitor Waiting for Synch</label>
+          <label>Common Alarm</label>
+          <label>Source N Under Voltage</label>
+          <label>Source N Over Voltage</label>
+          <label>Source N Loss of Phase</label>
+          <label>Source N Phase Rotation Error</label>
+          <label>Source N Over Frequency</label>
+          <label>Source N Under Frequency</label>
+          <label>Source E Under Voltage</label>
+          <label>Source E Over Voltage</label>
+          <label>Source E Loss of Phase</label>
+          <label>Source E Phase Rotation Error</label>
+          <label>Source E Over Frequency</label>
+          <label>Source E Under Frequency</label>
+          <label>Failure to Acquire Standby</label>
+          <label>Failure to Transfer</label>
+          <label>I/O Module Comms Lost</label>
+          <label>I/O Module Not Found</label>
+          <label>I/O Module Not Installed</label>
+          <label>Aux. Switch Fault</label>
+          <label>Aux. Switch Open</label>
+          <label>Load Control Output #0</label>
+          <label>Load Control Output #1</label>
+          <label>Load Control Output #2</label>
+          <label>Load Control Output #3</label>
+          <label>Load Control Output #4</label>
+          <label>Load Control Output #5</label>
+          <label>Load Control Output #6</label>
+          <label>Load Control Output #7</label>
+          <label>Load Control Output #8</label>
+          <label>Modbus Controlled RDO #1</label>
+          <label>Modbus Controlled RDO #2</label>
+          <label>Modbus Controlled RDO #3</label>
+          <label>Modbus Controlled RDO #4</label>
+          <label>3 Source System Disable</label>
+          <label>No Function Defined</label>
+          <label>Forced Transfer to Off</label>
+          <label>Peak Shave Mode</label>
+          <label>Inhibit Transfer</label>
+          <label>Remote End Time Delay</label>
+          <label>Remote Test</label>
+          <label>Low Battery Voltage</label>
+          <label>Remote Common Alarm</label>
+          <label>Bypass Contactor Disable</label>
+          <label>3 Source System Disable</label>
+          <label>Contactor Moved</label>
+          <label>EEPROM Access Warning</label>
+          <label>Internal Fault</label>
+          <label>System Ready</label>
+          <label>Critical Service Required</label>
+          <label>Non-Critical Service Required</label>
+          <label>System Parameter Changed</label>
+          <label>Source N Available</label>
+          <label>Source E Available</label>
+          <label>Over Frequency Source E</label>
+          <label>Under Frequency Source E</label>
+          <label>Loss of Phase Source E</label>
+          <label>Phase Rotation Error Source E</label>
+          <label>Over Voltage L1-L2 Source E</label>
+          <label>Over Voltage L2-L3 Source E</label>
+          <label>Over Voltage L3-L1 Source E</label>
+          <label>Under Voltage L1-L2 Source E</label>
+          <label>Under Voltage L2-L3 Source E</label>
+          <label>Under Voltage L3-L1 Source E</label>
+          <label>Partial Meter Read</label>
+          <label>History Read from EEPROM</label>
+          <label>Settings Read from EEPROM</label>
+          <label>DCA Read from EEPROM</label>
+          <label>Exercise Time Updated</label>
+          <label>Network Settings Updated</label>
+          <label>Transfer Mode Changed</label>
+          <label>Default History Loaded</label>
+          <label>Default Settings Loaded</label>
+          <label>Default Common Alarms Loaded</label>
+          <label>Modbus Force Transfer to Off</label>
+          <label>Modbus Peak Shave</label>
+          <label>Modbus System Test</label>
+          <label>System Ready</label>
+      </enumMap>
+
+      <!-- Map 0-based rownums to 1-based -->
+      <valueMap ruleid="rownum_rowindex_64">
+          <valueIn>0</valueIn><valueOut>1</valueOut>
+          <valueIn>1</valueIn><valueOut>2</valueOut>
+          <valueIn>2</valueIn><valueOut>3</valueOut>
+          <valueIn>3</valueIn><valueOut>4</valueOut>
+          <valueIn>4</valueIn><valueOut>5</valueOut>
+          <valueIn>5</valueIn><valueOut>6</valueOut>
+          <valueIn>6</valueIn><valueOut>7</valueOut>
+          <valueIn>7</valueIn><valueOut>8</valueOut>
+          <valueIn>8</valueIn><valueOut>9</valueOut>
+          <valueIn>9</valueIn><valueOut>10</valueOut>
+          <valueIn>10</valueIn><valueOut>11</valueOut>
+          <valueIn>11</valueIn><valueOut>12</valueOut>
+          <valueIn>12</valueIn><valueOut>13</valueOut>
+          <valueIn>13</valueIn><valueOut>14</valueOut>
+          <valueIn>14</valueIn><valueOut>15</valueOut>
+          <valueIn>15</valueIn><valueOut>16</valueOut>
+          <valueIn>16</valueIn><valueOut>17</valueOut>
+          <valueIn>17</valueIn><valueOut>18</valueOut>
+          <valueIn>18</valueIn><valueOut>19</valueOut>
+          <valueIn>19</valueIn><valueOut>20</valueOut>
+          <valueIn>20</valueIn><valueOut>21</valueOut>
+          <valueIn>21</valueIn><valueOut>22</valueOut>
+          <valueIn>22</valueIn><valueOut>23</valueOut>
+          <valueIn>23</valueIn><valueOut>24</valueOut>
+          <valueIn>24</valueIn><valueOut>25</valueOut>
+          <valueIn>25</valueIn><valueOut>26</valueOut>
+          <valueIn>26</valueIn><valueOut>27</valueOut>
+          <valueIn>27</valueIn><valueOut>28</valueOut>
+          <valueIn>28</valueIn><valueOut>29</valueOut>
+          <valueIn>29</valueIn><valueOut>30</valueOut>
+          <valueIn>30</valueIn><valueOut>31</valueOut>
+          <valueIn>31</valueIn><valueOut>32</valueOut>
+          <valueIn>32</valueIn><valueOut>33</valueOut>
+          <valueIn>33</valueIn><valueOut>34</valueOut>
+          <valueIn>34</valueIn><valueOut>35</valueOut>
+          <valueIn>35</valueIn><valueOut>36</valueOut>
+          <valueIn>36</valueIn><valueOut>37</valueOut>
+          <valueIn>37</valueIn><valueOut>38</valueOut>
+          <valueIn>38</valueIn><valueOut>39</valueOut>
+          <valueIn>39</valueIn><valueOut>40</valueOut>
+          <valueIn>40</valueIn><valueOut>41</valueOut>
+          <valueIn>41</valueIn><valueOut>42</valueOut>
+          <valueIn>42</valueIn><valueOut>43</valueOut>
+          <valueIn>43</valueIn><valueOut>44</valueOut>
+          <valueIn>44</valueIn><valueOut>45</valueOut>
+          <valueIn>45</valueIn><valueOut>46</valueOut>
+          <valueIn>46</valueIn><valueOut>47</valueOut>
+          <valueIn>47</valueIn><valueOut>48</valueOut>
+          <valueIn>48</valueIn><valueOut>49</valueOut>
+          <valueIn>49</valueIn><valueOut>50</valueOut>
+          <valueIn>50</valueIn><valueOut>51</valueOut>
+          <valueIn>51</valueIn><valueOut>52</valueOut>
+          <valueIn>52</valueIn><valueOut>53</valueOut>
+          <valueIn>53</valueIn><valueOut>54</valueOut>
+          <valueIn>54</valueIn><valueOut>55</valueOut>
+          <valueIn>55</valueIn><valueOut>56</valueOut>
+          <valueIn>56</valueIn><valueOut>57</valueOut>
+          <valueIn>57</valueIn><valueOut>58</valueOut>
+          <valueIn>58</valueIn><valueOut>59</valueOut>
+          <valueIn>59</valueIn><valueOut>60</valueOut>
+          <valueIn>60</valueIn><valueOut>61</valueOut>
+          <valueIn>61</valueIn><valueOut>62</valueOut>
+          <valueIn>62</valueIn><valueOut>63</valueOut>
+          <valueIn>63</valueIn><valueOut>64</valueOut>
+      </valueMap>
+
+  </device>
+
+  <protocol>
+    <modbus> 
+        <!-- I/O Module 1 Outputs -->  
+        <table_ref_id indexid="MODULE1_OUTPUTS_TABLE">
+            <entry num="0">register66</entry>
+            <entry num="1">register67</entry>
+            <entry num="2">register68</entry>
+            <entry num="3">register69</entry>
+            <entry num="4">register70</entry>
+            <entry num="5">register71</entry>
+       </table_ref_id>
+
+
+        <!-- I/O Module 2 Outputs -->  
+        <table_ref_id indexid="MODULE2_OUTPUTS_TABLE">
+            <entry num="0">register72</entry>
+            <entry num="1">register73</entry>
+            <entry num="2">register74</entry>
+            <entry num="3">register75</entry>
+            <entry num="4">register76</entry>
+            <entry num="5">register77</entry>
+       </table_ref_id>
+
+        <!-- I/O Module 3 Outputs -->  
+        <table_ref_id indexid="MODULE3_OUTPUTS_TABLE">
+            <entry num="0">register78</entry>
+            <entry num="1">register79</entry>
+            <entry num="2">register80</entry>
+            <entry num="3">register81</entry>
+            <entry num="4">register82</entry>
+            <entry num="5">register83</entry>
+       </table_ref_id>
+
+        <!-- I/O Module 4 Outputs -->  
+        <table_ref_id indexid="MODULE4_OUTPUTS_TABLE">
+            <entry num="0">register84</entry>
+            <entry num="1">register85</entry>
+            <entry num="2">register86</entry>
+            <entry num="3">register87</entry>
+            <entry num="4">register88</entry>
+            <entry num="5">register89</entry>
+       </table_ref_id>
+
+        <!-- TSI Events -->  
+        <table_ref_id indexid="TSI_EVENTS_TABLE">
+            <entry num="0">register90</entry>
+            <entry num="1">register91</entry>
+       </table_ref_id>
+
+        <!-- I/O Module 1 Inputs -->  
+        <table_ref_id indexid="MODULE1_INPUTS_TABLE">
+            <entry num="0">register92</entry>
+            <entry num="1">register93</entry>
+       </table_ref_id>
+
+        <!-- I/O Module 2 Inputs -->  
+        <table_ref_id indexid="MODULE2_INPUTS_TABLE">
+            <entry num="0">register94</entry>
+            <entry num="1">register95</entry>
+       </table_ref_id>
+
+        <!-- I/O Module 3 Inputs -->  
+        <table_ref_id indexid="MODULE3_INPUTS_TABLE">
+            <entry num="0">register96</entry>
+            <entry num="1">register97</entry>
+       </table_ref_id>
+
+        <!-- I/O Module 4 Inputs -->  
+        <table_ref_id indexid="MODULE4_INPUTS_TABLE">
+            <entry num="0">register98</entry>
+            <entry num="1">register99</entry>
+       </table_ref_id>
+
+        <value_ref_id valid="register1">
+            <function>3</function>
+            <start_addr>0</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register2">
+            <function>3</function>
+            <start_addr>1</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register3">
+            <function>3</function>
+            <start_addr>2</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register4">
+            <function>3</function>
+            <start_addr>3</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register5">
+            <function>3</function>
+            <start_addr>4</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register6">
+            <function>3</function>
+            <start_addr>5</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register7">
+            <function>3</function>
+            <start_addr>6</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register8">
+            <function>3</function>
+            <start_addr>7</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register9">
+            <function>3</function>
+            <start_addr>8</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register10">
+            <function>3</function>
+            <start_addr>9</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register11">
+            <function>3</function>
+            <start_addr>10</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register12">
+            <function>3</function>
+            <start_addr>11</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register13">
+            <function>3</function>
+            <start_addr>12</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register14">
+            <function>3</function>
+            <start_addr>13</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register15">
+            <function>3</function>
+            <start_addr>14</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register22">
+            <function>3</function>
+            <start_addr>21</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register23">
+            <function>3</function>
+            <start_addr>22</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register39">
+            <function>3</function>
+            <start_addr>38</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register65">
+            <function>3</function>
+            <start_addr>64</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register66">
+            <function>3</function>
+            <start_addr>65</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register67">
+            <function>3</function>
+            <start_addr>66</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register68">
+            <function>3</function>
+            <start_addr>67</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register69">
+            <function>3</function>
+            <start_addr>68</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register70">
+            <function>3</function>
+            <start_addr>69</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register71">
+            <function>3</function>
+            <start_addr>70</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register72">
+            <function>3</function>
+            <start_addr>71</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register73">
+            <function>3</function>
+            <start_addr>72</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register74">
+            <function>3</function>
+            <start_addr>73</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register75">
+            <function>3</function>
+            <start_addr>74</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register76">
+            <function>3</function>
+            <start_addr>75</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register77">
+            <function>3</function>
+            <start_addr>76</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register78">
+            <function>3</function>
+            <start_addr>77</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register79">
+            <function>3</function>
+            <start_addr>78</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register80">
+            <function>3</function>
+            <start_addr>79</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register81">
+            <function>3</function>
+            <start_addr>80</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register82">
+            <function>3</function>
+            <start_addr>81</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register83">
+            <function>3</function>
+            <start_addr>82</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register84">
+            <function>3</function>
+            <start_addr>83</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register85">
+            <function>3</function>
+            <start_addr>84</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register86">
+            <function>3</function>
+            <start_addr>85</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register87">
+            <function>3</function>
+            <start_addr>86</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register88">
+            <function>3</function>
+            <start_addr>87</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register89">
+            <function>3</function>
+            <start_addr>88</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register90">
+            <function>3</function>
+            <start_addr>89</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register91">
+            <function>3</function>
+            <start_addr>90</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register92">
+            <function>3</function>
+            <start_addr>91</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register93">
+            <function>3</function>
+            <start_addr>92</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register94">
+            <function>3</function>
+            <start_addr>93</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register95">
+            <function>3</function>
+            <start_addr>94</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register96">
+            <function>3</function>
+            <start_addr>95</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register97">
+            <function>3</function>
+            <start_addr>96</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register98">
+            <function>3</function>
+            <start_addr>97</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id>         
+        <value_ref_id valid="register99">
+            <function>3</function>
+            <start_addr>98</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register137">
+            <function>3</function>
+            <start_addr>136</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register138">
+            <function>3</function>
+            <start_addr>137</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register139">
+            <function>3</function>
+            <start_addr>138</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register1556">
+            <function>3</function>
+            <start_addr>1555</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register1563">
+            <function>3</function>
+            <start_addr>1562</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register1578">
+            <function>3</function>
+            <start_addr>1577</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register1585">
+            <function>3</function>
+            <start_addr>1584</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register1589">
+            <function>3</function>
+            <start_addr>1588</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="register1590">
+            <function>3</function>
+            <start_addr>1589</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+        <value_ref_id valid="device_id">
+            <function>3</function>
+            <start_addr>9998</start_addr>
+            <quantity>1</quantity>
+            <type>uint_16</type>
+        </value_ref_id> 
+
+        <!-- Bulk read for performance. -->
+        <!-- With multiple devices potentially being exposed, each with different 
+             maps, need caution here -->
+        <packet>
+            <function>3</function>
+            <start_addr>0</start_addr>
+            <quantity>15</quantity>
+        </packet>
+        <packet>
+            <function>3</function>
+            <start_addr>136</start_addr>
+            <quantity>3</quantity>
+        </packet>
+        <packet>
+            <function>3</function>
+            <start_addr>1588</start_addr>
+            <quantity>2</quantity>
+        </packet>
+    </modbus>
+  </protocol>
+</APC_DDF>    

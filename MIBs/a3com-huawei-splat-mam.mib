@@ -1,0 +1,201 @@
+-- ==================================================================
+-- Copyright (C) 2002 by  HUAWEI TECHNOLOGIES. All rights reserved.
+-- 
+-- Description:  HUAWEI Lan Switch mac management MIB
+-- Reference:
+-- Version: V2.1
+-- History:
+--(1) Created by Zhangshilin, 2001.06.29
+-- V2.0 2004-10-12 updated by gaolong
+--      Import TEXTUAL-CONVENTION and MODULE-IDENTITY.
+--      Add hwLswMacPort MODULE-IDENTITY clause.
+--      Change ACCESS to MAX-ACCESS.
+--      Change MAX-ACCESS clause value from write-only to read-write.
+-- V2.1 2005-03-16 by gaolong
+--      Change import clause of hwdot1qVlanIndex
+-- ==================================================================
+
+-- ==================================================================
+-- 
+-- Varibles and types be imported
+--
+-- ==================================================================
+A3COM-HUAWEI-LswMAM-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+
+    MacAddress, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+
+    OBJECT-TYPE,Integer32, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+
+    lswCommon
+        FROM A3COM-HUAWEI-OID-MIB
+
+    hwdot1qVlanIndex
+        FROM A3COM-HUAWEI-LswVLAN-MIB;
+   
+    hwLswMacPort MODULE-IDENTITY
+            LAST-UPDATED "200106290000Z"
+            ORGANIZATION ""
+            CONTACT-INFO
+            ""
+            DESCRIPTION
+            ""
+            REVISION "200106290000Z"
+            DESCRIPTION
+            ""
+            ::= { lswCommon 3}
+
+    InterfaceIndex ::= TEXTUAL-CONVENTION
+       DISPLAY-HINT "d"
+       STATUS       current
+       DESCRIPTION
+               "A unique value, greater than zero, for each interface
+               or interface sub-layer in the managed system.  It is
+               recommended that values are assigned contiguously
+               starting from 1.  The value for each interface sub-
+               layer must remain constant at least from one re-
+               initialization of the entity's network management
+               system to the next re-initialization."
+       SYNTAX       Integer32
+
+
+-- ==================================================================
+--
+-- ======================= definition begin =========================
+--
+-- ==================================================================
+
+   
+
+    hwdot1qMacSearchTable   OBJECT-TYPE
+        SYNTAX  SEQUENCE OF HwDot1qMacSearchEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Information table for searching port with mac address   "
+        ::= { hwLswMacPort  1 }
+
+    hwdot1qMacSearchEntry   OBJECT-TYPE
+        SYNTAX  HwDot1qMacSearchEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                " Information table for searching port with mac address entry  "
+        INDEX   { hwdot1qMacSearchAddress,hwdot1qMacSearchVlanID }
+                ::= { hwdot1qMacSearchTable  1 }
+
+    HwDot1qMacSearchEntry ::=
+       SEQUENCE {
+                hwdot1qMacSearchAddress MacAddress ,
+                hwdot1qMacSearchVlanID  INTEGER ,
+                hwdot1qMacSearchPort    InterfaceIndex ,
+                hwdot1qMacSearchAgeTime INTEGER
+                }
+
+    hwdot1qMacSearchAddress   OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+                "MAC address"
+        ::= { hwdot1qMacSearchEntry  1 }
+
+    hwdot1qMacSearchVlanID OBJECT-TYPE
+        SYNTAX  INTEGER (-1 | 1..4096)
+
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+               " VLANID of the native VLAN of the MAC address to be searched for "
+        ::= { hwdot1qMacSearchEntry  2 }
+
+    hwdot1qMacSearchPort OBJECT-TYPE
+        SYNTAX  InterfaceIndex
+
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+               "Interface index corresponding to the MAC address"
+        ::= { hwdot1qMacSearchEntry  3 }
+
+    hwdot1qMacSearchAgeTime OBJECT-TYPE
+        SYNTAX  INTEGER
+
+        MAX-ACCESS  read-only
+        STATUS  current
+        DESCRIPTION
+               " Address aging time"
+        ::= { hwdot1qMacSearchEntry  4 }
+
+
+    hwdot1qTpFdbSetTable   OBJECT-TYPE
+        SYNTAX  SEQUENCE OF HwDot1qTpFdbSetEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Unicast address setting table  "
+        ::= { hwLswMacPort  2 }
+
+    hwdot1qTpFdbSetEntry   OBJECT-TYPE
+        SYNTAX  HwDot1qTpFdbSetEntry
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                " Unicast address setting table entry "
+        INDEX   { hwdot1qVlanIndex , hwdot1qTpFdbSetAddress }
+                ::= { hwdot1qTpFdbSetTable  1 }
+
+    HwDot1qTpFdbSetEntry ::=
+       SEQUENCE {
+                hwdot1qTpFdbSetAddress  MacAddress ,
+                hwdot1qTpFdbSetPort     InterfaceIndex ,
+                hwdot1qTpFdbSetStatus   INTEGER,
+                hwdot1qTpFdbSetOperate  INTEGER
+                }
+
+    hwdot1qTpFdbSetAddress   OBJECT-TYPE
+        SYNTAX  MacAddress
+        MAX-ACCESS  not-accessible
+        STATUS  current
+        DESCRIPTION
+                "Unicast MAC address "
+        ::= { hwdot1qTpFdbSetEntry  1 }
+
+
+    hwdot1qTpFdbSetPort OBJECT-TYPE
+        SYNTAX  InterfaceIndex
+
+        MAX-ACCESS  read-write
+        STATUS  current
+        DESCRIPTION
+               "Interface index corresponding to the MAC address "
+        ::= { hwdot1qTpFdbSetEntry  2 }
+
+    hwdot1qTpFdbSetStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+            other(1),
+            learned(3),
+            static(6),
+            dynamic(7)
+                }
+        MAX-ACCESS read-write
+        STATUS      current
+        DESCRIPTION
+        "State corresponding to the MAC address"
+        ::= { hwdot1qTpFdbSetEntry 3 }
+
+    hwdot1qTpFdbSetOperate OBJECT-TYPE
+        SYNTAX  INTEGER {
+            add(1),
+            delete(2)
+            }
+        MAX-ACCESS read-write
+        STATUS      current
+        DESCRIPTION
+        "Add or delete an MAC address. Read operation not supported."
+        ::= { hwdot1qTpFdbSetEntry 4 }
+
+
+END

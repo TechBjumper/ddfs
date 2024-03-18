@@ -1,0 +1,3424 @@
+-- ----------------------------------------------------------------------
+--
+-- hawk-i_advanced.mib    
+--
+-- ----------------------------------------------------------------------
+
+-- $Id: hawk-i_advanced.mib,v 1.8 2006/07/19 09:07:11 philip.holt Exp $
+--
+-- $Name:  $
+--
+-- $Log: hawk-i_advanced.mib,v $
+-- Revision 1.8  2006/07/19 09:07:11  philip.holt
+-- Added INDEX to hawk-i-advanced_OutputEntry to stop errors in compile
+-- Adjusted included MIBs to suppress compile warnings
+--
+-- Revision 1.7  2004/07/30 08:18:07  philip.holt
+-- Corrected "TotalPwr"  references to "TotalEnergy"
+--
+-- Revision 1.6  2004/05/25 14:54:31  philip.holt
+-- Changed power monitoring 'total power' objects and attributes to 'total energy'. Adjusted trap threshold limits.
+--
+-- Revision 1.5  2004/04/16 12:52:45  philip.holt
+-- hawk-i-advanced_ContactCurrentState made read-only.
+--
+-- Revision 1.4  2004/01/14 10:31:06  mark.crane
+-- Modified trap enterprise number in MIB text files
+--
+-- Revision 1.3  2004/01/06 09:48:53  philip.holt
+-- Added hawk-i-advanced_PowerStripsNumberOfOutlets attribute.
+--
+-- Revision 1.2  2003/12/23 12:06:24  philip.holt
+-- Added Power Monitoring attributes and traps
+--
+
+HAWK-I-ADVANCED-MIB DEFINITIONS ::= BEGIN
+
+
+
+-- {{{ Imports
+--	OBJECT-TYPE, Counter32, Unsigned32,
+
+IMPORTS
+--	OBJECT-TYPE
+--		FROM SNMPv2-SMI
+        TRAP-TYPE
+                FROM RFC-1215
+        DisplayString
+                FROM RFC1213-MIB
+        OBJECT-TYPE
+                FROM RFC-1212
+        enterprises 
+                FROM RFC1155-SMI
+--	MODULE-COMPLIANCE, OBJECT-GROUP
+--		FROM SNMPv2-CONF
+--	TEXTUAL-CONVENTION
+--		FROM SNMPv2-TC
+	;
+
+-- }}}
+
+
+
+sinetica   OBJECT IDENTIFIER ::= { enterprises 3711 }
+
+
+
+hawk-i          OBJECT IDENTIFIER ::= { sinetica 17 }
+hawk-i_Revision	OBJECT IDENTIFIER ::= { hawk-i 1 }
+hawk-i_AdvancedMIB OBJECT IDENTIFIER ::= { hawk-i_Revision 1 }
+-- hawk-i_BasicMIB        OBJECT IDENTIFIER ::= { hawk-i_Revision 2 }
+-- hawk-i_RedetecMIB      OBJECT IDENTIFIER ::= { hawk-i_Revision 3 }
+hawk-i-advanced_Objects   OBJECT IDENTIFIER ::= { hawk-i_AdvancedMIB 1 }
+
+
+
+-- {{{ hawk-i-advanced_StandardObjects  
+
+hawk-i-advanced_Environment	OBJECT IDENTIFIER ::= { hawk-i-advanced_Objects 1 }
+hawk-i-advanced_Contact       OBJECT IDENTIFIER ::= { hawk-i-advanced_Objects 2  }
+hawk-i-advanced_Output        OBJECT IDENTIFIER ::= { hawk-i-advanced_Objects 3  }
+hawk-i-advanced_Keypad        OBJECT IDENTIFIER ::= { hawk-i-advanced_Objects 4  }
+hawk-i-advanced_PowerStrip    OBJECT IDENTIFIER ::= { hawk-i-advanced_Objects 5  }
+hawk-i-advanced_TrapsEnterprise OBJECT IDENTIFIER ::= { hawk-i-advanced_Objects 7  }
+
+-- }}}
+
+-- {{{ hawk-i-advanced_Environment group    
+
+hawk-i-advanced_TemperatureA     OBJECT IDENTIFIER ::= { hawk-i-advanced_Environment 1 }
+hawk-i-advanced_HumidityA		OBJECT IDENTIFIER ::= { hawk-i-advanced_Environment 2 }
+
+hawk-i-advanced_TemperatureB     OBJECT IDENTIFIER ::= { hawk-i-advanced_Environment 3 }
+hawk-i-advanced_HumidityB		OBJECT IDENTIFIER ::= { hawk-i-advanced_Environment 4 }
+
+
+-- }}}
+-- {{{ hawk-i-advanced_TemperatureA
+
+hawk-i-advanced_TemperatureAEnableMonitoring  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0), on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to one enables monitoring of Temperature 1"
+    ::= { hawk-i-advanced_TemperatureA 1 }
+
+hawk-i-advanced_TemperatureAName  OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..16))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "The name of this temperature input"	
+    ::= { hawk-i-advanced_TemperatureA 2 }
+
+hawk-i-advanced_TemperatureACalibrationOffset  OBJECT-TYPE
+    SYNTAX    INTEGER (-100..100)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Calibration offset in 0.1 degrees Celsius"	
+    ::= { hawk-i-advanced_TemperatureA 3 }
+
+hawk-i-advanced_TemperatureACurrent  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The current temperature reading in 0.1 degrees Celsius"
+    ::= { hawk-i-advanced_TemperatureA 4 }
+
+hawk-i-advanced_TemperatureAThresholds    OBJECT IDENTIFIER ::= { hawk-i-advanced_TemperatureA 5  }
+
+-- {{{ hawk-i-advanced_TemperatureAThresholds
+
+hawk-i-advanced_TemperatureAUpperControlLevel  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The Upper Limit threshold for this temperature in 0.1 degrees Celsius"
+    ::= { hawk-i-advanced_TemperatureAThresholds 1 }
+ 
+hawk-i-advanced_TemperatureAUpperWarningLevel  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The Upper Warning Limit for this temperature in 0.1 degrees Celsius"
+    ::= { hawk-i-advanced_TemperatureAThresholds 2 }
+
+hawk-i-advanced_TemperatureALowerWarningLevel  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The Lower Warning Limit for this temperature in 0.1 degrees Celsius"
+    ::= { hawk-i-advanced_TemperatureAThresholds 3 }
+ 
+hawk-i-advanced_TemperatureALowerControlLevel  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The Lower Limit threshold for this temperature in 0.1 degrees Celsius"
+    ::= { hawk-i-advanced_TemperatureAThresholds 4 }
+ 
+ 
+-- }}}
+hawk-i-advanced_TemperatureAOFFtoONtraps    OBJECT IDENTIFIER ::= { hawk-i-advanced_TemperatureA 6  }
+hawk-i-advanced_TemperatureAOFFtoONrepeatTimers    OBJECT IDENTIFIER ::= { hawk-i-advanced_TemperatureA 7  }
+hawk-i-advanced_TemperatureAONtoOFFtraps    OBJECT IDENTIFIER ::= { hawk-i-advanced_TemperatureA 8  }
+hawk-i-advanced_TemperatureAONtoOFFrepeatTimers    OBJECT IDENTIFIER ::= { hawk-i-advanced_TemperatureA 9  }
+
+--{{{hawk-i-advanced_TemperatureBOFFtoONtraps
+hawk-i-advanced_TemperatureAOFFtoONtrapUCL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_TemperatureAOFFtoONtraps 1 }
+
+hawk-i-advanced_TemperatureAOFFtoONtrapUWL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_TemperatureAOFFtoONtraps 2 }
+
+hawk-i-advanced_TemperatureAOFFtoONtrapLWL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_TemperatureAOFFtoONtraps 3 }
+
+hawk-i-advanced_TemperatureAOFFtoONtrapLCL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_TemperatureAOFFtoONtraps 4 }
+
+-- }}}
+-- {{{ hawk-i-advanced_Temperature1OFFtoONrepeatTimers
+
+hawk-i-advanced_TemperatureAOFFtoONrepUCL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_TemperatureAOFFtoONrepeatTimers 1 }
+
+hawk-i-advanced_TemperatureAOFFtoONrepUWL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_TemperatureAOFFtoONrepeatTimers 2 }
+
+hawk-i-advanced_TemperatureAOFFtoONrepLWL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_TemperatureAOFFtoONrepeatTimers 3 }
+
+hawk-i-advanced_TemperatureAOFFtoONrepLCL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_TemperatureAOFFtoONrepeatTimers 4 }
+
+-- }}}
+-- {{{ hawk-i-advanced_Temperature1ONtoOFFtraps
+
+hawk-i-advanced_TemperatureAONtoOFFtrapUCL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_TemperatureAONtoOFFtraps 1 }
+
+hawk-i-advanced_TemperatureAONtoOFFtrapUWL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_TemperatureAONtoOFFtraps 2 }
+
+hawk-i-advanced_TemperatureAONtoOFFtrapLWL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_TemperatureAONtoOFFtraps 3 }
+
+hawk-i-advanced_TemperatureAONtoOFFtrapLCL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_TemperatureAONtoOFFtraps 4 }
+
+-- }}}
+-- {{{ hawk-i-advanced_Temperature1ONtoOFFrepeatTimers
+
+hawk-i-advanced_TemperatureAONtoOFFrepUCL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_TemperatureAONtoOFFrepeatTimers 1 }
+
+hawk-i-advanced_TemperatureAONtoOFFrepUWL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_TemperatureAONtoOFFrepeatTimers 2 }
+
+hawk-i-advanced_TemperatureAONtoOFFrepLWL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_TemperatureAONtoOFFrepeatTimers 3 }
+
+hawk-i-advanced_TemperatureAONtoOFFrepLCL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_TemperatureAONtoOFFrepeatTimers 4 }
+
+-- }}}
+
+
+--}}}
+
+hawk-i-advanced_TemperatureALowControlLimitAlarm            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_TemperatureAName, hawk-i-advanced_TemperatureACurrent }
+    DESCRIPTION
+        "Temperature A is below the low control limit."
+    ::= 21
+
+hawk-i-advanced_TemperatureALowWarningLimitAlarm           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_TemperatureAName, hawk-i-advanced_TemperatureACurrent }
+    DESCRIPTION
+        "Temperature A is below the low warning limit."
+    ::= 22
+
+hawk-i-advanced_TemperatureAHighWarningLimitAlarm            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_TemperatureAName, hawk-i-advanced_TemperatureACurrent }
+    DESCRIPTION
+        "Temperature A is over the high warning limit."
+    ::= 23
+
+hawk-i-advanced_TemperatureAHighControlLimitAlarm           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_TemperatureAName, hawk-i-advanced_TemperatureACurrent }
+    DESCRIPTION
+        "Temperature A is over the high control limit."
+    ::= 24
+
+hawk-i-advanced_TemperatureALowControlLimitNormal            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_TemperatureAName, hawk-i-advanced_TemperatureACurrent }
+    DESCRIPTION
+        "Temperature A is inside the low control limit."
+    ::= 25
+
+hawk-i-advanced_TemperatureALowWarningLimitNormal           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_TemperatureAName, hawk-i-advanced_TemperatureACurrent }
+    DESCRIPTION
+        "Temperature A is inside the low warning limit."
+    ::= 26
+
+hawk-i-advanced_TemperatureAHighWarningLimitNormal            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_TemperatureAName, hawk-i-advanced_TemperatureACurrent }
+    DESCRIPTION
+        "Temperature A is inside the high warning limit."
+    ::= 27
+
+hawk-i-advanced_TemperatureAHighControlLimitNormal           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_TemperatureAName, hawk-i-advanced_TemperatureACurrent }
+    DESCRIPTION
+        "Temperature A is inside the high control limit."
+    ::= 28
+
+-- }}}
+
+-- {{{ hawk-i-advanced_HumidityA
+
+hawk-i-advanced_HumidityAEnableMonitoring  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0), on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to one enables monitoring of Humidity A"
+    ::= { hawk-i-advanced_HumidityA 1 }
+
+hawk-i-advanced_HumidityAName  OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..16))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "The name of this Humidity input"	
+    ::= { hawk-i-advanced_HumidityA 2 }
+
+hawk-i-advanced_HumidityACalibrationOffset  OBJECT-TYPE
+    SYNTAX    INTEGER (-100..100)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Calibration offset in 0.1 % RH"	
+    ::= { hawk-i-advanced_HumidityA 3 }
+
+hawk-i-advanced_HumidityACurrent  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The current Humidity reading in 0.1 % RH"
+    ::= { hawk-i-advanced_HumidityA 4 }
+
+hawk-i-advanced_HumidityAThresholds    OBJECT IDENTIFIER ::= { hawk-i-advanced_HumidityA 5  }
+
+-- {{{ hawk-i-advanced_Humidity1Thresholds
+
+hawk-i-advanced_HumidityAUpperControlLevel  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The Upper Limit threshold for this Humidity in 0.1 %RH"
+    ::= { hawk-i-advanced_HumidityAThresholds 1 }
+
+hawk-i-advanced_HumidityAUpperWarningLevel  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The Upper Warning Limit for this Humidity in 0.1 %RH"
+    ::= { hawk-i-advanced_HumidityAThresholds 2 }
+
+hawk-i-advanced_HumidityALowerWarningLevel  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The Lower Warning Limit for this Humidity in 0.1 %RH"
+    ::= { hawk-i-advanced_HumidityAThresholds 3 }
+
+hawk-i-advanced_HumidityALowerControlLevel  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The Lower Limit threshold for this Humidity in 0.1 %RH"
+    ::= { hawk-i-advanced_HumidityAThresholds 4 }
+
+-- }}}
+hawk-i-advanced_HumidityAOFFtoONtraps    OBJECT IDENTIFIER ::= { hawk-i-advanced_HumidityA 6  }
+hawk-i-advanced_HumidityAOFFtoONrepeatTimers    OBJECT IDENTIFIER ::= { hawk-i-advanced_HumidityA 7  }
+hawk-i-advanced_HumidityAONtoOFFtraps    OBJECT IDENTIFIER ::= { hawk-i-advanced_HumidityA 8  }
+hawk-i-advanced_HumidityAONtoOFFrepeatTimers    OBJECT IDENTIFIER ::= { hawk-i-advanced_HumidityA 9  }
+
+-- {{{ hawk-i-advanced_Humidity1OFFtoONtraps
+
+hawk-i-advanced_HumidityAOFFtoONtrapUCL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_HumidityAOFFtoONtraps 1 }
+
+hawk-i-advanced_HumidityAOFFtoONtrapUWL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_HumidityAOFFtoONtraps 2 }
+
+hawk-i-advanced_HumidityAOFFtoONtrapLWL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_HumidityAOFFtoONtraps 3 }
+
+hawk-i-advanced_HumidityAOFFtoONtrapLCL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_HumidityAOFFtoONtraps 4 }
+
+-- }}}
+-- {{{ hawk-i-advanced_Humidity1OFFtoONrepeatTimers
+
+hawk-i-advanced_HumidityAOFFtoONrepUCL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_HumidityAOFFtoONrepeatTimers 1 }
+
+hawk-i-advanced_HumidityAOFFtoONrepUWL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_HumidityAOFFtoONrepeatTimers 2 }
+
+hawk-i-advanced_HumidityAOFFtoONrepLWL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_HumidityAOFFtoONrepeatTimers 3 }
+
+hawk-i-advanced_HumidityAOFFtoONrepLCL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_HumidityAOFFtoONrepeatTimers 4 }
+
+-- }}}
+-- {{{ hawk-i-advanced_Humidity1ONtoOFFtraps
+
+hawk-i-advanced_HumidityAONtoOFFtrapUCL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_HumidityAONtoOFFtraps 1 }
+
+hawk-i-advanced_HumidityAONtoOFFtrapUWL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_HumidityAONtoOFFtraps 2 }
+
+hawk-i-advanced_HumidityAONtoOFFtrapLWL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_HumidityAONtoOFFtraps 3 }
+
+hawk-i-advanced_HumidityAONtoOFFtrapLCL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_HumidityAONtoOFFtraps 4 }
+
+-- }}}
+-- {{{ hawk-i-advanced_Humidity1ONtoOFFrepeatTimers
+
+hawk-i-advanced_HumidityAONtoOFFrepUCL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_HumidityAONtoOFFrepeatTimers 1 }
+
+hawk-i-advanced_HumidityAONtoOFFrepUWL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_HumidityAONtoOFFrepeatTimers 2 }
+
+hawk-i-advanced_HumidityAONtoOFFrepLWL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_HumidityAONtoOFFrepeatTimers 3 }
+
+hawk-i-advanced_HumidityAONtoOFFrepLCL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_HumidityAONtoOFFrepeatTimers 4 }
+
+-- }}}
+
+
+hawk-i-advanced_HumidityALowControlLimitAlarm            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_HumidityAName, hawk-i-advanced_HumidityACurrent }
+    DESCRIPTION
+        "Humidity A is below the low control limit."
+    ::= 41
+
+hawk-i-advanced_HumidityALowWarningLimitAlarm           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_HumidityAName, hawk-i-advanced_HumidityACurrent }
+    DESCRIPTION
+        "Humidity A is below the low warning limit."
+    ::= 42
+
+hawk-i-advanced_HumidityAHighWarningLimitAlarm            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_HumidityAName, hawk-i-advanced_HumidityACurrent }
+    DESCRIPTION
+        "Humidity A is over the high warning limit."
+    ::= 43
+
+hawk-i-advanced_HumidityAHighControlLimitAlarm           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_HumidityAName, hawk-i-advanced_HumidityACurrent }
+    DESCRIPTION
+        "Humidity A is over the high control limit."
+    ::= 44
+
+hawk-i-advanced_HumidityALowControlLimitNormal            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_HumidityACurrent }
+    DESCRIPTION
+        "Humidity A is inside the low control limit."
+    ::= 45
+
+hawk-i-advanced_HumidityALowWarningLimitNormal           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_HumidityAName, hawk-i-advanced_HumidityACurrent }
+    DESCRIPTION
+        "Humidity A is inside the low warning limit."
+    ::= 46
+
+hawk-i-advanced_HumidityAHighWarningLimitNormal            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_HumidityAName, hawk-i-advanced_HumidityACurrent }
+    DESCRIPTION
+        "Humidity A is inside the high warning limit."
+    ::= 47
+
+hawk-i-advanced_HumidityAHighControlLimitNormal           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_HumidityAName, hawk-i-advanced_HumidityACurrent }
+    DESCRIPTION
+        "Humidity A is inside the high control limit."
+    ::= 48
+
+
+-- }}}
+
+
+-- {{{ hawk-i-advanced_TemperatureB
+
+hawk-i-advanced_TemperatureBEnableMonitoring  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0), on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to one enables monitoring of Temperature B"
+    ::= { hawk-i-advanced_TemperatureB 1 }
+
+hawk-i-advanced_TemperatureBName  OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..16))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "The name of this temperature input"	
+    ::= { hawk-i-advanced_TemperatureB 2 }
+
+hawk-i-advanced_TemperatureBCalibrationOffset  OBJECT-TYPE
+    SYNTAX    INTEGER (-100..100)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Calibration offset in 0.1 degrees Celsius"	
+    ::= { hawk-i-advanced_TemperatureB 3 }
+
+hawk-i-advanced_TemperatureBCurrent  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The current temperature reading in 0.1 degrees Celsius"
+    ::= { hawk-i-advanced_TemperatureB 4 }
+
+hawk-i-advanced_TemperatureBThresholds    OBJECT IDENTIFIER ::= { hawk-i-advanced_TemperatureB 5  }
+
+-- {{{ hawk-i-advanced_Temperature2Thresholds
+
+hawk-i-advanced_TemperatureBUpperControlLevel  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The Upper Limit threshold for this temperature in 0.1 degrees Celsius"
+    ::= { hawk-i-advanced_TemperatureBThresholds 1 }
+
+hawk-i-advanced_TemperatureBUpperWarningLevel  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The Upper Warning Limit for this temperature in 0.1 degrees Celsius"
+    ::= { hawk-i-advanced_TemperatureBThresholds 2 }
+
+hawk-i-advanced_TemperatureBLowerWarningLevel  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The Lower Warning Limit for this temperature in 0.1 degrees Celsius"
+    ::= { hawk-i-advanced_TemperatureBThresholds 3 }
+
+hawk-i-advanced_TemperatureBLowerControlLevel  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The Lower Limit threshold for this temperature in 0.1 degrees Celsius"
+    ::= { hawk-i-advanced_TemperatureBThresholds 4 }
+
+-- }}}
+hawk-i-advanced_TemperatureBOFFtoONtraps    OBJECT IDENTIFIER ::= { hawk-i-advanced_TemperatureB 6  }
+hawk-i-advanced_TemperatureBOFFtoONrepeatTimers    OBJECT IDENTIFIER ::= { hawk-i-advanced_TemperatureB 7  }
+hawk-i-advanced_TemperatureBONtoOFFtraps    OBJECT IDENTIFIER ::= { hawk-i-advanced_TemperatureB 8  }
+hawk-i-advanced_TemperatureBONtoOFFrepeatTimers    OBJECT IDENTIFIER ::= { hawk-i-advanced_TemperatureB 9  }
+
+-- {{{ hawk-i-advanced_Temperature1OFFtoONtraps
+
+hawk-i-advanced_TemperatureBOFFtoONtrapUCL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_TemperatureBOFFtoONtraps 1 }
+
+hawk-i-advanced_TemperatureBOFFtoONtrapUWL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_TemperatureBOFFtoONtraps 2 }
+
+hawk-i-advanced_TemperatureBOFFtoONtrapLWL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_TemperatureBOFFtoONtraps 3 }
+
+hawk-i-advanced_TemperatureBOFFtoONtrapLCL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_TemperatureBOFFtoONtraps 4 }
+
+-- }}}
+-- {{{ hawk-i-advanced_Temperature2OFFtoONrepeatTimers
+
+hawk-i-advanced_TemperatureBOFFtoONrepUCL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_TemperatureBOFFtoONrepeatTimers 1 }
+
+hawk-i-advanced_TemperatureBOFFtoONrepUWL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_TemperatureBOFFtoONrepeatTimers 2 }
+
+hawk-i-advanced_TemperatureBOFFtoONrepLWL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_TemperatureBOFFtoONrepeatTimers 3 }
+
+hawk-i-advanced_TemperatureBOFFtoONrepLCL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_TemperatureBOFFtoONrepeatTimers 4 }
+
+-- }}}
+-- {{{ hawk-i-advanced_Temperature1ONtoOFFtraps
+
+hawk-i-advanced_TemperatureBONtoOFFtrapUCL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_TemperatureBONtoOFFtraps 1 }
+
+hawk-i-advanced_TemperatureBONtoOFFtrapUWL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_TemperatureBONtoOFFtraps 2 }
+
+hawk-i-advanced_TemperatureBONtoOFFtrapLWL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_TemperatureBONtoOFFtraps 3 }
+
+hawk-i-advanced_TemperatureBONtoOFFtrapLCL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_TemperatureBONtoOFFtraps 4 }
+
+-- }}}
+-- {{{ hawk-i-advanced_Temperature1ONtoOFFrepeatTimers
+
+hawk-i-advanced_TemperatureBONtoOFFrepUCL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_TemperatureBONtoOFFrepeatTimers 1 }
+
+hawk-i-advanced_TemperatureBONtoOFFrepUWL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_TemperatureBONtoOFFrepeatTimers 2 }
+
+hawk-i-advanced_TemperatureBONtoOFFrepLWL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_TemperatureBONtoOFFrepeatTimers 3 }
+
+hawk-i-advanced_TemperatureBONtoOFFrepLCL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_TemperatureBONtoOFFrepeatTimers 4 }
+
+-- }}}
+
+
+hawk-i-advanced_TemperatureBLowControlLimitAlarm            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_TemperatureBName, hawk-i-advanced_TemperatureBCurrent }
+    DESCRIPTION
+        "Temperature B is below the low control limit."
+    ::= 31
+
+hawk-i-advanced_TemperatureBLowWarningLimitAlarm           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_TemperatureBName, hawk-i-advanced_TemperatureBCurrent }
+    DESCRIPTION
+        "Temperature B is below the low warning limit."
+    ::= 32
+
+hawk-i-advanced_TemperatureBHighWarningLimitAlarm            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_TemperatureBName, hawk-i-advanced_TemperatureBCurrent }
+    DESCRIPTION
+        "Temperature B is over the high warning limit."
+    ::= 33
+
+hawk-i-advanced_TemperatureBHighControlLimitAlarm           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_TemperatureBName, hawk-i-advanced_TemperatureBCurrent }
+    DESCRIPTION
+        "Temperature B is over the high control limit."
+    ::= 34
+
+hawk-i-advanced_TemperatureBLowControlLimitNormal            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_TemperatureBName, hawk-i-advanced_TemperatureBCurrent }
+    DESCRIPTION
+        "Temperature B is inside the low control limit."
+    ::= 35
+
+hawk-i-advanced_TemperatureBLowWarningLimitNormal           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_TemperatureBName, hawk-i-advanced_TemperatureBCurrent }
+    DESCRIPTION
+        "Temperature B is inside the low warning limit."
+    ::= 36
+
+hawk-i-advanced_TemperatureBHighWarningLimitNormal            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_TemperatureBName, hawk-i-advanced_TemperatureBCurrent }
+    DESCRIPTION
+        "Temperature B is inside the high warning limit."
+    ::= 37
+
+hawk-i-advanced_TemperatureBHighControlLimitNormal           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_TemperatureBName, hawk-i-advanced_TemperatureBCurrent }
+    DESCRIPTION
+        "Temperature B is inside the high control limit."
+    ::= 38
+-- }}}
+
+    
+-- {{{ hawk-i-advanced_Humidity2
+
+hawk-i-advanced_HumidityBEnableMonitoring  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0), on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to one enables monitoring of Humidity B"
+    ::= { hawk-i-advanced_HumidityB 1 }
+
+hawk-i-advanced_HumidityBName  OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..16))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "The name of this Humidity input"	
+    ::= { hawk-i-advanced_HumidityB 2 }
+
+hawk-i-advanced_HumidityBCalibrationOffset  OBJECT-TYPE
+    SYNTAX    INTEGER (-100..100)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Calibration offset in 0.1 %RH"	
+    ::= { hawk-i-advanced_HumidityB 3 }
+
+hawk-i-advanced_HumidityBCurrent  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The current Humidity reading in 0.1 %RH"
+    ::= { hawk-i-advanced_HumidityB 4 }
+
+hawk-i-advanced_HumidityBThresholds    OBJECT IDENTIFIER ::= { hawk-i-advanced_HumidityB 5  }
+
+-- {{{ hawk-i-advanced_Humidity2Thresholds
+
+hawk-i-advanced_HumidityBUpperControlLevel  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The Upper Limit threshold for this Humidity in 0.1 %RH"
+    ::= { hawk-i-advanced_HumidityBThresholds 1 }
+
+hawk-i-advanced_HumidityBUpperWarningLevel  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The Upper Warning Limit for this Humidity in 0.1 %RH"
+    ::= { hawk-i-advanced_HumidityBThresholds 2 }
+
+hawk-i-advanced_HumidityBLowerWarningLevel  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The Lower Warning Limit for this Humidity in 0.1 %RH"
+    ::= { hawk-i-advanced_HumidityBThresholds 3 }
+
+hawk-i-advanced_HumidityBLowerControlLevel  OBJECT-TYPE
+    SYNTAX    INTEGER (-200..1000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "The Lower Limit threshold for this Humidity in 0.1 %RH"
+    ::= { hawk-i-advanced_HumidityBThresholds 4 }
+
+-- }}}
+hawk-i-advanced_HumidityBOFFtoONtraps    OBJECT IDENTIFIER ::= { hawk-i-advanced_HumidityB 6  }
+hawk-i-advanced_HumidityBOFFtoONrepeatTimers    OBJECT IDENTIFIER ::= { hawk-i-advanced_HumidityB 7  }
+hawk-i-advanced_HumidityBONtoOFFtraps    OBJECT IDENTIFIER ::= { hawk-i-advanced_HumidityB 8  }
+hawk-i-advanced_HumidityBONtoOFFrepeatTimers    OBJECT IDENTIFIER ::= { hawk-i-advanced_HumidityB 9  }
+
+-- {{{ hawk-i-advanced_Humidity2OFFtoONtraps
+
+hawk-i-advanced_HumidityBOFFtoONtrapUCL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_HumidityBOFFtoONtraps 1 }
+
+hawk-i-advanced_HumidityBOFFtoONtrapUWL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_HumidityBOFFtoONtraps 2 }
+
+hawk-i-advanced_HumidityBOFFtoONtrapLWL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_HumidityBOFFtoONtraps 3 }
+
+hawk-i-advanced_HumidityBOFFtoONtrapLCL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_HumidityBOFFtoONtraps 4 }
+
+-- }}}
+-- {{{ hawk-i-advanced_Humidity2OFFtoONrepeatTimers
+
+hawk-i-advanced_HumidityBOFFtoONrepUCL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_HumidityBOFFtoONrepeatTimers 1 }
+
+hawk-i-advanced_HumidityBOFFtoONrepUWL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_HumidityBOFFtoONrepeatTimers 2 }
+
+hawk-i-advanced_HumidityBOFFtoONrepLWL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_HumidityBOFFtoONrepeatTimers 3 }
+
+hawk-i-advanced_HumidityBOFFtoONrepLCL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_HumidityBOFFtoONrepeatTimers 4 }
+
+-- }}}
+-- {{{ hawk-i-advanced_Humidity1ONtoOFFtraps
+
+hawk-i-advanced_HumidityBONtoOFFtrapUCL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_HumidityBONtoOFFtraps 1 }
+
+hawk-i-advanced_HumidityBONtoOFFtrapUWL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_HumidityBONtoOFFtraps 2 }
+
+hawk-i-advanced_HumidityBONtoOFFtrapLWL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_HumidityBONtoOFFtraps 3 }
+
+hawk-i-advanced_HumidityBONtoOFFtrapLCL  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_HumidityBONtoOFFtraps 4 }
+
+-- }}}
+-- {{{ hawk-i-advanced_Humidity1ONtoOFFrepeatTimers
+
+hawk-i-advanced_HumidityBONtoOFFrepLCL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_HumidityBONtoOFFrepeatTimers 1 }
+
+hawk-i-advanced_HumidityBONtoOFFrepLWL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_HumidityBONtoOFFrepeatTimers 2 }
+
+hawk-i-advanced_HumidityBONtoOFFrepUWL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_HumidityBONtoOFFrepeatTimers 3 }
+
+hawk-i-advanced_HumidityBONtoOFFrepUCL  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_HumidityBONtoOFFrepeatTimers 4 }
+
+-- }}}
+
+
+hawk-i-advanced_HumidityBLowControlLimitAlarm            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_HumidityBName, hawk-i-advanced_HumidityBCurrent }
+    DESCRIPTION
+        "Humidity B is below the low control limit."
+    ::= 51
+
+hawk-i-advanced_HumidityBLowWarningLimitAlarm           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_HumidityBName, hawk-i-advanced_HumidityBCurrent }
+    DESCRIPTION
+        "Humidity B is below the low warning limit."
+    ::= 52
+
+hawk-i-advanced_HumidityBHighWarningLimitAlarm            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_HumidityBName, hawk-i-advanced_HumidityBCurrent }
+    DESCRIPTION
+        "Humidity B is over the high warning limit."
+    ::= 53
+
+hawk-i-advanced_HumidityBHighControlLimitAlarm           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_HumidityBName, hawk-i-advanced_HumidityBCurrent }
+    DESCRIPTION
+        "Humidity B is over the high control limit."
+    ::= 54
+
+hawk-i-advanced_HumidityBLowControlLimitNormal            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_HumidityBName, hawk-i-advanced_HumidityBCurrent }
+    DESCRIPTION
+        "Humidity B is inside the low control limit."
+    ::= 55
+
+hawk-i-advanced_HumidityBLowWarningLimitNormal           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_HumidityBName, hawk-i-advanced_HumidityBCurrent }
+    DESCRIPTION
+        "Humidity B is inside the low warning limit."
+    ::= 56
+
+hawk-i-advanced_HumidityBHighWarningLimitNormal            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+        VARIABLES { hawk-i-advanced_HumidityBName, hawk-i-advanced_HumidityBCurrent }
+    DESCRIPTION
+        "Humidity B is inside the high warning limit."
+    ::= 57
+
+hawk-i-advanced_HumidityBHighControlLimitNormal           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_HumidityBName, hawk-i-advanced_HumidityBCurrent }
+    DESCRIPTION
+        "Humidity B is inside the high control limit."
+    ::= 58
+
+
+
+
+-- }}}
+
+hawk-i-advanced_C_F_flag  OBJECT-TYPE
+    SYNTAX    INTEGER { centigrade(0), fahrenheit(1) }
+    ACCESS    read-only
+    STATUS    mandatory
+    DESCRIPTION
+        "Temperature units of C(0)/F(1)"
+    ::= { hawk-i-advanced_Environment 5 }
+    
+
+-- }}}
+-- {{{ hawk-i-advanced_Contact group 
+--{{{hawk-i-advanced_ contact table.
+
+hawk-i-advanced_ContactTable			OBJECT-TYPE
+	SYNTAX	SEQUENCE OF	Hawk-i-advanced_ContactEntry
+	ACCESS			not-accessible
+	STATUS			mandatory
+	DESCRIPTION
+		"A table listing the hawk-i-advanced_ contacts, contact states and descriptions."
+	::= { hawk-i-advanced_Contact 1  }
+
+hawk-i-advanced_ContactEntry			OBJECT-TYPE
+	SYNTAX		Hawk-i-advanced_ContactEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION
+		"A row containing information about one contact."
+	INDEX		{ hawk-i-advanced_ContactIndex }
+	::= { hawk-i-advanced_ContactTable 1 }
+
+Hawk-i-advanced_ContactEntry ::= SEQUENCE {
+				hawk-i-advanced_ContactIndex		INTEGER,
+				hawk-i-advanced_ContactName		DisplayString,
+				hawk-i-advanced_ContactNormalState  	INTEGER,
+				hawk-i-advanced_ContactCurrentState		INTEGER,
+				hawk-i-advanced_ContactTriggerMode		INTEGER,
+				hawk-i-advanced_ContactReset			INTEGER
+			              }
+
+hawk-i-advanced_ContactIndex			OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION
+		"The contact number as index."
+	::= { hawk-i-advanced_ContactEntry 1 }
+
+hawk-i-advanced_ContactName			OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE(0..16))
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"A description of contact connections"
+	::= { hawk-i-advanced_ContactEntry 2 }
+
+hawk-i-advanced_ContactNormalState			OBJECT-TYPE
+	SYNTAX		INTEGER { open(0), closed(1) }
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"The normal state for this contact."
+	::= { hawk-i-advanced_ContactEntry 3 }
+
+hawk-i-advanced_ContactCurrentState			OBJECT-TYPE
+	SYNTAX		INTEGER { open(0), closed(1) }
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION
+		"The current state of this contact."
+	::= { hawk-i-advanced_ContactEntry 4 }
+
+hawk-i-advanced_ContactTriggerMode			OBJECT-TYPE
+	SYNTAX		INTEGER { level(0), positiveEdge(1), negativeEdge(2) }
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"The contact trigger mode, level, +ve edge, -ve edge."
+	::= { hawk-i-advanced_ContactEntry 5 }
+
+hawk-i-advanced_ContactReset			OBJECT-TYPE
+	SYNTAX		INTEGER { set(0), reset(1) }
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"Resets the contact after triggering in edge mode."
+	::= { hawk-i-advanced_ContactEntry 6 }
+
+
+--}}}
+hawk-i-advanced_ContactOFFtoONtraps         OBJECT IDENTIFIER ::= { hawk-i-advanced_Contact 2  }
+hawk-i-advanced_ContactOFFtoONrepeatTimers  OBJECT IDENTIFIER ::= { hawk-i-advanced_Contact 3  }
+hawk-i-advanced_ContactONtoOFFtraps         OBJECT IDENTIFIER ::= { hawk-i-advanced_Contact 4  }
+hawk-i-advanced_ContactONtoOFFrepeatTimers  OBJECT IDENTIFIER ::= { hawk-i-advanced_Contact 5  }
+
+-- {{{ hawk-i-advanced_ContactOFFtoONtraps
+
+hawk-i-advanced_Contact1OFFtoONtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_ContactOFFtoONtraps 1 }
+
+hawk-i-advanced_Contact2OFFtoONtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_ContactOFFtoONtraps 2 }
+
+hawk-i-advanced_Contact3OFFtoONtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_ContactOFFtoONtraps 3 }
+
+hawk-i-advanced_Contact4OFFtoONtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_ContactOFFtoONtraps 4 }
+
+hawk-i-advanced_Contact5OFFtoONtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_ContactOFFtoONtraps 5 }
+
+hawk-i-advanced_Contact6OFFtoONtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_ContactOFFtoONtraps 6 }
+
+hawk-i-advanced_Contact7OFFtoONtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_ContactOFFtoONtraps 7 }
+
+hawk-i-advanced_Contact8OFFtoONtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_ContactOFFtoONtraps 8 }
+
+
+-- }}}
+-- {{{ hawk-i-advanced_ContactOFFtoONrepeatTimers
+
+hawk-i-advanced_Contact1OFFtoONrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_ContactOFFtoONrepeatTimers 1 }
+
+hawk-i-advanced_Contact2OFFtoONrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_ContactOFFtoONrepeatTimers 2 }
+
+hawk-i-advanced_Contact3OFFtoONrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_ContactOFFtoONrepeatTimers 3 }
+
+hawk-i-advanced_Contact4OFFtoONrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_ContactOFFtoONrepeatTimers 4 }
+
+hawk-i-advanced_Contact5OFFtoONrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_ContactOFFtoONrepeatTimers 5 }
+
+hawk-i-advanced_Contact6OFFtoONrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_ContactOFFtoONrepeatTimers 6 }
+
+hawk-i-advanced_Contact7OFFtoONrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_ContactOFFtoONrepeatTimers 7 }
+
+hawk-i-advanced_Contact8OFFtoONrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_ContactOFFtoONrepeatTimers 8 }
+
+-- }}}
+-- {{{ hawk-i-advanced_ContactONtoOFFtraps
+
+hawk-i-advanced_Contact1ONtoOFFtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_ContactONtoOFFtraps 1 }
+
+hawk-i-advanced_Contact2ONtoOFFtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_ContactONtoOFFtraps 2 }
+
+hawk-i-advanced_Contact3ONtoOFFtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_ContactONtoOFFtraps 3 }
+
+hawk-i-advanced_Contact4ONtoOFFtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_ContactONtoOFFtraps 4 }
+
+hawk-i-advanced_Contact5ONtoOFFtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_ContactONtoOFFtraps 5 }
+
+hawk-i-advanced_Contact6ONtoOFFtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_ContactONtoOFFtraps 6 }
+
+hawk-i-advanced_Contact7ONtoOFFtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_ContactONtoOFFtraps 7 }
+
+hawk-i-advanced_Contact8ONtoOFFtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_ContactONtoOFFtraps 8 }
+
+-- }}}
+-- {{{ hawk-i-advanced_ContactONtoOFFrepeatTimers
+
+hawk-i-advanced_Contact1ONtoOFFrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_ContactONtoOFFrepeatTimers 1 }
+
+hawk-i-advanced_Contact2ONtoOFFrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_ContactONtoOFFrepeatTimers 2 }
+
+hawk-i-advanced_Contact3ONtoOFFrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_ContactONtoOFFrepeatTimers 3 }
+
+hawk-i-advanced_Contact4ONtoOFFrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_ContactONtoOFFrepeatTimers 4 }
+
+hawk-i-advanced_Contact5ONtoOFFrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory             
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_ContactONtoOFFrepeatTimers 5 }
+
+hawk-i-advanced_Contact6ONtoOFFrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_ContactONtoOFFrepeatTimers 6 }
+
+hawk-i-advanced_Contact7ONtoOFFrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_ContactONtoOFFrepeatTimers 7 }
+
+hawk-i-advanced_Contact8ONtoOFFrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_ContactONtoOFFrepeatTimers 8 }
+
+-- }}}
+
+
+--{{{hawk-i-advanced_ contact traps
+
+
+hawk-i-advanced_ContactNonNormal              TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_ContactName, hawk-i-advanced_ContactCurrentState, hawk-i-advanced_ContactNormalState }
+    DESCRIPTION
+        "The hawk-i-advanced_ has detected a non-normal state on contact"
+    ::= 1
+
+hawk-i-advanced_ContactReturnToNormal         TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_ContactName, hawk-i-advanced_ContactCurrentState, hawk-i-advanced_ContactNormalState }
+    DESCRIPTION
+        "The hawk-i-advanced_ has detected a return to normal state on contact"
+    ::= 2
+
+
+--}}}
+-- {{{ hawk-i-advanced_Output group 
+--{{{ hawk-i-advanced_ output table
+
+hawk-i-advanced_OutputTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF	Hawk-i-advanced_OutputEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION
+		"A table of outputs, their states and descriptions."
+	::= { hawk-i-advanced_Output 1 }
+
+hawk-i-advanced_OutputEntry		OBJECT-TYPE
+	SYNTAX		Hawk-i-advanced_OutputEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	
+		"A row containing information about one output."
+	INDEX		{ hawk-i-advanced_OutputIndex }
+	::= { hawk-i-advanced_OutputTable 1 }
+
+Hawk-i-advanced_OutputEntry ::= SEQUENCE {
+				hawk-i-advanced_OutputIndex		INTEGER,
+				hawk-i-advanced_OutputName			DisplayString,
+				hawk-i-advanced_OutputEnable		INTEGER,
+				hawk-i-advanced_OutputNormalState	INTEGER,
+				hawk-i-advanced_OutputCurrentState	INTEGER,
+				hawk-i-advanced_OutputOnDelayTime	INTEGER,
+				hawk-i-advanced_OutputOffDelayTime	INTEGER							
+			            }
+
+hawk-i-advanced_OutputIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION
+		"The output index number."
+	::= { hawk-i-advanced_OutputEntry 1 }
+
+hawk-i-advanced_OutputName			OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE(0..16))
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"A description of outputs."
+	::= { hawk-i-advanced_OutputEntry 2 }
+ 
+hawk-i-advanced_OutputEnable			OBJECT-TYPE
+	SYNTAX		INTEGER { disable(0), enable(1) }
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"Enables/disables this output."
+	::= { hawk-i-advanced_OutputEntry 3 }
+ 
+hawk-i-advanced_OutputNormalState			OBJECT-TYPE
+	SYNTAX		INTEGER { notset(0), set(1) }
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"Sets or reads the required normal state of this output."
+	::= { hawk-i-advanced_OutputEntry 4 }
+
+hawk-i-advanced_OutputCurrentState			OBJECT-TYPE
+	SYNTAX		INTEGER { notset(0), set(1) }
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	
+		"Reads the current state of this output."
+	::= { hawk-i-advanced_OutputEntry 5 }   
+	
+hawk-i-advanced_OutputOnDelayTime			OBJECT-TYPE
+	SYNTAX		INTEGER 
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	
+		"Sets the 'on' delay time for this output."
+	::= { hawk-i-advanced_OutputEntry 6 }
+
+hawk-i-advanced_OutputOffDelayTime			OBJECT-TYPE
+	SYNTAX		INTEGER 
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	
+		"Sets the 'off' delay time for this output."
+	::= { hawk-i-advanced_OutputEntry 7 }
+	
+
+--}}}
+
+hawk-i-advanced_OutputOFFtoONtraps         OBJECT IDENTIFIER ::= { hawk-i-advanced_Output 2  }
+hawk-i-advanced_OutputOFFtoONrepeatTimers  OBJECT IDENTIFIER ::= { hawk-i-advanced_Output 3  }
+hawk-i-advanced_OutputONtoOFFtraps         OBJECT IDENTIFIER ::= { hawk-i-advanced_Output 4  }
+hawk-i-advanced_OutputONtoOFFrepeatTimers  OBJECT IDENTIFIER ::= { hawk-i-advanced_Output 5  }
+
+-- {{{ hawk-i-advanced_OutputOFFtoONtraps group
+
+hawk-i-advanced_Output1OFFtoONtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_OutputOFFtoONtraps 1 }
+
+hawk-i-advanced_Output2OFFtoONtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_OutputOFFtoONtraps 2 }
+
+hawk-i-advanced_Output3OFFtoONtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_OutputOFFtoONtraps 3 }
+
+hawk-i-advanced_Output4OFFtoONtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_OutputOFFtoONtraps 4 }
+
+-- }}}
+-- {{{ hawk-i-advanced_OutputOFFtoONrepeatTimers group
+
+hawk-i-advanced_Output1OFFtoONrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_OutputOFFtoONrepeatTimers 1 }
+
+hawk-i-advanced_Output2OFFtoONrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_OutputOFFtoONrepeatTimers 2 }
+
+hawk-i-advanced_Output3OFFtoONrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_OutputOFFtoONrepeatTimers 3 }
+
+hawk-i-advanced_Output4OFFtoONrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_OutputOFFtoONrepeatTimers 4 }
+
+-- }}}
+-- {{{ hawk-i-advanced_OutputONtoOFFtraps group
+
+hawk-i-advanced_Output1ONtoOFFtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_OutputONtoOFFtraps 1 }
+
+hawk-i-advanced_Output2ONtoOFFtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_OutputONtoOFFtraps 2 }
+
+hawk-i-advanced_Output3ONtoOFFtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_OutputONtoOFFtraps 3 }
+
+hawk-i-advanced_Output4ONtoOFFtrap  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap warnings, 1 enables them"
+    ::= { hawk-i-advanced_OutputONtoOFFtraps 4 }
+
+-- }}}
+-- {{{ hawk-i-advanced_OutputONtoOFFrepeatTimers group
+
+hawk-i-advanced_Output1ONtoOFFrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_OutputONtoOFFrepeatTimers 1 }
+
+hawk-i-advanced_Output2ONtoOFFrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_OutputONtoOFFrepeatTimers 2 }
+
+hawk-i-advanced_Output3ONtoOFFrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_OutputONtoOFFrepeatTimers 3 }
+
+hawk-i-advanced_Output4ONtoOFFrep  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 0 disables trap repetition, a value of 30 or higher sets the interval between traps in seconds"
+    ::= { hawk-i-advanced_OutputONtoOFFrepeatTimers 4 }
+
+-- }}}
+
+hawk-i-advanced_OutputBooleanAnd         OBJECT IDENTIFIER ::= { hawk-i-advanced_Output 6  }
+hawk-i-advanced_OutputBooleanOr  			OBJECT IDENTIFIER ::= { hawk-i-advanced_Output 7  }
+hawk-i-advanced_OutputBooleanSelect         OBJECT IDENTIFIER ::= { hawk-i-advanced_Output 8  }
+
+-- {{{ hawk-i-advanced_OutputBoolean group
+hawk-i-advanced_BooleanAnd1  OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..48))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Boolean AND string"	
+    ::= { hawk-i-advanced_OutputBooleanAnd 1 } 
+    
+hawk-i-advanced_BooleanAnd2  OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..48))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Boolean AND string"	
+    ::= { hawk-i-advanced_OutputBooleanAnd 2 } 
+    
+hawk-i-advanced_BooleanAnd3  OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..48))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Boolean AND string"	
+    ::= { hawk-i-advanced_OutputBooleanAnd 3 } 
+    
+hawk-i-advanced_BooleanAnd4  OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..48))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Boolean AND string"	
+    ::= { hawk-i-advanced_OutputBooleanAnd 4 } 
+    
+hawk-i-advanced_BooleanOr1  OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..48))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Boolean OR string"	
+    ::= { hawk-i-advanced_OutputBooleanOr 1 } 
+    
+hawk-i-advanced_BooleanOr2  OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..48))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Boolean OR string"	
+    ::= { hawk-i-advanced_OutputBooleanOr 2 }
+
+
+    hawk-i-advanced_BooleanOr3  OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..48))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Boolean OR string"	
+    ::= { hawk-i-advanced_OutputBooleanOr 3 }
+
+
+hawk-i-advanced_BooleanOr4  OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..48))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "Boolean OR string"	
+    ::= { hawk-i-advanced_OutputBooleanOr 4 }
+
+hawk-i-advanced_BooleanSelect1  OBJECT-TYPE
+    SYNTAX    INTEGER { or(0), and(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "boolean select AND(1)/OR(0)"
+    ::= { hawk-i-advanced_OutputBooleanSelect 1 }
+    
+hawk-i-advanced_BooleanSelect2  OBJECT-TYPE
+    SYNTAX    INTEGER { or(0), and(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "boolean select AND(1)/OR(0)"
+    ::= { hawk-i-advanced_OutputBooleanSelect 2 }
+
+hawk-i-advanced_BooleanSelect3  OBJECT-TYPE
+    SYNTAX    INTEGER { or(0), and(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "boolean select AND(1)/OR(0)"
+    ::= { hawk-i-advanced_OutputBooleanSelect 3 }
+
+hawk-i-advanced_BooleanSelect4  OBJECT-TYPE
+    SYNTAX    INTEGER { or(0), and(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "boolean select AND(1)/OR(0)"
+    ::= { hawk-i-advanced_OutputBooleanSelect 4 }
+    
+    
+    
+
+
+
+--}}}
+
+--{{{hawk-i-advanced_ output traps
+
+
+
+--}}}
+
+
+
+hawk-i-advanced_OutputOFFtoON            TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_OutputName, hawk-i-advanced_OutputCurrentState, hawk-i-advanced_OutputNormalState }
+    DESCRIPTION
+        "The boolean condition associated to this output is true"
+    ::= 11
+
+hawk-i-advanced_OutputONtoOFF           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_OutputName, hawk-i-advanced_OutputCurrentState, hawk-i-advanced_OutputNormalState }
+
+    DESCRIPTION
+        "The boolean condition associated to this output is true"
+    ::= 12
+
+
+-- }}}
+-- {{{ hawk-i-advanced_Keypad group    
+
+hawk-i-advanced_KeypadSettings               OBJECT IDENTIFIER ::= { hawk-i-advanced_Keypad 1  }
+hawk-i-advanced_KeypadTimers                OBJECT IDENTIFIER ::= { hawk-i-advanced_Keypad 2  }
+hawk-i-advanced_KeypadControl               OBJECT IDENTIFIER ::= { hawk-i-advanced_Keypad 3  }
+
+-- {{{ hawk-i-advanced_KeypadSettings group
+
+hawk-i-advanced_KeypadManufacturer  OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..5))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "The name of the manufacturer of the keypad"
+    ::= { hawk-i-advanced_KeypadSettings 1 }
+
+hawk-i-advanced_KeypadName  OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..8))
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "The specific name identifying a keypad. Alternatively it can contain the date when the unit was supplied"
+    ::= { hawk-i-advanced_KeypadSettings 2 }
+
+hawk-i-advanced_KeypadEntryLength  OBJECT-TYPE
+    SYNTAX INTEGER (1..9)
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+        "The number of digits used for the master and user codes"
+    ::= { hawk-i-advanced_KeypadSettings 3 }
+
+-- }}}
+
+-- {{{ hawk-i-advanced_KeypadTimers group
+
+hawk-i-advanced_KeypadDoorOpenTimer  OBJECT-TYPE
+    SYNTAX    INTEGER (0..99)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Two digit timer value in seconds for Door Open"
+    ::= { hawk-i-advanced_KeypadTimers 1 }
+
+hawk-i-advanced_KeypadReturnToStandbyTimer  OBJECT-TYPE
+    SYNTAX    INTEGER (0..99)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Two digit timer value in seconds for Return to Standby Mode"
+    ::= { hawk-i-advanced_KeypadTimers 2 }
+
+
+-- }}}
+
+-- {{{ hawk-i-advanced_KeypadControl
+
+hawk-i-advanced_KeypadEmergencyDoorOpen  OBJECT-TYPE
+    SYNTAX    INTEGER { inactive(0), activate(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Set to 1 to force the emergency opening of the door"
+    ::= { hawk-i-advanced_KeypadControl 1 }
+    
+hawk-i-advanced_KeypadKeyEntryValid  OBJECT-TYPE
+    SYNTAX    INTEGER { inactive(0), activate(1) }
+    ACCESS    read-only
+    STATUS    mandatory
+    DESCRIPTION
+        "keypad entry is valid"
+    ::= { hawk-i-advanced_KeypadControl 2 }  
+    
+hawk-i-advanced_KeypadKeyInUseTrapEn  OBJECT-TYPE
+    SYNTAX    INTEGER { disabled(0), enabled(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "keypad in use trap enable"
+    ::= { hawk-i-advanced_KeypadControl 3 }
+    
+    
+
+-- }}}
+
+-- {{{ hawk-i-advanced_KeypadCodeTable group
+ 
+hawk-i-advanced_KeypadCodeTable			OBJECT-TYPE
+	SYNTAX	SEQUENCE OF	Hawk-i-advanced_KeypadCodeEntry
+	ACCESS			not-accessible
+	STATUS			mandatory
+	DESCRIPTION
+		"A table listing the hawk-i-advanced_ keypad codes."
+	::= { hawk-i-advanced_Keypad 4  }
+
+hawk-i-advanced_KeypadCodeEntry			OBJECT-TYPE
+	SYNTAX		Hawk-i-advanced_KeypadCodeEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION
+		"A row containing information about one keypad code."
+	INDEX		{ hawk-i-advanced_KeypadCodeIndex }
+	::= { hawk-i-advanced_KeypadCodeTable 1 }
+
+Hawk-i-advanced_KeypadCodeEntry ::= SEQUENCE {
+				hawk-i-advanced_KeypadCodeIndex		INTEGER,
+				hawk-i-advanced_KeypadCodeName		DisplayString,
+				hawk-i-advanced_KeypadCodeString  	DisplayString
+				              }
+
+hawk-i-advanced_KeypadCodeIndex			OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION
+		"The keypad code number as index."
+	::= { hawk-i-advanced_KeypadCodeEntry 1 }
+
+hawk-i-advanced_KeypadCodeName			OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE(0..16))
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"A description of keypad code"
+	::= { hawk-i-advanced_KeypadCodeEntry 2 }
+
+hawk-i-advanced_KeypadCodeString			OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE(0..8))
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"The keypad code."
+	::= { hawk-i-advanced_KeypadCodeEntry 3 }
+
+ 
+-- }}}
+-- {{{ hawk-i-advanced_KeypadLogTable
+
+hawk-i-advanced_KeypadLogTable			OBJECT-TYPE
+	SYNTAX	SEQUENCE OF	Hawk-i-advanced_KeypadLogEntry
+	ACCESS			not-accessible
+	STATUS			mandatory
+	DESCRIPTION
+		"A table listing the hawk-i-advanced_ keypad logs."
+	::= { hawk-i-advanced_Keypad 5  }
+
+hawk-i-advanced_KeypadLogEntry			OBJECT-TYPE
+	SYNTAX		Hawk-i-advanced_KeypadLogEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION
+		"A row containing information about one keypad log."
+	INDEX		{ hawk-i-advanced_KeypadLogIndex }
+	::= { hawk-i-advanced_KeypadLogTable 1 }
+
+Hawk-i-advanced_KeypadLogEntry ::= SEQUENCE {
+				hawk-i-advanced_KeypadLogIndex		INTEGER,
+				hawk-i-advanced_KeypadLogName		DisplayString,
+				hawk-i-advanced_KeypadLogString  	DisplayString
+				              }
+
+hawk-i-advanced_KeypadLogIndex			OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION
+		"The keypad log number as index."
+	::= { hawk-i-advanced_KeypadLogEntry 1 }
+
+hawk-i-advanced_KeypadLogName			OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE(0..16))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION
+		"A description of keypad log"
+	::= { hawk-i-advanced_KeypadLogEntry 2 }
+
+hawk-i-advanced_KeypadLogString			OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE(0..9))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION
+		"The keypad log entry."
+	::= { hawk-i-advanced_KeypadLogEntry 3 }
+
+
+-- }}}
+
+--{{{ keyPadCommsLost
+
+
+	
+hawk-i-advanced_KeypadInUse TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+      VARIABLES { hawk-i-advanced_KeypadName }
+       DESCRIPTION
+               "The keypad is in use.."
+	  ::=  61      
+
+	
+
+--}}}
+
+hawk-i-advanced_PowerControl OBJECT IDENTIFIER ::= {hawk-i-advanced_PowerStrip 1 }
+
+
+--{{{power strip control
+
+hawk-i-advanced_CycleBothPowerStrips OBJECT-TYPE
+	SYNTAX INTEGER {down(0),up(1)}
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		"this allows power cycling of both the power strips"
+	::= { hawk-i-advanced_PowerControl 1 }	   
+
+hawk-i-advanced_CycleBothPowerStripsPassword OBJECT-TYPE
+	SYNTAX DisplayString(SIZE(0..20))
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		"this allows power cycling of both the power strips"
+	::= { hawk-i-advanced_PowerControl 2 }
+
+hawk-i-advanced_PowerStripAControl OBJECT IDENTIFIER ::= {hawk-i-advanced_PowerControl 3 }
+hawk-i-advanced_PowerStripBControl OBJECT IDENTIFIER ::= {hawk-i-advanced_PowerControl 4 }
+
+hawk-i-advanced_PowerStripsNumberOfOutlets OBJECT-TYPE
+    SYNTAX    INTEGER (1..30)
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"the number of outlets on both power strips"
+	::= { hawk-i-advanced_PowerControl 5 }	   
+
+
+--{{{power strip A control	
+hawk-i-advanced_PowerStripAName OBJECT-TYPE
+    SYNTAX  DisplayString(SIZE(0..63))
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "power strip A name"
+    ::= { hawk-i-advanced_PowerStripAControl 1 }
+
+hawk-i-advanced_PowerStripAEnable OBJECT-TYPE
+	SYNTAX INTEGER {off(0),on(1)}
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		"this enables/disables power strip A"
+	::= {hawk-i-advanced_PowerStripAControl 2 }
+    
+hawk-i-advanced_PowerStripACommsFail OBJECT-TYPE
+	SYNTAX INTEGER {commsGood(0),commsFailed(1),commsBadData(2)}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"this indicates that comms have failed wit power strip A"
+	::= {hawk-i-advanced_PowerStripAControl 3 }
+	
+hawk-i-advanced_CyclePowerStripA OBJECT-TYPE
+	SYNTAX INTEGER {down(0),up(1)}
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		"this sets the required state of all outlets on power strip A"
+	::= { hawk-i-advanced_PowerStripAControl 4 }	   
+
+hawk-i-advanced_CyclePowerStripAPassword OBJECT-TYPE
+	SYNTAX DisplayString(SIZE(0..20))
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		"this allows power cycling of all outlets on power strip A"
+	::= { hawk-i-advanced_PowerStripAControl 5 }	   
+
+hawk-i-advanced_CyclePowerStripAAbortTime  OBJECT-TYPE
+    SYNTAX    INTEGER 
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "time delay to abort task"
+    ::= { hawk-i-advanced_PowerStripAControl 6 }
+  
+hawk-i-advanced_CyclePowerStripAAbortTask  OBJECT-TYPE
+    SYNTAX    INTEGER 
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "abort task"
+    ::= { hawk-i-advanced_PowerStripAControl 7 }
+		
+
+--{{{power strip A control table
+hawk-i-advanced_PowerStripAControlTable			OBJECT-TYPE
+	SYNTAX	SEQUENCE OF	Hawk-i-advanced_PowerStripAControlEntry
+	ACCESS			not-accessible
+	STATUS			mandatory
+	DESCRIPTION
+		"A table listing the power strip A, states and descriptions."
+	::= { hawk-i-advanced_PowerStripAControl 8  }
+
+hawk-i-advanced_PowerStripAControlEntry			OBJECT-TYPE
+	SYNTAX		Hawk-i-advanced_PowerStripAControlEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION
+		"A row containing information about one outlet."
+	INDEX		{ hawk-i-advanced_PowerStripAIndex }
+	::= { hawk-i-advanced_PowerStripAControlTable 1 }
+
+Hawk-i-advanced_PowerStripAControlEntry ::= SEQUENCE {
+				hawk-i-advanced_PowerStripAIndex			INTEGER,
+				hawk-i-advanced_PowerStripAOutletName			DisplayString,
+				hawk-i-advanced_PowerStripAState  			INTEGER,
+				hawk-i-advanced_PowerStripAPassword		DisplayString,
+				hawk-i-advanced_PowerStripACycleDelay     	INTEGER
+			              }
+
+hawk-i-advanced_PowerStripAIndex			OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION
+		"The outlet number as index."
+	::= { hawk-i-advanced_PowerStripAControlEntry 1 }
+
+hawk-i-advanced_PowerStripAOutletName			OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE(0..16))
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"A description of the outlet"
+	::= { hawk-i-advanced_PowerStripAControlEntry 2 }
+
+hawk-i-advanced_PowerStripAState			OBJECT-TYPE
+	SYNTAX		INTEGER { off(0), on(1) }
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"The current state for this outlet."
+	::= { hawk-i-advanced_PowerStripAControlEntry 3 }
+
+hawk-i-advanced_PowerStripAPassword			OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE(0..16))
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"The password for this outlet."
+	::= { hawk-i-advanced_PowerStripAControlEntry 4 }
+
+hawk-i-advanced_PowerStripACycleDelay			OBJECT-TYPE
+	SYNTAX		INTEGER 
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"The on/off delay for this outlet in seconds."
+	::= { hawk-i-advanced_PowerStripAControlEntry 5 }
+
+--}}}
+
+hawk-i-advanced_PowerStripAControlEnable OBJECT-TYPE
+	SYNTAX INTEGER {off(0),on(1)}
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		"enables/disables control of power strip A"
+	::= {hawk-i-advanced_PowerStripAControl 9 }
+
+hawk-i-advanced_PowerStripAMonitorEnable OBJECT-TYPE
+	SYNTAX INTEGER {off(0),on(1)}
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		"enables/disables monitoring of power strip A"
+	::= {hawk-i-advanced_PowerStripAControl 10 }
+
+hawk-i-advanced_CommsFailANormal           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_PowerStripAName, hawk-i-advanced_PowerStripACommsFail }
+    DESCRIPTION
+        "power strip comms normal."
+    ::= 100      
+    
+hawk-i-advanced_CommsFailAAlarm           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_PowerStripAName, hawk-i-advanced_PowerStripACommsFail }
+    DESCRIPTION
+        "power strip comms alarm."
+    ::= 101 
+
+
+--{{{power strip B control	
+hawk-i-advanced_PowerStripBName OBJECT-TYPE
+    SYNTAX  DisplayString(SIZE(0..63))
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "power strip B name"
+    ::= { hawk-i-advanced_PowerStripBControl 1 }
+
+hawk-i-advanced_PowerStripBEnable OBJECT-TYPE
+	SYNTAX INTEGER {off(0),on(1)}
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		"this enables/disables power strip B"
+	::= {hawk-i-advanced_PowerStripBControl 2 }
+
+hawk-i-advanced_PowerStripBCommsFail OBJECT-TYPE
+	SYNTAX INTEGER {commsGood(0),commsFailed(1),commsBadData(2)}
+	ACCESS	read-only
+	STATUS	mandatory
+	DESCRIPTION
+		"this indicates that comms have failed wit power strip B"
+	::= { hawk-i-advanced_PowerStripBControl 3 }
+	
+hawk-i-advanced_CyclePowerStripB OBJECT-TYPE
+	SYNTAX INTEGER {down(0),up(1)}
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		"this sets the required state of all outlets on power strip B"
+	::= { hawk-i-advanced_PowerStripBControl 4 }	   
+
+hawk-i-advanced_CyclePowerStripBPassword OBJECT-TYPE
+	SYNTAX DisplayString(SIZE(0..20))
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		"this allows power cycling of all outlets on power strip B"
+	::= { hawk-i-advanced_PowerStripBControl 5 }	   
+
+hawk-i-advanced_CyclePowerStripBAbortTime  OBJECT-TYPE
+    SYNTAX    INTEGER 
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "time delay to abort task"
+    ::= { hawk-i-advanced_PowerStripBControl 6 }
+  
+hawk-i-advanced_CyclePowerStripBAbortTask  OBJECT-TYPE
+    SYNTAX    INTEGER 
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "abort task"
+    ::= { hawk-i-advanced_PowerStripBControl 7 }
+		
+
+--}}}
+--{{{power strip B control table
+hawk-i-advanced_PowerStripBControlTable			OBJECT-TYPE
+	SYNTAX	SEQUENCE OF	Hawk-i-advanced_PowerStripBControlEntry
+	ACCESS			not-accessible
+	STATUS			mandatory
+	DESCRIPTION
+		"A table listing the power strip B, states and descriptions."
+	::= { hawk-i-advanced_PowerStripBControl 8  }
+
+hawk-i-advanced_PowerStripBControlEntry			OBJECT-TYPE
+	SYNTAX		Hawk-i-advanced_PowerStripBControlEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION
+		"A row containing information about one outlet."
+	INDEX		{ hawk-i-advanced_PowerStripBIndex }
+	::= { hawk-i-advanced_PowerStripBControlTable 1 }
+
+Hawk-i-advanced_PowerStripBControlEntry ::= SEQUENCE {
+				hawk-i-advanced_PowerStripBIndex			INTEGER,
+				hawk-i-advanced_PowerStripBOutletName			DisplayString,
+				hawk-i-advanced_PowerStripBState  			INTEGER,
+				hawk-i-advanced_PowerStripBPassword		DisplayString,
+				hawk-i-advanced_PowerStripBCycleDelay     	INTEGER
+			              }
+
+hawk-i-advanced_PowerStripBIndex			OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION
+		"The outlet number as index."
+	::= { hawk-i-advanced_PowerStripBControlEntry 1 }
+
+hawk-i-advanced_PowerStripBOutletName			OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE(0..16))
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"A description of the outlet"
+	::= { hawk-i-advanced_PowerStripBControlEntry 2 }
+
+hawk-i-advanced_PowerStripBState			OBJECT-TYPE
+	SYNTAX		INTEGER { off(0), on(1) }
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"The current state for this outlet."
+	::= { hawk-i-advanced_PowerStripBControlEntry 3 }
+
+hawk-i-advanced_PowerStripBPassword			OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE(0..16))
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"The password for this outlet."
+	::= { hawk-i-advanced_PowerStripBControlEntry 4 }
+
+hawk-i-advanced_PowerStripBCycleDelay			OBJECT-TYPE
+	SYNTAX		INTEGER 
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION
+		"The on/off delay for this outlet in seconds."
+	::= { hawk-i-advanced_PowerStripBControlEntry 5 }
+
+
+--}}}
+
+hawk-i-advanced_PowerStripBControlEnable OBJECT-TYPE
+	SYNTAX INTEGER {off(0),on(1)}
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		"enables/disables control of power strip B"
+	::= {hawk-i-advanced_PowerStripBControl 9 }
+
+hawk-i-advanced_PowerStripBMonitorEnable OBJECT-TYPE
+	SYNTAX INTEGER {off(0),on(1)}
+	ACCESS	read-write
+	STATUS	mandatory
+	DESCRIPTION
+		"enables/disables monitoring of power strip B"
+	::= {hawk-i-advanced_PowerStripBControl 10 }
+
+
+hawk-i-advanced_CommsFailBNormal           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_PowerStripBName, hawk-i-advanced_PowerStripBCommsFail }
+    DESCRIPTION
+        "power strip comms normal."
+    ::= 110      
+    
+hawk-i-advanced_CommsFailBAlarm           TRAP-TYPE
+    ENTERPRISE hawk-i-advanced_TrapsEnterprise
+    VARIABLES { hawk-i-advanced_PowerStripBName, hawk-i-advanced_PowerStripBCommsFail }
+    DESCRIPTION
+        "power strip comms alarm."
+    ::= 111
+    
+--{{{power strip monitor
+
+hawk-i-advanced_PowerMonitor OBJECT IDENTIFIER ::= {hawk-i-advanced_PowerStrip 2 }
+
+hawk-i-advanced_PowerStripAMonitor OBJECT IDENTIFIER ::= {hawk-i-advanced_PowerMonitor 1 }
+hawk-i-advanced_PowerStripBMonitor OBJECT IDENTIFIER ::= {hawk-i-advanced_PowerMonitor 2 }
+
+--}}}
+
+--{{{power strip A monitor
+
+hawk-i-advanced_RMSVoltsAValue  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-only
+    STATUS    mandatory
+    DESCRIPTION
+        "rms value in volts"
+    ::= { hawk-i-advanced_PowerStripAMonitor 1 }
+    
+hawk-i-advanced_RMSAmpsAValue  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-only
+    STATUS    mandatory
+    DESCRIPTION
+        "rms value in 0.1 amps"
+    ::= { hawk-i-advanced_PowerStripAMonitor 2 }
+    
+hawk-i-advanced_TotalEnergyAValue  OBJECT-TYPE
+    SYNTAX    INTEGER (0..9999999)
+    ACCESS    read-only
+    STATUS    mandatory
+    DESCRIPTION
+        "Total energy in 0.1 kWh"
+    ::= { hawk-i-advanced_PowerStripAMonitor 3 }
+
+
+hawk-i-advanced_PowerThresholdsA OBJECT IDENTIFIER ::= { hawk-i-advanced_PowerStripAMonitor 4 }
+ 
+hawk-i-advanced_RMSVoltsA OBJECT IDENTIFIER ::= { hawk-i-advanced_PowerThresholdsA 1}
+hawk-i-advanced_RMSAmpsA OBJECT IDENTIFIER ::= { hawk-i-advanced_PowerThresholdsA 2}
+hawk-i-advanced_TotalEnergyA OBJECT IDENTIFIER ::= { hawk-i-advanced_PowerThresholdsA 3}
+
+hawk-i-advanced_RMSVoltsAUCL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "rms UCL value in volts"
+    ::= { hawk-i-advanced_RMSVoltsA 1 }
+
+hawk-i-advanced_RMSVoltsAUWL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "rms UWL value in volts"
+    ::= { hawk-i-advanced_RMSVoltsA 2 }
+
+hawk-i-advanced_RMSVoltsALWL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "rms LWL value in volts"
+    ::= { hawk-i-advanced_RMSVoltsA 3 }
+
+hawk-i-advanced_RMSVoltsALCL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "rms LCL value in volts"
+    ::= { hawk-i-advanced_RMSVoltsA 4 }
+
+hawk-i-advanced_RMSAmpsAUCL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "rms UCL value in 0.1 amps"
+    ::= { hawk-i-advanced_RMSAmpsA 1 }
+
+hawk-i-advanced_RMSAmpsAUWL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "rms UWL value in 0.1 amps"
+    ::= { hawk-i-advanced_RMSAmpsA 2 }
+
+hawk-i-advanced_RMSAmpsALWL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "rms LWL value in 0.1 amps"
+    ::= { hawk-i-advanced_RMSAmpsA 3 }
+
+hawk-i-advanced_RMSAmpsALCL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "rms LCL value in 0.1 amps"
+    ::= { hawk-i-advanced_RMSAmpsA 4 }
+
+hawk-i-advanced_TotalEnergyAUCL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..9999999)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Total energy UCL value in 0.1 kWh"
+    ::= { hawk-i-advanced_TotalEnergyA 1 }
+
+hawk-i-advanced_TotalEnergyAUWL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..9999999)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Total energy UWL value in 0.1 kWh"
+    ::= { hawk-i-advanced_TotalEnergyA 2 }
+
+hawk-i-advanced_TotalEnergyALWL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..9999999)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Total energy LWL value in 0.1 kWh"
+    ::= { hawk-i-advanced_TotalEnergyA 3 }
+
+hawk-i-advanced_TotalEnergyALCL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..9999999)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Total energy LCL value in 0.1 kWh"
+    ::= { hawk-i-advanced_TotalEnergyA 4 }
+--}}}
+
+hawk-i-advanced_PowerStripATraps OBJECT IDENTIFIER ::= { hawk-i-advanced_PowerStripAMonitor 5 }
+ 
+hawk-i-advanced_PowerStripATrapsOffToOnEn	OBJECT IDENTIFIER ::= { hawk-i-advanced_PowerStripATraps 1 }
+hawk-i-advanced_PowerStripATrapsOffToOnRpt OBJECT IDENTIFIER ::=  { hawk-i-advanced_PowerStripATraps 2 }
+  
+--{{{
+hawk-i-advanced_PowerStripARMSvoltOFFtoONTrapUCLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables UCL Volts trap."
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnEn 1 }
+
+hawk-i-advanced_PowerStripARMSvoltOFFtoONTrapUWLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables UWL Volts trap."
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnEn 2 }
+
+hawk-i-advanced_PowerStripARMSvoltOFFtoONTrapLWLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables LWL Volts trap."
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnEn 3 }
+
+hawk-i-advanced_PowerStripARMSvoltOFFtoONTrapLCLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables LCL Volts trap."
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnEn 4 }
+
+hawk-i-advanced_PowerStripARMSampOFFtoONTrapUCLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables UCL current trap."
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnEn 5 }
+
+hawk-i-advanced_PowerStripARMSampOFFtoONTrapUWLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables UWL current trap."
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnEn 6 }
+
+hawk-i-advanced_PowerStripARMSampOFFtoONTrapLWLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables LWL current trap."
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnEn 7 }
+
+hawk-i-advanced_PowerStripARMSampOFFtoONTrapLCLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables LCL current trap."
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnEn 8 }
+
+hawk-i-advanced_PowerStripATotalEnergyOFFtoONTrapUCLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables UCL total energy trap."
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnEn 9 }
+
+hawk-i-advanced_PowerStripATotalEnergyOFFtoONTrapUWLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables UWL total energy trap."
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnEn 10 }
+
+hawk-i-advanced_PowerStripATotalEnergyOFFtoONTrapLWLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables LWL total energy trap."
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnEn 11 }
+
+hawk-i-advanced_PowerStripATotalEnergyOFFtoONTrapLCLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables LCL total energy trap."
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnEn 12 }
+
+--}}}
+--{{{
+
+hawk-i-advanced_PowerStripARMSVoltOFFtoONTrapUCLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets UCL Volts trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnRpt 1 }
+
+hawk-i-advanced_PowerStripARMSVoltOFFtoONTrapUWLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets UWL Volts trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnRpt 2 }
+
+hawk-i-advanced_PowerStripARMSVoltOFFtoONTrapLWLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets LWL Volts trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnRpt 3 }
+
+hawk-i-advanced_PowerStripARMSVoltOFFtoONTrapLCLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets LCL Volts trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnRpt 4 }
+
+hawk-i-advanced_PowerStripARMSampOFFtoONTrapUCLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets UCL current trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnRpt 5 }
+
+hawk-i-advanced_PowerStripARMSampOFFtoONTrapUWLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets UWL current trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnRpt 6 }
+
+hawk-i-advanced_PowerStripARMSampOFFtoONTrapLWLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets LWL current trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnRpt 7 }
+
+hawk-i-advanced_PowerStripARMSampOFFtoONTrapLCLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets LCL current trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnRpt 8 }
+
+hawk-i-advanced_PowerStripATotalEnergyOFFtoONTrapUCLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets UCL total energy trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnRpt 9 }
+
+hawk-i-advanced_PowerStripATotalEnergyOFFtoONTrapUWLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets UWL total energy trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnRpt 10 }
+
+hawk-i-advanced_PowerStripATotalEnergyOFFtoONTrapLWLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets LWL total energy trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnRpt 11 }
+
+hawk-i-advanced_PowerStripATotalEnergyOFFtoONTrapLCLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets LCL total energy trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripATrapsOffToOnRpt 12 }
+
+--{{{ power strip A monitor traps
+
+hawk-i-advanced_PowerStripARMSVoltUCL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripAName }
+       DESCRIPTION
+               "rms volt ucl trap"
+	  ::=  121
+
+hawk-i-advanced_PowerStripARMSVoltUWL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripAName }
+       DESCRIPTION
+               "rms volt uwl trap"
+	  ::=  122
+
+hawk-i-advanced_PowerStripARmsVoltLWL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripAName }
+       DESCRIPTION
+               "rms volt lwl trap"
+	  ::=  123      
+
+hawk-i-advanced_PowerStripARMSVoltLCL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripAName }
+       DESCRIPTION
+               "rms volt lcl trap"
+	  ::=  124      
+
+hawk-i-advanced_PowerStripARMSVoltNormal TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripAName }
+       DESCRIPTION
+               "rms volt Normal trap"
+	  ::=  125      
+
+hawk-i-advanced_PowerStripARMSAmpUCL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripAName }
+       DESCRIPTION
+               "rms amp ucl trap"
+	  ::=  126      
+
+hawk-i-advanced_PowerStripARMSAmpUWL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripAName }
+       DESCRIPTION
+               "rms amp uwl trap"
+	  ::=  127      
+
+hawk-i-advanced_PowerStripARMSAmpLWL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripAName }
+       DESCRIPTION
+               "rms amp lwl trap"
+	  ::=  128      
+
+hawk-i-advanced_PowerStripARMSAmpLCL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripAName }
+       DESCRIPTION
+               "rms amp lcl trap"
+	  ::=  129      
+
+hawk-i-advanced_PowerStripARMSAmpNormal TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripAName }
+       DESCRIPTION
+               "rms amp normal trap"
+	  ::=  130      
+
+hawk-i-advanced_PowerStripATotalEnergyUCL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripAName }
+       DESCRIPTION
+               "total energy ucl trap"
+	  ::=  131      
+
+hawk-i-advanced_PowerStripATotalEnergyUWL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripAName }
+       DESCRIPTION
+               "total energy uwl trap"
+	  ::=  132      
+
+hawk-i-advanced_PowerStripATotalEnergyLWL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripAName }
+       DESCRIPTION
+               "total energy lwl trap"
+	  ::=  133      
+
+hawk-i-advanced_PowerStripATotalEnergyLCL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripAName }
+       DESCRIPTION
+               "total energy lcl trap"
+	  ::=  134      
+
+hawk-i-advanced_PowerStripATotalEnergyNormal TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripAName }
+       DESCRIPTION
+               "total energy normal trap"
+	  ::=  135      
+
+--}}}    
+
+--}}}
+--{{{power strip B monitor
+
+hawk-i-advanced_RMSVoltsBValue  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-only
+    STATUS    mandatory
+    DESCRIPTION
+        "rms value in volts"
+    ::= { hawk-i-advanced_PowerStripBMonitor 1 }
+    
+hawk-i-advanced_RMSAmpsBValue  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-only
+    STATUS    mandatory
+    DESCRIPTION
+        "rms value in 0.1 amps"
+    ::= { hawk-i-advanced_PowerStripBMonitor 2 }
+    
+hawk-i-advanced_TotalEnergyBValue  OBJECT-TYPE
+    SYNTAX    INTEGER (0..9999999)
+    ACCESS    read-only
+    STATUS    mandatory
+    DESCRIPTION
+        "Total energy in 0.1 kWh"
+    ::= { hawk-i-advanced_PowerStripBMonitor 3 }
+
+
+hawk-i-advanced_PowerThresholdsB OBJECT IDENTIFIER ::= { hawk-i-advanced_PowerStripBMonitor 4 }
+ 
+hawk-i-advanced_RMSVoltsB OBJECT IDENTIFIER ::= { hawk-i-advanced_PowerThresholdsB 1}
+hawk-i-advanced_RMSAmpsB OBJECT IDENTIFIER ::= { hawk-i-advanced_PowerThresholdsB 2}
+hawk-i-advanced_TotalEnergyB OBJECT IDENTIFIER ::= { hawk-i-advanced_PowerThresholdsB 3}
+
+hawk-i-advanced_RMSVoltsBUCL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "rms UCL value in volts"
+    ::= { hawk-i-advanced_RMSVoltsB 1 }
+
+hawk-i-advanced_RMSVoltsBUWL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "rms UWL value in volts"
+    ::= { hawk-i-advanced_RMSVoltsB 2 }
+
+hawk-i-advanced_RMSVoltsBLWL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "rms LWL value in volts"
+    ::= { hawk-i-advanced_RMSVoltsB 3 }
+
+hawk-i-advanced_RMSVoltsBLCL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "rms LCL value in volts"
+    ::= { hawk-i-advanced_RMSVoltsB 4 }
+
+hawk-i-advanced_RMSAmpsBUCL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "rms UCL value in 0.1 amps"
+    ::= { hawk-i-advanced_RMSAmpsB 1 }
+
+hawk-i-advanced_RMSAmpsBUWL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "rms UWL value in 0.1 amps"
+    ::= { hawk-i-advanced_RMSAmpsB 2 }
+
+hawk-i-advanced_RMSAmpsBLWL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "rms LWL value in 0.1 amps"
+    ::= { hawk-i-advanced_RMSAmpsB 3 }
+
+hawk-i-advanced_RMSAmpsBLCL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..500)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "rms LCL value in 0.1 amps"
+    ::= { hawk-i-advanced_RMSAmpsB 4 }
+
+hawk-i-advanced_TotalEnergyBUCL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..9999999)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Total energy UCL value in 0.1 kWh"
+    ::= { hawk-i-advanced_TotalEnergyB 1 }
+
+hawk-i-advanced_TotalEnergyBUWL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..9999999)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Total energy UWL value in 0.1 kWh"
+    ::= { hawk-i-advanced_TotalEnergyB 2 }
+
+hawk-i-advanced_TotalEnergyBLWL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..9999999)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Total energy LWL value in 0.1 kWh"
+    ::= { hawk-i-advanced_TotalEnergyB 3 }
+
+hawk-i-advanced_TotalEnergyBLCL  OBJECT-TYPE
+    SYNTAX    INTEGER (0..9999999)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Total energy LCL value in 0.1 kWh"
+    ::= { hawk-i-advanced_TotalEnergyB 4 }
+
+--}}}
+
+hawk-i-advanced_PowerStripBTraps OBJECT IDENTIFIER ::= { hawk-i-advanced_PowerStripBMonitor 5 }
+ 
+hawk-i-advanced_PowerStripBTrapsOffToOnEn	OBJECT IDENTIFIER ::= { hawk-i-advanced_PowerStripBTraps 1 }
+hawk-i-advanced_PowerStripBTrapsOffToOnRpt OBJECT IDENTIFIER ::=  { hawk-i-advanced_PowerStripBTraps 2 }
+  
+--{{{
+
+hawk-i-advanced_PowerStripBRMSvoltOFFtoONTrapUCLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables UCL Volts trap."
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnEn 1 }
+
+hawk-i-advanced_PowerStripBRMSvoltOFFtoONTrapUWLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables UWL Volts trap."
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnEn 2 }
+
+hawk-i-advanced_PowerStripBRMSvoltOFFtoONTrapLWLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables LWL Volts trap."
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnEn 3 }
+
+hawk-i-advanced_PowerStripBRMSvoltOFFtoONTrapLCLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables LCL Volts trap."
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnEn 4 }
+
+hawk-i-advanced_PowerStripBRMSampOFFtoONTrapUCLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables UCL current trap."
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnEn 5 }
+
+hawk-i-advanced_PowerStripBRMSampOFFtoONTrapUWLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables UWL current trap."
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnEn 6 }
+
+hawk-i-advanced_PowerStripBRMSampOFFtoONTrapLWLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables LWL current trap."
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnEn 7 }
+
+hawk-i-advanced_PowerStripBRMSampOFFtoONTrapLCLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables LCL current trap."
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnEn 8 }
+
+hawk-i-advanced_PowerStripBTotalEnergyOFFtoONTrapUCLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables UCL total energy trap."
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnEn 9 }
+
+hawk-i-advanced_PowerStripBTotalEnergyOFFtoONTrapUWLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables UWL total energy trap."
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnEn 10 }
+
+hawk-i-advanced_PowerStripBTotalEnergyOFFtoONTrapLWLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables LWL total energy trap."
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnEn 11 }
+
+hawk-i-advanced_PowerStripBTotalEnergyOFFtoONTrapLCLenable  OBJECT-TYPE
+    SYNTAX    INTEGER { off(0),on(1) }
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Enables LCL total energy trap."
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnEn 12 }
+
+--}}}
+--{{{
+
+hawk-i-advanced_PowerStripBRMSVoltOFFtoONTrapUCLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets UCL Volts trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnRpt 1 }
+
+hawk-i-advanced_PowerStripBRMSVoltOFFtoONTrapUWLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets UWL Volts trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnRpt 2 }
+
+hawk-i-advanced_PowerStripBRMSVoltOFFtoONTrapLWLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets LWL Volts trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnRpt 3 }
+
+hawk-i-advanced_PowerStripBRMSVoltOFFtoONTrapLCLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets LCL Volts trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnRpt 4 }
+
+hawk-i-advanced_PowerStripBRMSampOFFtoONTrapUCLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets UCL current trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnRpt 5 }
+
+hawk-i-advanced_PowerStripBRMSampOFFtoONTrapUWLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets UWL current trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnRpt 6 }
+
+hawk-i-advanced_PowerStripBRMSampOFFtoONTrapLWLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets LWL current trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnRpt 7 }
+
+hawk-i-advanced_PowerStripBRMSampOFFtoONTrapLCLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets LCL current trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnRpt 8 }
+
+hawk-i-advanced_PowerStripBTotalEnergyOFFtoONTrapUCLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets UCL total energy trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnRpt 9 }
+
+hawk-i-advanced_PowerStripBTotalEnergyOFFtoONTrapUWLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets UWL total energy trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnRpt 10 }
+
+hawk-i-advanced_PowerStripBTotalEnergyOFFtoONTrapLWLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets LWL total energy trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnRpt 11 }
+
+hawk-i-advanced_PowerStripBTotalEnergyOFFtoONTrapLCLrpt  OBJECT-TYPE
+    SYNTAX    INTEGER (30..32000)
+    ACCESS    read-write
+    STATUS    mandatory
+    DESCRIPTION
+        "Sets LCL total energy trap repeat rate in seconds"
+    ::= { hawk-i-advanced_PowerStripBTrapsOffToOnRpt 12 }
+
+--{{{ power strip B monitor traps
+
+hawk-i-advanced_PowerStripBRMSVoltUCL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripBName }
+       DESCRIPTION
+               "rms volt ucl trap"
+	  ::=  141
+
+hawk-i-advanced_PowerStripBRMSVoltUWL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripBName }
+       DESCRIPTION
+               "rms volt uwl trap"
+	  ::=  142
+
+hawk-i-advanced_PowerStripBRmsVoltLWL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripBName }
+       DESCRIPTION
+               "rms volt lwl trap"
+	  ::=  143      
+
+hawk-i-advanced_PowerStripBRMSVoltLCL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripBName }
+       DESCRIPTION
+               "rms volt lcl trap"
+	  ::=  144      
+
+hawk-i-advanced_PowerStripBRMSVoltNormal TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripBName }
+       DESCRIPTION
+               "rms volt Normal trap"
+	  ::=  145      
+
+hawk-i-advanced_PowerStripBRMSAmpUCL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripBName }
+       DESCRIPTION
+               "rms amp ucl trap"
+	  ::=  146      
+
+hawk-i-advanced_PowerStripBRMSAmpUWL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripBName }
+       DESCRIPTION
+               "rms amp uwl trap"
+	  ::=  147      
+
+hawk-i-advanced_PowerStripBRMSAmpLWL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripBName }
+       DESCRIPTION
+               "rms amp lwl trap"
+	  ::=  148      
+
+hawk-i-advanced_PowerStripBRMSAmpLCL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripBName }
+       DESCRIPTION
+               "rms amp lcl trap"
+	  ::=  149      
+
+hawk-i-advanced_PowerStripBRMSAmpNormal TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripBName }
+       DESCRIPTION
+               "rms amp normal trap"
+	  ::=  150      
+
+hawk-i-advanced_PowerStripBTotalEnergyUCL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripBName }
+       DESCRIPTION
+               "total energy ucl trap"
+	  ::=  151      
+
+hawk-i-advanced_PowerStripBTotalEnergyUWL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripBName }
+       DESCRIPTION
+               "total energy uwl trap"
+	  ::=  152      
+
+hawk-i-advanced_PowerStripBTotalEnergyLWL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripBName }
+       DESCRIPTION
+               "total energy lwl trap"
+	  ::=  153      
+
+hawk-i-advanced_PowerStripBTotalEnergyLCL TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripBName }
+       DESCRIPTION
+               "total energy lcl trap"
+	  ::=  154      
+
+hawk-i-advanced_PowerStripBTotalEnergyNormal TRAP-TYPE
+       ENTERPRISE hawk-i-advanced_TrapsEnterprise
+       VARIABLES { hawk-i-advanced_PowerStripBName }
+       DESCRIPTION
+               "total energy normal trap"
+	  ::=  155      
+
+--}}}    
+
+--}}}
+    
+    
+
+
+--{{{ hawk-i-advanced_PowerStrip 
+
+--}}}
+
+--{{{ hawk-i-advanced_MibInfo
+
+
+
+
+--}}} 
+
+
+
+END

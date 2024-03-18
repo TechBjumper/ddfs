@@ -1,0 +1,2301 @@
+--			CEC ND-AW64 Enterprise MIB
+--			    Version 1.0.0
+--
+--			Chuo Electronics Co., Ltd.
+--			1-9-9, MOTOHONGO-CHO,
+--			HACHIOUJI-SHI, TOKYO 192-8532
+--			JAPAN
+--			+81-42-623-1211
+--			http://www.cec.co.jp/info-nd/
+--
+--		Copyright (c) 1997-2010 Chuo Electronics Co., Ltd.
+--		All rights reserved.
+--
+
+CEC-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+	enterprises
+	    FROM RFC1155-SMI
+	OBJECT-TYPE
+	    FROM RFC-1212
+	TRAP-TYPE
+	    FROM RFC-1215;
+
+	-- Textual conventions
+	Time ::=
+	INTEGER (0 .. 3155759999)
+	-- The date and time expressed as the number of seconds
+	-- since midnight January 1, 1970 GMT
+
+--
+-- The Chuo Electronics enterprise OID.
+--
+
+    cec		OBJECT IDENTIFIER ::= {	 enterprises 2589 }
+
+
+--
+-- Groups in the Chuo Electronics mib
+--
+
+    products		OBJECT IDENTIFIER ::= { cec 1 }
+
+-- CEC products.
+--
+-- Each CEC product family is Assigned an Object Identifier.
+-- This is the identifier stored in the MIB-II system group
+-- item sysObjectID to identify the product to a network manager.
+-- If product family specific items need to be defined they should
+-- be defined in the appropriate product family subtree
+
+    spacetime		OBJECT IDENTIFIER ::= { products 1 }
+    network-device	OBJECT IDENTIFIER ::= { products 2 }
+    access-control	OBJECT IDENTIFIER ::= { products 3 }
+    lanscope		OBJECT IDENTIFIER ::= { products 4 }
+    image-system	OBJECT IDENTIFIER ::= { products 5 }
+    network-device2	OBJECT IDENTIFIER ::= { products 6 }
+
+
+-- CEC network-device product family.
+--
+-- There are several products in the network-device family.  This is
+-- the identifier that enumerates the individual products.
+
+    ndDevice		OBJECT IDENTIFIER ::= { network-device2 1 }
+    ndSystem		OBJECT IDENTIFIER ::= { network-device2 2 }
+    ndInOut		OBJECT IDENTIFIER ::= { network-device2 3 }
+    ndScript		OBJECT IDENTIFIER ::= { network-device2 4 }
+
+-- CEC network-device product type
+
+    nd-aw64		OBJECT IDENTIFIER ::= { ndDevice 1 }
+
+-- CEC network-device management group
+--
+
+-- The System Group
+
+    ndDateAndTime OBJECT-TYPE
+	SYNTAX		Time
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The current date and time in use by this device."
+	::={ ndSystem 1 }
+
+-- The Network Device Traps Group
+
+    ndSNMP	OBJECT IDENTIFIER ::= { ndSystem 2 }
+
+    snmpNDTraps	OBJECT IDENTIFIER ::= { ndSNMP 1 }
+
+    snmpNDTrapSeqNo	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"This value is generated latest trap sequence number."
+	::= { snmpNDTraps 1 }
+
+    snmpNDTrapAck	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"This object is for the acknowledgment of trap.
+			If a manager receive trap which set 'retry',
+			it should set sequence number which attached on that
+			trap to this object. Then, the SNMP agent will stop
+			resending the trap which corresponded to that
+			sequence number to this manager."
+	::= { snmpNDTraps 2 }
+
+-- The Memory Card Group
+
+    ndMemoryCard	OBJECT IDENTIFIER ::= { ndSystem 3 }
+
+    ndMemoryCardTotalSpace	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		optional
+	DESCRIPTION	"The capacity of SD memory card."
+	::= { ndMemoryCard 1 }
+
+    ndMemoryCardUsageSpace	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		optional
+	DESCRIPTION	"The used area of SD memory card."
+	::= { ndMemoryCard 2 }
+
+    ndMemoryCardFreeSpace	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		optional
+	DESCRIPTION	"The unused area of SD memory card."
+	::= { ndMemoryCard 3 }
+
+    ndMemoryCardUsageRate	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		optional
+	DESCRIPTION	"The used rate of SD memory card."
+	::= { ndMemoryCard 4 }
+
+    ndMemoryCardErrorCode	OBJECT-TYPE
+	SYNTAX		INTEGER {
+			    ok(0),
+			    invalid-drive(1),
+			    no-file(2),
+			    no-path(3),
+			    invalid-name(4),
+			    exist(5),
+			    denied(6),
+			    not-ready(7),
+			    write-protected(8),
+			    disk-full(9),
+			    disk-error(10),
+			    internal-error(11),
+			    not-mounted(12),
+			    no-filesystem(13),
+			    invalid-handle(14),
+			    format-aborted(15),
+			    invalid-evflg(16),
+			    eof(17),
+			    locked(18),
+			    invalid-param(19),
+			    read-error(20),
+			    too-many-files-opened(21),
+			    too-many-dirs-opened(22),
+			    not-dir(23),
+			    already-mounted(24),
+			    end-of-erfs(25)
+			}
+	ACCESS		read-only
+	STATUS		optional
+	DESCRIPTION	"The error status of SD memory card."
+	::= {  ndMemoryCard 5 }
+
+-- The ndUserTrap Group
+
+    ndUserTrapNumber OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		optional
+	DESCRIPTION	"The number of hosts which this device can send trap."
+	::= { ndSystem 4 }
+
+    ndUserTrapTable OBJECT-TYPE
+	    SYNTAX          SEQUENCE OF NdUserTrapEntry
+	    ACCESS          not-accessible
+	    STATUS          optional
+	    DESCRIPTION     "A list of ndUserTrap table."
+	::= { ndSystem 5 }
+
+    ndUserTrapEntry	OBJECT-TYPE
+	SYNTAX		NdUserTrapEntry
+	ACCESS          not-accessible
+	STATUS          optional
+	DESCRIPTION     "An entry for ndUserTrap."
+	INDEX		{ ndUserTrapIndex }
+	::= { ndUserTrapTable 1 }
+
+    NdUserTrapEntry ::=
+        SEQUENCE {
+	    ndUserTrapIndex
+		INTEGER,
+	    ndUserTrapType
+		DisplayString,
+	    ndUserTrapValue
+		INTEGER
+	}
+
+    ndUserTrapIndex	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each UserDefined channel."
+	::= { ndUserTrapEntry 1 }
+
+    ndUserTrapType	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"The text string is type of UserDefined value."
+	::= { ndUserTrapEntry 2 }
+
+    ndUserTrapValue	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"The value of UserDefined channel."
+	::= { ndUserTrapEntry 3 }
+
+-- The I/O Group
+
+-- The circuit
+
+    circuitNumber		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of circuit channels supported by this device."
+	::= { ndInOut 1 }
+
+    circuitTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF CircuitEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of circuit channel entries. The number of entries
+			is given by the value circuitNumber."
+	::= { ndInOut 2 }
+
+    circuitEntry		OBJECT-TYPE
+	SYNTAX		CircuitEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A circuit channel entry containing objects to describe the
+			circuit channel."
+	INDEX		{ circuitIndex }
+	::= { circuitTable 1 }
+
+    CircuitEntry ::=
+	SEQUENCE {
+	    circuitIndex
+		INTEGER,
+	    circuitName
+		DisplayString
+	}
+
+    circuitIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each circuit channel. It's value ranges
+			between 1 and the value circuitNumber."
+	::= { circuitEntry 1 }
+
+    circuitName		OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The text string is type of circuit value."
+	::= { circuitEntry 2 }
+
+-- The group
+
+    groupNumber		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of group channels supported by this device."
+	::= { ndInOut 3 }
+
+    groupTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF GroupEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of group channel entries. The number of entries
+			is given by the value groupNumber."
+	::= { ndInOut 4 }
+
+    groupEntry		OBJECT-TYPE
+	SYNTAX		GroupEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A group channel entry containing objects to describe the
+			group channel."
+	INDEX		{ groupIndex }
+	::= { groupTable 1 }
+
+    GroupEntry ::=
+	SEQUENCE {
+	    groupIndex
+		INTEGER,
+	    groupName
+		DisplayString
+	}
+
+    groupIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each group channel. It's value ranges
+			between 1 and the value groupNumber."
+	::= { groupEntry 1 }
+
+    groupName		OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The text string is type of group value."
+	::= { groupEntry 2 }
+
+-- The current
+
+    currentNumber		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of current channels supported by this device."
+	::= { ndInOut 5 }
+
+    currentElementNumber		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of current channels supported by a circuit."
+	::= { ndInOut 6 }
+
+    currentTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF CurrentEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of current channel entries. The number of entries
+			is given by the value currentNumber."
+	::= { ndInOut 7 }
+
+    currentEntry		OBJECT-TYPE
+	SYNTAX		CurrentEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A current channel entry containing objects to describe the
+			current channel."
+	INDEX		{ currentIndex, currentElementIndex }
+	::= { currentTable 1 }
+
+    CurrentEntry ::=
+	SEQUENCE {
+	    currentIndex
+		INTEGER,
+	    currentElementIndex
+		INTEGER,
+	    currentName
+		DisplayString,
+	    currentValue
+		DisplayString,
+	    currentValueUnit
+		DisplayString,
+	    currentValueInt
+		INTEGER,
+	    currentValueExponent
+		INTEGER,
+	    currentStatus
+		INTEGER,
+	    currentStatusString
+		DisplayString,
+	    currentStatisticsMin
+		DisplayString,
+	    currentStatisticsMax
+		DisplayString
+	}
+
+    currentIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each current channel. It's value ranges
+			between 1 and the value currentNumber."
+	::= { currentEntry 1 }
+
+    currentElementIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each current channel. It's value ranges
+			between 1 and the value currentNumber."
+	::= { currentEntry 2 }
+
+    currentName		OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The text string is type of current value."
+	::= { currentEntry 3 }
+
+    currentValue	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The value of current."
+	::= { currentEntry 4 }
+
+    currentValueUnit	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The current value with unit."
+	::= { currentEntry 5 }
+
+    currentValueInt		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The integer value of current."
+	::= { currentEntry 6 }
+
+    currentValueExponent	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"This value is exponential for currentValueInt."
+	::= { currentEntry 7 }
+
+    currentStatus	OBJECT-TYPE
+	SYNTAX		INTEGER {
+			    upper-alert(90),
+			    upper-warn(80),
+			    normal(50),
+			    lower-warn(20),
+			    lower-alert(10),
+			    not-connected(60),
+			    invalid(70)
+			}
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The status of current."
+	::= { currentEntry 8 }
+
+    currentStatusString	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The text is status of current. "
+	::= { currentEntry 9 }
+
+    currentStatisticsMin	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The minimum current value since system power on"
+	::= { currentEntry 10 }
+
+    currentStatisticsMax	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The maximum current value since system power on"
+	::= { currentEntry 11 }
+
+    currentValuesNumber	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"Number of currentValues."
+	::= { ndInOut 8 }
+
+    currentValuesTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF CurrentValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of the currentValues entries."
+	::= { ndInOut 9 }
+
+    currentValuesEntry	OBJECT-TYPE
+	SYNTAX		CurrentValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"An entry for currentValues."
+	INDEX		{ currentValuesIndex }
+	::= { currentValuesTable 1 }
+
+    CurrentValuesEntry ::=
+	SEQUENCE {
+	    currentValuesIndex
+		INTEGER,
+    	    currentValuesValue
+		DisplayString
+	}
+
+    currentValuesIndex	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"An entry for the currentValues entries."
+	::= { currentValuesEntry 1 }
+
+    currentValuesValue	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"currentValues value."
+	::= { currentValuesEntry 2 }
+
+-- The activePower
+
+    activePowerNumber		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of activePower channels supported by this device."
+	::= { ndInOut 10 }
+
+    activePowerTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF ActivePowerEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of activePower channel entries. The number of entries
+			is given by the value activePowerNumber."
+	::= { ndInOut 11 }
+
+    activePowerEntry		OBJECT-TYPE
+	SYNTAX		ActivePowerEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A activePower channel entry containing objects to describe the
+			activePower channel."
+	INDEX		{ activePowerIndex }
+	::= { activePowerTable 1 }
+
+    ActivePowerEntry ::=
+	SEQUENCE {
+	    activePowerIndex
+		INTEGER,
+	    activePowerValue
+		DisplayString,
+	    activePowerValueUnit
+		DisplayString,
+	    activePowerValueInt
+		INTEGER,
+	    activePowerValueExponent
+		INTEGER,
+	    activePowerStatus
+		INTEGER,
+	    activePowerStatusString
+		DisplayString,
+	    activePowerStatisticsMin
+		DisplayString,
+	    activePowerStatisticsMax
+		DisplayString
+	}
+
+    activePowerIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each activePower channel. It's value ranges
+			between 1 and the value activePowerNumber."
+	::= { activePowerEntry 1 }
+
+    activePowerValue	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The value of active power."
+	::= { activePowerEntry 2 }
+
+    activePowerValueUnit	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The active power value with unit."
+	::= { activePowerEntry 3 }
+
+    activePowerValueInt		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The integer value of active power."
+	::= { activePowerEntry 4 }
+
+    activePowerValueExponent	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"This value is exponential for activePowerValueInt."
+	::= { activePowerEntry 5 }
+
+    activePowerStatus	OBJECT-TYPE
+	SYNTAX		INTEGER {
+			    upper-alert(90),
+			    upper-warn(80),
+			    normal(50),
+			    lower-warn(20),
+			    lower-alert(10),
+			    not-connected(60),
+			    invalid(70)
+			}
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The status of active power."
+	::= { activePowerEntry 6 }
+
+    activePowerStatusString	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The text is status of active power."
+	::= { activePowerEntry 7 }
+
+    activePowerStatisticsMin	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The minimum active power value since system power on"
+	::= { activePowerEntry 8 }
+
+    activePowerStatisticsMax	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The maximum active power value since system power on"
+	::= { activePowerEntry 9 }
+
+    activePowerValuesNumber	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"Number of activePowerValues."
+	::= { ndInOut 12 }
+
+    activePowerValuesTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF ActivePowerValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of the activePowerValues entries."
+	::= { ndInOut 13 }
+
+    activePowerValuesEntry	OBJECT-TYPE
+	SYNTAX		ActivePowerValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"An entry for activePowerValues."
+	INDEX		{ activePowerValuesIndex }
+	::= { activePowerValuesTable 1 }
+
+    ActivePowerValuesEntry ::=
+	SEQUENCE {
+	    activePowerValuesIndex
+		INTEGER,
+    	    activePowerValuesValue
+		DisplayString
+	}
+
+    activePowerValuesIndex	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"An entry for the activePowerValues entries."
+	::= { activePowerValuesEntry 1 }
+
+    activePowerValuesValue	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"activePowerValues value."
+	::= { activePowerValuesEntry 2 }
+
+-- The apparentPower
+
+    apparentPowerNumber		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of apparentPower channels supported by this device."
+	::= { ndInOut 14 }
+
+    apparentPowerTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF ApparentPowerEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of apparentPower channel entries. The number of entries
+			is given by the value apparentPowerNumber."
+	::= { ndInOut 15 }
+
+    apparentPowerEntry		OBJECT-TYPE
+	SYNTAX		ApparentPowerEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A apparentPower channel entry containing objects to describe the
+			apparentPower channel."
+	INDEX		{ apparentPowerIndex }
+	::= { apparentPowerTable 1 }
+
+    ApparentPowerEntry ::=
+	SEQUENCE {
+	    apparentPowerIndex
+		INTEGER,
+	    apparentPowerValue
+		DisplayString,
+	    apparentPowerValueUnit
+		DisplayString,
+	    apparentPowerValueInt
+		INTEGER,
+	    apparentPowerValueExponent
+		INTEGER,
+	    apparentPowerStatus
+		INTEGER,
+	    apparentPowerStatusString
+		DisplayString,
+	    apparentPowerStatisticsMin
+		DisplayString,
+	    apparentPowerStatisticsMax
+		DisplayString
+	}
+
+    apparentPowerIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each apparentPower channel. It's value ranges
+			between 1 and the value apparentPowerNumber."
+	::= { apparentPowerEntry 1 }
+
+    apparentPowerValue	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The value of apparent power."
+	::= { apparentPowerEntry 2 }
+
+    apparentPowerValueUnit	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The apparent power value with unit."
+	::= { apparentPowerEntry 3 }
+
+    apparentPowerValueInt		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The integer value of apparent power."
+	::= { apparentPowerEntry 4 }
+
+    apparentPowerValueExponent	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"This value is exponential for apparentPowerValueInt."
+	::= { apparentPowerEntry 5 }
+
+    apparentPowerStatus	OBJECT-TYPE
+	SYNTAX		INTEGER {
+			    upper-alert(90),
+			    upper-warn(80),
+			    normal(50),
+			    lower-warn(20),
+			    lower-alert(10),
+			    not-connected(60),
+			    invalid(70)
+			}
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The status of apparent power."
+	::= { apparentPowerEntry 6 }
+
+    apparentPowerStatusString	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The text is status of apparent power."
+	::= { apparentPowerEntry 7 }
+
+    apparentPowerStatisticsMin	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The minimum apparent power value since system power on"
+	::= { apparentPowerEntry 8 }
+
+    apparentPowerStatisticsMax	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The maximum apparent power value since system power on"
+	::= { apparentPowerEntry 9 }
+
+    apparentPowerValuesNumber	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"Number of apparentPowerValues."
+	::= { ndInOut 16 }
+
+    apparentPowerValuesTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF ApparentPowerValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of the apparentPowerValues entries."
+	::= { ndInOut 17 }
+
+    apparentPowerValuesEntry	OBJECT-TYPE
+	SYNTAX		ApparentPowerValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"An entry for apparentPowerValues."
+	INDEX		{ apparentPowerValuesIndex }
+	::= { apparentPowerValuesTable 1 }
+
+    ApparentPowerValuesEntry ::=
+	SEQUENCE {
+	    apparentPowerValuesIndex
+		INTEGER,
+    	    apparentPowerValuesValue
+		DisplayString
+	}
+
+    apparentPowerValuesIndex	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"An entry for the apparentPowerValues entries."
+	::= { apparentPowerValuesEntry 1 }
+
+    apparentPowerValuesValue	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"apparentPowerValues value."
+	::= { apparentPowerValuesEntry 2 }
+
+-- The integralPower
+
+    integralPowerNumber		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of integralPower channels supported by this device."
+	::= { ndInOut 18 }
+
+    integralPowerTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF IntegralPowerEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of integralPower channel entries. The number of entries
+			is given by the value integralPowerNumber."
+	::= { ndInOut 19 }
+
+    integralPowerEntry		OBJECT-TYPE
+	SYNTAX		IntegralPowerEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A integralPower channel entry containing objects to describe the
+			integralPower channel."
+	INDEX		{ integralPowerIndex }
+	::= { integralPowerTable 1 }
+
+    IntegralPowerEntry ::=
+	SEQUENCE {
+	    integralPowerIndex
+		INTEGER,
+	    integralPowerValue
+		DisplayString,
+	    integralPowerValueUnit
+		DisplayString,
+	    integralPowerValueInt
+		INTEGER,
+	    integralPowerValueExponent
+		INTEGER,
+	    integralPowerThisMonthValue
+		DisplayString,
+	    integralPowerLastMonthValue
+		DisplayString,
+	    integralPowerTheMonthBeforeLastValue
+		DisplayString
+	}
+
+    integralPowerIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each integralPower channel. It's value ranges
+			between 1 and the value integralPowerNumber."
+	::= { integralPowerEntry 1 }
+
+    integralPowerValue	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The value of integral power."
+	::= { integralPowerEntry 2 }
+
+    integralPowerValueUnit	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"The integral power value with unit."
+	::= { integralPowerEntry 3 }
+
+    integralPowerValueInt		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The integer value of integral power."
+	::= { integralPowerEntry 4 }
+
+    integralPowerValueExponent	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"This value is exponential for integralPowerValueInt."
+	::= { integralPowerEntry 5 }
+
+    integralPowerThisMonthValue	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"Integral power monthly usage of this month."
+	::= { integralPowerEntry 6 }
+
+    integralPowerLastMonthValue	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"Integral power monthly usage of last month."
+	::= { integralPowerEntry 7 }
+
+    integralPowerTheMonthBeforeLastValue	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"Integral power monthly usage of the month before last."
+	::= { integralPowerEntry 8 }
+
+    integralPowerValuesNumber	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"Number of integralPowerValues."
+	::= { ndInOut 20 }
+
+    integralPowerValuesTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF IntegralPowerValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of the integralPowerValues entries."
+	::= { ndInOut 21 }
+
+    integralPowerValuesEntry	OBJECT-TYPE
+	SYNTAX		IntegralPowerValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"An entry for integralPowerValues."
+	INDEX		{ integralPowerValuesIndex }
+	::= { integralPowerValuesTable 1 }
+
+    IntegralPowerValuesEntry ::=
+	SEQUENCE {
+	    integralPowerValuesIndex
+		INTEGER,
+    	    integralPowerValuesValue
+		DisplayString
+	}
+
+    integralPowerValuesIndex	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"An entry for the integralPowerValues entries."
+	::= { integralPowerValuesEntry 1 }
+
+    integralPowerValuesValue	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"integralPowerValues value."
+	::= { integralPowerValuesEntry 2 }
+
+-- The integralPowerGroup
+
+    integralPowerGroupNumber		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of integralPowerGroup channels supported by this device."
+	::= { ndInOut 22 }
+
+    integralPowerGroupTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF IntegralPowerGroupEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of integralPowerGroup channel entries. The number of entries
+			is given by the value integralPowerGroupNumber."
+	::= { ndInOut 23 }
+
+    integralPowerGroupEntry		OBJECT-TYPE
+	SYNTAX		IntegralPowerGroupEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A integralPowerGroup channel entry containing objects to describe the
+			integralPowerGroup channel."
+	INDEX		{ integralPowerGroupIndex }
+	::= { integralPowerGroupTable 1 }
+
+    IntegralPowerGroupEntry ::=
+	SEQUENCE {
+	    integralPowerGroupIndex
+		INTEGER,
+	    integralPowerGroupValue
+		DisplayString,
+	    integralPowerGroupValueUnit
+		DisplayString,
+	    integralPowerGroupValueInt
+		INTEGER,
+	    integralPowerGroupValueExponent
+		INTEGER,
+	    integralPowerGroupStatus
+		INTEGER,
+	    integralPowerGroupStatusString
+		DisplayString,
+	    integralPowerGroupThisMonthValue
+		DisplayString,
+	    integralPowerGroupLastMonthValue
+		DisplayString,
+	    integralPowerGroupTheMonthBeforeLastValue
+		DisplayString,
+	    integralPowerGroupReductionRate
+		DisplayString,
+	    integralPowerGroupElectricBill
+		DisplayString,
+	    integralPowerGroupCO2Emission
+		DisplayString
+	}
+
+    integralPowerGroupIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each integralPowerGroup channel. It's value ranges
+			between 1 and the value integralPowerGroupNumber."
+	::= { integralPowerGroupEntry 1 }
+
+    integralPowerGroupValue	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The value of integral power group."
+	::= { integralPowerGroupEntry 2 }
+
+    integralPowerGroupValueUnit	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The integral power group value with unit."
+	::= { integralPowerGroupEntry 3 }
+
+    integralPowerGroupValueInt		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The integer value of integral power group."
+	::= { integralPowerGroupEntry 4 }
+
+    integralPowerGroupValueExponent	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"This value is exponential for integralPowerGroupValueInt."
+	::= { integralPowerGroupEntry 5 }
+
+    integralPowerGroupStatus	OBJECT-TYPE
+	SYNTAX		INTEGER {
+			    upper-alert(90),
+			    upper-warn(80),
+			    normal(50),
+			    lower-warn(20),
+			    lower-alert(10),
+			    not-connected(60),
+			    invalid(70)
+			}
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The status of integralPowerGroup."
+	::= { integralPowerGroupEntry 6 }
+
+    integralPowerGroupStatusString	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The text is status of integralPowerGroup."
+	::= { integralPowerGroupEntry 7 }
+
+    integralPowerGroupThisMonthValue	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"Integral power group monthly usage of this month."
+	::= { integralPowerGroupEntry 8 }
+
+    integralPowerGroupLastMonthValue	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"Integral power group monthly usage of last month."
+	::= { integralPowerGroupEntry 9 }
+
+    integralPowerGroupTheMonthBeforeLastValue	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"Integral power group monthly usage of the month before last."
+	::= { integralPowerGroupEntry 10 }
+
+    integralPowerGroupReductionRate	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The reduction rate from the month before last to last month"
+	::= { integralPowerGroupEntry 11 }
+
+    integralPowerGroupElectricBill	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The electric bill of this month."
+	::= { integralPowerGroupEntry 12 }
+
+    integralPowerGroupCO2Emission	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The carbon-dioxide emissions of this month."
+	::= { integralPowerGroupEntry 13 }
+
+    integralPowerGroupValuesNumber	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"Number of integralPowerGroupValues."
+	::= { ndInOut 24 }
+
+    integralPowerGroupValuesTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF IntegralPowerGroupValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of the integralPowerGroupValues entries."
+	::= { ndInOut 25 }
+
+    integralPowerGroupValuesEntry	OBJECT-TYPE
+	SYNTAX		IntegralPowerGroupValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"An entry for integralPowerGroupValues."
+	INDEX		{ integralPowerGroupValuesIndex }
+	::= { integralPowerGroupValuesTable 1 }
+
+    IntegralPowerGroupValuesEntry ::=
+	SEQUENCE {
+	    integralPowerGroupValuesIndex
+		INTEGER,
+    	    integralPowerGroupValuesValue
+		DisplayString
+	}
+
+    integralPowerGroupValuesIndex	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"An entry for the integralPowerGroupValues entries."
+	::= { integralPowerGroupValuesEntry 1 }
+
+    integralPowerGroupValuesValue	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"integralPowerGroupValues value."
+	::= { integralPowerGroupValuesEntry 2 }
+
+-- The voltage
+
+    voltageNumber		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of voltage channels supported by this device."
+	::= { ndInOut 26 }
+
+    voltageElementNumber		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of voltage channels supported by a circuit."
+	::= { ndInOut 27 }
+
+    voltageTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF VoltageEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of voltage channel entries. The number of entries
+			is given by the value voltageNumber."
+	::= { ndInOut 28 }
+
+    voltageEntry		OBJECT-TYPE
+	SYNTAX		VoltageEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A voltage channel entry containing objects to describe the
+			voltage channel."
+	INDEX		{ voltageIndex, voltageElementIndex }
+	::= { voltageTable 1 }
+
+    VoltageEntry ::=
+	SEQUENCE {
+	    voltageIndex
+		INTEGER,
+	    voltageElementIndex
+		INTEGER,
+	    voltageName
+		DisplayString,
+	    voltageValue
+		DisplayString,
+	    voltageValueUnit
+		DisplayString,
+	    voltageValueInt
+		INTEGER,
+	    voltageValueExponent
+		INTEGER,
+	    voltageStatus
+		INTEGER,
+	    voltageStatusString
+		DisplayString,
+	    voltageStatisticsMin
+		DisplayString,
+	    voltageStatisticsMax
+		DisplayString
+	}
+
+    voltageIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each voltage channel. It's value ranges
+			between 1 and the value voltageNumber."
+	::= { voltageEntry 1 }
+
+    voltageElementIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each voltage channel. It's value ranges
+			between 1 and the value voltageNumber."
+	::= { voltageEntry 2 }
+
+    voltageName		OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The text string is type of voltage value."
+	::= { voltageEntry 3 }
+
+    voltageValue	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The value of voltage."
+	::= { voltageEntry 4 }
+
+    voltageValueUnit	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The voltage value with unit."
+	::= { voltageEntry 5 }
+
+    voltageValueInt		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The integer value of voltage."
+	::= { voltageEntry 6 }
+
+    voltageValueExponent	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"This value is exponential for voltageValueInt."
+	::= { voltageEntry 7 }
+
+    voltageStatus	OBJECT-TYPE
+	SYNTAX		INTEGER {
+			    upper-alert(90),
+			    upper-warn(80),
+			    normal(50),
+			    lower-warn(20),
+			    lower-alert(10),
+			    not-connected(60),
+			    invalid(70)
+			}
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The status of voltage."
+	::= { voltageEntry 8 }
+
+    voltageStatusString	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The text is status of voltage."
+	::= { voltageEntry 9 }
+
+    voltageStatisticsMin	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The minimum voltage value since system power on"
+	::= { voltageEntry 10 }
+
+    voltageStatisticsMax	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The maximum voltage value since system power on"
+	::= { voltageEntry 11 }
+
+    voltageValuesNumber	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"Number of voltageValues."
+	::= { ndInOut 29 }
+
+    voltageValuesTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF VoltageValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of the voltageValues entries."
+	::= { ndInOut 30 }
+
+    voltageValuesEntry	OBJECT-TYPE
+	SYNTAX		VoltageValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"An entry for voltageValues."
+	INDEX		{ voltageValuesIndex }
+	::= { voltageValuesTable 1 }
+
+    VoltageValuesEntry ::=
+	SEQUENCE {
+	    voltageValuesIndex
+		INTEGER,
+    	    voltageValuesValue
+		DisplayString
+	}
+
+    voltageValuesIndex	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"An entry for the voltageValues entries."
+	::= { voltageValuesEntry 1 }
+
+    voltageValuesValue	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"voltageValues value."
+	::= { voltageValuesEntry 2 }
+
+-- The frequency
+
+    frequencyNumber		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of frequency channels supported by this device."
+	::= { ndInOut 31 }
+
+    frequencyElementNumber	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of frequency channels supported by a circuit."
+	::= { ndInOut 32 }
+
+    frequencyTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF FrequencyEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of frequency channel entries. The number of entries
+			is given by the value frequencyNumber."
+	::= { ndInOut 33 }
+
+    frequencyEntry		OBJECT-TYPE
+	SYNTAX		FrequencyEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A frequency channel entry containing objects to describe the
+			frequency channel."
+	INDEX		{ frequencyIndex, frequencyElementIndex }
+	::= { frequencyTable 1 }
+
+    FrequencyEntry ::=
+	SEQUENCE {
+	    frequencyIndex
+		INTEGER,
+	    frequencyElementIndex
+		INTEGER,
+	    frequencyName
+		DisplayString,
+	    frequencyValue
+		DisplayString,
+	    frequencyValueUnit
+		DisplayString,
+	    frequencyValueInt
+		INTEGER,
+	    frequencyValueExponent
+		INTEGER,
+	    frequencyStatus
+		INTEGER,
+	    frequencyStatusString
+		DisplayString,
+	    frequencyStatisticsMin
+		DisplayString,
+	    frequencyStatisticsMax
+		DisplayString
+	}
+
+    frequencyIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each frequency channel. It's value ranges
+			between 1 and the value frequencyNumber."
+	::= { frequencyEntry 1 }
+
+    frequencyElementIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each frequency channel. It's value ranges
+			between 1 and the value frequencyNumber."
+	::= { frequencyEntry 2 }
+
+    frequencyName		OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The text string is type of frequency value."
+	::= { frequencyEntry 3 }
+
+    frequencyValue	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The value of frequency."
+	::= { frequencyEntry 4 }
+
+    frequencyValueUnit	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The frequency value with unit."
+	::= { frequencyEntry 5 }
+
+    frequencyValueInt		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The integer value of frequency."
+	::= { frequencyEntry 6 }
+
+    frequencyValueExponent	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"This value is exponential for frequencyValueInt."
+	::= { frequencyEntry 7 }
+
+    frequencyStatus	OBJECT-TYPE
+	SYNTAX		INTEGER {
+			    upper-alert(90),
+			    upper-warn(80),
+			    normal(50),
+			    lower-warn(20),
+			    lower-alert(10),
+			    not-connected(60),
+			    invalid(70)
+			}
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The status of frequency."
+	::= { frequencyEntry 8 }
+
+    frequencyStatusString	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The text is status of frequency."
+	::= { frequencyEntry 9 }
+
+    frequencyStatisticsMin	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The minimum frequency value since system power on"
+	::= { frequencyEntry 10 }
+
+    frequencyStatisticsMax	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The maximum frequency value since system power on"
+	::= { frequencyEntry 11 }
+
+    frequencyValuesNumber	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"Number of frequencyValues."
+	::= { ndInOut 34 }
+
+    frequencyValuesTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF FrequencyValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of the frequencyValues entries."
+	::= { ndInOut 35 }
+
+    frequencyValuesEntry	OBJECT-TYPE
+	SYNTAX		FrequencyValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"An entry for frequencyValues."
+	INDEX		{ frequencyValuesIndex }
+	::= { frequencyValuesTable 1 }
+
+    FrequencyValuesEntry ::=
+	SEQUENCE {
+	    frequencyValuesIndex
+		INTEGER,
+    	    frequencyValuesValue
+		DisplayString
+	}
+
+    frequencyValuesIndex	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"An entry for the frequencyValues entries."
+	::= { frequencyValuesEntry 1 }
+
+    frequencyValuesValue	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"frequencyValues value."
+	::= { frequencyValuesEntry 2 }
+
+-- The powerFactor
+
+    powerFactorNumber		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of powerFactor channels supported by this device."
+	::= { ndInOut 36 }
+
+    powerFactorTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF PowerFactorEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of powerFactor channel entries. The number of entries
+			is given by the value powerFactorNumber."
+	::= { ndInOut 37 }
+
+    powerFactorEntry		OBJECT-TYPE
+	SYNTAX		PowerFactorEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A powerFactor channel entry containing objects to describe the
+			powerFactor channel."
+	INDEX		{ powerFactorIndex }
+	::= { powerFactorTable 1 }
+
+    PowerFactorEntry ::=
+	SEQUENCE {
+	    powerFactorIndex
+		INTEGER,
+	    powerFactorValue
+		DisplayString,
+	    powerFactorValueUnit
+		DisplayString,
+	    powerFactorValueInt
+		INTEGER,
+	    powerFactorValueExponent
+		INTEGER,
+	    powerFactorStatus
+		INTEGER,
+	    powerFactorStatusString
+		DisplayString,
+	    powerFactorStatisticsMin
+		DisplayString,
+	    powerFactorStatisticsMax
+		DisplayString
+	}
+
+    powerFactorIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each powerFactor channel. It's value ranges
+			between 1 and the value powerFactorNumber."
+	::= { powerFactorEntry 1 }
+
+    powerFactorValue	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The value of power factor."
+	::= { powerFactorEntry 2 }
+
+    powerFactorValueUnit	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The power factor value with unit."
+	::= { powerFactorEntry 3 }
+
+    powerFactorValueInt		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The integer value of power factor."
+	::= { powerFactorEntry 4 }
+
+    powerFactorValueExponent	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"This value is exponential for powerFactorValueInt."
+	::= { powerFactorEntry 5 }
+
+    powerFactorStatus	OBJECT-TYPE
+	SYNTAX		INTEGER {
+			    upper-alert(90),
+			    upper-warn(80),
+			    normal(50),
+			    lower-warn(20),
+			    lower-alert(10),
+			    not-connected(60),
+			    invalid(70)
+			}
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The status of power factor."
+	::= { powerFactorEntry 6 }
+
+    powerFactorStatusString	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The text is status of power factor."
+	::= { powerFactorEntry 7 }
+
+    powerFactorStatisticsMin	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The minimum power factor value since system power on"
+	::= { powerFactorEntry 8 }
+
+    powerFactorStatisticsMax	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The maximum power factor value since system power on"
+	::= { powerFactorEntry 9 }
+
+    powerFactorValuesNumber	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"Number of powerFactorValues."
+	::= { ndInOut 38 }
+
+    powerFactorValuesTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF PowerFactorValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of the powerFactorValues entries."
+	::= { ndInOut 39 }
+
+    powerFactorValuesEntry	OBJECT-TYPE
+	SYNTAX		PowerFactorValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"An entry for powerFactorValues."
+	INDEX		{ powerFactorValuesIndex }
+	::= { powerFactorValuesTable 1 }
+
+    PowerFactorValuesEntry ::=
+	SEQUENCE {
+	    powerFactorValuesIndex
+		INTEGER,
+    	    powerFactorValuesValue
+		DisplayString
+	}
+
+    powerFactorValuesIndex	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"An entry for the powerFactorValues entries."
+	::= { powerFactorValuesEntry 1 }
+
+    powerFactorValuesValue	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"powerFactorValues value."
+	::= { powerFactorValuesEntry 2 }
+
+-- The reactivePower
+
+    reactivePowerNumber		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of reactivePower channels supported by this device."
+	::= { ndInOut 40 }
+
+    reactivePowerTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF ReactivePowerEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of reactivePower channel entries. The number of entries
+			is given by the value reactivePowerNumber."
+	::= { ndInOut 41 }
+
+    reactivePowerEntry		OBJECT-TYPE
+	SYNTAX		ReactivePowerEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A reactivePower channel entry containing objects to describe the
+			reactivePower channel."
+	INDEX		{ reactivePowerIndex }
+	::= { reactivePowerTable 1 }
+
+    ReactivePowerEntry ::=
+	SEQUENCE {
+	    reactivePowerIndex
+		INTEGER,
+	    reactivePowerValue
+		DisplayString,
+	    reactivePowerValueUnit
+		DisplayString,
+	    reactivePowerValueInt
+		INTEGER,
+	    reactivePowerValueExponent
+		INTEGER,
+	    reactivePowerStatus
+		INTEGER,
+	    reactivePowerStatusString
+		DisplayString,
+	    reactivePowerStatisticsMin
+		DisplayString,
+	    reactivePowerStatisticsMax
+		DisplayString
+	}
+
+    reactivePowerIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each reactivePower channel. It's value ranges
+			between 1 and the value reactivePowerNumber."
+	::= { reactivePowerEntry 1 }
+
+    reactivePowerValue	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The value of reactive power."
+	::= { reactivePowerEntry 2 }
+
+    reactivePowerValueUnit	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The reactive power value with unit."
+	::= { reactivePowerEntry 3 }
+
+    reactivePowerValueInt		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The integer value of reactive power."
+	::= { reactivePowerEntry 4 }
+
+    reactivePowerValueExponent	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"This value is exponential for reactivePowerValueInt."
+	::= { reactivePowerEntry 5 }
+
+    reactivePowerStatus	OBJECT-TYPE
+	SYNTAX		INTEGER {
+			    upper-alert(90),
+			    upper-warn(80),
+			    normal(50),
+			    lower-warn(20),
+			    lower-alert(10),
+			    not-connected(60),
+			    invalid(70)
+			}
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The status of reactive power."
+	::= { reactivePowerEntry 6 }
+
+    reactivePowerStatusString	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The text is status of reactive power."
+	::= { reactivePowerEntry 7 }
+
+    reactivePowerStatisticsMin	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The minimum reactive power value since system power on"
+	::= { reactivePowerEntry 8 }
+
+    reactivePowerStatisticsMax	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The maximum reactive power value since system power on"
+	::= { reactivePowerEntry 9 }
+
+    reactivePowerValuesNumber	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"Number of reactivePowerValues."
+	::= { ndInOut 42 }
+
+    reactivePowerValuesTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF ReactivePowerValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of the reactivePowerValues entries."
+	::= { ndInOut 43 }
+
+    reactivePowerValuesEntry	OBJECT-TYPE
+	SYNTAX		ReactivePowerValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"An entry for reactivePowerValues."
+	INDEX		{ reactivePowerValuesIndex }
+	::= { reactivePowerValuesTable 1 }
+
+    ReactivePowerValuesEntry ::=
+	SEQUENCE {
+	    reactivePowerValuesIndex
+		INTEGER,
+    	    reactivePowerValuesValue
+		DisplayString
+	}
+
+    reactivePowerValuesIndex	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"An entry for the reactivePowerValues entries."
+	::= { reactivePowerValuesEntry 1 }
+
+    reactivePowerValuesValue	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"reactivePowerValues value."
+	::= { reactivePowerValuesEntry 2 }
+
+-- The integralReactivePower
+
+    integralReactivePowerNumber		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of integralReactivePower channels supported by this device."
+	::= { ndInOut 44 }
+
+    integralReactivePowerTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF IntegralReactivePowerEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of integralReactivePower channel entries. The number of entries
+			is given by the value integralReactivePowerNumber."
+	::= { ndInOut 45 }
+
+    integralReactivePowerEntry		OBJECT-TYPE
+	SYNTAX		IntegralReactivePowerEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A integralReactivePower channel entry containing objects to describe the
+			integralReactivePower channel."
+	INDEX		{ integralReactivePowerIndex }
+	::= { integralReactivePowerTable 1 }
+
+    IntegralReactivePowerEntry ::=
+	SEQUENCE {
+	    integralReactivePowerIndex
+		INTEGER,
+	    integralReactivePowerValue
+		DisplayString,
+	    integralReactivePowerValueUnit
+		DisplayString,
+	    integralReactivePowerValueInt
+		INTEGER,
+	    integralReactivePowerValueExponent
+		INTEGER,
+	    integralReactivePowerStatus
+		INTEGER,
+	    integralReactivePowerStatusString
+		DisplayString
+	}
+
+    integralReactivePowerIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each integralReactivePower channel. It's value ranges
+			between 1 and the value integralReactivePowerNumber."
+	::= { integralReactivePowerEntry 1 }
+
+    integralReactivePowerValue	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The value of integral reactive power."
+	::= { integralReactivePowerEntry 2 }
+
+    integralReactivePowerValueUnit	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The integral reactive power value with unit."
+	::= { integralReactivePowerEntry 3 }
+
+    integralReactivePowerValueInt		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The integer value of integral reactive power."
+	::= { integralReactivePowerEntry 4 }
+
+    integralReactivePowerValueExponent	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"This value is exponential for integralReactivePowerValueInt."
+	::= { integralReactivePowerEntry 5 }
+
+    integralReactivePowerStatus	OBJECT-TYPE
+	SYNTAX		INTEGER {
+			    upper-alert(90),
+			    upper-warn(80),
+			    normal(50),
+			    lower-warn(20),
+			    lower-alert(10),
+			    not-connected(60),
+			    invalid(70)
+			}
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The status of integral reactive power."
+	::= { integralReactivePowerEntry 6 }
+
+    integralReactivePowerStatusString	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The text is status of integral reactive power."
+	::= { integralReactivePowerEntry 7 }
+
+    integralReactivePowerValuesNumber	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"Number of integralReactivePowerValues."
+	::= { ndInOut 46 }
+
+    integralReactivePowerValuesTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF IntegralReactivePowerValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of the integralReactivePowerValues entries."
+	::= { ndInOut 47 }
+
+    integralReactivePowerValuesEntry	OBJECT-TYPE
+	SYNTAX		IntegralReactivePowerValuesEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"An entry for integralReactivePowerValues."
+	INDEX		{ integralReactivePowerValuesIndex }
+	::= { integralReactivePowerValuesTable 1 }
+
+    IntegralReactivePowerValuesEntry ::=
+	SEQUENCE {
+	    integralReactivePowerValuesIndex
+		INTEGER,
+    	    integralReactivePowerValuesValue
+		DisplayString
+	}
+
+    integralReactivePowerValuesIndex	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"An entry for the integralReactivePowerValues entries."
+	::= { integralReactivePowerValuesEntry 1 }
+
+    integralReactivePowerValuesValue	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"integralReactivePowerValues value."
+	::= { integralReactivePowerValuesEntry 2 }
+
+    multiMeterConnectNumber	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"Number of Multi meter."
+	::= { ndInOut 48 }
+
+    multiMeterConnectTable	OBJECT-TYPE
+	SYNTAX		SEQUENCE OF MultiMeterConnectEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of the Multie meter entries."
+	::= { ndInOut 49 }
+
+    multiMeterConnectEntry	OBJECT-TYPE
+	SYNTAX		MultiMeterConnectEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"An entry for Multi meter."
+	INDEX		{ multiMeterConnectNumber }
+	::= { multiMeterConnectTable 1 }
+
+    MultiMeterConnectEntry ::=
+	SEQUENCE {
+    	    multiMeterConnectIndex
+    	    	INTEGER,
+    	    multiMeterConnectStatus
+    	    	INTEGER
+	}
+
+    multiMeterConnectIndex	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"An entry for the Multi meter entries."
+	::= { multiMeterConnectEntry 1 }
+
+    multiMeterConnectStatus	OBJECT-TYPE
+	SYNTAX		INTEGER {
+			    connected(40),
+			    not-connected(60)
+			}
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"Multi meter status."
+	::= { multiMeterConnectEntry 2 }
+
+-- The DIN table
+
+    dinNumber		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of DI channels supported by this device."
+	::= { ndInOut 50 }
+
+    dinTable		OBJECT-TYPE
+	SYNTAX		SEQUENCE OF DinEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A list of DI channel entries. The number of entries
+			is given by the value dinNumber."
+	::= { ndInOut 51 }
+
+    dinEntry		OBJECT-TYPE
+	SYNTAX		DinEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"A DI channel entry containing objects to describe the
+			DI channel."
+	INDEX		{ dinIndex }
+	::= { dinTable 1 }
+
+    DinEntry ::=
+	SEQUENCE {
+	    dinIndex
+		INTEGER,
+	    dinName
+		DisplayString,
+	    dinValue
+		INTEGER,
+	    dinOpenString
+		DisplayString,
+	    dinCloseString
+		DisplayString
+	}
+
+    dinIndex		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"A unique value for each DI channel. It's value ranges
+			between 1 and the value dinNumber."
+	::= { dinEntry 1 }
+
+    dinName		OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"The text string is type of device connected
+			DI channel."
+	::= { dinEntry 2 }
+
+    dinValue		OBJECT-TYPE
+	SYNTAX		INTEGER {
+			    open(0),
+			    close(1)
+			}
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The value of device connected DI channel."
+	::= { dinEntry 3}
+
+    dinOpenString	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"The text string is description of Open of 
+			the DI channel."
+	::= { dinEntry 4 }
+
+    dinCloseString	OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (1..32))
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"The text string is description of Close of 
+			the DI channel."
+	::= { dinEntry 5 }
+
+
+    dinValues		OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-only
+	STATUS		optional
+	DESCRIPTION	"The value of device connected all DI channels.
+			This value contains '0', '1', '-'.
+			'-' means that DI channel is not connected."
+	::= { ndInOut 52 }
+
+
+-- The Script Group
+
+    scriptIntegerVariableNumber	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of integer script variables."
+	::= { ndScript 1 }
+
+    scriptIntegerVariableTable	OBJECT-TYPE
+	SYNTAX		SEQUENCE OF ScriptIntegerVariableEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"The table of integer script variables."
+	::= { ndScript 2 }
+
+    scriptIntegerVariableEntry	OBJECT-TYPE
+	SYNTAX		ScriptIntegerVariableEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"The entry of integer script variables."
+	INDEX		{ scriptIntegerVariableIndex }
+	::= { scriptIntegerVariableTable 1 }
+
+    ScriptIntegerVariableEntry ::=
+	SEQUENCE {
+	    scriptIntegerVariableIndex
+		INTEGER,
+	    scriptIntegerVariableValue
+	    	INTEGER
+	}
+
+    scriptIntegerVariableIndex	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"An unique value for each integer script variable entry. It's value
+            ranges between 1 and the value of scriptIntegerVariableNumber."
+	::= { scriptIntegerVariableEntry 1 }
+
+    scriptIntegerVariableValue	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"A value of string integer variable."
+	::= { scriptIntegerVariableEntry 2 }
+
+    scriptStringVariableNumber	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"The number of string script variables."
+	::= { ndScript 3 }
+
+    scriptStringVariableTable	OBJECT-TYPE
+	SYNTAX		SEQUENCE OF ScriptStringVariableEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"The table of string script variables."
+	::= { ndScript 4 }
+
+    scriptStringVariableEntry	OBJECT-TYPE
+	SYNTAX		ScriptStringVariableEntry
+	ACCESS		not-accessible
+	STATUS		mandatory
+	DESCRIPTION	"The entry of string script variables."
+	INDEX		{ scriptStringVariableIndex }
+	::= { scriptStringVariableTable 1 }
+
+    ScriptStringVariableEntry ::=
+	SEQUENCE {
+	    scriptStringVariableIndex
+		INTEGER,
+	    scriptStringVariableValue
+		DisplayString
+	}
+
+    scriptStringVariableIndex	OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-only
+	STATUS		mandatory
+	DESCRIPTION	"An unique value for each string script variable entry. It's value
+            ranges between 1 and the value of scriptStringVariableNumber."
+	::= { scriptStringVariableEntry 1 }
+
+    scriptStringVariableValue	OBJECT-TYPE
+	SYNTAX		DisplayString
+	ACCESS		read-write
+	STATUS		mandatory
+	DESCRIPTION	"A value of string script variable."
+	::= { scriptStringVariableEntry 2 }
+
+    ndScriptVariableSave		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-write
+	STATUS		optional
+	DESCRIPTION	"Setting to any value will save current script variable
+			to non-volatile memory. When read this will always
+			return 0."
+	::={ ndScript 5 }
+
+    ndScriptVariableLoad		OBJECT-TYPE
+	SYNTAX		INTEGER
+	ACCESS		read-write
+	STATUS		optional
+	DESCRIPTION	"Setting to any value will load current script variable
+			from non-volatile memory. When read this will always
+			return 0."
+	::={ ndScript 6 }
+
+END

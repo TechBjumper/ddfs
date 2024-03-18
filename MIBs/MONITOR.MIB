@@ -1,0 +1,3264 @@
+PS-POWERSHIELD-SMIV2-MIB DEFINITIONS ::= BEGIN
+
+--
+-- This MIB is for PowerShield SNMP Adaptor Firmware Version 3.2.0.6B
+--
+
+IMPORTS
+    MODULE-COMPLIANCE, NOTIFICATION-GROUP, OBJECT-GROUP
+    	FROM SNMPv2-CONF
+    Integer32, MODULE-IDENTITY, NOTIFICATION-TYPE, OBJECT-TYPE, enterprises
+    	FROM SNMPv2-SMI
+	;    
+
+	-- ===============================================================================================
+	-- Identity
+	-- ===============================================================================================          
+    --define powerhsield enterprise root
+    psPowerShield MODULE-IDENTITY
+    LAST-UPDATED "201006100108Z"
+	ORGANIZATION "PowerShield Limited"
+	CONTACT-INFO "12 Target Place, Albany Auckland, New Zealand. Phone:+64 9 913 7576"
+	DESCRIPTION "PowerShield Limited. Manufacturing Battery Monitoring Equipment"
+	REVISION "201006100108Z"
+	DESCRIPTION "MIB file to describe the B1001"
+	::= { enterprises 35154 }                   
+	
+	-- ===============================================================================================
+	-- top level structure
+	-- ===============================================================================================              
+    psObjects 					OBJECT IDENTIFIER ::= { psPowerShield 1 }
+    psAlarms 					OBJECT IDENTIFIER ::= { psPowerShield 2 }
+    psConformance 				OBJECT IDENTIFIER ::= { psPowerShield 3 }
+    	psConformanceGroups 	OBJECT IDENTIFIER ::= { psConformance 1 }
+    	psConformanceCompliance OBJECT IDENTIFIER ::= { psConformance 2 }
+        
+	psNotifications							OBJECT IDENTIFIER ::= { psAlarms 1 }      
+		psMonitorNotifications  			OBJECT IDENTIFIER ::= { psNotifications 1 }
+			psMonitorNotificationsPrefix	OBJECT IDENTIFIER ::= { psMonitorNotifications 0 }     -- TRAP reverse mappable         
+		
+		psInputNotifications				OBJECT IDENTIFIER ::= { psNotifications 2 }
+			psInputNotificationsPrefix		OBJECT IDENTIFIER ::= { psInputNotifications 0 }
+		   
+    psB1001 								OBJECT IDENTIFIER ::= { psObjects 1001 } 
+	    psMonitorNotificationObjects  		OBJECT IDENTIFIER ::= { psB1001 1 }      	
+		psInputNotificationObjects			OBJECT IDENTIFIER ::= { psB1001 2 }
+		psStrings 							OBJECT IDENTIFIER ::= { psB1001 3 }   
+		psMonoblocks 						OBJECT IDENTIFIER ::= { psB1001 4 } 
+		psClearMonitorNotification   		OBJECT IDENTIFIER ::= { psB1001 5 }
+		psClearInputNotification			OBJECT IDENTIFIER ::= { psB1001 6 }
+				
+		psDebuggingObjects 					OBJECT IDENTIFIER ::= { psB1001 100 }
+	
+	-- ===============================================================================================
+	-- Monitor Notifications
+	-- ===============================================================================================          
+	-- Objects
+	-- timestamp
+    psMonitorNotificationTimeStamp OBJECT-TYPE 
+    	SYNTAX OCTET STRING(SIZE(13)) 
+    	MAX-ACCESS accessible-for-notify
+    	STATUS current     
+    	DESCRIPTION "Timestamp" 
+    	::= { psMonitorNotificationObjects 11 }	
+	
+	-- catagory  
+	psMonitorNotificationCatagory OBJECT-TYPE
+		SYNTAX INTEGER {
+			notTriggered(0),
+			lowLimitExceeded(1),
+			highLimitExceeded(2),
+			lowLimitExceededInDischarge(3),
+			highLimitDischarge(4),
+			lowLimitExceededInCharge(5),
+			highLimitCharge(6)		     		     
+		}    
+		MAX-ACCESS accessible-for-notify
+		STATUS current
+		DESCRIPTION "Alarm Catagory"
+		::= { psMonitorNotificationObjects 12 }   
+		              
+	-- channel number
+	psMonitorNotificationChannel OBJECT-TYPE
+		SYNTAX Integer32 (1..16)
+		MAX-ACCESS accessible-for-notify
+		STATUS current
+		DESCRIPTION "Channel Number"
+		::= { psMonitorNotificationObjects 13 }     	
+		
+     -- string number
+     psMonitorNotificationString OBJECT-TYPE
+     	SYNTAX Integer32 (1..16)
+     	MAX-ACCESS accessible-for-notify
+		STATUS current
+		DESCRIPTION "String Number"
+		::= { psMonitorNotificationObjects 14 }		
+	                               
+	-- monitor number
+	psMonitorNotificationMonitor OBJECT-TYPE
+		SYNTAX INTEGER {
+			master(0),
+			slave1(1),
+			slave2(2),
+			slave3(3),
+			slave4(4),
+			slave5(5),
+			slave6(6),
+			slave7(7),
+			slave8(8),
+			slave9(9),
+			slave10(10),
+			slave11(11),
+			slave12(12),
+			slave13(13),
+			slave14(14),
+			slave15(15)				
+		}    
+		MAX-ACCESS accessible-for-notify
+		STATUS current
+		DESCRIPTION "Monitor Number"
+		::= { psMonitorNotificationObjects 15 }   
+		
+	-- monoblock number minimum
+	psMonitorNotificationMonoblockMinimum OBJECT-TYPE
+		SYNTAX Integer32 (0..1280)
+		MAX-ACCESS accessible-for-notify 
+		STATUS current
+		DESCRIPTION "Monoblock Number Start"
+		::= { psMonitorNotificationObjects 16 }    
+		
+	-- monoblock number maximum
+	psMonitorNotificationMonoblockMaximum OBJECT-TYPE
+		SYNTAX Integer32 (0..1280)
+		MAX-ACCESS accessible-for-notify 
+		STATUS current
+		DESCRIPTION "Monoblock Number Stop"
+		::= { psMonitorNotificationObjects 17 }    				
+		
+	-- minimum limit   
+	psMonitorNotificationMinimum OBJECT-TYPE
+		SYNTAX Integer32 (-2147483648..2147483647) 
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "Minimum Limit"
+		::= { psMonitorNotificationObjects 18 }		
+	                                            
+	-- maximum limit               
+	psMonitorNotificationMaximum OBJECT-TYPE
+		SYNTAX Integer32 (-2147483648..2147483647) 
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "Maximum Limit"
+		::= { psMonitorNotificationObjects 19 }			                                            
+					
+	-- Notifications			
+	-- Monoblock voltage - chg/dis [psAlarmMonoblock1]
+	psMonitorNotificationMonoblockChargeDischarge NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp, 
+			psMonitorNotificationCatagory, 
+			psMonitorNotificationString, 
+			psMonitorNotificationMonitor,
+			psMonitorNotificationChannel,
+			psMonitorNotificationMonoblockMinimum,
+			psMonitorNotificationMinimum,
+			psMonitorNotificationMaximum 
+		}
+		STATUS current
+		DESCRIPTION 
+			"Monoblock voltage - charge/discharge
+				The Monoblock Voltage Alarms are triggered when the voltage of any of the
+				monoblocks in a system passes its pre-set thresholds. Thresholds for this alarm can be set
+				when configuring the monoblocks in a system
+				The Chg/Dis alarm occurs when the voltage of a monoblock passes its thresholds in
+				Charge mode or in Discharge mode."
+		::= { psMonitorNotificationsPrefix 1 }    
+		
+	-- Monoblock voltage - float [psAlarmMonoblock2]
+	psMonitorNotificationMonoblockFloat NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp, 
+			psMonitorNotificationCatagory, 
+			psMonitorNotificationString, 
+			psMonitorNotificationMonitor,
+			psMonitorNotificationChannel,
+			psMonitorNotificationMonoblockMinimum,
+			psMonitorNotificationMinimum,
+			psMonitorNotificationMaximum
+		}
+		STATUS current
+		DESCRIPTION 
+			"Monoblock voltage - float
+				The Monoblock Voltage Alarms are triggered when the voltage of any of the
+				monoblocks in a system passes its pre-set thresholds. Thresholds for this alarm can be set
+				when configuring the monoblocks in a system
+				The Float alarm occurs when the voltage of
+				a monoblock passes its thresholds in Float mode."
+		::= { psMonitorNotificationsPrefix 2 }	 		
+		        		        
+	-- Monoblock voltage - variation [psAlarmMonoblock3]
+	psMonitorNotificationMonoblockVoltageVariation NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp, 
+			psMonitorNotificationCatagory, 
+			psMonitorNotificationString, 
+			psMonitorNotificationMonoblockMinimum,
+			psMonitorNotificationMonoblockMaximum,
+			psMonitorNotificationMaximum
+		}
+		STATUS current
+		DESCRIPTION 
+			"Monoblock voltage - variation
+				The Monoblock Variation Alarm is triggered when the range from maximum to minimum of the
+				monoblock voltages in a string passes a pre-set thresholds. Thresholds for this alarm are set
+				when configuring the strings in a system."
+		::= { psMonitorNotificationsPrefix 3 }			
+
+	-- Monoblock voltage - idle	[psAlarmMonoblock4]
+	psMonitorNotificationMonoblockVoltageIdle NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp, 
+			psMonitorNotificationCatagory, 
+			psMonitorNotificationString, 
+			psMonitorNotificationMonitor,		
+			psMonitorNotificationMonoblockMinimum,
+			psMonitorNotificationMaximum 
+		}
+		STATUS current
+		DESCRIPTION 
+			"Monoblock voltage - idle
+				The Monoblock Voltage Alarms are triggered when the voltage of any of the
+				monoblocks in a system passes its pre-set thresholds. Thresholds for this alarm can be set
+				when configuring the monoblocks in a system
+				The idle alarm occurs when the voltage of
+				a monoblock is below its thresholds in idle mode."
+		::= { psMonitorNotificationsPrefix 4 }			
+		              		             
+	--String voltage - Charge / Discharge [psAlarmString1]
+	psMonitorNotificationStringVoltageChargeDischarge NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp, 
+			psMonitorNotificationCatagory, 
+			psMonitorNotificationString, 
+			psMonitorNotificationMinimum,
+			psMonitorNotificationMaximum 
+		}
+		STATUS current
+		DESCRIPTION 
+			"String voltage - Charge / Discharge
+				The String Voltage Alarms are triggered when the total voltage of a string
+				passes its pre-set thresholds. Thresholds for this alarm are set when configuring the strings
+				in a system
+				When a string is in Charge or Discharge mode, a String Voltage Alarm is
+				triggered if the string voltage passes the string maximum threshold, or is less than
+				the string minimum threshold."
+		::= { psMonitorNotificationsPrefix 5 }
+		              
+	-- String voltage - Float [psAlarmString2]
+	psMonitorNotificationStringVoltageFloat NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp, 
+			psMonitorNotificationCatagory, 
+			psMonitorNotificationString, 
+			psMonitorNotificationMinimum,
+			psMonitorNotificationMaximum
+		}
+		STATUS current
+		DESCRIPTION 
+			"String voltage - Float
+				The String Voltage Alarms are triggered when the total voltage of a string
+				passes its pre-set thresholds. Thresholds for this alarm are set when configuring the strings
+				in a system
+				When a string is in Float mode, the maximum voltage
+				threshold is the same, but the minimum threshold is determined by the Minimum Float
+				Voltage specified during the configuration of the string."
+		::= { psMonitorNotificationsPrefix 6 }			              
+		              
+	-- ==========================================================================		
+	-- Charge current [psAlarmCurrent1]
+	psMonitorNotificationChargeCurrent NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp, 
+			psMonitorNotificationCatagory, 
+			psMonitorNotificationString, 
+			psMonitorNotificationMonitor,
+			psMonitorNotificationChannel,
+			psMonitorNotificationMinimum,
+			psMonitorNotificationMaximum
+		}
+		STATUS current
+		DESCRIPTION 
+			"Charge Current
+				The Current Alarms are triggered when the current measured by a current
+				transducer passes its pre-set charge thresholds. Thresholds for the alarm are set when configuring
+				the current and temperature transducers."
+		::= { psMonitorNotificationsPrefix 7 }			              
+		
+	-- Discharge current [psAlarmCurrent2]
+	psMonitorNotificationDischargeCurrent NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp, 
+			psMonitorNotificationCatagory, 
+			psMonitorNotificationString, 
+			psMonitorNotificationMonitor,
+			psMonitorNotificationChannel,
+			psMonitorNotificationMinimum,
+			psMonitorNotificationMaximum
+		}
+		STATUS current
+		DESCRIPTION
+			"Discharge Current
+				The Current Alarms are triggered when the current measured by a current
+				transducer is below its pre-set discharge thresholds. Thresholds for the alarm are set when configuring
+				the current and temperature transducers."
+		::= { psMonitorNotificationsPrefix 8 }	   
+		
+	-- Float current [psAlarmCurrent3]
+	psMonitorNotificationFloatCurrent NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp, 
+			psMonitorNotificationCatagory, 
+			psMonitorNotificationString, 
+			psMonitorNotificationMonitor,
+			psMonitorNotificationChannel,
+			psMonitorNotificationMinimum,
+			psMonitorNotificationMaximum
+		}
+		STATUS current
+		DESCRIPTION
+			"Float Current
+				The Current Alarms are triggered when the current measured by a current
+				transducer passes its pre-set float thresholds. Thresholds for the alarm are set when configuring
+				the current and temperature transducers."
+		::= { psMonitorNotificationsPrefix 9 }			
+		
+	-- ==========================================================================       
+	-- String mode - charge [psAlarmStringEvent1]
+	psMonitorNotificationStringModeCharge NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp,
+			psMonitorNotificationString
+		}
+		STATUS current
+		DESCRIPTION
+			"String mode - Charge
+				String Events are not fault conditions, rather a change of mode, from float to
+				discharge for example. The change of string mode is considered important
+				enough to give notification.
+				String mode is changed to charge if current passes than pre-set charge thresholds."
+		::= { psMonitorNotificationsPrefix 10 }       
+		
+	-- String mode - Discharge [psAlarmStringEvent2]
+	psMonitorNotificationStringModeDischarge NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp,
+			psMonitorNotificationString
+		}
+		STATUS current
+		DESCRIPTION 
+			"String mode - Discharge
+				String Events are not fault conditions, rather a change of mode, from float to
+				discharge for example. The change of string mode is considered important
+				enough to give notification.
+				String mode is changed to charge if current is below pre-set discharge thresholds."
+		::= { psMonitorNotificationsPrefix 11 }				
+		
+	-- String mode - Float [psAlarmStringEvent3]
+	psMonitorNotificationStringModeFloat NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp,
+			psMonitorNotificationString
+		}
+		STATUS current
+		DESCRIPTION
+			"String mode - Float
+				String Events are not fault conditions, rather a change of mode, from float to
+				discharge for example. The change of string mode is considered important
+				enough to give notification.
+				String mode is changed to float if both string voltage and current
+				passes pre-set float thresholds."
+		::= { psMonitorNotificationsPrefix 12 }			
+		
+	-- String mode - Idle [psAlarmStringEvent4]
+	psMonitorNotificationStringModeIdle NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp,
+			psMonitorNotificationString
+		}
+		STATUS current
+		DESCRIPTION
+			"String mode - Idle
+				String Events are not fault conditions, rather a change of mode, from float to
+				discharge for example. The change of string mode is considered important
+				enough to give notification.
+				String mode is changed to idle if string voltage is below pre-set float thresholds
+				and string current is set between discharge threshold and float thresholds"
+		::= { psMonitorNotificationsPrefix 13 } 
+		
+	-- ========================================================================== 
+	-- Module failure [psAlarmSystem1]
+	psMonitorNotificationModuleFailure NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp, 
+			psMonitorNotificationCatagory, 
+			psMonitorNotificationString, 
+			psMonitorNotificationMonitor,
+			psMonitorNotificationMonoblockMinimum
+		}
+		STATUS current
+		DESCRIPTION
+			"Module failure
+				The Module Failure Alarm is triggered if a measurement module fails to
+				communicate with the monitor it is attached to.
+				This will be caused by the module being disconnected from the Bbus, or by the
+				module being de-powered."
+		::= { psMonitorNotificationsPrefix 14 }   		  
+		
+	-- Battery Monitor Offline [psAlarmSystem2]
+	psMonitorNotificationMonitorOffline NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp, 
+			psMonitorNotificationCatagory, 
+			psMonitorNotificationMonitor
+		}
+		STATUS current
+		DESCRIPTION
+			"Battery monitor offline
+				The Monitor Offline Alarm is triggered when a Monitor that was previously
+				responding, stops responding on the network.
+				This will obviously only occur in a networked system of two or more Monitors."
+		::= { psMonitorNotificationsPrefix 15 }					              
+				              
+	-- Memory Format [psAlarmSystem3]
+	psMonitorNotificationMemoryFormat NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp, 
+			psMonitorNotificationMonitor
+		}
+		STATUS current
+		DESCRIPTION 
+			"Memory format
+				The Memory Format Alarm is triggered if the memory system of the monitor is not
+				formatted. This should only occur at the time of first configuration."
+		::= { psMonitorNotificationsPrefix 16 }	  				              
+		
+	-- Memory Low [psAlarmSystem4]
+	psMonitorNotificationMemoryLow NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp, 
+			psMonitorNotificationMonitor
+		}
+		STATUS current
+		DESCRIPTION 
+			"Memory low
+				The Memory Low alarm is triggered when the dynamic part of the memory system of the 
+				memory system (allocated to the Capacity and Recharge memories) is almost full.
+				Check to ensure all memory data has been uploaded to the database, and clear
+				the archive to allow further logging."
+		::= { psMonitorNotificationsPrefix 17 }  		
+	
+	-- Memory Full [psAlarmSystem5]
+	psMonitorNotificationMemoryFull NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp, 
+			psMonitorNotificationMonitor
+		}
+		STATUS current
+		DESCRIPTION 
+			"Memory Full
+				The memory full alarm is triggered when the dynamic part of the memory system of the 
+				memory system (allocated to the Capacity and Recharge memories) is full.
+				Check to ensure all memory data has been uploaded to the database, and clear
+				the archive to allow further logging."
+		::= { psMonitorNotificationsPrefix 18 }
+		
+	-- Long term memory low [psAlarmSystem6]
+	psMonitorNotificationLongTermMemoryLow NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp,
+			psMonitorNotificationMonitor
+		}
+		STATUS current
+		DESCRIPTION 
+			"Long term memory low
+				The Long Term Memory Low alarm is triggered when the fixed part of the
+				memory system of the memory system (allocated to the Long Term and Medium Term
+				memories) is almost full.
+				Check to ensure all memory data has been uploaded to the database, and clear
+				the archive to allow further logging."
+		::= { psMonitorNotificationsPrefix 19 }
+		
+	-- Long term memory full [psAlarmSystem7]
+	psMonitorNotificationLongTermMemoryFull NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp,
+			psMonitorNotificationMonitor 
+		}
+		STATUS current
+		DESCRIPTION 
+			"Long term memory full
+				The Long Term Memory Full Alarm is triggered when the fixed part of the
+				memory system of the memory system (allocated to the Long Term and Medium Term
+				memories) is full.
+				Check to ensure all memory data has been uploaded to the database, and clear
+				the archive to allow further logging."
+		::= { psMonitorNotificationsPrefix 20 }	
+		
+	-- Temperature [psAlarmTemp1]
+	psMonitorNotificationTemperature NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp, 
+			psMonitorNotificationCatagory, 
+			psMonitorNotificationString, 
+			psMonitorNotificationMonitor,
+			psMonitorNotificationChannel,
+			psMonitorNotificationMinimum,
+			psMonitorNotificationMaximum
+		}
+		STATUS current
+		DESCRIPTION 
+			"Ambient Temperature
+				The Temperature Alarm is triggered if the measured temperature passes the set
+				thresholds."
+		::= { psMonitorNotificationsPrefix 21 }	
+		
+ 	-- Monoblock post temperature [psAlarmTemp2]
+	psMonitorNotificationMonoblockPostTemperature NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationCatagory,
+			psMonitorNotificationString,
+			psMonitorNotificationMonoblockMinimum,					
+			psMonitorNotificationMinimum,
+			psMonitorNotificationMaximum
+		}
+		STATUS current
+		DESCRIPTION 
+			"Monoblock post temperature
+				The Temperature Alarm is triggered if the measured temperature passes the set
+				thresholds."
+		::= { psMonitorNotificationsPrefix 22 }	
+		
+ 	-- Monoblock temperature variation [psAlarmTemp3]
+	psMonitorNotificationMonoblockTemperatureVariation NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationCatagory,
+			psMonitorNotificationString,
+			psMonitorNotificationMonoblockMinimum,
+			psMonitorNotificationMaximum
+		}
+		STATUS current
+		DESCRIPTION 
+			"Monoblock temperature variation
+				The Monoblock Variation Alarm is triggered when the range from maximum to minimum of the
+				monoblock temperature in a string passes a pre-set threshold. Thresholds for this alarm are set
+				when configuring the strings in a system."
+		::= { psMonitorNotificationsPrefix 23 }	
+		
+	--Monitored mains [psAlarmOther1]
+	psMonitorNotificationMonitoredMains NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp
+		}
+		STATUS current
+		DESCRIPTION
+			"Monitored mains
+				The Monitored Mains Alarm is triggered when the mains supply fails. This alarm
+				must be configured, it is not on by default. "
+		::= { psMonitorNotificationsPrefix 24 }  													
+
+	-- Comms notification [psAlarmOther2]
+	psMonitorNotificationCommsNotification NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp
+		}
+		STATUS current
+		DESCRIPTION 
+			"Comms notification
+				The Communication Notification Alarm is triggered if four consecutive notification
+				attempts are made, and are not acknowledged. Note that these notification
+				attempts will only occur if the correct settings are made."
+		::= { psMonitorNotificationsPrefix 25 }   
+
+    -- Monoblock baseline impedance exceeded
+    psMonitorNotificationBaselineImpedanceExceeded NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp,
+			psMonitorNotificationCatagory,
+			psMonitorNotificationString,
+			psMonitorNotificationMonitor,
+			psMonitorNotificationMonoblockMinimum,
+			psMonitorNotificationMinimum,
+			psMonitorNotificationMaximum
+		}
+		STATUS current
+		DESCRIPTION 
+			"Monoblock baseline impedance exceeded
+				The Monoblock baseline Alarm is triggered if the measured impedance passes the set
+				baseline % limits."
+		::= { psMonitorNotificationsPrefix 26 } 
+		
+    -- String varaince impedance exceeded
+    psMonitorNotificationStringVarianceImpedanceExceeded NOTIFICATION-TYPE 
+		OBJECTS { 
+			psMonitorNotificationTimeStamp,
+			psMonitorNotificationCatagory,
+			psMonitorNotificationString,
+			psMonitorNotificationMonitor,
+			psMonitorNotificationMonoblockMinimum,
+			psMonitorNotificationMinimum,
+			psMonitorNotificationMaximum
+		}
+		STATUS current
+		DESCRIPTION 
+			"String variance impedance exceeded
+				The String variance Alarm is triggered when the range from maximum to minimum of the string impedance
+				passes a pre-set % limit."
+		::= { psMonitorNotificationsPrefix 27 } 	
+		
+	-- Clearing	
+	psClearMonitorNotificationMonoblockChargeDischarge OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear Monoblock voltage - charge/discharge" 
+		::= { psClearMonitorNotification 1 }			
+		        
+	psClearMonitorNotificationMonoblockFloat OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear Monoblock Float"
+		::= { psClearMonitorNotification 2 }     		        
+		        
+	psClearMonitorNotificationMonoblockVoltageVariation OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear Monoblock Voltage Variation"
+		::= { psClearMonitorNotification 3 }  
+		
+	psClearMonitorNotificationMonoblockVoltageIdle OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear Monoblock Voltage Idle"
+		::= { psClearMonitorNotification 4 }
+				
+	psClearMonitorNotificationStringVoltageChargeDischarge OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear String Voltage Charge / Discharge"
+		::= { psClearMonitorNotification 5 }  	
+		
+	psClearMonitorNotificationStringVoltageFloat OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear String Voltage Float"
+		::= { psClearMonitorNotification 6 }
+		
+	psClearMonitorNotificationChargeCurrent OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear String Voltage Float"
+		::= { psClearMonitorNotification 7 }
+		
+	psClearMonitorNotificationDischargeCurrent OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear String Voltage Float"
+		::= { psClearMonitorNotification 8 }										 
+		
+	psClearMonitorNotificationFloatCurrent OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear Float Current"
+		::= { psClearMonitorNotification 9 }	
+		
+	psClearMonitorNotificationStringModeCharge OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear String mode Charge"
+		::= { psClearMonitorNotification 10 }		
+			
+	psClearMonitorNotificationStringModeDischarge OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear String Mode Discharge"
+		::= { psClearMonitorNotification 11 }		
+			
+	psClearMonitorNotificationStringModeFloat OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear String Mode Float"
+		::= { psClearMonitorNotification 12 }							
+				
+	psClearMonitorNotificationStringModeIdle OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear String Mode Idle"
+		::= { psClearMonitorNotification 13 }	
+		
+	psClearMonitorNotificationModuleFailure OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear Module Failure"
+		::= { psClearMonitorNotification 14 }							
+					
+	psClearMonitorNotificationMonitorOffline OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear Battery monitor offline"
+		::= { psClearMonitorNotification 15 }	
+		
+	psClearMonitorNotificationMemoryFormat OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear memory format"
+		::= { psClearMonitorNotification 16 }			
+	
+	psClearMonitorNotificationMemoryLow OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear memory low"
+		::= { psClearMonitorNotification 17 }
+		
+	psClearMonitorNotificationMemoryFull OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear memory full"
+		::= { psClearMonitorNotification 18 }	
+		
+	psClearMonitorNotificationLongTermMemoryLow OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear long term memory low"
+		::= { psClearMonitorNotification 19 }	
+		
+	psClearMonitorNotificationLongTermMemoryFull OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear long term memory full"
+		::= { psClearMonitorNotification 20 }	
+		
+	psClearMonitorNotificationTemperature OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear ambient temperature"
+		::= { psClearMonitorNotification 21 }	
+		
+	psClearMonitorNotificationMonoblockPostTemperature OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear monoblock post temperature"
+		::= { psClearMonitorNotification 22 }																																				    	
+		
+	psClearMonitorNotificationMonoblockTemperatureVariation OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear monoblock temperature variation"
+		::= { psClearMonitorNotification 23 }	   
+		
+	psClearMonitorNotificationMonitoredMains OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear alarm monitored mains"
+		::= { psClearMonitorNotification 24 }	
+		
+	psClearMonitorNotificationCommsNotification OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear comms notification"
+		::= { psClearMonitorNotification 25 }
+		
+	psClearMonitorNotificationBaselineImpedanceExceeded OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear baseline impedance exceeded"
+		::= { psClearMonitorNotification 26 }
+		
+	psClearMonitorNotificationStringVarianceImpedanceExceeded OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS read-write
+		STATUS current
+		DESCRIPTION "Clear variance impedance exceeded"
+		::= { psClearMonitorNotification 27 }				
+													
+	-- ===============================================================================================
+	-- Input Notification	
+	-- ===============================================================================================   
+	 
+	-- Objects 
+	-- Input number
+	psInputNotificationInputNumber OBJECT-TYPE
+		SYNTAX Integer32 (1..32)
+		MAX-ACCESS accessible-for-notify
+		STATUS current
+		DESCRIPTION "Input Number"
+		::= { psInputNotificationObjects 1 }
+		
+	-- Input state
+	psInputNotificationInputState OBJECT-TYPE
+		SYNTAX Integer32 (0..1)
+		MAX-ACCESS accessible-for-notify
+		STATUS current
+		DESCRIPTION "Input State"
+		::= { psInputNotificationObjects 2 }       
+	 
+	-- Notifications
+	-- Input 1
+	psInputNotificationInput1 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 1"
+	 ::= { psInputNotificationsPrefix 1 }
+	
+	
+	-- Input 2
+	psInputNotificationInput2 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 2"
+	 ::= { psInputNotificationsPrefix 2 }
+	
+	
+	-- Input 3
+	psInputNotificationInput3 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 3"
+	 ::= { psInputNotificationsPrefix 3 }
+	
+	
+	-- Input 4
+	psInputNotificationInput4 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 4"
+	 ::= { psInputNotificationsPrefix 4 }
+	
+	
+	-- Input 5
+	psInputNotificationInput5 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 5"
+	 ::= { psInputNotificationsPrefix 5 }
+	
+	
+	-- Input 6
+	psInputNotificationInput6 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 6"
+	 ::= { psInputNotificationsPrefix 6 }
+	
+	
+	-- Input 7
+	psInputNotificationInput7 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 7"
+	 ::= { psInputNotificationsPrefix 7 }
+	
+	
+	-- Input 8
+	psInputNotificationInput8 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 8"
+	 ::= { psInputNotificationsPrefix 8 }
+	
+	
+	-- Input 9
+	psInputNotificationInput9 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 9"
+	 ::= { psInputNotificationsPrefix 9 }
+	
+	
+	-- Input 10
+	psInputNotificationInput10 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 10"
+	 ::= { psInputNotificationsPrefix 10 }
+	
+	
+	-- Input 11
+	psInputNotificationInput11 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 11"
+	 ::= { psInputNotificationsPrefix 11 }
+	
+	
+	-- Input 12
+	psInputNotificationInput12 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 12"
+	 ::= { psInputNotificationsPrefix 12 }
+	
+	
+	-- Input 13
+	psInputNotificationInput13 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 13"
+	 ::= { psInputNotificationsPrefix 13 }
+	
+	
+	-- Input 14
+	psInputNotificationInput14 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 14"
+	 ::= { psInputNotificationsPrefix 14 }
+	
+	
+	-- Input 15
+	psInputNotificationInput15 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 15"
+	 ::= { psInputNotificationsPrefix 15 }
+	
+	
+	-- Input 16
+	psInputNotificationInput16 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 16"
+	 ::= { psInputNotificationsPrefix 16 }
+	
+	
+	-- Input 17
+	psInputNotificationInput17 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 17"
+	 ::= { psInputNotificationsPrefix 17 }
+	
+	
+	-- Input 18
+	psInputNotificationInput18 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 18"
+	 ::= { psInputNotificationsPrefix 18 }
+	
+	
+	-- Input 19
+	psInputNotificationInput19 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 19"
+	 ::= { psInputNotificationsPrefix 19 }
+	
+	
+	-- Input 20
+	psInputNotificationInput20 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 20"
+	 ::= { psInputNotificationsPrefix 20 }
+	
+	
+	-- Input 21
+	psInputNotificationInput21 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 21"
+	 ::= { psInputNotificationsPrefix 21 }
+	
+	
+	-- Input 22
+	psInputNotificationInput22 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 22"
+	 ::= { psInputNotificationsPrefix 22 }
+	
+	
+	-- Input 23
+	psInputNotificationInput23 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 23"
+	 ::= { psInputNotificationsPrefix 23 }
+	
+	
+	-- Input 24
+	psInputNotificationInput24 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 24"
+	 ::= { psInputNotificationsPrefix 24 }
+	
+	
+	-- Input 25
+	psInputNotificationInput25 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 25"
+	 ::= { psInputNotificationsPrefix 25 }
+	
+	
+	-- Input 26
+	psInputNotificationInput26 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 26"
+	 ::= { psInputNotificationsPrefix 26 }
+	
+	
+	-- Input 27
+	psInputNotificationInput27 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 27"
+	 ::= { psInputNotificationsPrefix 27 }
+	
+	
+	-- Input 28
+	psInputNotificationInput28 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 28"
+	 ::= { psInputNotificationsPrefix 28 }
+	
+	
+	-- Input 29
+	psInputNotificationInput29 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 29"
+	 ::= { psInputNotificationsPrefix 29 }
+	
+	
+	-- Input 30
+	psInputNotificationInput30 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 30"
+	 ::= { psInputNotificationsPrefix 30 }
+	
+	
+	-- Input 31
+	psInputNotificationInput31 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 31"
+	 ::= { psInputNotificationsPrefix 31 }
+	
+	
+	-- Input 32
+	psInputNotificationInput32 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 32"
+	 ::= { psInputNotificationsPrefix 32 }
+	
+	
+	-- Input 33
+	psInputNotificationInput33 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 33"
+	 ::= { psInputNotificationsPrefix 33 }
+	
+	
+	-- Input 34
+	psInputNotificationInput34 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 34"
+	 ::= { psInputNotificationsPrefix 34 }
+	
+	
+	-- Input 35
+	psInputNotificationInput35 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 35"
+	 ::= { psInputNotificationsPrefix 35 }
+	
+	
+	-- Input 36
+	psInputNotificationInput36 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 36"
+	 ::= { psInputNotificationsPrefix 36 }
+	
+	
+	-- Input 37
+	psInputNotificationInput37 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 37"
+	 ::= { psInputNotificationsPrefix 37 }
+	
+	
+	-- Input 38
+	psInputNotificationInput38 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 38"
+	 ::= { psInputNotificationsPrefix 38 }
+	
+	
+	-- Input 39
+	psInputNotificationInput39 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 39"
+	 ::= { psInputNotificationsPrefix 39 }
+	
+	
+	-- Input 40
+	psInputNotificationInput40 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 40"
+	 ::= { psInputNotificationsPrefix 40 }
+	
+	
+	-- Input 41
+	psInputNotificationInput41 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 41"
+	 ::= { psInputNotificationsPrefix 41 }
+	
+	
+	-- Input 42
+	psInputNotificationInput42 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 42"
+	 ::= { psInputNotificationsPrefix 42 }
+	
+	
+	-- Input 43
+	psInputNotificationInput43 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 43"
+	 ::= { psInputNotificationsPrefix 43 }
+	
+	
+	-- Input 44
+	psInputNotificationInput44 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 44"
+	 ::= { psInputNotificationsPrefix 44 }
+	
+	
+	-- Input 45
+	psInputNotificationInput45 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 45"
+	 ::= { psInputNotificationsPrefix 45 }
+	
+	
+	-- Input 46
+	psInputNotificationInput46 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 46"
+	 ::= { psInputNotificationsPrefix 46 }
+	
+	
+	-- Input 47
+	psInputNotificationInput47 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 47"
+	 ::= { psInputNotificationsPrefix 47 }
+	
+	
+	-- Input 48
+	psInputNotificationInput48 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 48"
+	 ::= { psInputNotificationsPrefix 48 }
+	
+	
+	-- Input 49
+	psInputNotificationInput49 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 49"
+	 ::= { psInputNotificationsPrefix 49 }
+	
+	
+	-- Input 50
+	psInputNotificationInput50 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 50"
+	 ::= { psInputNotificationsPrefix 50 }
+	
+	
+	-- Input 51
+	psInputNotificationInput51 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 51"
+	 ::= { psInputNotificationsPrefix 51 }
+	
+	
+	-- Input 52
+	psInputNotificationInput52 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 52"
+	 ::= { psInputNotificationsPrefix 52 }
+	
+	
+	-- Input 53
+	psInputNotificationInput53 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 53"
+	 ::= { psInputNotificationsPrefix 53 }
+	
+	
+	-- Input 54
+	psInputNotificationInput54 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 54"
+	 ::= { psInputNotificationsPrefix 54 }
+	
+	
+	-- Input 55
+	psInputNotificationInput55 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 55"
+	 ::= { psInputNotificationsPrefix 55 }
+	
+	
+	-- Input 56
+	psInputNotificationInput56 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 56"
+	 ::= { psInputNotificationsPrefix 56 }
+	
+	
+	-- Input 57
+	psInputNotificationInput57 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 57"
+	 ::= { psInputNotificationsPrefix 57 }
+	
+	
+	-- Input 58
+	psInputNotificationInput58 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 58"
+	 ::= { psInputNotificationsPrefix 58 }
+	
+	
+	-- Input 59
+	psInputNotificationInput59 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 59"
+	 ::= { psInputNotificationsPrefix 59 }
+	
+	
+	-- Input 60
+	psInputNotificationInput60 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 60"
+	 ::= { psInputNotificationsPrefix 60 }
+	
+	
+	-- Input 61
+	psInputNotificationInput61 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 61"
+	 ::= { psInputNotificationsPrefix 61 }
+	
+	
+	-- Input 62
+	psInputNotificationInput62 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 62"
+	 ::= { psInputNotificationsPrefix 62 }
+	
+	
+	-- Input 63
+	psInputNotificationInput63 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 63"
+	 ::= { psInputNotificationsPrefix 63 }
+	
+	
+	-- Input 64
+	psInputNotificationInput64 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 64"
+	 ::= { psInputNotificationsPrefix 64 }
+	
+	
+	-- Input 65
+	psInputNotificationInput65 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 65"
+	 ::= { psInputNotificationsPrefix 65 }
+	
+	
+	-- Input 66
+	psInputNotificationInput66 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 66"
+	 ::= { psInputNotificationsPrefix 66 }
+	
+	
+	-- Input 67
+	psInputNotificationInput67 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 67"
+	 ::= { psInputNotificationsPrefix 67 }
+	
+	
+	-- Input 68
+	psInputNotificationInput68 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 68"
+	 ::= { psInputNotificationsPrefix 68 }
+	
+	
+	-- Input 69
+	psInputNotificationInput69 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 69"
+	 ::= { psInputNotificationsPrefix 69 }
+	
+	
+	-- Input 70
+	psInputNotificationInput70 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 70"
+	 ::= { psInputNotificationsPrefix 70 }
+	
+	
+	-- Input 71
+	psInputNotificationInput71 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 71"
+	 ::= { psInputNotificationsPrefix 71 }
+	
+	
+	-- Input 72
+	psInputNotificationInput72 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 72"
+	 ::= { psInputNotificationsPrefix 72 }
+	
+	
+	-- Input 73
+	psInputNotificationInput73 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 73"
+	 ::= { psInputNotificationsPrefix 73 }
+	
+	
+	-- Input 74
+	psInputNotificationInput74 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 74"
+	 ::= { psInputNotificationsPrefix 74 }
+	
+	
+	-- Input 75
+	psInputNotificationInput75 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 75"
+	 ::= { psInputNotificationsPrefix 75 }
+	
+	
+	-- Input 76
+	psInputNotificationInput76 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 76"
+	 ::= { psInputNotificationsPrefix 76 }
+	
+	
+	-- Input 77
+	psInputNotificationInput77 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 77"
+	 ::= { psInputNotificationsPrefix 77 }
+	
+	
+	-- Input 78
+	psInputNotificationInput78 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 78"
+	 ::= { psInputNotificationsPrefix 78 }
+	
+	
+	-- Input 79
+	psInputNotificationInput79 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 79"
+	 ::= { psInputNotificationsPrefix 79 }
+	
+	
+	-- Input 80
+	psInputNotificationInput80 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 80"
+	 ::= { psInputNotificationsPrefix 80 }
+	
+	
+	-- Input 81
+	psInputNotificationInput81 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 81"
+	 ::= { psInputNotificationsPrefix 81 }
+	
+	
+	-- Input 82
+	psInputNotificationInput82 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 82"
+	 ::= { psInputNotificationsPrefix 82 }
+	
+	
+	-- Input 83
+	psInputNotificationInput83 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 83"
+	 ::= { psInputNotificationsPrefix 83 }
+	
+	
+	-- Input 84
+	psInputNotificationInput84 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 84"
+	 ::= { psInputNotificationsPrefix 84 }
+	
+	
+	-- Input 85
+	psInputNotificationInput85 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 85"
+	 ::= { psInputNotificationsPrefix 85 }
+	
+	
+	-- Input 86
+	psInputNotificationInput86 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 86"
+	 ::= { psInputNotificationsPrefix 86 }
+	
+	
+	-- Input 87
+	psInputNotificationInput87 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 87"
+	 ::= { psInputNotificationsPrefix 87 }
+	
+	
+	-- Input 88
+	psInputNotificationInput88 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 88"
+	 ::= { psInputNotificationsPrefix 88 }
+	
+	
+	-- Input 89
+	psInputNotificationInput89 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 89"
+	 ::= { psInputNotificationsPrefix 89 }
+	
+	
+	-- Input 90
+	psInputNotificationInput90 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 90"
+	 ::= { psInputNotificationsPrefix 90 }
+	
+	
+	-- Input 91
+	psInputNotificationInput91 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 91"
+	 ::= { psInputNotificationsPrefix 91 }
+	
+	
+	-- Input 92
+	psInputNotificationInput92 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 92"
+	 ::= { psInputNotificationsPrefix 92 }
+	
+	
+	-- Input 93
+	psInputNotificationInput93 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 93"
+	 ::= { psInputNotificationsPrefix 93 }
+	
+	
+	-- Input 94
+	psInputNotificationInput94 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 94"
+	 ::= { psInputNotificationsPrefix 94 }
+	
+	
+	-- Input 95
+	psInputNotificationInput95 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 95"
+	 ::= { psInputNotificationsPrefix 95 }
+	
+	
+	-- Input 96
+	psInputNotificationInput96 NOTIFICATION-TYPE
+	   OBJECTS {
+	   psInputNotificationInputNumber,
+	   psInputNotificationInputState
+	   }
+	 STATUS current
+	 DESCRIPTION "Input Alarm 96"
+	 ::= { psInputNotificationsPrefix 96 }
+	
+	
+	
+	
+			
+	-- Input Clear	
+	--Input Clear 1
+	psClearInputNotificationInput1 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 1"
+	 ::= { psClearInputNotification 1 }
+	
+	--Input Clear 2
+	psClearInputNotificationInput2 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 2"
+	 ::= { psClearInputNotification 2 }
+	
+	--Input Clear 3
+	psClearInputNotificationInput3 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 3"
+	 ::= { psClearInputNotification 3 }
+	
+	--Input Clear 4
+	psClearInputNotificationInput4 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 4"
+	 ::= { psClearInputNotification 4 }
+	
+	--Input Clear 5
+	psClearInputNotificationInput5 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 5"
+	 ::= { psClearInputNotification 5 }
+	
+	--Input Clear 6
+	psClearInputNotificationInput6 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 6"
+	 ::= { psClearInputNotification 6 }
+	
+	--Input Clear 7
+	psClearInputNotificationInput7 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 7"
+	 ::= { psClearInputNotification 7 }
+	
+	--Input Clear 8
+	psClearInputNotificationInput8 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 8"
+	 ::= { psClearInputNotification 8 }
+	
+	--Input Clear 9
+	psClearInputNotificationInput9 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 9"
+	 ::= { psClearInputNotification 9 }
+	
+	--Input Clear 10
+	psClearInputNotificationInput10 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 10"
+	 ::= { psClearInputNotification 10 }
+	
+	--Input Clear 11
+	psClearInputNotificationInput11 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 11"
+	 ::= { psClearInputNotification 11 }
+	
+	--Input Clear 12
+	psClearInputNotificationInput12 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 12"
+	 ::= { psClearInputNotification 12 }
+	
+	--Input Clear 13
+	psClearInputNotificationInput13 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 13"
+	 ::= { psClearInputNotification 13 }
+	
+	--Input Clear 14
+	psClearInputNotificationInput14 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 14"
+	 ::= { psClearInputNotification 14 }
+	
+	--Input Clear 15
+	psClearInputNotificationInput15 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 15"
+	 ::= { psClearInputNotification 15 }
+	
+	--Input Clear 16
+	psClearInputNotificationInput16 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 16"
+	 ::= { psClearInputNotification 16 }
+	
+	--Input Clear 17
+	psClearInputNotificationInput17 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 17"
+	 ::= { psClearInputNotification 17 }
+	
+	--Input Clear 18
+	psClearInputNotificationInput18 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 18"
+	 ::= { psClearInputNotification 18 }
+	
+	--Input Clear 19
+	psClearInputNotificationInput19 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 19"
+	 ::= { psClearInputNotification 19 }
+	
+	--Input Clear 20
+	psClearInputNotificationInput20 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 20"
+	 ::= { psClearInputNotification 20 }
+	
+	--Input Clear 21
+	psClearInputNotificationInput21 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 21"
+	 ::= { psClearInputNotification 21 }
+	
+	--Input Clear 22
+	psClearInputNotificationInput22 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 22"
+	 ::= { psClearInputNotification 22 }
+	
+	--Input Clear 23
+	psClearInputNotificationInput23 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 23"
+	 ::= { psClearInputNotification 23 }
+	
+	--Input Clear 24
+	psClearInputNotificationInput24 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 24"
+	 ::= { psClearInputNotification 24 }
+	
+	--Input Clear 25
+	psClearInputNotificationInput25 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 25"
+	 ::= { psClearInputNotification 25 }
+	
+	--Input Clear 26
+	psClearInputNotificationInput26 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 26"
+	 ::= { psClearInputNotification 26 }
+	
+	--Input Clear 27
+	psClearInputNotificationInput27 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 27"
+	 ::= { psClearInputNotification 27 }
+	
+	--Input Clear 28
+	psClearInputNotificationInput28 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 28"
+	 ::= { psClearInputNotification 28 }
+	
+	--Input Clear 29
+	psClearInputNotificationInput29 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 29"
+	 ::= { psClearInputNotification 29 }
+	
+	--Input Clear 30
+	psClearInputNotificationInput30 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 30"
+	 ::= { psClearInputNotification 30 }
+	
+	--Input Clear 31
+	psClearInputNotificationInput31 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 31"
+	 ::= { psClearInputNotification 31 }
+	
+	--Input Clear 32
+	psClearInputNotificationInput32 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 32"
+	 ::= { psClearInputNotification 32 }
+	
+	--Input Clear 33
+	psClearInputNotificationInput33 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 33"
+	 ::= { psClearInputNotification 33 }
+	
+	--Input Clear 34
+	psClearInputNotificationInput34 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 34"
+	 ::= { psClearInputNotification 34 }
+	
+	--Input Clear 35
+	psClearInputNotificationInput35 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 35"
+	 ::= { psClearInputNotification 35 }
+	
+	--Input Clear 36
+	psClearInputNotificationInput36 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 36"
+	 ::= { psClearInputNotification 36 }
+	
+	--Input Clear 37
+	psClearInputNotificationInput37 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 37"
+	 ::= { psClearInputNotification 37 }
+	
+	--Input Clear 38
+	psClearInputNotificationInput38 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 38"
+	 ::= { psClearInputNotification 38 }
+	
+	--Input Clear 39
+	psClearInputNotificationInput39 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 39"
+	 ::= { psClearInputNotification 39 }
+	
+	--Input Clear 40
+	psClearInputNotificationInput40 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 40"
+	 ::= { psClearInputNotification 40 }
+	
+	--Input Clear 41
+	psClearInputNotificationInput41 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 41"
+	 ::= { psClearInputNotification 41 }
+	
+	--Input Clear 42
+	psClearInputNotificationInput42 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 42"
+	 ::= { psClearInputNotification 42 }
+	
+	--Input Clear 43
+	psClearInputNotificationInput43 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 43"
+	 ::= { psClearInputNotification 43 }
+	
+	--Input Clear 44
+	psClearInputNotificationInput44 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 44"
+	 ::= { psClearInputNotification 44 }
+	
+	--Input Clear 45
+	psClearInputNotificationInput45 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 45"
+	 ::= { psClearInputNotification 45 }
+	
+	--Input Clear 46
+	psClearInputNotificationInput46 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 46"
+	 ::= { psClearInputNotification 46 }
+	
+	--Input Clear 47
+	psClearInputNotificationInput47 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 47"
+	 ::= { psClearInputNotification 47 }
+	
+	--Input Clear 48
+	psClearInputNotificationInput48 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 48"
+	 ::= { psClearInputNotification 48 }
+	
+	--Input Clear 49
+	psClearInputNotificationInput49 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 49"
+	 ::= { psClearInputNotification 49 }
+	
+	--Input Clear 50
+	psClearInputNotificationInput50 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 50"
+	 ::= { psClearInputNotification 50 }
+	
+	--Input Clear 51
+	psClearInputNotificationInput51 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 51"
+	 ::= { psClearInputNotification 51 }
+	
+	--Input Clear 52
+	psClearInputNotificationInput52 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 52"
+	 ::= { psClearInputNotification 52 }
+	
+	--Input Clear 53
+	psClearInputNotificationInput53 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 53"
+	 ::= { psClearInputNotification 53 }
+	
+	--Input Clear 54
+	psClearInputNotificationInput54 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 54"
+	 ::= { psClearInputNotification 54 }
+	
+	--Input Clear 55
+	psClearInputNotificationInput55 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 55"
+	 ::= { psClearInputNotification 55 }
+	
+	--Input Clear 56
+	psClearInputNotificationInput56 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 56"
+	 ::= { psClearInputNotification 56 }
+	
+	--Input Clear 57
+	psClearInputNotificationInput57 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 57"
+	 ::= { psClearInputNotification 57 }
+	
+	--Input Clear 58
+	psClearInputNotificationInput58 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 58"
+	 ::= { psClearInputNotification 58 }
+	
+	--Input Clear 59
+	psClearInputNotificationInput59 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 59"
+	 ::= { psClearInputNotification 59 }
+	
+	--Input Clear 60
+	psClearInputNotificationInput60 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 60"
+	 ::= { psClearInputNotification 60 }
+	
+	--Input Clear 61
+	psClearInputNotificationInput61 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 61"
+	 ::= { psClearInputNotification 61 }
+	
+	--Input Clear 62
+	psClearInputNotificationInput62 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 62"
+	 ::= { psClearInputNotification 62 }
+	
+	--Input Clear 63
+	psClearInputNotificationInput63 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 63"
+	 ::= { psClearInputNotification 63 }
+	
+	--Input Clear 64
+	psClearInputNotificationInput64 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 64"
+	 ::= { psClearInputNotification 64 }
+	
+	--Input Clear 65
+	psClearInputNotificationInput65 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 65"
+	 ::= { psClearInputNotification 65 }
+	
+	--Input Clear 66
+	psClearInputNotificationInput66 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 66"
+	 ::= { psClearInputNotification 66 }
+	
+	--Input Clear 67
+	psClearInputNotificationInput67 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 67"
+	 ::= { psClearInputNotification 67 }
+	
+	--Input Clear 68
+	psClearInputNotificationInput68 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 68"
+	 ::= { psClearInputNotification 68 }
+	
+	--Input Clear 69
+	psClearInputNotificationInput69 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 69"
+	 ::= { psClearInputNotification 69 }
+	
+	--Input Clear 70
+	psClearInputNotificationInput70 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 70"
+	 ::= { psClearInputNotification 70 }
+	
+	--Input Clear 71
+	psClearInputNotificationInput71 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 71"
+	 ::= { psClearInputNotification 71 }
+	
+	--Input Clear 72
+	psClearInputNotificationInput72 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 72"
+	 ::= { psClearInputNotification 72 }
+	
+	--Input Clear 73
+	psClearInputNotificationInput73 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 73"
+	 ::= { psClearInputNotification 73 }
+	
+	--Input Clear 74
+	psClearInputNotificationInput74 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 74"
+	 ::= { psClearInputNotification 74 }
+	
+	--Input Clear 75
+	psClearInputNotificationInput75 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 75"
+	 ::= { psClearInputNotification 75 }
+	
+	--Input Clear 76
+	psClearInputNotificationInput76 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 76"
+	 ::= { psClearInputNotification 76 }
+	
+	--Input Clear 77
+	psClearInputNotificationInput77 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 77"
+	 ::= { psClearInputNotification 77 }
+	
+	--Input Clear 78
+	psClearInputNotificationInput78 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 78"
+	 ::= { psClearInputNotification 78 }
+	
+	--Input Clear 79
+	psClearInputNotificationInput79 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 79"
+	 ::= { psClearInputNotification 79 }
+	
+	--Input Clear 80
+	psClearInputNotificationInput80 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 80"
+	 ::= { psClearInputNotification 80 }
+	
+	--Input Clear 81
+	psClearInputNotificationInput81 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 81"
+	 ::= { psClearInputNotification 81 }
+	
+	--Input Clear 82
+	psClearInputNotificationInput82 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 82"
+	 ::= { psClearInputNotification 82 }
+	
+	--Input Clear 83
+	psClearInputNotificationInput83 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 83"
+	 ::= { psClearInputNotification 83 }
+	
+	--Input Clear 84
+	psClearInputNotificationInput84 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 84"
+	 ::= { psClearInputNotification 84 }
+	
+	--Input Clear 85
+	psClearInputNotificationInput85 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 85"
+	 ::= { psClearInputNotification 85 }
+	
+	--Input Clear 86
+	psClearInputNotificationInput86 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 86"
+	 ::= { psClearInputNotification 86 }
+	
+	--Input Clear 87
+	psClearInputNotificationInput87 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 87"
+	 ::= { psClearInputNotification 87 }
+	
+	--Input Clear 88
+	psClearInputNotificationInput88 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 88"
+	 ::= { psClearInputNotification 88 }
+	
+	--Input Clear 89
+	psClearInputNotificationInput89 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 89"
+	 ::= { psClearInputNotification 89 }
+	
+	--Input Clear 90
+	psClearInputNotificationInput90 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 90"
+	 ::= { psClearInputNotification 90 }
+	
+	--Input Clear 91
+	psClearInputNotificationInput91 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 91"
+	 ::= { psClearInputNotification 91 }
+	
+	--Input Clear 92
+	psClearInputNotificationInput92 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 92"
+	 ::= { psClearInputNotification 92 }
+	
+	--Input Clear 93
+	psClearInputNotificationInput93 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 93"
+	 ::= { psClearInputNotification 93 }
+	
+	--Input Clear 94
+	psClearInputNotificationInput94 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 94"
+	 ::= { psClearInputNotification 94 }
+	
+	--Input Clear 95
+	psClearInputNotificationInput95 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 95"
+	 ::= { psClearInputNotification 95 }
+	
+	--Input Clear 96
+	psClearInputNotificationInput96 OBJECT-TYPE
+	 SYNTAX Integer32 (0..1)
+	 MAX-ACCESS read-write
+	 STATUS current
+	 DESCRIPTION "Clear Input Alarm 96"
+	 ::= { psClearInputNotification 96 }
+
+
+	-- ===============================================================================================
+	-- String Table
+	-- =============================================================================================== 	
+	--string status table
+	psStringTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF PsStringEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION "String status table"
+		::= { psStrings 1 }
+	 	
+	--table entry
+	psStringEntry OBJECT-TYPE
+		SYNTAX PsStringEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION "String status table entry"     
+		INDEX { psStringNumber }
+		::= { psStringTable 1 }
+	 
+	--table elements
+	PsStringEntry ::= SEQUENCE {
+		psStringNumber			Integer32,                        
+		psStringFirstMonoblock	Integer32,
+		psStringLastMonoblock	Integer32,
+		psStringState			Integer32,
+		psStringVoltage			Integer32,
+		psStringTemperature		Integer32,
+		psStringCurrent			Integer32
+	}     
+	 
+	--string number
+	psStringNumber OBJECT-TYPE
+		SYNTAX Integer32 (1..32)	       
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION "String Number"
+		::= { psStringEntry 1 }
+
+	--string first monoblock
+	psStringFirstMonoblock OBJECT-TYPE
+		SYNTAX Integer32 (1..1280)	       
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "First Monoblock"
+		::= { psStringEntry 2 }
+
+	--string last monoblock
+	psStringLastMonoblock OBJECT-TYPE
+		SYNTAX Integer32 (1..1280)	       
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "Last Monoblock"
+		::= { psStringEntry 3 }
+	 
+	--string state 
+	psStringState OBJECT-TYPE
+		SYNTAX INTEGER {
+			disabled(0),
+			float(1),
+			charge(2),
+			discharge(3),
+			idle(4)					
+		}    
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "Monitor Number"
+		::= { psStringEntry 4 }   
+		 
+	--string voltage
+	psStringVoltage OBJECT-TYPE
+		SYNTAX Integer32 (0..2147483647)
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "String Voltage (Volts x 10)"
+		::= { psStringEntry 5 }
+	 
+	--string temperature
+	psStringTemperature OBJECT-TYPE
+		SYNTAX Integer32 (0..65535)
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "String Temperature (Degrees celsius x 10)"
+		::= { psStringEntry 6 }
+
+	--string current
+	psStringCurrent OBJECT-TYPE
+		SYNTAX Integer32 (0..65535)
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "String Current"
+		::= { psStringEntry 7 }
+                  
+	-- ===============================================================================================
+	-- Monoblock Table
+	-- =============================================================================================== 			 
+	--Monoblock voltage table
+	psMonoblockTable OBJECT-TYPE
+		SYNTAX SEQUENCE OF PsMonoblockEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION "Monoblock voltage table"
+		::= { psMonoblocks 1 }
+	 	
+	--table entry
+	psMonoblockEntry OBJECT-TYPE
+		SYNTAX PsMonoblockEntry
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION "Monoblock voltage table entry"     
+		INDEX { psMonoblockNumber }
+		::= { psMonoblockTable 1 }
+	 
+	--table elements
+	PsMonoblockEntry ::= SEQUENCE {
+		psMonoblockNumber		Integer32,
+		psMonoblockOwner		Integer32,
+		psMonoblockVoltage		Integer32,	
+		psMonoblockTemperature	Integer32,
+		psMonoblockImpedance	Integer32
+	} 
+
+	--monoblock number
+	psMonoblockNumber OBJECT-TYPE
+		SYNTAX Integer32 (1..1280)	       
+		MAX-ACCESS not-accessible
+		STATUS current
+		DESCRIPTION "Monoblock number"
+		::= { psMonoblockEntry 1 }
+
+	--string number
+	psMonoblockOwner OBJECT-TYPE
+		SYNTAX Integer32 (1..1280)	       
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "String number that the monoblock belongs to"
+		::= { psMonoblockEntry 2 }
+
+	--Monoblock voltage
+	psMonoblockVoltage OBJECT-TYPE
+		SYNTAX Integer32 (0..65535)
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "Monoblock Voltage (mV)"
+		::= { psMonoblockEntry 3 }
+
+	--Monoblock temperature
+	psMonoblockTemperature OBJECT-TYPE
+		SYNTAX Integer32 (0..65535)
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "Monoblock Temperature (Degrees celsius x 10)"
+		::= { psMonoblockEntry 4 }
+
+	--Monoblock impedance
+	psMonoblockImpedance OBJECT-TYPE
+		SYNTAX Integer32 (0..2147483647)
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "Monoblock Impedance (uOhms)"
+		::= { psMonoblockEntry 5 }
+	
+	-- ===============================================================================================
+	-- Debugging
+	-- =============================================================================================== 	
+	--Timeouts
+	psDebuggingTimeouts OBJECT-TYPE
+		SYNTAX Integer32 (0..65535)
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "Number of serial timeouts"
+		::= { psDebuggingObjects 1 }
+
+	--Overflows
+	psDebuggingOverflows OBJECT-TYPE
+		SYNTAX Integer32 (0..65535)
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "Number of serial overflows"
+		::= { psDebuggingObjects 2 }
+
+	--Total Packets Sent
+	psDebuggingRequests OBJECT-TYPE
+		SYNTAX Integer32 (0..65535)
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "Total packets requested"
+		::= { psDebuggingObjects 3 }
+
+	--Total packets received
+	psDebuggingResponses OBJECT-TYPE
+		SYNTAX Integer32 (0..65535)
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "Total response packets"
+		::= { psDebuggingObjects 4 }
+
+
+	--Valid packets
+	psDebuggingValid OBJECT-TYPE
+		SYNTAX Integer32 (0..65535)
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "Total packets valid"
+		::= { psDebuggingObjects 5 }
+
+	--Invalid packets
+	psDebuggingInvalid OBJECT-TYPE
+		SYNTAX Integer32 (0..65535)
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "Total packets invalid"
+		::= { psDebuggingObjects 6 }
+
+	--Retries
+	psDebuggingRetries OBJECT-TYPE
+		SYNTAX Integer32 (0..65535)
+		MAX-ACCESS read-only
+		STATUS current
+		DESCRIPTION "Total retries send"
+		::= { psDebuggingObjects 7 }   
+		
+		
+	-- ===============================================================================================
+	-- Conformance
+	-- =============================================================================================== 			
+	psMonitorNotificationObjectsGroup OBJECT-GROUP
+		OBJECTS
+		 {
+		 	psMonitorNotificationTimeStamp,
+		 	psMonitorNotificationCatagory,
+		 	psMonitorNotificationChannel,
+		 	psMonitorNotificationString,
+		 	psMonitorNotificationMonitor,
+		 	psMonitorNotificationMonoblockMinimum,
+		 	psMonitorNotificationMonoblockMaximum,
+		 	psMonitorNotificationMinimum,
+		 	psMonitorNotificationMaximum
+		}
+		STATUS current
+		DESCRIPTION "Notifications Object Group"
+		::= { psConformanceGroups 1 }  
+		
+	psMonitorNotificationsGroup NOTIFICATION-GROUP
+		NOTIFICATIONS
+		{
+			psMonitorNotificationMonoblockChargeDischarge,
+			psMonitorNotificationMonoblockFloat, 
+			psMonitorNotificationMonoblockVoltageVariation,
+			psMonitorNotificationMonoblockVoltageIdle,
+			psMonitorNotificationStringVoltageChargeDischarge,
+			psMonitorNotificationStringVoltageFloat,
+			psMonitorNotificationChargeCurrent,
+			psMonitorNotificationDischargeCurrent,
+			psMonitorNotificationFloatCurrent,
+			
+			psMonitorNotificationStringModeCharge,	
+			psMonitorNotificationStringModeDischarge,
+			psMonitorNotificationStringModeFloat,
+			psMonitorNotificationStringModeIdle,
+			
+			psMonitorNotificationModuleFailure,
+			psMonitorNotificationMonitorOffline,
+			psMonitorNotificationMemoryFormat,
+			psMonitorNotificationMemoryLow,
+			psMonitorNotificationMemoryFull,         
+			
+			psMonitorNotificationLongTermMemoryLow,
+			psMonitorNotificationLongTermMemoryFull,     
+			
+			psMonitorNotificationTemperature,
+			psMonitorNotificationMonoblockPostTemperature,
+			psMonitorNotificationMonoblockTemperatureVariation,  
+			psMonitorNotificationMonitoredMains,
+			psMonitorNotificationCommsNotification,
+			psMonitorNotificationBaselineImpedanceExceeded,  
+			psMonitorNotificationStringVarianceImpedanceExceeded				
+		}
+		STATUS current
+		DESCRIPTION "Conformance Notifications Group"
+		::= { psConformanceGroups 2 }    
+		
+	psClearMonitorNotificationsGroup OBJECT-GROUP
+		OBJECTS 
+		{
+			psClearMonitorNotificationMonoblockChargeDischarge,
+			psClearMonitorNotificationMonoblockFloat, 
+			psClearMonitorNotificationMonoblockVoltageVariation,
+			psClearMonitorNotificationMonoblockVoltageIdle,
+			psClearMonitorNotificationStringVoltageChargeDischarge,
+			psClearMonitorNotificationStringVoltageFloat,
+			psClearMonitorNotificationChargeCurrent,
+			psClearMonitorNotificationDischargeCurrent,
+			psClearMonitorNotificationFloatCurrent,
+			
+			psClearMonitorNotificationStringModeCharge,	
+			psClearMonitorNotificationStringModeDischarge,
+			psClearMonitorNotificationStringModeFloat,
+			psClearMonitorNotificationStringModeIdle,
+			
+			psClearMonitorNotificationModuleFailure,
+			psClearMonitorNotificationMonitorOffline,
+			psClearMonitorNotificationMemoryFormat,
+			psClearMonitorNotificationMemoryLow,
+			psClearMonitorNotificationMemoryFull,
+			psClearMonitorNotificationLongTermMemoryLow,
+			psClearMonitorNotificationLongTermMemoryFull,     
+			
+			psClearMonitorNotificationTemperature,
+			psClearMonitorNotificationMonoblockPostTemperature,
+			psClearMonitorNotificationMonoblockTemperatureVariation,  
+			psClearMonitorNotificationMonitoredMains,
+			psClearMonitorNotificationCommsNotification,
+			psClearMonitorNotificationBaselineImpedanceExceeded,
+			psClearMonitorNotificationStringVarianceImpedanceExceeded
+		}
+		STATUS current
+		DESCRIPTION "Alarm Clear Group"
+		::= { psConformanceGroups 3 }		
+		     
+		psInputsNotificationObjectGroup OBJECT-GROUP
+			OBJECTS {
+				psInputNotificationInputNumber,
+				psInputNotificationInputState
+			}
+			STATUS current
+			DESCRIPTION "Input Notification Objects"
+		    ::= { psConformanceGroups 4 } 
+		
+		psInputsNotificationsGroup NOTIFICATION-GROUP
+    	NOTIFICATIONS
+    	{
+			psInputNotificationInput1,
+			psInputNotificationInput2,
+			psInputNotificationInput3,
+			psInputNotificationInput4,
+			psInputNotificationInput5,
+			psInputNotificationInput6,
+			psInputNotificationInput7,
+			psInputNotificationInput8,
+			psInputNotificationInput9,
+			psInputNotificationInput10,
+			psInputNotificationInput11,
+			psInputNotificationInput12,
+			psInputNotificationInput13,
+			psInputNotificationInput14,
+			psInputNotificationInput15,
+			psInputNotificationInput16,
+			psInputNotificationInput17,
+			psInputNotificationInput18,
+			psInputNotificationInput19,
+			psInputNotificationInput20,
+			psInputNotificationInput21,
+			psInputNotificationInput22,
+			psInputNotificationInput23,
+			psInputNotificationInput24,
+			psInputNotificationInput25,
+			psInputNotificationInput26,
+			psInputNotificationInput27,
+			psInputNotificationInput28,
+			psInputNotificationInput29,
+			psInputNotificationInput30,
+			psInputNotificationInput31,
+			psInputNotificationInput32,
+			psInputNotificationInput33,
+			psInputNotificationInput34,
+			psInputNotificationInput35,
+			psInputNotificationInput36,
+			psInputNotificationInput37,
+			psInputNotificationInput38,
+			psInputNotificationInput39,
+			psInputNotificationInput40,
+			psInputNotificationInput41,
+			psInputNotificationInput42,
+			psInputNotificationInput43,
+			psInputNotificationInput44,
+			psInputNotificationInput45,
+			psInputNotificationInput46,
+			psInputNotificationInput47,
+			psInputNotificationInput48,
+			psInputNotificationInput49,
+			psInputNotificationInput50,
+			psInputNotificationInput51,
+			psInputNotificationInput52,
+			psInputNotificationInput53,
+			psInputNotificationInput54,
+			psInputNotificationInput55,
+			psInputNotificationInput56,
+			psInputNotificationInput57,
+			psInputNotificationInput58,
+			psInputNotificationInput59,
+			psInputNotificationInput60,
+			psInputNotificationInput61,
+			psInputNotificationInput62,
+			psInputNotificationInput63,
+			psInputNotificationInput64,
+			psInputNotificationInput65,
+			psInputNotificationInput66,
+			psInputNotificationInput67,
+			psInputNotificationInput68,
+			psInputNotificationInput69,
+			psInputNotificationInput70,
+			psInputNotificationInput71,
+			psInputNotificationInput72,
+			psInputNotificationInput73,
+			psInputNotificationInput74,
+			psInputNotificationInput75,
+			psInputNotificationInput76,
+			psInputNotificationInput77,
+			psInputNotificationInput78,
+			psInputNotificationInput79,
+			psInputNotificationInput80,
+			psInputNotificationInput81,
+			psInputNotificationInput82,
+			psInputNotificationInput83,
+			psInputNotificationInput84,
+			psInputNotificationInput85,
+			psInputNotificationInput86,
+			psInputNotificationInput87,
+			psInputNotificationInput88,
+			psInputNotificationInput89,
+			psInputNotificationInput90,
+			psInputNotificationInput91,
+			psInputNotificationInput92,
+			psInputNotificationInput93,
+			psInputNotificationInput94,
+			psInputNotificationInput95,
+			psInputNotificationInput96    			    			  	
+    	}
+        STATUS current
+        DESCRIPTION "Input Alarms Group"
+        ::= { psConformanceGroups 5 }		
+		
+	
+     psClearInputsNotificationsGroup OBJECT-GROUP
+     	OBJECTS
+     	{
+			psClearInputNotificationInput1,
+			psClearInputNotificationInput2,
+			psClearInputNotificationInput3,
+			psClearInputNotificationInput4,
+			psClearInputNotificationInput5,
+			psClearInputNotificationInput6,
+			psClearInputNotificationInput7,
+			psClearInputNotificationInput8,
+			psClearInputNotificationInput9,
+			psClearInputNotificationInput10,
+			psClearInputNotificationInput11,
+			psClearInputNotificationInput12,
+			psClearInputNotificationInput13,
+			psClearInputNotificationInput14,
+			psClearInputNotificationInput15,
+			psClearInputNotificationInput16,
+			psClearInputNotificationInput17,
+			psClearInputNotificationInput18,
+			psClearInputNotificationInput19,
+			psClearInputNotificationInput20,
+			psClearInputNotificationInput21,
+			psClearInputNotificationInput22,
+			psClearInputNotificationInput23,
+			psClearInputNotificationInput24,
+			psClearInputNotificationInput25,
+			psClearInputNotificationInput26,
+			psClearInputNotificationInput27,
+			psClearInputNotificationInput28,
+			psClearInputNotificationInput29,
+			psClearInputNotificationInput30,
+			psClearInputNotificationInput31,
+			psClearInputNotificationInput32,
+			psClearInputNotificationInput33,
+			psClearInputNotificationInput34,
+			psClearInputNotificationInput35,
+			psClearInputNotificationInput36,
+			psClearInputNotificationInput37,
+			psClearInputNotificationInput38,
+			psClearInputNotificationInput39,
+			psClearInputNotificationInput40,
+			psClearInputNotificationInput41,
+			psClearInputNotificationInput42,
+			psClearInputNotificationInput43,
+			psClearInputNotificationInput44,
+			psClearInputNotificationInput45,
+			psClearInputNotificationInput46,
+			psClearInputNotificationInput47,
+			psClearInputNotificationInput48,
+			psClearInputNotificationInput49,
+			psClearInputNotificationInput50,
+			psClearInputNotificationInput51,
+			psClearInputNotificationInput52,
+			psClearInputNotificationInput53,
+			psClearInputNotificationInput54,
+			psClearInputNotificationInput55,
+			psClearInputNotificationInput56,
+			psClearInputNotificationInput57,
+			psClearInputNotificationInput58,
+			psClearInputNotificationInput59,
+			psClearInputNotificationInput60,
+			psClearInputNotificationInput61,
+			psClearInputNotificationInput62,
+			psClearInputNotificationInput63,
+			psClearInputNotificationInput64,
+			psClearInputNotificationInput65,
+			psClearInputNotificationInput66,
+			psClearInputNotificationInput67,
+			psClearInputNotificationInput68,
+			psClearInputNotificationInput69,
+			psClearInputNotificationInput70,
+			psClearInputNotificationInput71,
+			psClearInputNotificationInput72,
+			psClearInputNotificationInput73,
+			psClearInputNotificationInput74,
+			psClearInputNotificationInput75,
+			psClearInputNotificationInput76,
+			psClearInputNotificationInput77,
+			psClearInputNotificationInput78,
+			psClearInputNotificationInput79,
+			psClearInputNotificationInput80,
+			psClearInputNotificationInput81,
+			psClearInputNotificationInput82,
+			psClearInputNotificationInput83,
+			psClearInputNotificationInput84,
+			psClearInputNotificationInput85,
+			psClearInputNotificationInput86,
+			psClearInputNotificationInput87,
+			psClearInputNotificationInput88,
+			psClearInputNotificationInput89,
+			psClearInputNotificationInput90,
+			psClearInputNotificationInput91,
+			psClearInputNotificationInput92,
+			psClearInputNotificationInput93,
+			psClearInputNotificationInput94,
+			psClearInputNotificationInput95,
+			psClearInputNotificationInput96     	
+     	}
+     	STATUS current
+     	DESCRIPTION "Input Clear Group"
+     	::= { psConformanceGroups 6 }
+     	                                  
+     	                                  
+	psStringTableObjectsGroup OBJECT-GROUP
+		OBJECTS
+		{
+			psStringFirstMonoblock,
+			psStringLastMonoblock,
+			psStringState,
+			psStringVoltage,
+			psStringTemperature,
+			psStringCurrent			
+		}
+		STATUS current
+		DESCRIPTION "String Table Object Group"
+		::= { psConformanceGroups 7 }     	                                  
+     	
+
+	psMonoblockTableObjectsGroup OBJECT-GROUP
+		OBJECTS 
+		{
+			psMonoblockOwner,
+			psMonoblockVoltage,
+			psMonoblockTemperature,
+			psMonoblockImpedance	
+		}
+		STATUS current
+		DESCRIPTION "Monoblock Table Object Group"
+		::= { psConformanceGroups 8 }   
+       
+       
+	psDebuggingObjectsGroup OBJECT-GROUP
+     	OBJECTS
+     		{
+     			psDebuggingTimeouts,
+     			psDebuggingOverflows,
+     			psDebuggingRequests,
+     			psDebuggingResponses,
+     			psDebuggingValid,
+     			psDebuggingInvalid,
+     			psDebuggingRetries     			
+     		}
+     	STATUS current
+     	DESCRIPTION "Debugging Object Group"
+     	::= { psConformanceGroups 9 }  
+     	
+     	
+     	
+	psCompliance MODULE-COMPLIANCE
+		STATUS current
+		DESCRIPTION "Compliance"
+		MODULE
+		MANDATORY-GROUPS {
+					                        
+			psMonitorNotificationObjectsGroup,					                        
+			psInputsNotificationObjectGroup,			
+			        
+			psMonitorNotificationsGroup,   
+			psInputsNotificationsGroup,
+								
+			psClearMonitorNotificationsGroup,						
+			psClearInputsNotificationsGroup,
+			
+			psStringTableObjectsGroup,
+			psMonoblockTableObjectsGroup,
+					
+			psDebuggingObjectsGroup		
+		}
+		::= { psConformanceCompliance 1 }	     	     			
+END	                                                                                                              

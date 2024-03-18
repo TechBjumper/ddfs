@@ -1,0 +1,510 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="apc_ddf_1_6.xsl"?>
+<APC_DDF
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+	ddfid="schneider_electric_evlink"
+	ddfname="Schneider Electric EVLink"
+	ddfversion="1"
+	canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+	<device deviceid="schneider_electric_evlink">
+		<setProductData ruleid="vendordata" field="vendor">Schneider Electric</setProductData>
+		<setProductData ruleid="modeldata" field="model">EVLink</setProductData>
+		<setProductData ruleid="typedata" field="type">Generic Device</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+		<setProductData ruleid="firmware" field="appversion"><getOid>FIRMWARE</getOid></setProductData>
+
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<numSensor ruleid="outlet-current-rating">
+			<type>amperage</type>
+			<sensorId>OUTLET_CURRENT_RATING</sensorId>
+			<value>
+				<mult>
+				<op><getOid>OUTLET_CURRENT_RATING</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Outlet Current Rating</label>
+			<sensorSet>IdentI</sensorSet>
+		</numSensor>
+
+		<stateSensor ruleid="outlet-voltage-rating-bit0">
+			<type>state</type>
+			<sensorId>OUTLET_VOLTAGE_RATING_BIT0</sensorId>
+			<value>
+				<formatNumber printffmt="%1.0f">
+				<bitwise_and>
+				<op>
+					<right_shift>
+					<op><getOid>OUTLET_VOLTAGE_RATING</getOid></op>
+					<op>0</op>
+					</right_shift>
+				</op>
+				<op>1</op>
+				</bitwise_and>
+				</formatNumber>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>120V to Ground only</label>
+			<sensorSet>Ident</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="outlet-voltage-rating-bit1">
+			<type>state</type>
+			<sensorId>OUTLET_VOLTAGE_RATING_BIT1</sensorId>
+			<value>
+				<formatNumber printffmt="%1.0f">
+				<bitwise_and>
+				<op>
+					<right_shift>
+					<op><getOid>OUTLET_VOLTAGE_RATING</getOid></op>
+					<op>1</op>
+					</right_shift>
+				</op>
+				<op>1</op>
+				</bitwise_and>
+				</formatNumber>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>208V Line-Line, 120V to Ground</label>
+			<sensorSet>Ident</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="outlet-voltage-rating-bit2">
+			<type>state</type>
+			<sensorId>OUTLET_VOLTAGE_RATING_BIT2</sensorId>
+			<value>
+				<formatNumber printffmt="%1.0f">
+				<bitwise_and>
+				<op>
+					<right_shift>
+					<op><getOid>OUTLET_VOLTAGE_RATING</getOid></op>
+					<op>2</op>
+					</right_shift>
+				</op>
+				<op>1</op>
+				</bitwise_and>
+				</formatNumber>
+			</value>
+			<enum>trueFalse-em</enum>
+			<label>240V Line-Line, 120V to Ground</label>
+			<sensorSet>Ident</sensorSet>
+		</stateSensor>
+
+		<stateSensor ruleid="outlet-charge-enable">
+			<type>state</type>
+			<sensorId>OUTLET_CHARGE_ENABLE</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>OUTLET_CHARGE_ENABLE</getOid>
+				</mapValue>
+			</value>
+			<label>Outlet Charge Enable</label>
+			<enum>enabled-em</enum>
+			<sensorSet>Outlet Setting</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="outlet-power-control">
+			<type>state</type>
+			<sensorId>OUTLET_POWER_CONTROL</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>OUTLET_POWER_CONTROL</getOid>
+				</mapValue>
+			</value>
+			<label>Outlet Power Control</label>
+			<enum></enum>
+			<sensorSet>Outlet Setting</sensorSet>
+		</stateSensor>
+		<numSensor ruleid="charging-current-limit">
+			<type>amperage</type>
+			<sensorId>CHARGING_CURRENT_LIMIT</sensorId>
+			<value>
+				<mult>
+				<op><getOid>CHARGING_CURRENT_LIMIT</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Charging Current Limit</label>
+			<sensorSet>Outlet Setting</sensorSet>
+		</numSensor>
+
+		<valueMap ruleid="outlet-state-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>2</valueIn><valueOut>2</valueOut>
+			<valueIn>99</valueIn><valueOut>3</valueOut>
+			<valueIn>*</valueIn><valueOut>4</valueOut>
+		</valueMap>
+		<enumMap ruleid="outlet-state-em">
+			<label>Idle</label>
+			<label>Not Charging</label>
+			<label>Charging</label>
+			<label>Faulted</label>
+			<label>Unknown</label>
+		</enumMap>
+		<stateSensor ruleid="outlet-state">
+			<type>state</type>
+			<sensorId>OUTLET_STATE</sensorId>
+			<value>
+				<mapValue mapid="outlet-state-vm">
+				<getOid>OUTLET_STATE</getOid>
+				</mapValue>
+			</value>
+			<label>Outlet State</label>
+			<enum>outlet-state-em</enum>
+			<sensorSet>Outlet Monitor</sensorSet>
+		</stateSensor>
+		<alarmFlags ruleid="outlet-fault-type">
+			<value><getOid>OUTLET_FAULT_TYPE</getOid></value>
+			<alarmFlagsTest mask="2" match="2">
+				<name>
+					<activeText>Ground Fault Test Failure</activeText>
+					<inactiveText>Ground Fault Test Failure Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>System</category>
+				<description>
+					<activeText>A Ground Fault Test Failure condition exists.</activeText>
+					<inactiveText>Ground Fault Test Failure condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+			<alarmFlagsTest mask="4" match="4">
+				<name>
+					<activeText>Internal Microcontroller Fault</activeText>
+					<inactiveText>Internal Microcontroller Fault Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>System</category>
+				<description>
+					<activeText>An Internal Microcontroller Fault condition exists.</activeText>
+					<inactiveText>Internal Microcontroller Fault condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+			<alarmFlagsTest mask="8" match="8">
+				<name>
+					<activeText>Internal Power Supply Fault</activeText>
+					<inactiveText>Internal Power Supply Fault Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>System</category>
+				<description>
+					<activeText>An Internal Power Supply Fault condition exists.</activeText>
+					<inactiveText>Internal Power Supply Fault condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+			<alarmFlagsTest mask="10" match="10">
+				<name>
+					<activeText>Contactor Stuck Closed</activeText>
+					<inactiveText>Contactor Stuck Closed Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>System</category>
+				<description>
+					<activeText>A Contactor Stuck Closed condition exists.</activeText>
+					<inactiveText>Contactor Stuck Closed condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+			<alarmFlagsTest mask="20" match="20">
+				<name>
+					<activeText>Contactor Stuck Open</activeText>
+					<inactiveText>Contactor Stuck Open Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>System</category>
+				<description>
+					<activeText>A Contactor Stuck Open condition exists.</activeText>
+					<inactiveText>Contactor Stuck Open condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+			<alarmFlagsTest mask="40" match="40">
+				<name>
+					<activeText>EV Requests Ventilation</activeText>
+					<inactiveText>EV Requests Ventilation Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>System</category>
+				<description>
+					<activeText>An EV Requests Ventilation condition exists.</activeText>
+					<inactiveText>EV Requests Ventilation condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+			<alarmFlagsTest mask="80" match="80">
+				<name>
+					<activeText>Control Pilot Out of Range</activeText>
+					<inactiveText>Control Pilot Out of Range Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>System</category>
+				<description>
+					<activeText>A Control Pilot Out of Range condition exists.</activeText>
+					<inactiveText>Control Pilot Out of Range condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+			<alarmFlagsTest mask="100" match="100">
+				<name>
+					<activeText>Outlet Fault Type</activeText>
+					<inactiveText>Outlet Fault Type Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>System</category>
+				<description>
+					<activeText>An Outlet Fault Type condition exists.</activeText>
+					<inactiveText>Outlet Fault Type condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+			<alarmFlagsTest mask="200" match="200">
+				<name>
+					<activeText>Auto-Resettable Ground Fault</activeText>
+					<inactiveText>Auto-Resettable Ground Fault Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>System</category>
+				<description>
+					<activeText>An Auto-Resettable Ground Fault condition exists.</activeText>
+					<inactiveText>Auto-Resettable Ground Fault condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+			<alarmFlagsTest mask="400" match="400">
+				<name>
+					<activeText>Non-Autoresettable Ground Fault</activeText>
+					<inactiveText>Non-Autoresettable Ground Fault Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>System</category>
+				<description>
+					<activeText>A Non-Autoresettable Ground Fault condition exists.</activeText>
+					<inactiveText>Non-Autoresettable Ground Fault condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+			<alarmFlagsTest mask="800" match="800">
+				<name>
+					<activeText>Ground Monitor Fault</activeText>
+					<inactiveText>Ground Monitor Fault Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>System</category>
+				<description>
+					<activeText>A Ground Monitor Fault condition exists.</activeText>
+					<inactiveText>Ground Monitor Fault condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+			<alarmFlagsTest mask="1000" match="1000">
+				<name>
+					<activeText>EEPROM Corruption</activeText>
+					<inactiveText>EEPROM Corruption Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>System</category>
+				<description>
+					<activeText>An EEPROM Corruption condition exists.</activeText>
+					<inactiveText>EEPROM Corruption condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+
+		<valueMap ruleid="outlet-fault-severity-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>2</valueIn><valueOut>2</valueOut>
+			<valueIn>3</valueIn><valueOut>3</valueOut>
+			<valueIn>4</valueIn><valueOut>4</valueOut>
+			<valueIn>*</valueIn><valueOut>5</valueOut>
+		</valueMap>
+		<enumMap ruleid="outlet-fault-severity-em">
+			<label>No Fault Detected</label>
+			<label>Will Recover Automatically</label>
+			<label>Requires User to Unplug/Replug</label>
+			<label>Requires Power Cycle</label>
+			<label>Requires Maintenance</label>
+			<label>Unknown</label>
+		</enumMap>
+		<stateSensor ruleid="outlet-fault-severity">
+			<type>state</type>
+			<sensorId>OUTLET_FAULT_SEVERITY</sensorId>
+			<value>
+				<mapValue mapid="outlet-fault-severity-vm">
+				<getOid>OUTLET_FAULT_SEVERITY</getOid>
+				</mapValue>
+			</value>
+			<label>Outlet Fault Severity</label>
+			<enum>outlet-fault-severity-em</enum>
+			<sensorSet>Outlet Monitor</sensorSet>
+		</stateSensor>
+
+		<numSensor ruleid="outlet-fault-count">
+			<type>num</type>
+			<sensorId>OUTLET_FAULT_COUNT</sensorId>
+			<value>
+				<mult>
+				<op><getOid>OUTLET_FAULT_COUNT</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Outlet Fault Count</label>
+			<sensorSet>Outlet Monitor</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gf-time-until-reset">
+			<type>timeinsec</type>
+			<sensorId>GF_TIME_UNTIL_RESET</sensorId>
+			<value>
+				<mult>
+				<op><getOid>GF_TIME_UNTIL_RESET</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>GF Time until Reset</label>
+			<sensorSet>Outlet Monitor</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gf-auto-reset-time">
+			<type>timeinsec</type>
+			<sensorId>GF_AUTO_RESET_TIME</sensorId>
+			<value>
+				<mult>
+				<op><getOid>GF_AUTO_RESET_TIME</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>GF Auto Reset Time</label>
+			<sensorSet>Setting</sensorSet>
+		</numSensor>
+
+		<enumMap ruleid="charge-control-source-em">
+			<label>Local</label>
+			<label>Network</label>
+		</enumMap>
+		<stateSensor ruleid="charge-control-source">
+			<type>state</type>
+			<sensorId>CHARGE_CONTROL_SOURCE</sensorId>
+			<value>
+				<mapValue mapid="binaryDefaultZero-vm">
+				<getOid>CHARGE_CONTROL_SOURCE</getOid>
+				</mapValue>
+			</value>
+			<label>Charge Control Source</label>
+			<enum></enum>
+			<sensorSet>Setting</sensorSet>
+		</stateSensor>
+
+		<numSensor ruleid="cold-load-timer">
+			<type>timeinsec</type>
+			<sensorId>COLD_LOAD_TIMER</sensorId>
+			<value>
+				<mult>
+				<op><getOid>COLD_LOAD_TIMER</getOid></op>
+				<op>1</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Cold Load Timer</label>
+			<sensorSet>Setting</sensorSet>
+		</numSensor>
+
+		<valueMap ruleid="binaryDefaultZero-vm">
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>*</valueIn><valueOut>0</valueOut>
+		</valueMap>
+		<enumMap ruleid="enabled-em">
+			<label>Disabled</label>
+			<label>Enabled</label>
+		</enumMap>
+		<enumMap ruleid="trueFalse-em">
+			<label>False</label>
+			<label>True</label>
+		</enumMap>
+
+	</device>
+	<protocol>
+		<modbus>
+			<value_ref_id valid="FIRMWARE">
+				<function>3</function>
+				<start_addr>40</start_addr>
+				<quantity>20</quantity>
+				<type>ascii</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTLET_CURRENT_RATING">
+				<function>3</function>
+				<start_addr>1004</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTLET_VOLTAGE_RATING">
+				<function>3</function>
+				<start_addr>1005</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTLET_CHARGE_ENABLE">
+				<function>3</function>
+				<start_addr>1100</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTLET_POWER_CONTROL">
+				<function>3</function>
+				<start_addr>1101</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="CHARGING_CURRENT_LIMIT">
+				<function>3</function>
+				<start_addr>1102</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTLET_STATE">
+				<function>3</function>
+				<start_addr>1200</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTLET_FAULT_TYPE">
+				<function>3</function>
+				<start_addr>1201</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTLET_FAULT_SEVERITY">
+				<function>3</function>
+				<start_addr>1202</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="OUTLET_FAULT_COUNT">
+				<function>3</function>
+				<start_addr>1219</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GF_TIME_UNTIL_RESET">
+				<function>3</function>
+				<start_addr>1220</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="GF_AUTO_RESET_TIME">
+				<function>3</function>
+				<start_addr>10600</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="CHARGE_CONTROL_SOURCE">
+				<function>3</function>
+				<start_addr>10601</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="COLD_LOAD_TIMER">
+				<function>3</function>
+				<start_addr>10602</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+		</modbus>
+	</protocol>
+</APC_DDF>

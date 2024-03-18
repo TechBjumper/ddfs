@@ -1,0 +1,301 @@
+-- COPYRIGHT NOTICE
+-- Copyright (c) Hewlett Packard Company, 2003 
+-- All rights reserved
+-- 
+-- 
+
+BLADETYPE4-TRAP-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    TRAP-TYPE
+        FROM RFC-1215
+    sysName, sysLocation, sysContact, DisplayString, ifIndex
+        FROM RFC1213-MIB
+    hpSwitchBladeType4-Mgmt
+        FROM HP-SWITCH-PL-MIB
+    stgCurCfgIndex
+        FROM BLADETYPE4-PHYSICAL-MIB
+    agSlotNumber, agRackId, agChassis
+        FROM BLADETYPE4-SWITCH-MIB 
+    ipCurCfgGwIndex, ipCurCfgGwAddr 
+        FROM BLADETYPE4-NETWORK-MIB;
+
+bt4Traps	OBJECT IDENTIFIER
+    ::= { hpSwitchBladeType4-Mgmt 7 }
+
+-- MIB_INSERT_START
+-- ----------------------------------------------------------------------------
+-- { INSERT:  bt2trap
+-- ----------------------------------------------------------------------------
+
+-- SECTION 2:  Temporary Object Definitions Used In Traps
+
+bt4SwTrapDisplayString OBJECT-TYPE
+        SYNTAX  DisplayString (SIZE(0..255))
+        ACCESS  read-only
+        STATUS  mandatory
+        DESCRIPTION
+                "Temporary string object used to store information being sent
+                 in an Bladetype4 Switch trap."
+        ::= { bt4Traps 1000 }
+
+-- SECTION 3:  Trap Definitions
+
+
+bt4SwDefGwUp TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { ipCurCfgGwIndex,
+                          ipCurCfgGwAddr,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwDefGwUp trap signifies that the default
+                 gateway is alive."
+
+		--#SEVERITY INFORMATIONAL
+
+        ::= 2   -- 0x02
+
+bt4SwDefGwDown TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { ipCurCfgGwIndex,
+                          ipCurCfgGwAddr,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwDefGwDown trap signifies that the default
+                 gateway is down."
+
+		--#SEVERITY INFORMATIONAL
+
+        ::= 3   -- 0x03
+
+bt4SwDefGwInService TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { ipCurCfgGwIndex,
+                          ipCurCfgGwAddr,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwDefGwEnabled trap signifies that the default
+                 gateway is up and in service."
+
+		--#SEVERITY INFORMATIONAL
+
+        ::= 4   -- 0x04
+
+bt4SwDefGwNotInService TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { ipCurCfgGwIndex,
+                          ipCurCfgGwAddr,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwDefGwDisabled trap signifies that the default
+                 gateway is alive but not in service."
+
+		--#SEVERITY INFORMATIONAL
+
+        ::= 5   -- 0x05
+
+
+
+bt4SwLoginFailure TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwLoginFailure trap signifies that someone failed to
+                 enter a valid username/password combination."
+		--#SEVERITY MAJOR
+
+        ::= 19 -- 0x13
+bt4SwTempExceedThreshold TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+              "A bt4SwTempExceedThreshold trap signifies that the
+               switch temperature has exceeded maximum safety limits."
+                --#SEVERITY CRITICAL
+
+        ::= 22   -- 0x16
+
+
+bt4SwApplyComplete TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwApplyComplete signifies that new configuration
+		 has been applied." 
+		--#SEVERITY INFORMATIONAL
+
+        ::= 27 -- 0x1B
+
+bt4SwSaveComplete TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwApplyComplete signifies that new configuration
+		 has been saved." 
+		--#SEVERITY INFORMATIONAL
+
+        ::= 28 -- 0x1C
+
+bt4SwFwDownloadSucess TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwFwDownloadSuccess signifies that firmware
+		 has been downloaded to [image1|image2|boot image]." 
+		--#SEVERITY INFORMATIONAL
+
+        ::= 29 -- 0x1D
+
+bt4SwFwDownloadFailure TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwFwDownloadFailure signifies that firmware 
+		 downloaded failed to [image1|image2|boot image]." 
+		--#SEVERITY MINOR
+
+        ::= 30 -- 0x1E
+
+bt4SwTempReturnThreshold TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+              "A bt4SwTempReturnThreshold trap signifies that the
+               switch temperature has returned below maximum safety limits."
+                --#SEVERITY INFORMATIONAL
+
+        ::= 31   -- 0x1F
+
+
+bt4SwUfdfoLtMFailure TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwUfdfoLtMFailure trap signifies that a LtM link is down."
+                --#SEVERITY MAJOR
+
+        ::= 34 -- 0x22
+
+bt4SwUfdfoLtMUP TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwUfdfoLtMUP trap signifies that a LtM link is up."
+                --#SEVERITY INFORMATIONAL
+
+        ::= 35 -- 0x23
+
+bt4SwUfdfoGlobalEna TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwUfdfoGlobalEna trap signifies that Global UFD is enabled."
+                --#SEVERITY INFORMATIONAL
+
+        ::= 36 -- 0x24
+
+bt4SwUfdfoGlobalDis TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwUfdfoGlobalDis trap signifies that Global UFD is disabled."
+                --#SEVERITY INFORMATIONAL
+
+        ::= 37 -- 0x25
+
+
+bt4SwUfdfoLtDAutoEna TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwUfdfoLtDAutoEna trap signifies that a LtD link is Auto Enabled."
+                --#SEVERITY INFORMATIONAL
+
+        ::= 38 -- 0x26
+
+
+bt4SwUfdfoLtDAutoDis TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwUfdfoLtDAutoDis trap signifies that a LtD link is Auto Disabled."
+                --#SEVERITY INFORMATIONAL
+
+        ::= 39 -- 0x27
+
+
+bt4SwStgNewRoot TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString, stgCurCfgIndex,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwStgNewRoot trap signifies that the bridge has become the new root of the STG."
+                --#SEVERITY INFORMATIONAL
+
+        ::= 42 -- 0x2A
+
+bt4SwCistNewRoot TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwCistNewRoot trap signifies that the bridge has become the new root of the CIST."
+                --#SEVERITY INFORMATIONAL
+
+        ::= 43 -- 0x2B
+
+bt4SwStgTopologyChanged TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString, stgCurCfgIndex,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwStgTopologyChanged trap signifies that there was a STG topology change."
+                --#SEVERITY INFORMATIONAL
+
+        ::= 44 -- 0x2C
+
+bt4SwCistTopologyChanged TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION
+                "A bt4SwCistTopologyChanged trap signifies that there was a CIST topology change."
+                --#SEVERITY INFORMATIONAL
+
+        ::= 45 -- 0x2D
+
+
+bt4SFPInserted       TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString, ifIndex,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION     "A bt4SFPInserted trap signifies that a SFP is inserted."
+        --#SEVERITY INFORMATIONAL
+        ::= 51 -- 0x33
+
+bt4SFPRemoved       TRAP-TYPE
+        ENTERPRISE      bt4Traps
+        VARIABLES       { bt4SwTrapDisplayString, ifIndex,
+                          sysName, sysLocation, sysContact }
+        DESCRIPTION     "A bt4SFPRemoved trap signifies that a SFP is removed."
+        --#SEVERITY INFORMATIONAL
+        ::= 52 -- 0x34
+
+-- ----------------------------------------------------------------------------
+-- } INSERT:  bt2trap
+-- ----------------------------------------------------------------------------
+
+END

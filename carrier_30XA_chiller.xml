@@ -1,0 +1,188 @@
+<?xml version="1.0"?>
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+         ddfid="carrier_30XA_chiller" ddfname="Carrier 30XA Chiller" ddfversion="1" canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+	<device deviceid="aquaforce-chiller" >
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<setProductData ruleid="vendordata" field="vendor">Carrier</setProductData>
+		<setProductData ruleid="modeldata" field="model">AquaForce 30XA</setProductData>
+		<setProductData ruleid="typedata" field="type">Cooling Device</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+		<valueMap ruleid="2state-vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut> 
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>*</valueIn><valueOut>2</valueOut>
+		</valueMap> 
+		<enumMap ruleid="alarmstate-em">
+			<label>Normal</label>
+			<label>Alarm</label>
+			<label>Unknown</label>
+		</enumMap>
+
+		<numSensor ruleid="c1_chwst_temp">
+			<type>temp</type>
+			<sensorId>C1_CHWST_TEMP</sensorId>
+			<value>
+				<!-- convert fahrenheit to celcius-->
+				<div>
+					<op>
+						<sub>
+							<op><getOid>reg40001</getOid></op>
+							<op>32</op>
+						</sub>
+					</op>
+					<op>1.8</op>
+				</div>
+			</value>
+			<label>CHWST: Chiller 1</label>
+			<sensorSet>Temperature Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="c2_chwst_temp">
+			<type>temp</type>
+			<sensorId>C2_CHWST_TEMP</sensorId>
+			<value>
+				<!-- convert fahrenheit to celcius-->
+				<div>
+					<op>
+						<sub>
+							<op><getOid>reg40002</getOid></op>
+							<op>32</op>
+						</sub>
+					</op>
+					<op>1.8</op>
+				</div>
+			</value>
+			<label>CHWST: Chiller 2</label>
+			<sensorSet>Temperature Sensors</sensorSet>
+		</numSensor>
+		<stateSensor ruleid="c1_alarm_status">
+			<type>state</type>
+			<sensorId>C1_ALARM</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+					<formatNumber>
+						<bitwise_and>
+							<op><right_shift><op><getOid>reg40003</getOid></op><op>0</op></right_shift></op>
+							<op>1</op>
+						</bitwise_and>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<enum>alarmstate-em</enum>
+			<label>Alarm: Chiller 1</label>
+			<sensorSet>Alarm Sensors</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="c2_alarm_status">
+			<type>state</type>
+			<sensorId>C2_ALARM</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+					<formatNumber>
+						<bitwise_and>
+							<op><right_shift><op><getOid>reg40003</getOid></op><op>1</op></right_shift></op>
+							<op>1</op>
+						</bitwise_and>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<enum>alarmstate-em</enum>
+			<label>Alarm: Chiller 2</label>
+			<sensorSet>Alarm Sensors</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="c1_flow_status">
+			<type>state</type>
+			<sensorId>C1_FLOW</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+					<formatNumber>
+						<bitwise_and>
+							<op><right_shift><op><getOid>reg40003</getOid></op><op>2</op></right_shift></op>
+							<op>1</op>
+						</bitwise_and>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<enum>alarmstate-em</enum>
+			<label>Alarm: Chiller 1 Flow</label>
+			<sensorSet>Alarm Sensors</sensorSet>
+		</stateSensor>
+		<stateSensor ruleid="c2_flow_status">
+			<type>state</type>
+			<sensorId>C2_FLOW</sensorId>
+			<value>
+				<mapValue mapid="2state-vm">
+					<formatNumber>
+						<bitwise_and>
+							<op><right_shift><op><getOid>reg40003</getOid></op><op>3</op></right_shift></op>
+							<op>1</op>
+						</bitwise_and>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<enum>alarmstate-em</enum>
+			<label>Alarm: Chiller 2 Flow</label>
+			<sensorSet>Alarm Sensors</sensorSet>
+		</stateSensor>
+		<numSensor ruleid="c1_pct_active_capacity">
+			<type>pctofcapacity/pctcoolingcap</type>
+			<sensorId>C1_PCT_ACTIVE_CAPACITY</sensorId>
+			<value>
+				<getOid>reg40005</getOid>
+			</value>
+			<label>Running Capacity Chiller 1</label>
+			<sensorSet>System Sensors</sensorSet>
+		</numSensor>
+		<numSensor ruleid="c2_pct_active_capacity">
+			<type>pctofcapacity/pctcoolingcap</type>
+			<sensorId>C2_PCT_ACTIVE_CAPACITY</sensorId>
+			<value>
+				<getOid>reg40006</getOid>
+			</value>
+			<label>Running Capacity Chiller 2</label>
+			<sensorSet>System Sensors</sensorSet>
+		</numSensor>
+	</device>
+
+	<protocol>
+		<modbus>    
+			<value_ref_id valid="reg40001">
+				<function>3</function>
+				<start_addr>0</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id> 
+			<value_ref_id valid="reg40002">
+				<function>3</function>
+				<start_addr>1</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id> 
+			<value_ref_id valid="reg40003">
+				<function>3</function>
+				<start_addr>2</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id> 
+			<value_ref_id valid="reg40005">
+				<function>3</function>
+				<start_addr>4</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id> 
+			<value_ref_id valid="reg40006">
+				<function>3</function>
+				<start_addr>5</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id> 
+			<!-- Bulk read for performance. -->
+			<packet>
+				<function>3</function>
+				<start_addr>0</start_addr>
+				<quantity>6</quantity>
+			</packet>
+		</modbus>
+	</protocol>
+</APC_DDF>        

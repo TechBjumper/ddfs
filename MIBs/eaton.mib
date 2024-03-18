@@ -1,0 +1,3242 @@
+-- MIB Definition File ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--
+--  Copyright (c) 2004 - 2007 Eaton Corporation, All Rights Reserved.
+--
+--  PURPOSE:      Defines the SNMP interface to the SC200 Controller.
+--
+--  DESCRIPTION:  This file should be able to be compiled with any standard MIB compiler,
+--                however our experience suggests that different compilers perform differently.
+--                This file has been tested with NetSNMP (http://net-snmp.sourceforge.net/) and
+--                MG-Soft MIB Browser (http://www.mg-soft.com/).
+--
+--  NOTE:         Below is the encoding this file was originally released in. Not all MIB compilers
+--                may be able to read the file in this encoding. If your MIB compiler does not support
+--                the original encoding, you may have to convert it to a different encoding. If the target
+--                encoding does not support all characters used in this file, the resulting MIB may not compile.
+--                We recommend that you update the second line below when you change the encoding of this file.
+--                
+--                Original Encoding: ISO-8859-1
+--                Current Encoding:  ISO-8859-1
+--
+--  LAST UPDATED: 2008-04-28 04:31:42Z
+--  XSL SOURCE:   $Id: mib.xsl 12888 2008-04-23 05:33:27Z sunger $
+--  XSLT UTILITY: SAXON 8.8 from Saxonica (http://www.saxonica.com/)
+
+-- MIB Module Name ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+RPS-SC200-MIB DEFINITIONS ::= BEGIN
+
+-- Imported Items ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPORTS
+        OBJECT-TYPE
+            FROM RFC-1212
+        TRAP-TYPE
+            FROM RFC-1215
+        enterprises, IpAddress, TimeTicks, Counter
+            FROM RFC1155-SMI;
+
+-- Type Assignments ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Bit ::= INTEGER ( 0..1 )
+Signed8 ::= INTEGER ( -128..127 )
+Signed16 ::= INTEGER ( -32768..32767 )
+Signed32 ::= INTEGER ( -2147483648..2147483647 )
+Unsigned8 ::= INTEGER ( 0..255 )
+Unsigned16 ::= INTEGER ( 0..65535 )
+UnsignedNAN8 ::= INTEGER { notAvailable(255) }
+UnsignedNAN16 ::= INTEGER { notAvailable(65535) }
+UnsignedNAN32 ::= Counter
+Boolean ::= INTEGER { false(0), true(1) }
+Float ::= INTEGER { notAvailable(2147483647) }
+WritableFloat ::= INTEGER ( -2147483648..2147483647 )
+No-Data ::= OCTET STRING(SIZE(0))
+TimeIntervalInSeconds ::= TimeTicks
+
+TimeIntervalInMinutes ::= UnsignedNAN32
+
+TimeIntervalInDays ::= UnsignedNAN32
+
+DC-Power ::= UnsignedNAN16
+
+Percentile8NAN ::= UnsignedNAN8
+
+Slave-Type ::= INTEGER {
+  undefined(0),
+  sm20(1),
+  sm50(2),
+  sm30(3),
+  sm30-SLAVE(4),
+  iom(5),
+  cbc(6),
+  weir(7),
+  sm35(8),
+  nes-BATTERY-TRAY(9),
+  sm30-SLAVE-FRONT-PORT(10),
+  sm60(11),
+  sm40(12),
+  sm70-IOB(13),
+  sm70(14),
+  sm45-IOB(15),
+  sm45(16),
+  sm65(17),
+  sc200(18)
+}
+
+Access-Level ::= INTEGER {
+  read-Only(80),
+  read-Write(81)
+}
+
+LVD-State ::= INTEGER {
+  idle(70),
+  connected(71),
+  disconnected(72),
+  failed(73),
+  manual(74),
+  disabled(75)
+}
+
+Enable-State ::= INTEGER {
+  disabled(0),
+  enabled(1)
+}
+
+SNMP-Access-State ::= INTEGER {
+  disabled(0),
+  all(1),
+  read-Only(2),
+  v3-Only(3)
+}
+
+Alarm-Report ::= INTEGER {
+  none(0),
+  all-Alarms-And-Warnings(1),
+  minor-And-Above(2),
+  major-And-Above(3),
+  critical-Only(4)
+}
+
+SNMP-Trap-Format ::= INTEGER {
+  powerware(0),
+  x733(1)
+}
+
+SNMP-Trap-Version ::= INTEGER {
+  snmp-V1-Trap(0),
+  snmp-V2-Trap(1),
+  snmp-V3-Trap(2)
+}
+
+Access-Protection ::= INTEGER {
+  unprotected(0),
+  protected(1),
+  pin-Protected(2)
+}
+
+Can-Start ::= INTEGER {
+  started(190),
+  can-Start(191),
+  busy(192),
+  disabled(193),
+  alarms-Active(194),
+  sensor-Failed(195),
+  battery-Not-Charged(196),
+  no-Rectifiers-Available(197),
+  rectifier-OVSD(198),
+  no-Battery-Configured(199),
+  load-Current-Too-Low(200),
+  ac-Failed(201),
+  manual-Stop(202),
+  battery-Not-Discharged(203),
+  ac-State-Unavailable(204)
+}
+
+AVC-State ::= INTEGER {
+  disabled(115),
+  inoperative(116),
+  active(117),
+  lost-Control(118),
+  in-Deadband(119)
+}
+
+TC-State ::= INTEGER {
+  disabled(80),
+  inactive(81),
+  active(82)
+}
+
+Battery-Test-State ::= INTEGER {
+  disabled(95),
+  inactive(96),
+  active(97),
+  failed(98),
+  locked-Out(99)
+}
+
+Battery-State ::= INTEGER {
+  float(100),
+  discharge(101),
+  charge(102),
+  unavailable(103)
+}
+
+BCL-State ::= INTEGER {
+  disabled(110),
+  inoperative(111),
+  active(112),
+  inactive(113),
+  lost-Control(114),
+  in-Deadband(115)
+}
+
+Engine-Run-State ::= INTEGER {
+  not-Running(85),
+  running(86),
+  disabled(87)
+}
+
+RCP-Slave-State ::= INTEGER {
+  not-Detected(0),
+  detected(1),
+  registered(2),
+  comms-Lost(3),
+  missing(4),
+  rebooting(5)
+}
+
+Trap-Alarm-Keep-Severity ::= INTEGER {
+  critical(1),
+  major(2),
+  minor(3),
+  warning(4),
+  cleared(5)
+}
+
+Alarm-Severity ::= INTEGER {
+  disabled(0),
+  critical(1),
+  major(2),
+  minor(3),
+  warning(4)
+}
+
+Severity-Level ::= INTEGER {
+  all-Alarms-And-Warnings(1),
+  minor-And-Above(2),
+  major-And-Above(3),
+  disabled(4),
+  critical-Only(5)
+}
+
+Trap-Receiver-Mode ::= INTEGER {
+  normal-Traps(1),
+  acknowledged-Summary-Trap(2)
+}
+
+Alarm-Active-State ::= INTEGER {
+  not-Active(0),
+  active-Warning(1),
+  active-Major(2),
+  active-Minor(3),
+  active-Masked(4),
+  active-Critical(5)
+}
+
+Control-State ::= INTEGER {
+  normal(0),
+  equalize(1),
+  fast-Charge(2),
+  battery-Test(3),
+  auto-Rect-Shutdown(4)
+}
+
+Control-Process-State ::= INTEGER {
+  disabled(0),
+  active(1),
+  inactive(2),
+  pending(3)
+}
+
+Julian-Time-UTC ::= OCTET STRING (SIZE(0..25))
+
+External-Relay-State ::= INTEGER {
+  active(0),
+  inactive(1),
+  missing(2),
+  disabled(3)
+}
+
+Relay-Test-State ::= INTEGER {
+  relay-Active(0),
+  relay-Inactive(1),
+  test-Disabled(2)
+}
+
+Relay-Control-State ::= INTEGER {
+  active(0),
+  inactive(1)
+}
+
+Rect-Fail-State ::= INTEGER {
+  not-Failed(0),
+  bad-Status(1),
+  bad-Current(2),
+  bad-Comms(3)
+}
+
+Alarm-Type ::= INTEGER {
+  system-Alarm(0),
+  ai-High(1),
+  ai-Low(2),
+  di(3),
+  combined-Alarm(4)
+}
+
+System-State ::= INTEGER {
+  ok(0),
+  failed(1),
+  unavailable(2)
+}
+
+System-Alarm ::= INTEGER {
+  low-Float(0),
+  low-Load(1),
+  high-Float(2),
+  high-Load(3),
+  rectifier-Fail(4),
+  multiple-Rectifier-Fail(5),
+  rectifier-Comms-Lost(6),
+  multiple-Rectifier-Comms-Lost(7),
+  partial-AC-Fail(8),
+  ac-Fail(9),
+  system-Overload(10),
+  load-Fuse-Fail(11),
+  battery-Fuse-Fail(12),
+  battery-Test-Fail(13),
+  mov-Fail(14),
+  acd-Fan-Fail(15),
+  lvd1-Disconnected(16),
+  lvd1-Fail(17),
+  lvd1-Manual(18),
+  lvd2-Disconnected(19),
+  lvd2-Fail(20),
+  lvd2-Manual(21),
+  battery-Temperature-Low(22),
+  battery-Temperature-High(23),
+  sensor-Fail(24),
+  equalize(25),
+  fast-Charge(26),
+  battery-Test(27),
+  auxiliary-Sensor-Fail(28),
+  in-Discharge(29),
+  battery-Current-Limit(30),
+  rectifier-No-Load(31),
+  rectifier-Current-Limit(32),
+  rectifier-Over-Temperature(33),
+  ac-Phase1-Fail(34),
+  ac-Phase1-Voltage(35),
+  ac-Phase2-Fail(36),
+  ac-Phase2-Voltage(37),
+  ac-Phase3-Fail(38),
+  ac-Phase3-Voltage(39),
+  ac-Frequency(40),
+  generator-Enable(41),
+  cabinet-Fan-Fail(42),
+  new-Hardware(43),
+  unknown-Hardware(44),
+  missing-Hardware(45),
+  slave-Mode(46),
+  lvd1-Characterization-Error(47),
+  lvd2-Characterization-Error(48),
+  string-Fail(49),
+  generator-Fail(50)
+}
+
+Energize-State ::= INTEGER {
+  de-Energized(0),
+  energized(1)
+}
+
+Relay-Mapping ::= INTEGER {
+  none(0),
+  digital-Output-1(1),
+  digital-Output-2(2),
+  digital-Output-3(3),
+  digital-Output-4(4),
+  digital-Output-5(5),
+  digital-Output-6(6),
+  digital-Output-7(7),
+  digital-Output-8(8),
+  digital-Output-9(9),
+  digital-Output-10(10),
+  digital-Output-11(11),
+  digital-Output-12(12),
+  digital-Output-13(13),
+  digital-Output-14(14),
+  digital-Output-15(15),
+  digital-Output-16(16),
+  digital-Output-17(17),
+  digital-Output-18(18),
+  digital-Output-19(19),
+  digital-Output-20(20),
+  digital-Output-21(21),
+  digital-Output-22(22),
+  digital-Output-23(23),
+  digital-Output-24(24),
+  digital-Output-25(25),
+  digital-Output-26(26),
+  digital-Output-27(27),
+  digital-Output-28(28),
+  digital-Output-29(29),
+  digital-Output-30(30),
+  digital-Output-31(31),
+  digital-Output-32(32)
+}
+
+Active-State ::= INTEGER {
+  closed(2),
+  open(3)
+}
+
+Digital-Input-State ::= INTEGER {
+  unknown(1),
+  closed(2),
+  open(3)
+}
+
+Measurement-Units ::= INTEGER {
+  none(30),
+  volts(31),
+  milli-Amps(32),
+  amps(33),
+  kilo-Amps(34),
+  degree-celsius(35),
+  kilo-Watts(36),
+  percent(37),
+  volts-AC(38),
+  volts-DC(39),
+  amps-AC(40),
+  amps-DC(41),
+  litre(42),
+  litre-Per-Sec(43),
+  cubic-Meter-Per-Hour(44),
+  pascal(45),
+  kilo-Pascal(46),
+  mmH2O(47),
+  percent-Relative-Humidity(48),
+  rpm(49),
+  hertz(50),
+  kilo-Volt-Amps(51),
+  kilo-Watt-Hour(52)
+}
+
+Overload-Alarm-Type ::= INTEGER {
+  total-Capacity(0),
+  redundancy(1)
+}
+
+MPM-State ::= INTEGER {
+  unable-To-Start(0),
+  locked-Out(1),
+  converging(2),
+  stable(3),
+  disabled(4)
+}
+
+MPM-Battery-State ::= INTEGER {
+  ok(0),
+  pending-Fail(1),
+  failed(2),
+  unavailable(3),
+  not-Configured(4)
+}
+
+LVD-AI-Disconnect-Trigger ::= INTEGER {
+  disabled(0),
+  disconnect-On-Low(1),
+  disconnect-On-High(2),
+  disconnect-On-Either(3)
+}
+
+String-10 ::= OCTET STRING (SIZE(0..10))
+
+String-20 ::= OCTET STRING (SIZE(0..20))
+
+String-30 ::= OCTET STRING (SIZE(0..30))
+
+String-32 ::= OCTET STRING (SIZE(0..32))
+
+String-40 ::= OCTET STRING (SIZE(0..40))
+
+String-60 ::= OCTET STRING (SIZE(0..60))
+
+MIB-Object-ID ::= OCTET STRING (SIZE(0..80))
+
+String-253 ::= OCTET STRING (SIZE(0..253))
+
+-- OID Value Assignment and OBJECT-TYPE Construct ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+powerware OBJECT IDENTIFIER ::= { enterprises 1918 }
+dc-Power-System OBJECT IDENTIFIER ::= { powerware 2 }
+rps-SC200 OBJECT IDENTIFIER ::= { dc-Power-System 13 }
+
+rps-Objects OBJECT IDENTIFIER ::= { rps-SC200 10 }
+
+system-Identity OBJECT IDENTIFIER ::= { rps-Objects 10 }
+
+system-Manufacturer OBJECT-TYPE
+  SYNTAX String-20
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The manufacturer of the DC power system."
+  DEFVAL { "System Manufacturer" }
+::= { system-Identity 10 }
+
+system-Serial-Number OBJECT-TYPE
+  SYNTAX String-10
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The DC power system serial number assigned by the manufacturer."
+  DEFVAL { "0000000000" }
+::= { system-Identity 20 }
+
+system-Type OBJECT-TYPE
+  SYNTAX String-20
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The DC power system model number assigned by the manufacturer."
+  DEFVAL { "System Type" }
+::= { system-Identity 30 }
+
+system-Location OBJECT-TYPE
+  SYNTAX String-20
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Usually the location of the DC power system within the site."
+  DEFVAL { "System Location" }
+::= { system-Identity 40 }
+
+site-Name OBJECT-TYPE
+  SYNTAX String-40
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The site designation or code."
+  DEFVAL { "Site Name" }
+::= { system-Identity 50 }
+
+site-Address OBJECT-TYPE
+  SYNTAX String-40
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The street address of the site."
+  DEFVAL { "Site Address" }
+::= { system-Identity 60 }
+
+site-Notes OBJECT-TYPE
+  SYNTAX String-253
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Notes made by the installation or maintenance personnel."
+  DEFVAL { "" }
+::= { system-Identity 70 }
+
+system-Object-ID OBJECT-TYPE
+  SYNTAX MIB-Object-ID
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Used to form the return value for the SNMP MIB-2 sysObjectId. These numbers start with a specific enterprise ID (i.e. 1918 for Powerware) and are preceded by 1.3.6.1.4.1 to form an object ID for the system type."
+  DEFVAL { "1918.2.13" }
+::= { system-Identity 80 }
+
+trap-Format OBJECT-TYPE
+  SYNTAX SNMP-Trap-Format
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Select Powerware for multiple trap numbers, or X.733 for a single trap number as per ITU X.733."
+  DEFVAL { x733 }
+::= { system-Identity 90 }
+
+configuration-Name OBJECT-TYPE
+  SYNTAX String-40
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Name of the configuration in the controller database"
+  DEFVAL { "Configuration Name" }
+::= { system-Identity 100 }
+
+contact OBJECT-TYPE
+  SYNTAX String-253
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Contact details for the person responsible for this DC power system."
+  DEFVAL { "" }
+::= { system-Identity 110 }
+
+is-Three-Phase-System OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Indicates if the system contains three phase rectifiers or single phase rectifiers."
+::= { system-Identity 120 }
+
+supervisory-Module OBJECT IDENTIFIER ::= { rps-Objects 20 }
+
+manufacturer-Name OBJECT-TYPE
+  SYNTAX String-20
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The name of the manufacturer."
+::= { supervisory-Module 10 }
+
+slave-Type OBJECT-TYPE
+  SYNTAX Slave-Type
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Mandatory command identifying the device."
+::= { supervisory-Module 20 }
+
+software-Version OBJECT-TYPE
+  SYNTAX String-10
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Application software version. This is the software version of the main controller application."
+::= { supervisory-Module 30 }
+
+ldr-Software-Version OBJECT-TYPE
+  SYNTAX String-10
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Bootloader software version. The bootloader is responsible for loading and running the system support software and the main application. The bootloader software can be upgrading using the normal web upgrade process. However, if power fails during a bootloader upgrade then the controller may need to be returned to base for repair. Without a bootloader, no software can run on the controller."
+::= { supervisory-Module 50 }
+
+interface-Version OBJECT-TYPE
+  SYNTAX Unsigned16
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "S3P interface version. As the embedded software is upgraded, the communications interface may change. This number reflects any such change. This value, along with Compatible Interface Version is used by DCTools to determine how to communicate. Third party applications should also check this version and optionally warn the user if it is dealing with an incompatible interface. While Eaton Corporation does attempt to maintain backwards compatibility with its interfaces, this cannot be guaranteed."
+::= { supervisory-Module 70 }
+
+hardware-Version OBJECT-TYPE
+  SYNTAX String-10
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The Product Hardware Version"
+::= { supervisory-Module 80 }
+
+serial-Number OBJECT-TYPE
+  SYNTAX String-20
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The Product Serial Number. This item is not reset by the Reset System Configuration command."
+::= { supervisory-Module 90 }
+
+communications OBJECT IDENTIFIER ::= { rps-Objects 30 }
+
+s3P-Access OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Determines whether or not the S3P access is allowed."
+  DEFVAL { enabled }
+::= { communications 3 }
+
+http-Access OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If Enabled, HTTP Web interface access is allowed."
+  DEFVAL { enabled }
+::= { communications 6 }
+
+https-Access OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If Enabled, HTTPS (SSL) Web interface access is allowed."
+  DEFVAL { enabled }
+::= { communications 7 }
+
+snmp-Access OBJECT-TYPE
+  SYNTAX SNMP-Access-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Determines how SNMP access is allowed."
+  DEFVAL { all }
+::= { communications 8 }
+
+s3P-Address OBJECT-TYPE
+  SYNTAX Unsigned16
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The S3P slave address."
+  DEFVAL { 1 }
+::= { communications 10 }
+
+ip-Address OBJECT-TYPE
+  SYNTAX IpAddress
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The Internet Protocol (IP) address. This value and the Subnet Mask must be set correctly to communicate using Ethernet. Consult your network administrator."
+  DEFVAL { "1.1.1.1" }
+::= { communications 20 }
+
+subnet-Mask OBJECT-TYPE
+  SYNTAX IpAddress
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Identifies which fragment of the IP address is the sub-network identity. This value and the IP Address must be set correctly to communicate using Ethernet. Consult your network administrator."
+  DEFVAL { "255.255.255.0" }
+::= { communications 30 }
+
+gateway-Address OBJECT-TYPE
+  SYNTAX IpAddress
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Allows access to IP addresses outside your sub-network. Consult your network administrator."
+  DEFVAL { "1.1.1.1" }
+::= { communications 50 }
+
+serial OBJECT IDENTIFIER ::= { communications 53 }
+
+enable-Modem OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Determines whether or not the RS232 port is configured to work with a modem."
+  DEFVAL { disabled }
+::= { serial 10 }
+
+alarm-Report OBJECT-TYPE
+  SYNTAX Alarm-Report
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "This indicates that the dial-out process will start when an alarm occurs."
+  DEFVAL { none }
+::= { serial 20 }
+
+modem-Set-Up-String OBJECT-TYPE
+  SYNTAX String-30
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The string sent to the modem on reset. The modem AT command should not be included as it is automatically sent. The Auto-Answer Rings parameter is also sent, so it does not need to be included here. For complete details of appropriate commands, consult your modem documentation."
+  DEFVAL { "M0E0&W0" }
+::= { serial 30 }
+
+modem-Auto-Answer-Rings OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Number of rings before an incoming call is answered. Setting this parameter to zero disables incoming calls (the modem can still be used for alarm reporting)."
+  DEFVAL { 2 }
+::= { serial 40 }
+
+modem-Maximum-Retries OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If an alarm report dial-out does not connect with a remote modem, then this number of subsequent alarm report attempts will be made on the current dial-out number before trying the next dial-out number from the Dial Out Number Table. Dialing will stop if none of the numbers in the Dial Out Number Table connect."
+  DEFVAL { 0 }
+::= { serial 50 }
+
+modem-Retry-Interval OBJECT-TYPE
+  SYNTAX TimeIntervalInSeconds
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If an alarm report dial-out does not connect with a remote modem, then another attempt will be made after this time interval. Units: 's'."
+  DEFVAL { 0 }
+::= { serial 60 }
+
+modem-Power-Reset OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If this is enabled, then an attempt will be made to reset a non-operating modem by turning its power supply off and on using digital output 2."
+  DEFVAL { disabled }
+::= { serial 70 }
+
+dial-Out-Number-Table OBJECT-TYPE
+  SYNTAX SEQUENCE OF Dial-Out-Number-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+::= { serial 80 }
+
+dial-Out-Number-Entry OBJECT-TYPE
+  SYNTAX Dial-Out-Number-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+  INDEX  { dial-Out-Number-Index }
+::= { dial-Out-Number-Table 1 }
+
+Dial-Out-Number-Entry ::= SEQUENCE {
+  dial-Out-Number-Index Unsigned8,
+  dial-Out-Number String-30
+}
+
+dial-Out-Number-Index OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Automatically generated index object."
+::= { dial-Out-Number-Entry 1 }
+
+
+dial-Out-Number OBJECT-TYPE
+  SYNTAX String-30
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The telephone numbers to be called (via a modem) if alarm reporting is enabled. Consult the modem documentation for appropriate dial modifiers to use with the ATD command. Leave blank to prevent dial-out."
+  DEFVAL { "" }
+::= { dial-Out-Number-Entry 10 }
+
+sms-Notification-Table OBJECT-TYPE
+  SYNTAX SEQUENCE OF SMS-Notification-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+::= { serial 90 }
+
+sms-Notification-Entry OBJECT-TYPE
+  SYNTAX SMS-Notification-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+  INDEX  { sms-Notification-Index }
+::= { sms-Notification-Table 1 }
+
+SMS-Notification-Entry ::= SEQUENCE {
+  sms-Notification-Index Unsigned8,
+  sms-Phone-Name String-20,
+  sms-Level Severity-Level,
+  sms-Phone-Number String-30
+}
+
+sms-Notification-Index OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Automatically generated index object."
+::= { sms-Notification-Entry 1 }
+
+
+sms-Phone-Name OBJECT-TYPE
+  SYNTAX String-20
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "A name to identify this phone."
+  DEFVAL { "" }
+::= { sms-Notification-Entry 10 }
+
+sms-Level OBJECT-TYPE
+  SYNTAX Severity-Level
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If an alarm becomes active or inactive, with severity level equal to or higher than this setting, the designated SMS Phone Number will be sent an SMS notification."
+  DEFVAL { disabled }
+::= { sms-Notification-Entry 20 }
+
+sms-Phone-Number OBJECT-TYPE
+  SYNTAX String-30
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The phone number for SMS notifications."
+  DEFVAL { "0" }
+::= { sms-Notification-Entry 30 }
+
+snmp OBJECT IDENTIFIER ::= { communications 60 }
+
+snmp-Read-Community OBJECT-TYPE
+  SYNTAX String-32
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Community that can get items."
+  DEFVAL { "public" }
+::= { snmp 10 }
+
+snmp-Write-Community OBJECT-TYPE
+  SYNTAX String-32
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Community that can set items."
+  DEFVAL { "private" }
+::= { snmp 20 }
+
+enable-Trap-Repeat OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If enabled, alarm activation traps will be repeated according to Trap Repeat Rate."
+  DEFVAL { disabled }
+::= { snmp 30 }
+
+trap-Repeat-Rate OBJECT-TYPE
+  SYNTAX TimeIntervalInMinutes
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "How often to send a trap to trap receivers if Enable Trap Repeat is Enabled or the trap receiver's Trap Receiver Mode is Acknowledged Summary Trap. Units: 'min'."
+  DEFVAL { 1 }
+::= { snmp 40 }
+
+trap-Version OBJECT-TYPE
+  SYNTAX SNMP-Trap-Version
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Indicates whether SNMPv1, SNMPv2 or SNMPv3 trap will be sent."
+  DEFVAL { snmp-V2-Trap }
+::= { snmp 45 }
+
+snmp-Trap-Receiver-Table OBJECT-TYPE
+  SYNTAX SEQUENCE OF SNMP-Trap-Receiver-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+::= { snmp 50 }
+
+snmp-Trap-Receiver-Entry OBJECT-TYPE
+  SYNTAX SNMP-Trap-Receiver-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+  INDEX  { snmp-Trap-Receiver-Index }
+::= { snmp-Trap-Receiver-Table 1 }
+
+SNMP-Trap-Receiver-Entry ::= SEQUENCE {
+  snmp-Trap-Receiver-Index Unsigned8,
+  trap-Receiver-IP-Address IpAddress,
+  trap-Receiver-Port Unsigned16,
+  trap-Receiver-Name String-20,
+  trap-Receiver-Level Severity-Level,
+  trap-Receiver-Community String-32,
+  trap-Receiver-Mode Trap-Receiver-Mode,
+  acknowledge-Alarm-Summary-Trap No-Data
+}
+
+snmp-Trap-Receiver-Index OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Automatically generated index object."
+::= { snmp-Trap-Receiver-Entry 1 }
+
+
+trap-Receiver-IP-Address OBJECT-TYPE
+  SYNTAX IpAddress
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "SNMP notifications of events are sent to this IP address."
+  DEFVAL { "1.1.1.1" }
+::= { snmp-Trap-Receiver-Entry 20 }
+
+trap-Receiver-Port OBJECT-TYPE
+  SYNTAX Unsigned16
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "SNMP notifications of events are sent to this UDP port."
+  DEFVAL { 162 }
+::= { snmp-Trap-Receiver-Entry 30 }
+
+trap-Receiver-Name OBJECT-TYPE
+  SYNTAX String-20
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Name used to identify the receiver."
+  DEFVAL { "" }
+::= { snmp-Trap-Receiver-Entry 40 }
+
+trap-Receiver-Level OBJECT-TYPE
+  SYNTAX Severity-Level
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "When to send a trap to the receiver."
+  DEFVAL { disabled }
+::= { snmp-Trap-Receiver-Entry 50 }
+
+trap-Receiver-Community OBJECT-TYPE
+  SYNTAX String-32
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Community to use for traps sent to the receiver."
+  DEFVAL { "public" }
+::= { snmp-Trap-Receiver-Entry 60 }
+
+trap-Receiver-Mode OBJECT-TYPE
+  SYNTAX Trap-Receiver-Mode
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Set to Normal traps to send normal traps to a Network Management System on alarm activation and deactivation. Set to Acknowledged Summary Traps to send summary traps to PowerManagerII. These traps are repeated until PowerManagerII receives the trap, connects to the controller, and downloads alarms and data."
+  DEFVAL { normal-Traps }
+::= { snmp-Trap-Receiver-Entry 70 }
+
+acknowledge-Alarm-Summary-Trap OBJECT-TYPE
+  SYNTAX No-Data
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "This command will acknowledge reception of the alarm summary trap."
+::= { snmp-Trap-Receiver-Entry 80 }
+
+sntp OBJECT IDENTIFIER ::= { communications 70 }
+
+poll-Interval OBJECT-TYPE
+  SYNTAX Counter
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Polling interval in seconds."
+  DEFVAL { 3600 }
+::= { sntp 10 }
+
+udp-Port OBJECT-TYPE
+  SYNTAX Unsigned16
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "SNTP client destination port."
+  DEFVAL { 123 }
+::= { sntp 20 }
+
+primary-Address OBJECT-TYPE
+  SYNTAX IpAddress
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "IP address of Primary SNTP server."
+  DEFVAL { "129.132.98.11" }
+::= { sntp 30 }
+
+backup-Address OBJECT-TYPE
+  SYNTAX IpAddress
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "IP address of Backup SNTP server."
+  DEFVAL { "158.121.104.4" }
+::= { sntp 40 }
+
+web-User-Table OBJECT-TYPE
+  SYNTAX SEQUENCE OF Web-User-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+::= { communications 80 }
+
+web-User-Entry OBJECT-TYPE
+  SYNTAX Web-User-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+  INDEX  { web-User-Index }
+::= { web-User-Table 1 }
+
+Web-User-Entry ::= SEQUENCE {
+  web-User-Index Unsigned8,
+  user-Name String-40,
+  user-Logon-ID String-20,
+  user-Logon-Password String-32,
+  user-Active Boolean,
+  user-Read Boolean,
+  user-Write Boolean,
+  user-Restore Boolean,
+  user-Backup Boolean,
+  user-Execute Boolean,
+  user-Upgrade-Firmware Boolean,
+  user-Edit-User-List Boolean
+}
+
+web-User-Index OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Automatically generated index object."
+::= { web-User-Entry 1 }
+
+
+user-Name OBJECT-TYPE
+  SYNTAX String-40
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The full name of the user. This is for reference only and is not used in the login process."
+  DEFVAL { "" }
+::= { web-User-Entry 10 }
+
+user-Logon-ID OBJECT-TYPE
+  SYNTAX String-20
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The logon name of a user."
+  DEFVAL { "" }
+::= { web-User-Entry 21 }
+
+user-Logon-Password OBJECT-TYPE
+  SYNTAX String-32
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The password for this user."
+  DEFVAL { "" }
+::= { web-User-Entry 31 }
+
+user-Active OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Indicates this user is enabled or disabled."
+  DEFVAL { false }
+::= { web-User-Entry 40 }
+
+user-Read OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "When set true the user has access to database items that require Read Only user access level."
+  DEFVAL { false }
+::= { web-User-Entry 50 }
+
+user-Write OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "When set true the user has access to database items that require Write user access level."
+  DEFVAL { false }
+::= { web-User-Entry 60 }
+
+user-Restore OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "When set true the user is allowed to upload configuration or snapshot."
+  DEFVAL { false }
+::= { web-User-Entry 70 }
+
+user-Backup OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "When set true the user is allowed to download configuration or snapshot."
+  DEFVAL { false }
+::= { web-User-Entry 80 }
+
+user-Execute OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "When set true the user has access to database items that require Execute user access level."
+  DEFVAL { false }
+::= { web-User-Entry 90 }
+
+user-Upgrade-Firmware OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "When set true the user is allowed to upgrade firmware (including de-installing optional modules)."
+  DEFVAL { false }
+::= { web-User-Entry 100 }
+
+user-Edit-User-List OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "When set true the user has access to database items that require Admin user access level."
+  DEFVAL { false }
+::= { web-User-Entry 110 }
+
+access-Control OBJECT IDENTIFIER ::= { rps-Objects 33 }
+
+ui-Access OBJECT-TYPE
+  SYNTAX Access-Protection
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Controls keypad access to change configuration items, and start or stop processes. This provides protection against unauthorized or accidental modifications of configuration settings."
+  DEFVAL { unprotected }
+::= { access-Control 10 }
+
+s3P-Write-Access-Password OBJECT-TYPE
+  SYNTAX String-32
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If set, S3P requires a password to be used before write access is granted. This password may be used to control remote configuration change or control actions. Note that the password is sent unencrypted."
+  DEFVAL { "" }
+::= { access-Control 20 }
+
+remote-Access-Level OBJECT-TYPE
+  SYNTAX Access-Level
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Shows the level of access granted to remote applications. Remote write access to the configuration and control processes is controlled through the S3P Write Access Password. If set, then it must be used to login using the Remote Access Login before database items may be written."
+::= { access-Control 30 }
+
+ac-input OBJECT IDENTIFIER ::= { rps-Objects 40 }
+
+ac-Voltage OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The average of the AC voltage measured by all rectifiers. Units: 'V'."
+::= { ac-input 10 }
+
+phase-1 OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The average of the AC voltage on phase 1 measured by all rectifiers. Units: 'V'."
+::= { ac-input 20 }
+
+phase-2 OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The average of the AC voltage on phase 2 measured by all rectifiers. Units: 'V'."
+::= { ac-input 30 }
+
+phase-3 OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The average of the AC voltage on phase 3 measured by all rectifiers. Units: 'V'."
+::= { ac-input 40 }
+
+dc-output OBJECT IDENTIFIER ::= { rps-Objects 50 }
+
+load-Current OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The total current drawn by all loads derived from the sum of all current inputs mapped as load shunts. If no input is mapped and a battery current is available, the load current is calculated as Rectifier Current - Battery Current, otherwise it is unavailable. The value NaN means the load current is unavailable. Note this value may have a deadband applied around zero to eliminate current shunt offset errors. Internal control processes do NOT use this item, use Internal Load Current instead. Units: 'A'."
+::= { dc-output 10 }
+
+system-Power OBJECT-TYPE
+  SYNTAX Percentile8NAN
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The output power of the system as a percentage of the total nominal power of the registered rectifiers. Units: '%'."
+::= { dc-output 20 }
+
+load-Power OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The power being supplied to the load. Units: '0.01 kW'."
+::= { dc-output 30 }
+
+rectifiers OBJECT IDENTIFIER ::= { rps-Objects 60 }
+
+number-Of-Registered-Rectifiers OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The number of registered rectifiers."
+::= { rectifiers 10 }
+
+rectifier-Current OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The total current output by all rectifiers derived from the sum of all current inputs mapped as rectifier shunts. If there are no rectifier shunts but there are battery and load shunts, the rectifier current is calculated as Battery Current + Load Current. Otherwise rectifier current is determined as the sum of all reported rectifier output currents. The value NaN means the rectifier current is unavailable. Note this value may have a deadband applied around zero to eliminate current shunt offset errors. Internal control processes do NOT use this item, use Internal Rectifier Current instead. Units: 'A'."
+::= { rectifiers 20 }
+
+rectifier-Current-Limit OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The output current limit of the rectifier. If set to zero then the output current is maximum. Used by APR-3G, APR, APU, NPR, R2948 and R5848 series. Units: 'A'."
+  DEFVAL { 0 }
+::= { rectifiers 23 }
+
+enable-Current-Share OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "When enabled, the rectifier output voltages are adjusted to even (approximately) their output currents. Disable this function if different rectifiers are supplying independent loads. This function should normally be enabled."
+  DEFVAL { enabled }
+::= { rectifiers 26 }
+
+rectifier-Values-Table OBJECT-TYPE
+  SYNTAX SEQUENCE OF Rectifier-Values-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+::= { rectifiers 30 }
+
+rectifier-Values-Entry OBJECT-TYPE
+  SYNTAX Rectifier-Values-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+  INDEX  { rectifier-Values-Index }
+::= { rectifier-Values-Table 1 }
+
+Rectifier-Values-Entry ::= SEQUENCE {
+  rectifier-Values-Index Unsigned8,
+  rectifier-Serial-Number Counter,
+  rectifier-Status Unsigned8,
+  rectifier-Maximum-Current-Limit Unsigned8,
+  rectifier-Maximum-Power-Limit DC-Power,
+  rectifier-Reported-AC-Voltage Float,
+  rectifier-Reported-Voltage Float,
+  rectifier-Reported-Current Float,
+  rectifier-Output-Power Float,
+  rectifier-Heatsink-Temperature Float,
+  rectifier-Registration-State RCP-Slave-State,
+  rectifier-Failed-State Rect-Fail-State,
+  load-Based-Run-Time TimeIntervalInSeconds,
+  shutdown-Rectifier Boolean,
+  rectifier-Has-Been-Shutdown Boolean,
+  rectifier-Phase-1 Float,
+  rectifier-Phase-2 Float,
+  rectifier-Phase-3 Float
+}
+
+rectifier-Values-Index OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Automatically generated index object."
+::= { rectifier-Values-Entry 1 }
+
+
+rectifier-Serial-Number OBJECT-TYPE
+  SYNTAX Counter
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Rectifier serial number."
+::= { rectifier-Values-Entry 30 }
+
+rectifier-Status OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The status reported by this rectifier. This value cannot be interpreted without knowing the meaning of the various status bits. This is documented in the RXP command set for rectifiers."
+::= { rectifier-Values-Entry 60 }
+
+rectifier-Maximum-Current-Limit OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The maximum current limit value of the rectifier. Adjust Rectifier Current Limit to set a lower operating current limit. Units: 'A'."
+::= { rectifier-Values-Entry 70 }
+
+rectifier-Maximum-Power-Limit OBJECT-TYPE
+  SYNTAX DC-Power
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The maximum output power limit value of the rectifier. Adjust Rectifier Current Limit to set a lower operating power limit. Units: 'W'."
+::= { rectifier-Values-Entry 80 }
+
+rectifier-Reported-AC-Voltage OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The AC voltage measured by the rectifier. Units: 'V'."
+::= { rectifier-Values-Entry 90 }
+
+rectifier-Reported-Voltage OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The output voltage measured by this rectifier. This is measured by the rectifier and reported via the RXP bus. Units: '0.01 V'."
+::= { rectifier-Values-Entry 95 }
+
+rectifier-Reported-Current OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The current produced by this rectifier. This is measured by the rectifier and reported via the rectifier comms bus. Units: 'A'."
+::= { rectifier-Values-Entry 100 }
+
+rectifier-Output-Power OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The current rectifier output power as a percentage of the power limit under the current operating conditions. Units: '0.1 %'."
+::= { rectifier-Values-Entry 105 }
+
+rectifier-Heatsink-Temperature OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The measured rectifier heatsink temperature. Units: '°C'."
+::= { rectifier-Values-Entry 110 }
+
+rectifier-Registration-State OBJECT-TYPE
+  SYNTAX RCP-Slave-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Registration state of the rectifier with this address."
+::= { rectifier-Values-Entry 120 }
+
+rectifier-Failed-State OBJECT-TYPE
+  SYNTAX Rect-Fail-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "A rectifier's failed state."
+::= { rectifier-Values-Entry 130 }
+
+load-Based-Run-Time OBJECT-TYPE
+  SYNTAX TimeIntervalInSeconds
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The time the rectifier has been operating since it was registered. Units: 's'."
+::= { rectifier-Values-Entry 140 }
+
+shutdown-Rectifier OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If this is set to true, and Enable Rectifier Shutdown is Enabled then the corresponding rectifier will be shut down. Setting this value to false will start up a previously shut down rectifier. Use Rectifier Has Been Shutdown to see whether the command has been sent to the rectifier since it can take some seconds."
+::= { rectifier-Values-Entry 150 }
+
+rectifier-Has-Been-Shutdown OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Indicates if the rectifier shutdown command has been sent. Once a Shutdown Rectifier command has been issued some time may elapse before the command is sent to the rectifier. Rectifiers that shut themselves down due to some failure condition are excluded."
+::= { rectifier-Values-Entry 160 }
+
+rectifier-Phase-1 OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Rectifier's AC mains voltage measured at the input connection for phase 1. Units: 'V'."
+::= { rectifier-Values-Entry 170 }
+
+rectifier-Phase-2 OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Rectifier's AC mains voltage measured at the input connection for phase 2. Units: 'V'."
+::= { rectifier-Values-Entry 180 }
+
+rectifier-Phase-3 OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Rectifier's AC mains voltage measured at the input connection phase 3. Units: 'V'."
+::= { rectifier-Values-Entry 190 }
+
+enable-Rectifier-Shutdown OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Allows remote rectifier shutdown/restart."
+  DEFVAL { disabled }
+::= { rectifiers 50 }
+
+restart-All-Rectifiers OBJECT-TYPE
+  SYNTAX No-Data
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "This command sets all Shutdown Rectifier elements to false."
+::= { rectifiers 60 }
+
+load-Based-Rectifier-Shutdown-Config OBJECT IDENTIFIER ::= { rectifiers 70 }
+
+enable-Load-Based-Rectifier-Shutdown OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Automatically shuts down rectifiers based on load. Rectifier shutdown flag must also be enabled."
+  DEFVAL { disabled }
+::= { load-Based-Rectifier-Shutdown-Config 10 }
+
+rect-Cycle-Low-Threshold OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Rectifiers will only be shut down by the LBRS process if the load power is below this percentage of total system power. Units: '%'."
+  DEFVAL { 60 }
+::= { load-Based-Rectifier-Shutdown-Config 20 }
+
+rect-Cycle-High-Threshold OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If the load power is above this percentage of total system power then any shutdown rectifiers will be restarted. Units: '%'."
+  DEFVAL { 80 }
+::= { load-Based-Rectifier-Shutdown-Config 30 }
+
+rect-Cycle-Interval OBJECT-TYPE
+  SYNTAX TimeIntervalInMinutes
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The time interval in minutes that rectifiers are cycled when the LBRS process is active. Units: 'min'."
+  DEFVAL { 60 }
+::= { load-Based-Rectifier-Shutdown-Config 40 }
+
+reset-Run-Time OBJECT-TYPE
+  SYNTAX No-Data
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "This command attempts to reset the Run Time on each individual rectifier."
+::= { load-Based-Rectifier-Shutdown-Config 100 }
+
+ramp-Up-Slope OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The ramp-up slope of the rectifier, as a percentage of the rectifier rated current. Used by APR-3G, NPR, R2948, and R5848 series. Units: '%/s'."
+  DEFVAL { 20 }
+::= { rectifiers 80 }
+
+ovsd-Set-Point OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Rectifier Over-Voltage Shutdown set point. Used by R2948 series, R5848 only. Units: '0.01 V'."
+  DEFVAL { 5800 }
+::= { rectifiers 90 }
+
+start-Up-Delay OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The delay from AC turn-on before the rectifier output turns on. Units: 's'."
+  DEFVAL { 200 }
+::= { rectifiers 100 }
+
+control-Functions OBJECT IDENTIFIER ::= { rps-Objects 70 }
+
+control-State OBJECT-TYPE
+  SYNTAX Control-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Indicates the state of control process, e.g. Equalize, Fast Charge or Normal."
+::= { control-Functions 5 }
+
+voltage-Control OBJECT IDENTIFIER ::= { control-Functions 10 }
+
+float-Voltage OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The voltage required to maintain optimum battery charge (at the nominal ambient temperature). Use the value recommended by the battery manufacturer. The bus voltage will be adjusted above or below this value by Temperature Compensation, Active Voltage Control, Equalize. Units: '0.01 V'."
+  DEFVAL { 5450 }
+::= { voltage-Control 10 }
+
+maximum-System-Voltage OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The maximum voltage the live bus may be set to. Do not set above 58.0V. The actual bus voltage may be adjusted up to this value by Fast Charge, Equalize or AVC. Units: '0.01 V'."
+  DEFVAL { 5700 }
+::= { voltage-Control 15 }
+
+minimum-System-Voltage OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The minimum voltage the live bus may be set to. The actual bus voltage may be adjusted down to this value by control functions such as AVC and Battery Current Limit. Units: '0.01 V'."
+  DEFVAL { 4260 }
+::= { voltage-Control 17 }
+
+bus-Voltage OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The system bus voltage from the bus voltage sensor. If the bus voltage sensor has failed, the system bus voltage is determined from the rectifier output voltages. The value NaN is returned if the IOB could not measure the bus voltage and there are no registered rectifiers. Note: A sensor fail is reported when average rectifier output voltage is used. Units: '0.01 V'."
+::= { voltage-Control 20 }
+
+target-Voltage OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The voltage maintained by AVC. AVC will set the Base Voltage to attempt to maintain the bus voltage to this value. Units: '0.01 V'."
+::= { voltage-Control 30 }
+
+enable-Active-Voltage-Control OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "When AVC is enabled the rectifier output voltage is adjusted to maintain the bus voltage at the configured float voltage (plus or minus any adjustments by active control processes) within a predefined dead band. Enable AVC unless there is specific reason to disable."
+  DEFVAL { enabled }
+::= { voltage-Control 35 }
+
+avc-State OBJECT-TYPE
+  SYNTAX AVC-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The state of the Active Voltage Control (AVC) process."
+::= { voltage-Control 40 }
+
+avc-Offset OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The difference between the Target Voltage and the measured bus voltage. Units: '0.01 V'."
+::= { voltage-Control 50 }
+
+base-Voltage OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The voltage sent to the rectifiers. This is the Target Voltage plus the AVC Offset. This value is periodically broadcast to all rectifiers. Undetected rectifiers will ignore this value. Units: '0.01 V'."
+::= { voltage-Control 60 }
+
+temperature-Compensation OBJECT IDENTIFIER ::= { control-Functions 20 }
+
+enable-Temperature-Compensation OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "When enabled, the battery charge voltage is automatically adjusted based on temperature. This is recommended by battery manufacturers to optimize battery life."
+  DEFVAL { enabled }
+::= { temperature-Compensation 5 }
+
+temperature-Compensation-Allowed OBJECT-TYPE
+  SYNTAX Can-Start
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Indicates if Temperature Compensation is allowed to start or not. Temperature compensation cannot start if there are no rectifiers with AC power, or if the temperature sensor has failed."
+::= { temperature-Compensation 7 }
+
+temperature-Compensation-State OBJECT-TYPE
+  SYNTAX TC-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The state of the Temperature Compensation process. To be active, it must be enabled, and the temperature sensor must be working."
+::= { temperature-Compensation 10 }
+
+temperature-Compensation-Slope OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Bus voltage adjustment rate. Use the value specified by the battery manufacturer. Units: '0.01 mV/°C/Cell'."
+  DEFVAL { -400 }
+::= { temperature-Compensation 20 }
+
+temperature-Compensation-Reference-Temperature OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The temperature where no voltage adjustment is applied. Use the value specified by the battery manufacturer. Units: '0.1 °C'."
+  DEFVAL { 2000 }
+::= { temperature-Compensation 30 }
+
+temperature-Compensation-Upper-Limit OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "No additional voltage adjustment is made above this temperature. Units: '0.1 °C'."
+  DEFVAL { 5000 }
+::= { temperature-Compensation 40 }
+
+temperature-Compensation-Lower-Limit OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "No additional voltage adjustment is made below this temperature. Units: '0.1 °C'."
+  DEFVAL { 0 }
+::= { temperature-Compensation 50 }
+
+temperature-Compensation-Offset-Voltage OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The adjustment to the bus voltage being applied due to the Temperature Compensation. Offset is zero when the battery temperature equals the reference temperature. Units: '0.01 V'."
+::= { temperature-Compensation 60 }
+
+reset-Battery-State OBJECT-TYPE
+  SYNTAX No-Data
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "This command resets monitor battery state information (Amp hours discharged) and reverts all control process states to Inactive."
+::= { control-Functions 25 }
+
+equalize OBJECT IDENTIFIER ::= { control-Functions 30 }
+
+enable-Equalize OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Raises the battery charge voltage to re-distribute the battery electrolyte."
+  DEFVAL { disabled }
+::= { equalize 5 }
+
+equalize-Start-Allowed OBJECT-TYPE
+  SYNTAX Can-Start
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Indicates if an Equalize cycle is allowed to start or the reason why not. An Equalize cycle cannot start if there are no rectifiers with AC power."
+::= { equalize 9 }
+
+equalize-State OBJECT-TYPE
+  SYNTAX Control-Process-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Indicates the state of the Equalize process: Disabled, Inactive or Active."
+::= { equalize 10 }
+
+equalize-Voltage OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The bus voltage maintained during an Equalize cycle. The bus voltage is further adjusted by Temperature Compensation. Units: '0.01 V'."
+  DEFVAL { 5600 }
+::= { equalize 12 }
+
+equalize-Offset-Voltage OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The adjustment to the bus voltage being applied due to the Equalize process. Units: '0.01 V'."
+::= { equalize 13 }
+
+periodic-Equalize-First-Date-Time OBJECT-TYPE
+  SYNTAX Julian-Time-UTC
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The date and time that the first scheduled Equalize will occur. Subsequent Equalize cycles will occur at every Equalize Interval after that. Value is stored as number of seconds since 1 January 1970."
+::= { equalize 15 }
+
+equalize-Interval OBJECT-TYPE
+  SYNTAX TimeIntervalInDays
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The time between scheduled Equalize cycles. The interval period begins at the start of an Equalize. Zero disables scheduled Equalizes. Units: 'd'."
+  DEFVAL { 0 }
+::= { equalize 17 }
+
+next-Equalize-Start-Time OBJECT-TYPE
+  SYNTAX Julian-Time-UTC
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The start time of the next scheduled Equalize cycle. The value is NaN if Equalize is active or Periodic Equalize function is disabled."
+::= { equalize 20 }
+
+equalize-Duration OBJECT-TYPE
+  SYNTAX TimeIntervalInMinutes
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The duration of a scheduled Equalize. Units: 'min'."
+  DEFVAL { 600 }
+::= { equalize 30 }
+
+equalize-Remaining-Time OBJECT-TYPE
+  SYNTAX TimeIntervalInSeconds
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The time until the current Equalize cycle will stop. The value is NaN if the Equalize is inactive. Units: 's'."
+::= { equalize 40 }
+
+start-Equalize OBJECT-TYPE
+  SYNTAX No-Data
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "This command attempts to start the Equalize process."
+::= { equalize 100 }
+
+stop-Equalize OBJECT-TYPE
+  SYNTAX No-Data
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "This command stops the Equalize process if it is currently active."
+::= { equalize 110 }
+
+fast-Charge OBJECT IDENTIFIER ::= { control-Functions 40 }
+
+enable-Fast-Charge OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "After an AC power outage, Fast Charge automatically increases the float voltage of the DC power system to recharge the batteries as quickly as possible. Enable Fast Charge if the site experiences frequent AC power outages."
+  DEFVAL { disabled }
+::= { fast-Charge 5 }
+
+fast-Charge-State OBJECT-TYPE
+  SYNTAX Control-Process-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Indicates the state of Fast Charge process: Disabled, Inactive, Active, Pending or Suspended."
+::= { fast-Charge 10 }
+
+fast-Charge-Start-Allowed OBJECT-TYPE
+  SYNTAX Can-Start
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Indicates if an Equalize cycle Fast Charge is allowed to start or the reason why not. Fast Charge cannot start if there are no rectifiers with AC power, or the battery is not discharged."
+::= { fast-Charge 12 }
+
+fast-Charge-Voltage OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The bus voltage maintained during Fast Charge (use the value recommended by the battery manufacturer). Adjustments for Temperature Compensation and Battery Current Limit also apply. Units: '0.01 V'."
+  DEFVAL { 5600 }
+::= { fast-Charge 15 }
+
+fast-Charge-Offset-Voltage OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The adjustment to the bus voltage being applied due to the Fast Charge. Units: '0.01 V'."
+::= { fast-Charge 17 }
+
+fast-Charge-Ah-Discharged OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The current level of battery discharge. Units: 'Ah'."
+::= { fast-Charge 20 }
+
+fast-Charge-Maximum-Duration OBJECT-TYPE
+  SYNTAX TimeIntervalInMinutes
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The maximum duration of a Fast Charge (use the value recommended by the battery manufacturer). Units: 'min'."
+  DEFVAL { 1440 }
+::= { fast-Charge 30 }
+
+fast-Charge-Ampere-Hour-Threshold OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If Fast Charge Ah Discharged is above this value, then Fast Charge occurs when AC power is restored. The threshold is given as a percentage of installed C10 battery capacity. Fast charge can also be triggered based on the Fast Charge Voltage Threshold. Units: '%'."
+  DEFVAL { 25 }
+::= { fast-Charge 35 }
+
+fast-Charge-Voltage-Threshold OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If the bus voltage drops below this value then Fast Charge occurs when AC power is restored. Fast charge can also be triggered based on the Fast Charge Ampere Hour Threshold. Units: '0.01 V'."
+  DEFVAL { 4800 }
+::= { fast-Charge 40 }
+
+fast-Charge-Recharge-Percentage OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The ratio of recharge ampere-hours required to restore the battery to fully charged status to the ampere-hours discharged. Units: '%'."
+  DEFVAL { 110 }
+::= { fast-Charge 45 }
+
+fast-Charge-Maximum-Time-Remaining OBJECT-TYPE
+  SYNTAX TimeIntervalInSeconds
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "This timer is started when a Fast Charge cycle starts and runs while Fast Charge remains active. It is suspended and resumed when Fast Charge is suspended and resumed respectively. The Fast Charge cycle will stop if this timer reaches zero. The value is 0 if Fast Charge is inactive. Units: 's'."
+::= { fast-Charge 50 }
+
+stop-Fast-Charge OBJECT-TYPE
+  SYNTAX No-Data
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "This command stops the Fast Charge process if it is currently active."
+::= { fast-Charge 100 }
+
+battery-Current-Limit OBJECT IDENTIFIER ::= { control-Functions 50 }
+
+enable-Battery-Current-Limit OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Protects the batteries from excessive charge current. BCL varies the system voltage in order to maintain battery charge current below the Battery Current Limit value."
+  DEFVAL { disabled }
+::= { battery-Current-Limit 5 }
+
+bcl-State OBJECT-TYPE
+  SYNTAX BCL-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The state of the Battery Current Limit process."
+::= { battery-Current-Limit 10 }
+
+engine-Run-State OBJECT-TYPE
+  SYNTAX Engine-Run-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The state of the Engine Run input. Engine Run is used to indicate whether AC power is being supplied by a generator or similar equipment, and a lower battery current limit is required."
+::= { battery-Current-Limit 20 }
+
+bcl-Limit OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "BCL maintains the battery current below this value, which is a percentage of the installed C10 Battery Capacity. Units: '%'."
+  DEFVAL { 10 }
+::= { battery-Current-Limit 30 }
+
+bcl-Offset-Voltage OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The bus voltage adjustment made by Battery Current Limit is applied to the Operating Voltage to produce the Target Voltage. Target Voltage is used as the input to the AVC function. Units: '0.01 V'."
+::= { battery-Current-Limit 40 }
+
+bcl-Engine-Run-Limit OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The Battery Current Limit setting when Engine Run is active. BCL maintains the battery current below this value when the Engine Run digital input is active (Engine Run is enabled). This limit is expressed as a percentage of the installed C10 Battery Capacity. Units: '%'."
+  DEFVAL { 2 }
+::= { battery-Current-Limit 50 }
+
+lvd OBJECT IDENTIFIER ::= { control-Functions 60 }
+
+lvd-Inhibit-Period OBJECT-TYPE
+  SYNTAX TimeIntervalInSeconds
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The minimum time an LVD stays connected or disconnected before it can change state. Units: 's'."
+  DEFVAL { 10 }
+::= { lvd 10 }
+
+allow-Front-Panel-LVD-Control OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If true LVD manual control from the front panel is allowed."
+  DEFVAL { false }
+::= { lvd 15 }
+
+lvd1 OBJECT IDENTIFIER ::= { lvd 20 }
+
+enable-LVD1 OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Enables operation of LVD1. If two LVDs are used, LVD1 may be used to connect non-essential load that may be disconnected during an AC failure to extend battery hold-up time and protect the essential load."
+  DEFVAL { disabled }
+::= { lvd1 5 }
+
+lvd1-State OBJECT-TYPE
+  SYNTAX LVD-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Indicates the state of LVD1: Connected or Disconnected."
+::= { lvd1 10 }
+
+lvd1-Inhibited OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "While Inhibited, LVD1 cannot connect or reconnect. Indicates if the configurable Inhibit Period for LVD1 has elapsed since LVD1 last changed state. While true, LVD1 cannot change state again."
+::= { lvd1 20 }
+
+lvd1-AI-Disconnect-Trigger OBJECT-TYPE
+  SYNTAX LVD-AI-Disconnect-Trigger
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Specifies whether LVD1 will disconnect when a particular analogue input exceeds a threshold."
+  DEFVAL { disabled }
+::= { lvd1 30 }
+
+lvd1-AI-Number OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "LVD 1 will disconnect if this analogue input exceeds the threshold(s) specified in LVD 1 Analogue Input Disconnect Trigger."
+  DEFVAL { 1 }
+::= { lvd1 40 }
+
+lvd1-AC-Timer-Disconnect-Delay OBJECT-TYPE
+  SYNTAX TimeIntervalInMinutes
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If Enable AC Timer is set then LVD1 will disconnect after the Disconnect Delay from the start of an AC failure, unless Disconnect Voltage is reached first. Units: 'min'."
+  DEFVAL { 240 }
+::= { lvd1 50 }
+
+enable-LVD1-AC-Timer OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "LVD1 will disconnect after the AC Timer Disconnect Delay, even if the Disconnect Voltage is not reached."
+  DEFVAL { disabled }
+::= { lvd1 55 }
+
+lvd1-Disconnect-Voltage OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If the bus voltage drops to this value, then any shutdown rectifiers are restarted (even if LVD is disabled). Then, if the bus voltage is still lower than this value after the LVD1 Recognition Period, the LVD1 will disconnect. Units: '0.01 V'."
+  DEFVAL { 4320 }
+::= { lvd1 60 }
+
+lvd1-Reconnect-Voltage OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "LVD1 reconnects when the bus voltage has been above this value for the LVD1 Recognition Period and LVD2 is disabled, or has already reconnected, or is in slave mode. Units: '0.01 V'."
+  DEFVAL { 4800 }
+::= { lvd1 70 }
+
+lvd1-Recognition-Period OBJECT-TYPE
+  SYNTAX TimeIntervalInSeconds
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The time the bus voltage must be below the LVD1 Disconnect Voltage before disconnection, or above the LVD1 Reconnect Voltage before reconnection. Units: 's'."
+  DEFVAL { 10 }
+::= { lvd1 80 }
+
+lvd2 OBJECT IDENTIFIER ::= { lvd 30 }
+
+enable-LVD2 OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Enables operation of LVD2 (if used). If two LVDs are used LVD2 can be used to disconnect the essential load, or the batteries, that should be only disconnected after LVD1 has disconnected."
+  DEFVAL { disabled }
+::= { lvd2 5 }
+
+enable-LVD2-Slave-Mode OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "LVD2 will disconnect and reconnect at the same voltages as LVD1. The LVD2 configuration parameters are ignored."
+  DEFVAL { disabled }
+::= { lvd2 7 }
+
+lvd2-State OBJECT-TYPE
+  SYNTAX LVD-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Indicates the state of the LVD2: Connected or Disconnected."
+::= { lvd2 10 }
+
+lvd2-Inhibited OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "While Inhibited, LVD2 cannot connect or reconnect. Indicates if the configurable Inhibit Period for LVD2 has elapsed since LVD1 last changed state. While true, LVD2 cannot change state again."
+::= { lvd2 20 }
+
+lvd2-AI-Disconnect-Trigger OBJECT-TYPE
+  SYNTAX LVD-AI-Disconnect-Trigger
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Specifies whether LVD2 will disconnect when a particular analogue input exceeds a threshold."
+  DEFVAL { disabled }
+::= { lvd2 30 }
+
+lvd2-AI-Number OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "LVD 2 will disconnect if this analogue input exceeds the threshold(s) specified in LVD 2 Analogue Input Disconnect Trigger."
+  DEFVAL { 1 }
+::= { lvd2 40 }
+
+lvd2-AC-Timer-Disconnect-Delay OBJECT-TYPE
+  SYNTAX TimeIntervalInMinutes
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If Enable AC Timer is set then the LVD2 will disconnect after the LVD2 AC Timer Disconnect Delay from the start of an AC failure, unless LVD2 Disconnect Voltage is reached first. Units: 'min'."
+  DEFVAL { 240 }
+::= { lvd2 50 }
+
+enable-LVD2-AC-Timer OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "LVDs will disconnect after the AC Timer Disconnect Delay, even if the Disconnect Voltage is not reached."
+  DEFVAL { disabled }
+::= { lvd2 55 }
+
+lvd2-Disconnect-Voltage OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If the bus voltage drops to this value after the LVD2 Recognition Period, the LVD2 will disconnect. This parameter is ignored if Enable LVD2 Slave Mode is Enabled. Units: '0.01 V'."
+  DEFVAL { 4320 }
+::= { lvd2 60 }
+
+lvd2-Reconnect-Voltage OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "LVD2 reconnects when the bus voltage has been above this value for the LVD2 Recognition Period. This parameter is ignored if Enable LVD2 Slave Mode is Enabled. Units: '0.01 V'."
+  DEFVAL { 4800 }
+::= { lvd2 70 }
+
+lvd2-Recognition-Period OBJECT-TYPE
+  SYNTAX TimeIntervalInSeconds
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The time the bus voltage must be below the LVD2 Disconnect Voltage before disconnection, or above the LVD2 Reconnect Voltage before reconnection. Units: 's'."
+  DEFVAL { 10 }
+::= { lvd2 80 }
+
+battery-Test OBJECT IDENTIFIER ::= { control-Functions 70 }
+
+enable-Battery-Test OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Periodically tests the condition of the battery by reducing the rectifier voltage and allowing the batteries to discharge into the normal load."
+  DEFVAL { disabled }
+::= { battery-Test 3 }
+
+battery-Test-Start-Allowed OBJECT-TYPE
+  SYNTAX Can-Start
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Indicates if a Battery Test is allowed to start. Battery Tests cannot start within 48 hours of an AC failure, if there are no rectifiers, or if Equalize or Fast Charge is active."
+::= { battery-Test 7 }
+
+battery-Test-Lockout-Remaining OBJECT-TYPE
+  SYNTAX TimeIntervalInSeconds
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "How much longer the Battery Test is locked-out. Battery Tests cannot be started within 48 hours of an AC failure. If an immediate test is required, set Battery test Interval to zero (this disables the 48 hour lockout). The value is NaN if BT is active or disabled. Units: 's'."
+::= { battery-Test 8 }
+
+battery-Test-State OBJECT-TYPE
+  SYNTAX Battery-Test-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The state of the Battery Test process."
+::= { battery-Test 10 }
+
+battery-Test-First-Date-Time OBJECT-TYPE
+  SYNTAX Julian-Time-UTC
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The date and time that the first Battery Test will occur. Subsequent tests will occur at every Battery Test Interval after that. Value is stored as number of seconds since 1 January 1970."
+::= { battery-Test 15 }
+
+battery-Test-Interval OBJECT-TYPE
+  SYNTAX TimeIntervalInDays
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The time between scheduled Battery Tests. The interval period begins at the start of a Battery Test. Zero disables scheduled Battery Tests. Zero also disables the 48 hour lockout following an AC failure, allowing an immediate manual test. Units: 'd'."
+  DEFVAL { 183 }
+::= { battery-Test 17 }
+
+next-Battery-Test-Start-Time OBJECT-TYPE
+  SYNTAX Julian-Time-UTC
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The start time of the next scheduled Battery Test. The value is NaN if Battery Test is active or Periodic Battery Test function is disabled."
+::= { battery-Test 20 }
+
+battery-Test-Duration OBJECT-TYPE
+  SYNTAX TimeIntervalInMinutes
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The maximum time a Battery Test process will be active. The Battery Test will pass if the bus voltage remains above the Battery Test Termination Voltage for the duration of the test. Units: 'min'."
+  DEFVAL { 30 }
+::= { battery-Test 30 }
+
+battery-Test-Remaining-Time OBJECT-TYPE
+  SYNTAX TimeIntervalInSeconds
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The time to the end of the currently active Battery Test. The value is NaN if Battery Test is inactive. Units: 's'."
+::= { battery-Test 40 }
+
+battery-Test-Termination-Voltage OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If the bus voltages drops below this value during a Battery Test, then the test fails. Units: '0.01 V'."
+  DEFVAL { 4750 }
+::= { battery-Test 50 }
+
+battery-Test-Offset-Voltage OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The adjustment to the bus voltage being applied due to the Battery Test. While a Battery Test is running, the rectifiers are turned down to force the battery to carry the load. Units: '0.01 V'."
+::= { battery-Test 60 }
+
+start-Battery-Test OBJECT-TYPE
+  SYNTAX No-Data
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "This command attempts to start the Battery Test process."
+::= { battery-Test 100 }
+
+stop-Battery-Test OBJECT-TYPE
+  SYNTAX No-Data
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "This command stops the Battery Test process if it is currently active."
+::= { battery-Test 110 }
+
+real-Time-Clock OBJECT IDENTIFIER ::= { rps-Objects 80 }
+
+supervisory-Module-Time OBJECT-TYPE
+  SYNTAX Julian-Time-UTC
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The internal time (normally UTC). This must be set using DCTools or other application. DCTools will send a UTC time. This is the wall clock time since 1. Jan. 1970 00:00:00 UTC."
+::= { real-Time-Clock 10 }
+
+input-Output OBJECT IDENTIFIER ::= { rps-Objects 90 }
+
+system-Analog-Input OBJECT IDENTIFIER ::= { input-Output 10 }
+
+analog-Input-Table OBJECT-TYPE
+  SYNTAX SEQUENCE OF Analog-Input-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+::= { system-Analog-Input 30 }
+
+analog-Input-Entry OBJECT-TYPE
+  SYNTAX Analog-Input-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+  INDEX  { analog-Input-Index }
+::= { analog-Input-Table 1 }
+
+Analog-Input-Entry ::= SEQUENCE {
+  analog-Input-Index Unsigned8,
+  high-Alarm Alarm-Active-State,
+  low-Alarm Alarm-Active-State,
+  ai-Value Float,
+  ai-Status Enable-State,
+  ai-Name String-20,
+  units Measurement-Units,
+  ai-IOB-Number Unsigned8,
+  input-Number Unsigned8,
+  gain WritableFloat,
+  offset WritableFloat,
+  hysteresis WritableFloat,
+  high-Severity Alarm-Severity,
+  high-Threshold WritableFloat,
+  high-DO-Mapping-A Relay-Mapping,
+  high-DO-Mapping-B Relay-Mapping,
+  low-Severity Alarm-Severity,
+  low-Threshold WritableFloat,
+  low-DO-Mapping-A Relay-Mapping,
+  low-DO-Mapping-B Relay-Mapping,
+  ai-Group Unsigned8,
+  ai-High-Notes String-60,
+  ai-Low-Notes String-60
+}
+
+analog-Input-Index OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Automatically generated index object."
+::= { analog-Input-Entry 1 }
+
+
+high-Alarm OBJECT-TYPE
+  SYNTAX Alarm-Active-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The state of the selected analog input high alarm."
+::= { analog-Input-Entry 20 }
+
+low-Alarm OBJECT-TYPE
+  SYNTAX Alarm-Active-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The state of the selected analog input low alarm."
+::= { analog-Input-Entry 30 }
+
+ai-Value OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Analog input value."
+::= { analog-Input-Entry 40 }
+
+ai-Status OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Enable/disable this analog input channel."
+  DEFVAL { disabled }
+::= { analog-Input-Entry 50 }
+
+ai-Name OBJECT-TYPE
+  SYNTAX String-20
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The name of this analog input channel as it will appear on management software such as DCTools or PowerManagerII. This name is not displayed on the controller."
+  DEFVAL { "Analog Input 1" }
+::= { analog-Input-Entry 60 }
+
+units OBJECT-TYPE
+  SYNTAX Measurement-Units
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Units of this analog input (after scaling)."
+  DEFVAL { none }
+::= { analog-Input-Entry 70 }
+
+ai-IOB-Number OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The I/O board number on which this analog input is located."
+  DEFVAL { 1 }
+::= { analog-Input-Entry 80 }
+
+input-Number OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The input channel on the I/O board of this analog input."
+  DEFVAL { 1 }
+::= { analog-Input-Entry 90 }
+
+gain OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The scaling factor applied to the raw value read from the I/O board."
+  DEFVAL { 100 }
+::= { analog-Input-Entry 100 }
+
+offset OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The offset applied to the raw value read from the I/O board."
+  DEFVAL { 0 }
+::= { analog-Input-Entry 110 }
+
+hysteresis OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The amount of hysteresis applied to the input before an active alarm is deactivated."
+  DEFVAL { 0 }
+::= { analog-Input-Entry 130 }
+
+high-Severity OBJECT-TYPE
+  SYNTAX Alarm-Severity
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The severity level associated with the alarm. Digital output-only alarms are not displayed, although any configured digital outputs are still activated."
+  DEFVAL { disabled }
+::= { analog-Input-Entry 141 }
+
+high-Threshold OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "An analog input high alarm is activated if the scaled input is greater than or equal to this value."
+  DEFVAL { 1000 }
+::= { analog-Input-Entry 150 }
+
+high-DO-Mapping-A OBJECT-TYPE
+  SYNTAX Relay-Mapping
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Optional digital output activated while this alarm is active."
+  DEFVAL { none }
+::= { analog-Input-Entry 160 }
+
+high-DO-Mapping-B OBJECT-TYPE
+  SYNTAX Relay-Mapping
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Optional digital output activated while this alarm is active."
+  DEFVAL { none }
+::= { analog-Input-Entry 170 }
+
+low-Severity OBJECT-TYPE
+  SYNTAX Alarm-Severity
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The severity level associated with the alarm. Digital output-only alarms are not displayed, although any configured digital outputs are still activated."
+  DEFVAL { disabled }
+::= { analog-Input-Entry 181 }
+
+low-Threshold OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "An analog input low alarm is activated if the scaled input is lower than or equal to this value."
+  DEFVAL { 0 }
+::= { analog-Input-Entry 190 }
+
+low-DO-Mapping-A OBJECT-TYPE
+  SYNTAX Relay-Mapping
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Optional digital output activated while this alarm is active."
+  DEFVAL { none }
+::= { analog-Input-Entry 200 }
+
+low-DO-Mapping-B OBJECT-TYPE
+  SYNTAX Relay-Mapping
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Optional digital output activated while this alarm is active."
+  DEFVAL { none }
+::= { analog-Input-Entry 210 }
+
+ai-Group OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The group tag used by PowerManagerII to group related inputs and outputs for display purposes."
+  DEFVAL { 0 }
+::= { analog-Input-Entry 220 }
+
+ai-High-Notes OBJECT-TYPE
+  SYNTAX String-60
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "User notes about this alarm. These notes appear in SNMP traps and can be viewed using DCTools or PowerManagerII."
+  DEFVAL { "" }
+::= { analog-Input-Entry 230 }
+
+ai-Low-Notes OBJECT-TYPE
+  SYNTAX String-60
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "User notes about this alarm. These notes appear in SNMP traps and can be viewed using DCTools or PowerManagerII."
+  DEFVAL { "" }
+::= { analog-Input-Entry 240 }
+
+system-States OBJECT IDENTIFIER ::= { input-Output 15 }
+
+mains-Fail OBJECT-TYPE
+  SYNTAX System-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "True if the Mains Fail digital input is active."
+::= { system-States 10 }
+
+fan-Fail OBJECT-TYPE
+  SYNTAX System-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "True if the Fan Fail digital input is active."
+::= { system-States 20 }
+
+mov-Fail OBJECT-TYPE
+  SYNTAX System-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "True if the MOV Fail digital input is active."
+::= { system-States 30 }
+
+load-Fuse-Fail OBJECT-TYPE
+  SYNTAX System-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "True if the Load Fuse Fail digital input is active."
+::= { system-States 40 }
+
+battery-Fuse-Fail OBJECT-TYPE
+  SYNTAX System-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "True if the Battery Fuse Fail digital input is active."
+::= { system-States 50 }
+
+digital-Input-Table OBJECT-TYPE
+  SYNTAX SEQUENCE OF Digital-Input-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+::= { input-Output 40 }
+
+digital-Input-Entry OBJECT-TYPE
+  SYNTAX Digital-Input-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+  INDEX  { digital-Input-Index }
+::= { digital-Input-Table 1 }
+
+Digital-Input-Entry ::= SEQUENCE {
+  digital-Input-Index Unsigned8,
+  alarm Alarm-Active-State,
+  di-Value Digital-Input-State,
+  di-Status Enable-State,
+  di-Name String-20,
+  di-IOB-Number Unsigned8,
+  digital-Input-Number Unsigned8,
+  di-Severity Alarm-Severity,
+  di-DO-Mapping-A Relay-Mapping,
+  di-DO-Mapping-B Relay-Mapping,
+  di-Active-State Active-State,
+  di-Group Unsigned8,
+  di-Notes String-60
+}
+
+digital-Input-Index OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Automatically generated index object."
+::= { digital-Input-Entry 1 }
+
+
+alarm OBJECT-TYPE
+  SYNTAX Alarm-Active-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The state of this digital input alarm."
+::= { digital-Input-Entry 20 }
+
+di-Value OBJECT-TYPE
+  SYNTAX Digital-Input-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The state of this digital input."
+::= { digital-Input-Entry 30 }
+
+di-Status OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Enable/disable this digital input channel."
+  DEFVAL { disabled }
+::= { digital-Input-Entry 40 }
+
+di-Name OBJECT-TYPE
+  SYNTAX String-20
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The name of the digital input."
+  DEFVAL { "Digital Input 1" }
+::= { digital-Input-Entry 50 }
+
+di-IOB-Number OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The I/O board number on which this digital input is located."
+  DEFVAL { 1 }
+::= { digital-Input-Entry 60 }
+
+digital-Input-Number OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The input channel on the I/O board of this digital input."
+  DEFVAL { 1 }
+::= { digital-Input-Entry 70 }
+
+di-Severity OBJECT-TYPE
+  SYNTAX Alarm-Severity
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Alarm severity indicator"
+  DEFVAL { disabled }
+::= { digital-Input-Entry 81 }
+
+di-DO-Mapping-A OBJECT-TYPE
+  SYNTAX Relay-Mapping
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Optional digital output activated while this digital input is active."
+  DEFVAL { none }
+::= { digital-Input-Entry 90 }
+
+di-DO-Mapping-B OBJECT-TYPE
+  SYNTAX Relay-Mapping
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Optional digital output activated while this digital input is active."
+  DEFVAL { none }
+::= { digital-Input-Entry 100 }
+
+di-Active-State OBJECT-TYPE
+  SYNTAX Active-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If the input is in this state for the alarm recognition time then an alarm will be activated."
+  DEFVAL { closed }
+::= { digital-Input-Entry 110 }
+
+di-Group OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The group Number to be used by SiteManager."
+  DEFVAL { 0 }
+::= { digital-Input-Entry 120 }
+
+di-Notes OBJECT-TYPE
+  SYNTAX String-60
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "User notes about this alarm. These notes appear in SNMP traps and can be viewed using DCTools or PowerManagerII."
+  DEFVAL { "" }
+::= { digital-Input-Entry 130 }
+
+digital-Output-Table OBJECT-TYPE
+  SYNTAX SEQUENCE OF Digital-Output-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+::= { input-Output 50 }
+
+digital-Output-Entry OBJECT-TYPE
+  SYNTAX Digital-Output-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+  INDEX  { digital-Output-Index }
+::= { digital-Output-Table 1 }
+
+Digital-Output-Entry ::= SEQUENCE {
+  digital-Output-Index Unsigned8,
+  do-State External-Relay-State,
+  do-Test-State Relay-Test-State,
+  remote-Control-State Relay-Control-State,
+  do-Status Enable-State,
+  do-Name String-20,
+  do-IOB-Number Unsigned8,
+  do-IOB-DO-Number Unsigned8,
+  do-Active-State Energize-State,
+  do-Group Unsigned8
+}
+
+digital-Output-Index OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Automatically generated index object."
+::= { digital-Output-Entry 1 }
+
+
+do-State OBJECT-TYPE
+  SYNTAX External-Relay-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The state of this digital output. Active digital outputs may be energized or de-energized depending on their configuration."
+::= { digital-Output-Entry 20 }
+
+do-Test-State OBJECT-TYPE
+  SYNTAX Relay-Test-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Allows control of the digital output for test purposes. This helps to confirm wiring installation."
+::= { digital-Output-Entry 30 }
+
+remote-Control-State OBJECT-TYPE
+  SYNTAX Relay-Control-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Allows remote control of the digital output."
+::= { digital-Output-Entry 40 }
+
+do-Status OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Enable or disable this digital output. If disabled, the digital output is not driven."
+  DEFVAL { disabled }
+::= { digital-Output-Entry 50 }
+
+do-Name OBJECT-TYPE
+  SYNTAX String-20
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The name of the digital output."
+  DEFVAL { "Digital Output 1" }
+::= { digital-Output-Entry 60 }
+
+do-IOB-Number OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The I/O board number on which this digital output is located."
+  DEFVAL { 1 }
+::= { digital-Output-Entry 70 }
+
+do-IOB-DO-Number OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The number of the digital output channel on the I/O board."
+  DEFVAL { 1 }
+::= { digital-Output-Entry 80 }
+
+do-Active-State OBJECT-TYPE
+  SYNTAX Energize-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Active state of the digital output (Energized or De-energized)."
+  DEFVAL { energized }
+::= { digital-Output-Entry 90 }
+
+do-Group OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The Group Number to be used by SiteManager."
+  DEFVAL { 0 }
+::= { digital-Output-Entry 100 }
+
+battery OBJECT IDENTIFIER ::= { rps-Objects 100 }
+
+battery-Capacity OBJECT-TYPE
+  SYNTAX Counter
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The rated 10-hour (C10) capacity of the battery. 0 = no battery is installed. Units: 'Ah'."
+  DEFVAL { 100 }
+::= { battery 10 }
+
+cells-Per-String OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The number of 2V battery cells per string. Zero means no battery is installed."
+  DEFVAL { 24 }
+::= { battery 20 }
+
+battery-Temperature OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The temperature measured by the battery temperature sensor. The value NaN is returned if the IOB (SM65) or CBC could not measure the temperature. (i.e. if the sensor has failed, is not fitted or not calibrated) Units: '°C'."
+::= { battery 30 }
+
+battery-Current OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The total current flowing to/from the batteries derived from the sum of any current inputs mapped as battery shunts. If no input is mapped and a load current is available, the battery current is calculated as Rectifier Current - Load Current, otherwise it is unavailable. If positive, the battery is being charged. The value NaN means the battery current is unavailable. Note this value may have a deadband applied around zero to eliminate current shunt offset errors. Internal control processes do NOT use this item, use Internal Battery Current instead. Units: 'A'."
+::= { battery 40 }
+
+battery-State OBJECT-TYPE
+  SYNTAX Battery-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Indicates the battery state (charge, discharge or float)."
+::= { battery 45 }
+
+midpoint-Monitoring OBJECT IDENTIFIER ::= { battery 50 }
+
+mpm-Enable OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If enabled the string is midpoint monitored."
+  DEFVAL { disabled }
+::= { midpoint-Monitoring 10 }
+
+mpm-Lockout-Period OBJECT-TYPE
+  SYNTAX TimeIntervalInMinutes
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Time period since battery not in discharge or the completion of Fast Charge, Equalize or Battery Test during which midpoint battery monitoring shall be not operate. Units: 'min'."
+  DEFVAL { 720 }
+::= { midpoint-Monitoring 20 }
+
+mpm-Convergence-Period OBJECT-TYPE
+  SYNTAX TimeIntervalInMinutes
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Time period from start of the MPM process. During this period the MPM threshold is calculated via linear interpolation using MPM Start Threshold, Stable Threshold and the Time Running. Units: 'min'."
+  DEFVAL { 1440 }
+::= { midpoint-Monitoring 30 }
+
+string-Fail-Recognition-Period OBJECT-TYPE
+  SYNTAX TimeIntervalInMinutes
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If the midpoint voltage divergence of a battery string is continuously over threshold for this time, the string is deemed faulty. Units: 'min'."
+  DEFVAL { 60 }
+::= { midpoint-Monitoring 40 }
+
+mpm-Start-Threshold OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Midpoint battery monitoring start threshold, defined as percentage of bus voltage. Units: '0.1 %'."
+  DEFVAL { 800 }
+::= { midpoint-Monitoring 50 }
+
+mpm-Stable-Threshold OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Midpoint battery monitoring stable threshold, defined as percentage of bus voltage. Units: '0.1 %'."
+  DEFVAL { 400 }
+::= { midpoint-Monitoring 60 }
+
+string-Table OBJECT-TYPE
+  SYNTAX SEQUENCE OF String-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+::= { midpoint-Monitoring 70 }
+
+string-Entry OBJECT-TYPE
+  SYNTAX String-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+  INDEX  { string-Index }
+::= { string-Table 1 }
+
+String-Entry ::= SEQUENCE {
+  string-Index Unsigned8,
+  string-Name String-20,
+  string-State MPM-Battery-State,
+  midpoint-Voltage Float,
+  imbalance-Percent Float
+}
+
+string-Index OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Automatically generated index object."
+::= { string-Entry 1 }
+
+
+string-Name OBJECT-TYPE
+  SYNTAX String-20
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Name of the battery string."
+::= { string-Entry 10 }
+
+string-State OBJECT-TYPE
+  SYNTAX MPM-Battery-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Indicates the current state of a battery string."
+::= { string-Entry 20 }
+
+midpoint-Voltage OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Midpoint voltage reading for the battery string. Units: '0.01 V'."
+::= { string-Entry 30 }
+
+imbalance-Percent OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The voltage difference between the first half of the string and the second half of the string expressed in percent of the Bus Voltage. Units: '0.1 %'."
+::= { string-Entry 40 }
+
+mpm-State OBJECT-TYPE
+  SYNTAX MPM-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Indicates the current state of the MPM process."
+::= { midpoint-Monitoring 80 }
+
+time-In-This-State OBJECT-TYPE
+  SYNTAX TimeIntervalInMinutes
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Indicates the time period that the current MPM state has been running for. Units: 'min'."
+::= { midpoint-Monitoring 90 }
+
+current-MPM-Threshold OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Indicates the current calculated MPM threshold. Units: '0.1 %'."
+::= { midpoint-Monitoring 100 }
+
+reference-Voltage OBJECT-TYPE
+  SYNTAX Float
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Midpoint reference voltage. Units: '0.01 V'."
+::= { midpoint-Monitoring 105 }
+
+clear-String-Fail OBJECT-TYPE
+  SYNTAX No-Data
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "This command attempts to reset string state."
+::= { midpoint-Monitoring 110 }
+
+alarms OBJECT IDENTIFIER ::= { rps-Objects 110 }
+
+alarm-States OBJECT IDENTIFIER ::= { alarms 5 }
+
+summary-Alarm-Critical OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "True if any critical alarm is active remotely (and not masked)."
+::= { alarm-States 10 }
+
+summary-Alarm-Major OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "True if any major alarm is active remotely (and not masked)."
+::= { alarm-States 20 }
+
+summary-Alarm-Minor OBJECT-TYPE
+  SYNTAX Boolean
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "True if any minor alarm is active remotely (and not masked)."
+::= { alarm-States 30 }
+
+reset-Battery-Test-Failed-Alarm OBJECT-TYPE
+  SYNTAX No-Data
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "This command attempts to reset Battery Test Failed alarm."
+::= { alarm-States 100 }
+
+reset-Rectifier-Comms-Lost-Alarm OBJECT-TYPE
+  SYNTAX No-Data
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "This command attempts to reset Rectifier Comms Lost alarm and Multiple Rect Comms Lost alarm."
+::= { alarm-States 110 }
+
+alarm-Table OBJECT-TYPE
+  SYNTAX SEQUENCE OF Alarm-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+::= { alarms 10 }
+
+alarm-Entry OBJECT-TYPE
+  SYNTAX Alarm-Entry
+  ACCESS not-accessible
+  STATUS mandatory
+  DESCRIPTION ""
+  INDEX  { alarm-Index }
+::= { alarm-Table 1 }
+
+Alarm-Entry ::= SEQUENCE {
+  alarm-Index System-Alarm,
+  alarm-Name String-40,
+  alarm-Severity Alarm-Severity,
+  alarm-State Alarm-Active-State,
+  alarm-Notes String-60
+}
+
+alarm-Index OBJECT-TYPE
+  SYNTAX System-Alarm
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Automatically generated index object."
+::= { alarm-Entry 1 }
+
+
+alarm-Name OBJECT-TYPE
+  SYNTAX String-40
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The name of the alarm. For user-defined alarms, this is the User Alarm Name. For other alarms it is fixed."
+::= { alarm-Entry 20 }
+
+alarm-Severity OBJECT-TYPE
+  SYNTAX Alarm-Severity
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Specifies the severity of the alarm."
+  DEFVAL { major }
+::= { alarm-Entry 31 }
+
+alarm-State OBJECT-TYPE
+  SYNTAX Alarm-Active-State
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The state of this alarm."
+::= { alarm-Entry 40 }
+
+alarm-Notes OBJECT-TYPE
+  SYNTAX String-60
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "User notes about this alarm. These notes appear in SNMP traps and can be viewed using DCTools or PowerManagerII."
+  DEFVAL { "" }
+::= { alarm-Entry 50 }
+
+alarm-Configuration OBJECT IDENTIFIER ::= { alarms 15 }
+
+enable-Audible-Alarm-Indication OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Enable/disable audible alarm indication."
+  DEFVAL { enabled }
+::= { alarm-Configuration 10 }
+
+alarm-Recognition-Period OBJECT-TYPE
+  SYNTAX Unsigned16
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "An alarm condition must be continuously active for this period before an alarm is generated. Units: 's'."
+  DEFVAL { 10 }
+::= { alarm-Configuration 20 }
+
+ac-Fail-Recognition-Period OBJECT-TYPE
+  SYNTAX Unsigned16
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "An AC fail condition must be continuously active for this period before an AC Fail alarm is generated. Units: 's'."
+  DEFVAL { 10 }
+::= { alarm-Configuration 30 }
+
+enable-High-Float-Tracking OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The alarm thresholds will be increased when the operating voltage is raised by a voltage control function."
+  DEFVAL { disabled }
+::= { alarm-Configuration 40 }
+
+high-Float-Threshold OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "High Float alarm is activated if the bus voltage is above this value. Units: '0.01 V'."
+  DEFVAL { 5560 }
+::= { alarm-Configuration 50 }
+
+enable-Low-Float-Tracking OBJECT-TYPE
+  SYNTAX Enable-State
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The alarm thresholds will be reduced when the operating voltage is lowered by a voltage control function."
+  DEFVAL { disabled }
+::= { alarm-Configuration 60 }
+
+low-Float-Threshold OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Low Float alarm is activated when the bus voltage is below this value. Units: '0.01 V'."
+  DEFVAL { 5280 }
+::= { alarm-Configuration 70 }
+
+high-Load-Threshold OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "High Load alarm is activated if the bus voltage is above this value. Units: '0.01 V'."
+  DEFVAL { 5760 }
+::= { alarm-Configuration 80 }
+
+low-Load-Threshold OBJECT-TYPE
+  SYNTAX WritableFloat
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The Low Load alarm is activated if the bus voltage is below this value. Units: '0.01 V'."
+  DEFVAL { 4700 }
+::= { alarm-Configuration 90 }
+
+battery-Temperature-High-Threshold OBJECT-TYPE
+  SYNTAX Signed8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Battery Temperature High alarm is activated if the battery temperature is above this value. Units: '°C'."
+  DEFVAL { 40 }
+::= { alarm-Configuration 130 }
+
+battery-Temperature-Low-Threshold OBJECT-TYPE
+  SYNTAX Signed8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "Battery Temperature Low alarm is activated if the battery temperature is below this value. Units: '°C'."
+  DEFVAL { 10 }
+::= { alarm-Configuration 140 }
+
+system-Overload-Type OBJECT-TYPE
+  SYNTAX Overload-Alarm-Type
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "If the System Overload Type is total capacity then the alarm will trigger when the load is above the System Overload Threshold for the System Overload Recognition Period. If the System Overload Type is redundancy then the alarm will trigger when the load is above the total current capacity of the system minus the current capacity of the largest rectifier for the System Overload Recognition Period."
+  DEFVAL { redundancy }
+::= { alarm-Configuration 170 }
+
+system-Overload-Recognition-Period OBJECT-TYPE
+  SYNTAX Unsigned16
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The System Overload alarm activates if the load is above the System Overload Threshold continuously for this time. It is normally set to several hours so that the alarm does not operate during a normal battery recharge. Units: 'min'."
+  DEFVAL { 240 }
+::= { alarm-Configuration 180 }
+
+system-Overload-Threshold OBJECT-TYPE
+  SYNTAX Unsigned8
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "The System Overload alarm activates if the load is above this threshold continuously for the System Overload Recognition Period. Measured as a percentage of total rectifier capacity. Units: '%'."
+  DEFVAL { 85 }
+::= { alarm-Configuration 190 }
+
+battery-Current-Sensor-Fail-Recognition-Period OBJECT-TYPE
+  SYNTAX TimeIntervalInSeconds
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION "A battery current sensor fail condition must be in seen continuously for this period before battery related control processes stop. Units: 's'."
+  DEFVAL { 0 }
+::= { alarm-Configuration 220 }
+
+global-Alarms OBJECT IDENTIFIER ::= { rps-Objects 111 }
+
+trap-Alarm-Origin OBJECT-TYPE
+  SYNTAX Alarm-Type
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The origin of the alarm. This is sent with the SNMP trap."
+::= { global-Alarms 10 }
+
+trap-Alarm-Name OBJECT-TYPE
+  SYNTAX String-40
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The name of the Alarm. This is sent with the SNMP trap."
+::= { global-Alarms 11 }
+
+trap-Alarm-Number OBJECT-TYPE
+  SYNTAX Unsigned16
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The number for this Alarm. This is sent with the SNMP trap."
+::= { global-Alarms 12 }
+
+trap-Additional-Text OBJECT-TYPE
+  SYNTAX String-60
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "User notes about this alarm. These notes appear in SNMP traps and can be viewed using DCTools or PowerManagerII."
+::= { global-Alarms 13 }
+
+trap-Alarm-Keep-Severity OBJECT-TYPE
+  SYNTAX Trap-Alarm-Keep-Severity
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "The severity of the alarm. This is sent with the SNMP trap."
+::= { global-Alarms 14 }
+
+trap-Alarm-Cleared OBJECT-TYPE
+  SYNTAX Trap-Alarm-Keep-Severity
+  ACCESS read-only
+  STATUS mandatory
+  DESCRIPTION "Always returns Trap-Alarm-Keep-Severity Cleared. For global deactivation trap"
+::= { global-Alarms 15 }
+
+rps-Traps OBJECT IDENTIFIER ::= { rps-SC200 20 }
+
+major-Alarm-Active TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {alarm-Index, alarm-Name, system-Location, site-Name, site-Address, alarm-Notes}
+  DESCRIPTION "An major alarm is active."
+::= 100
+
+major-AI-High-Active TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {analog-Input-Index, ai-Name, system-Location, site-Name, site-Address, ai-High-Notes}
+  DESCRIPTION "An analog input high major alarm is active."
+::= 101
+
+major-AI-Low-Active TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {analog-Input-Index, ai-Name, system-Location, site-Name, site-Address, ai-Low-Notes}
+  DESCRIPTION "An analog input low major alarm is active."
+::= 102
+
+major-DI-Active TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {digital-Input-Index, di-Name, system-Location, site-Name, site-Address, di-Notes}
+  DESCRIPTION "An digital input major alarm is active."
+::= 103
+
+minor-Alarm-Active TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {alarm-Index, alarm-Name, system-Location, site-Name, site-Address, alarm-Notes}
+  DESCRIPTION "A minor alarm is active."
+::= 200
+
+minor-AI-High-Active TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {analog-Input-Index, ai-Name, system-Location, site-Name, site-Address, ai-High-Notes}
+  DESCRIPTION "An analog input high minor alarm is active."
+::= 201
+
+minor-AI-Low-Active TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {analog-Input-Index, ai-Name, system-Location, site-Name, site-Address, ai-Low-Notes}
+  DESCRIPTION "An analog input low minor alarm is active."
+::= 202
+
+minor-DI-Active TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {digital-Input-Index, di-Name, system-Location, site-Name, site-Address, di-Notes}
+  DESCRIPTION "An digital input minor alarm is active."
+::= 203
+
+warning-Alarm-Active TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {alarm-Index, alarm-Name, system-Location, site-Name, site-Address, alarm-Notes}
+  DESCRIPTION "An warning is active."
+::= 300
+
+warning-AI-High-Active TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {analog-Input-Index, ai-Name, system-Location, site-Name, site-Address, ai-High-Notes}
+  DESCRIPTION "An analog input high warning is active."
+::= 301
+
+warning-AI-Low-Active TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {analog-Input-Index, ai-Name, system-Location, site-Name, site-Address, ai-Low-Notes}
+  DESCRIPTION "An analog input too low warning alarm is active."
+::= 302
+
+warning-DI-Active TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {digital-Input-Index, di-Name, system-Location, site-Name, site-Address, di-Notes}
+  DESCRIPTION "An digital input warning is active."
+::= 303
+
+alarm-Inactive TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {alarm-Index, alarm-Name, system-Location, site-Name, site-Address, alarm-Notes}
+  DESCRIPTION "An alarm has become inactive."
+::= 400
+
+ai-High-Inactive TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {analog-Input-Index, ai-Name, system-Location, site-Name, site-Address, ai-High-Notes}
+  DESCRIPTION "An analog input high alarm has become inactive."
+::= 401
+
+ai-Low-Inactive TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {analog-Input-Index, ai-Name, system-Location, site-Name, site-Address, ai-Low-Notes}
+  DESCRIPTION "An analog input low alarm has become inactive."
+::= 402
+
+di-Inactive TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {digital-Input-Index, di-Name, system-Location, site-Name, site-Address, di-Notes}
+  DESCRIPTION "An digital input alarm has become inactive."
+::= 403
+
+alarm-Status-Change TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {serial-Number, snmp-Trap-Receiver-Index}
+  DESCRIPTION "The status of one or more alarms has changed."
+::= 500
+
+critical-Alarm-Active TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {alarm-Index, alarm-Name, system-Location, site-Name, site-Address, alarm-Notes}
+  DESCRIPTION "A critical alarm is active."
+::= 600
+
+critical-AI-High-Active TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {analog-Input-Index, ai-Name, system-Location, site-Name, site-Address, ai-High-Notes}
+  DESCRIPTION "An analog input high critical alarm is active."
+::= 601
+
+critical-AI-Low-Active TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {analog-Input-Index, ai-Name, system-Location, site-Name, site-Address, ai-Low-Notes}
+  DESCRIPTION "An analog input low critical alarm is active."
+::= 602
+
+critical-DI-Active TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {digital-Input-Index, di-Name, system-Location, site-Name, site-Address, di-Notes}
+  DESCRIPTION "An digital input critical alarm is active."
+::= 603
+
+global TRAP-TYPE
+  ENTERPRISE rps-Traps
+  VARIABLES {trap-Alarm-Number, trap-Alarm-Origin, trap-Alarm-Name, trap-Alarm-Keep-Severity, system-Location, site-Name, site-Address, trap-Additional-Text}
+  DESCRIPTION "An alarm has changed state."
+::= 700
+
+
+END

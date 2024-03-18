@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<!-- Custom MGE Galaxy 3000 DDF -->
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+         ddfid ="mge_galaxy_3000_ddf519" ddfname="MGE Galaxy 3000 UPS (DDF-519)" ddfversion="4" canremove="yes">
+    <schemaVersion>1.6</schemaVersion>
+
+    <device deviceid="mge_galaxy_3000_ddf519_ups">
+        <oidMustExist ruleid="mge_env_sensor_table" oid=".1.3.6.1.4.1.705.1.8.7.1.1" istree="yes"/>
+        <oidMustExist ruleid="upsMibDetect" oid=".1.3.6.1.2.1.33.1" istree="yes"/>
+        <oidMustMatch ruleid="onlyMgeGalaxyTypes" oid = ".1.3.6.1.4.1.705.1.1.1.0">
+            <valueList>
+                <value>GALAXY</value>
+            </valueList>
+        </oidMustMatch>
+
+    <!-- 
+        This is a very specific DDF. 
+        The customer has multiple Network Management Cards (NMCs), some with upgraded firmware, some without.
+        The cards with upgraded firmware (NT Level >= 12) report correct values with mge.xml
+        The cards without the upgrade (NT Level < 12> have a scaling issue with Humidity and report Output Power in kW rather than W.
+        We found that the NT level can be determined based on the Firmware versions the customer is using:
+            GF has NT Level < 12
+            KA has NT Level >= 12
+        This particular DDF is only set up to handle these Firmware versions (assumes NT Level >= 12 if Firmware version is not GF).
+        Be very cautious about sending this DDF to any other customer.
+    -->
+
+        <valueMap ruleid="skip_dead_sensor">
+            <!-- skip sensors returning 0 -->
+            <valueIn>0</valueIn><valueOut>[false]</valueOut>
+            <!-- include the rest -->
+            <valueIn>*</valueIn><valueOut>[true]</valueOut>
+        </valueMap>
+               
+        <!-- Suppress MGE Humidity Sensor and report value with scale based on Firmware Level -->
+        <suppressRule suppressid="mge/mge_environment/mge_humidity_sensor"/>
+        <numSensor ruleid="mge_humidity_ddf519_sensor" index=".1.3.6.1.4.1.705.1.8.7.1.1">
+            <rowTest>
+                <mapValue mapid="skip_dead_sensor">
+                    <getRowOid>.1.3.6.1.4.1.705.1.8.7.1.6</getRowOid>
+                </mapValue>
+            </rowTest>
+            <type>humidity</type>
+            <sensorId>MGE_HUMIDITY_SENSOR_<rowIndex/></sensorId>
+            <value>
+                <regex>
+                    <op>([A-J][A-Z])</op>
+                    <op><regex>
+                            <op>^\s*?(\S*?)\s.*?$</op>
+                            <op><getOid>.1.3.6.1.4.1.705.1.12.12.0</getOid></op>
+                            <op>%1$s</op>
+                        </regex></op> 
+                    <op><getRowOid>.1.3.6.1.4.1.705.1.8.7.1.6</getRowOid></op>
+                    <op><mult>
+                            <op><getRowOid>.1.3.6.1.4.1.705.1.8.7.1.6</getRowOid></op>
+                            <op>0.1</op>
+                        </mult></op>
+                </regex>
+            </value>
+            <label>Humidity - Sensor<space/><rowIndex/></label>
+            <sensorSet>Environmental Status</sensorSet>
+        </numSensor>
+                         
+        <!-- Suppress UPS MIB Output Power Sensor and report value in W -->
+        <suppressRule ruleid="supressUpsmibOutputPower" suppressid="upsmib/upsmib/upsOutputPower"/>
+        <numSensor ruleid="upsOutputPower_ddf519" index=".1.3.6.1.2.1.33.1.4.4.1.2">
+            <type>powerW/inputpower/phase</type>
+            <sensorId>OUTPUT_POWER_PHASE<rowIndex/></sensorId>
+            <value>
+                <regex>
+                    <op>([A-J][A-Z])</op>
+                    <op><regex>
+                            <op>^\s*?(\S*?)\s.*?$</op>
+                            <op><getOid>.1.3.6.1.4.1.705.1.12.12.0</getOid></op>
+                            <op>%1$s</op>
+                        </regex></op> 
+                    <op><mult>
+                            <op><getRowOid>.1.3.6.1.2.1.33.1.4.4.1.4</getRowOid></op>
+                            <op>1000</op>
+                        </mult></op>
+                    <op><getRowOid>.1.3.6.1.2.1.33.1.4.4.1.4</getRowOid></op>
+                </regex>
+            </value>
+            <valueInc>1</valueInc>
+            <label>Output Power - Phase <rowIndex/></label>
+            <sensorSet>Output - Phase <rowIndex/></sensorSet>
+        </numSensor>
+
+    </device>
+
+</APC_DDF>
+

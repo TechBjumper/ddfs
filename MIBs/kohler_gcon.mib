@@ -1,0 +1,232 @@
+--
+--defines Generator-MIB for Kohler
+--Contents:	Global Registration Module
+--		Company OIDs - Enterprise 22978 (Grid Connect)
+--Version:	1.5
+--Date:		16 February, 2018
+--Developed By: Ed Landell
+--              sr. software engineer
+--              Grid Connect, Inc
+
+--
+--Copyright (c) 2018  Kohler Power Systems
+--
+
+KohlerGCon-MIB DEFINITIONS ::= BEGIN
+
+
+IMPORTS
+	enterprises
+		FROM RFC1155-SMI
+	OBJECT-TYPE
+		FROM RFC-1212
+	DisplayString
+		FROM RFC1213-MIB;
+
+
+company       OBJECT IDENTIFIER ::= { enterprises 22978 }
+products      OBJECT IDENTIFIER ::= { company 1 }
+kohlerProd    OBJECT IDENTIFIER ::= { products 3 }
+genController OBJECT IDENTIFIER ::= { kohlerProd 1 }
+
+-- Kohler Generator Controller MIB
+-- Parameters (Prefix gcon)
+
+gconTable OBJECT-TYPE
+	SYNTAX  SEQUENCE OF GConEntry
+	ACCESS  not-accessible
+	STATUS  mandatory
+	DESCRIPTION	"Table of generator controller data."
+::= { genController 1 }
+
+gconEntry OBJECT-TYPE
+	SYNTAX  GConEntry
+	ACCESS  not-accessible
+	STATUS  optional
+	DESCRIPTION	"Generator controller table entries."
+	INDEX   { gconAddr }
+::= { gconTable 1 }
+
+GConEntry ::=
+	SEQUENCE {
+		gconType
+			INTEGER,
+		gconAddr
+			INTEGER,
+		gconStatus
+			INTEGER,
+		gconRemoteCmd
+			INTEGER,
+		gconPreferredSrcAvail
+			INTEGER,
+		gconStandbySrcAvail
+			INTEGER
+		}
+
+
+gconType OBJECT-TYPE
+	SYNTAX  INTEGER {
+				typeDEC3Pl(18),
+				typeMPAC1000(19),
+				typeDEC550(20),
+            typeMPAC1500(23),
+            typeDEC3000(37),
+            typeDEC6000(41),
+            typeAPM402(75)}
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION	"Generator controller type."
+::= { gconEntry 1 }
+
+gconAddr OBJECT-TYPE
+	SYNTAX  INTEGER (1..255)
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION	"Generator controller address."
+::= { gconEntry 2 }
+
+gconStatus OBJECT-TYPE
+	SYNTAX  INTEGER {
+				unknown(0),
+				good(1),
+				error(2)}
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION	"Generator controller comm status."
+::= { gconEntry 3 }
+
+gconRemoteCmd OBJECT-TYPE
+	SYNTAX  INTEGER {
+				none(0),
+				start(1),
+				stop(2)}
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION	"Generator controller remote start/stop."
+::= { gconEntry 4 }
+
+gconPreferredSrcAvail OBJECT-TYPE
+	SYNTAX  INTEGER {
+				unknown(0),
+				notSupported(1),
+				notAvailable(2),
+            isAvailable(3)}
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION	"Transfer switch controller preferred source available."
+::= { gconEntry 5 }
+
+gconStandbySrcAvail OBJECT-TYPE
+	SYNTAX  INTEGER {
+				unknown(0),
+				notSupported(1),
+				notAvailable(2),
+            isAvailable(3)}
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION	"Transfer switch controller standby source available."
+::= { gconEntry 6 }
+
+gconAlarmTable OBJECT-TYPE
+	SYNTAX  SEQUENCE OF GConAlarmEntry
+	ACCESS  not-accessible
+	STATUS  mandatory
+	DESCRIPTION	"Table of generator controller alarm data."
+::= { genController 2 }
+
+gconAlarmEntry OBJECT-TYPE
+	SYNTAX  GConAlarmEntry
+	ACCESS  not-accessible
+	STATUS  optional
+	DESCRIPTION	"Generator controller alarm table entries."
+	INDEX   { gconAlarmAddr, gconAlarmIdx }
+::= { gconAlarmTable 1 }
+
+GConAlarmEntry ::=
+	SEQUENCE {
+		gconAlarmAddr
+			INTEGER,
+		gconAlarmIdx
+			INTEGER,
+		gconAlarmCode
+			INTEGER,
+		gconAlarmSeverity
+			INTEGER,
+		gconAlarmDescr
+			DisplayString
+      }
+
+gconAlarmAddr OBJECT-TYPE
+	SYNTAX  INTEGER (1..255)
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION	"Generator controller address."
+::= { gconAlarmEntry 1 }
+
+gconAlarmIdx OBJECT-TYPE
+	SYNTAX  INTEGER (1..16)
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION	"Generator alarm index."
+::= { gconAlarmEntry 2 }
+
+gconAlarmCode OBJECT-TYPE
+	SYNTAX  INTEGER (0..65535)
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION	"Generator alarm code."
+::= { gconAlarmEntry 3 }
+
+gconAlarmSeverity OBJECT-TYPE
+	SYNTAX  INTEGER {
+               nfpaShutdown(1),
+               nfpaWarning(2),
+               nfpaAlarmStatus(3),
+               shutdown(4),
+               warning(5),
+               alarmStatus(6)}
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION	"Generator controller alarm severity."
+::= { gconAlarmEntry 4 }
+
+gconAlarmDescr OBJECT-TYPE
+	SYNTAX  DisplayString (SIZE (0..32))
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION	"Generator controller alarm description."
+::= { gconAlarmEntry 5 }
+
+-- Traps
+
+gconAlarmActiveEvent TRAP-TYPE
+   ENTERPRISE genController
+   VARIABLES { gconAlarmAddr, gconAlarmCode, gconAlarmSeverity, gconAlarmDescr }
+   DESCRIPTION "A new generator alarm is active. The variables contain the
+      new alarm information from the gconAlarmTable. The gconAlarmTable
+      should be scanned for the update."
+::= 2
+
+gconAlarmClearEvent TRAP-TYPE
+   ENTERPRISE genController
+   VARIABLES { gconAlarmAddr, gconAlarmCode, gconAlarmSeverity, gconAlarmDescr }
+   DESCRIPTION "A generator alarm has cleared. The variables contain the
+      cleared alarm information from the gconAlarmTable. The gconAlarmTable
+      should be scanned for the update."
+::= 3
+
+gconPreferredSrcAvailEvent TRAP-TYPE
+   ENTERPRISE genController
+   VARIABLES { gconAddr, gconPreferredSrcAvail }
+   DESCRIPTION "A transfer switch controller preferred source available
+      condition has changed."
+::= 4
+
+gconStandbySrcAvailEvent TRAP-TYPE
+   ENTERPRISE genController
+   VARIABLES { gconAddr, gconStandbySrcAvail }
+   DESCRIPTION "A transfer switch controller standby source available
+      condition has changed."
+::= 5
+
+END

@@ -1,0 +1,1877 @@
+-- Jacarta PF8 MIB
+-- MIB for Intelligent Power Management 
+--
+-- { iso org(3) dod(6) internet(1) private(4) enterprises(1) jacarta(19011)
+-- product(1) pduAgent(4) pf(1)
+-- ==============================================================================================
+---
+---     Revision History
+---
+---     v0.80   20-Apr-2005     Ming Lu/Ingrasys
+---                             Created
+---
+---     v0.90   20-Apr-2005     Johnny Lin/Ingrasys
+---                             Restructured
+---
+---     v1.00   25-Oct-2005     Ming Lu/Ingrasys
+---                             1.Modify Trap voltage too high (trap level from warning to critical)
+---                             2.Modify Hum data +-0.5 => +- 1.0 , +-1.0 => +-2.0 ... ,+- 3.0 => +-6.0 
+---     v1.01   04-Jan-2005     Ming Lu/Ingrasys
+---                             Modify Some error from Web check issue
+---    
+---
+PF8-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+  enterprises
+    FROM RFC1155-SMI
+  OBJECT-TYPE
+    FROM RFC-1212
+  DisplayString
+    FROM RFC1213-MIB
+  TRAP-TYPE
+    FROM RFC-1215;
+
+jacarta             OBJECT IDENTIFIER ::= { enterprises 19011 }
+product             OBJECT IDENTIFIER ::= { jacarta 1 }
+pduAgent            OBJECT IDENTIFIER ::= { product 4 }
+pf                  OBJECT IDENTIFIER ::= { pduAgent  1 }
+pfObjects           OBJECT IDENTIFIER ::= { pf 1 }
+pfTraps             OBJECT IDENTIFIER ::= { pf 2 }
+                    
+pfIdent            OBJECT IDENTIFIER ::= { pfObjects 1 }
+pfAgent	  	   OBJECT IDENTIFIER ::= { pfObjects 2 }
+pfDevice           OBJECT IDENTIFIER ::= { pfObjects 3 }
+pfEnv              OBJECT IDENTIFIER ::= { pfObjects 4 }
+
+-- ===========================================================================
+--
+-- pfIdent
+--
+--	PF8 Identification Group
+--
+-- ===========================================================================
+pfIdentManufacturer OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The name of manufacturer."
+       ::= { pfIdent 1 }
+
+pfIdentModel OBJECT-TYPE
+      SYNTAX DisplayString (SIZE (0..31))
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+          "The Model designation of device."
+      ::= { pfIdent 2 }
+
+pfIdentAgentSoftwareVersion OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..63))
+       ACCESS read-only
+       STATUS mandatory
+       DESCRIPTION
+               "The firmware version of the device."
+      ::= { pfIdent 3 }
+
+pfIdentName OBJECT-TYPE
+      SYNTAX DisplayString (SIZE(0..31))
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+               "A description of this device."
+      ::= { pfIdent 4 }
+
+pfAgentConfig    OBJECT IDENTIFIER ::= { pfAgent 1 }
+-- ===========================================================================
+--
+-- pfConfig
+--
+--	PF8 Configuration Group, configure the secific features of PF8
+--
+-- ===========================================================================
+pfAgentMibVersion OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) --
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The Mib Version implemented on this device."
+        ::= { pfAgentConfig 1 }
+
+pfAgentTime    OBJECT IDENTIFIER ::= { pfAgent 2 }
+-- ===========================================================================
+--
+-- pfConfigTime
+--
+--	Date/Time Configuration Group of the device.
+--
+-- ===========================================================================
+pfAgentTimeDate OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (10..10))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The date in agent, format is (dd/mm/yyyy)"
+        ::= { pfAgentTime 1 }
+
+pfAgentTimeTime OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (8..8))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The time in agent, format is (hh:mm:ss)"
+        ::= { pfAgentTime 2 }
+
+pfAgentTimerFromNtp OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable or disable the agent to synchronize date/time with NTP server."
+        ::= { pfAgentTime 3 }
+
+pfAgentNtpIpAddress OBJECT-TYPE
+       SYNTAX IpAddress
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The ip address of NTP server."
+       ::= { pfAgentTime 4 }
+
+pfAgentNtpTimeZone OBJECT-TYPE
+        SYNTAX  INTEGER {
+                    gMT-1200(1),
+                    gMT-1100(2),
+                    gMT-1000(3),
+                    gMT-0900(4),
+                    gMT-0800(5),
+                    gMT-0700(6),
+                    gMT-0600(7),
+                    gMT-0500(8),
+                    gMT-0400(9),
+                    gMT-0330(10),
+                    gMT-0300(11),
+                    gMT-0200(12),
+                    gMT-0100(13),
+                    gMT-0000(14),
+                    gMT0100(15),
+                    gMT0200(16),
+                    gMT0300(17),
+                    gMT0330(18),
+                    gMT0400(19),
+                    gMT0500(20),
+                    gMT0530(21),
+                    gMT0600(22),
+                    gMT0700(23),
+                    gMT0800(24),
+                    gMT0900(25),
+                    gMT1000(26),
+                    gMT1100(27),
+                    gMT1200(28)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Time Zone to use when synchronize with NTP server."
+        ::= { pfAgentTime 5 }
+
+pfAgentDayLightSaving OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable the Day Light Saving when synchronize with NTP server."
+        ::= { pfAgentTime 6 }
+
+pfAgentNetwork    OBJECT IDENTIFIER ::= { pfAgent 3 }
+-- ===========================================================================
+--
+-- pfConfigNetwork
+--
+--	Network Configuration Group of the device.
+--
+-- ===========================================================================
+
+pfAgentNetworkIp    OBJECT IDENTIFIER ::= { pfAgentNetwork 1 }
+-- ===========================================================================
+--
+-- pfAgentNetworkIp
+--
+--	Ip address Configuration Group of the device.
+--
+-- ===========================================================================
+pfAgentNetworkIpAdress OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The ip address that NMS can identify the managed device."
+        ::= { pfAgentNetworkIp 1}
+
+pfAgentNetworkIpGateway OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The default gateway that allow device managed through routers."
+        ::= { pfAgentNetworkIp 2}
+
+pfAgentNetworkIpSubnet OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Internet address subnet mask"
+        ::= { pfAgentNetworkIp 3}
+
+pfAgentNetworkDhcpControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable DHCP protocol"
+        ::= { pfAgentNetwork 2 }
+
+pfAgentNetworkPingControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable to response to PING request."
+        ::= { pfAgentNetwork 3 }
+
+pfAgentNetworkTftpControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable TFTP protocol"
+        ::= { pfAgentNetwork 4 }
+
+pfAgentNetworkTelnet    OBJECT IDENTIFIER ::= { pfAgentNetwork 5 }
+-- ===========================================================================
+--
+-- pfConfigNetworkTelnet
+--
+--	Telnet Configuration Group of the device.
+--
+-- ===========================================================================
+pfAgentTelnetControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable Telnet protocol."
+        ::= { pfAgentNetworkTelnet 1 }
+        
+pfAgentTelnetPort OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The TCP port for telnet"
+        ::= { pfAgentNetworkTelnet 2}
+
+pfAgentNetworkHttp    OBJECT IDENTIFIER ::= { pfAgentNetwork 6 }
+-- ===========================================================================
+--
+-- pfConfigNetworkHttp
+--
+--	HTTP Configuration Group of the device.
+--
+-- ===========================================================================
+pfAgentHttpControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable HTTP protocol."
+        ::= { pfAgentNetworkHttp 1 }
+        
+pfAgentHttpPort OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The TCP port for HTTP."
+        ::= { pfAgentNetworkHttp 2}
+
+pfAgentNetworkSnmp    OBJECT IDENTIFIER ::= { pfAgentNetwork 7 }
+-- ===========================================================================
+--
+-- pfAgentNetworkSnmp
+--
+--	SNMP Configuration Group of the device.
+--
+-- ===========================================================================
+pfAgentSnmpControl OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disable SNMP protocol."
+        ::= { pfAgentNetworkSnmp 1 }
+        
+pfAgentSnmpPort OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The UDP port for SNMP."
+        ::= { pfAgentNetworkSnmp 2}
+
+pfAgentLog    OBJECT IDENTIFIER ::= { pfAgentConfig 4 }
+-- ===========================================================================
+--
+-- pfConfigLog
+--
+--	Log Configuration Group of the device.
+--
+-- ===========================================================================
+pduAgentDataLogInterval OBJECT-TYPE
+        SYNTAX INTEGER (5..28800) -- in seconds
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The interval of the updation of the data log. The value
+                 is in seconds"
+        ::= { pfAgentLog 1 }
+
+pfAgentControl    OBJECT IDENTIFIER ::= { pfAgentConfig 5 }
+-- ===========================================================================
+--
+-- pfAgentAgentControl
+--
+--	Agent Control Configuration Group of the device.
+--
+-- ===========================================================================
+pfAgentControlDefault OBJECT-TYPE
+        SYNTAX  INTEGER {
+                reset(1),
+                nothing(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reset all parameters of the agent to default value."
+        ::= { pfAgentControl 1}
+
+pfAgentControlRestart OBJECT-TYPE
+        SYNTAX  INTEGER {
+                restart(1),
+                nothing(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Restart the agent."
+        ::= { pfAgentControl 2}
+
+pfAgentTrap    OBJECT IDENTIFIER ::= { pfAgentConfig 6 }
+-- ===========================================================================
+--
+-- pfAgentTrap
+--
+--	Trap Configuration Group of the agent.
+--
+-- ===========================================================================
+pfAgentTrapRetryCount OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The count of repeat traps send to NMS before trap
+                 acknowledgement received."
+        ::= { pfAgentTrap 1}
+
+pfAgentTrapRetryTime OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The time interval in seconds between retry traps sned to NMS."
+        ::= { pfAgentTrap 2}
+
+pfAgentTrapAckSignature OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The signature of trap acknowledgement."
+        ::= { pfAgentTrap 3}
+
+
+-- ===========================================================================
+--
+-- pfAgentTrapsReceiversTable
+-- 
+-- ===========================================================================
+
+pfAgentTrapsReceiversTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF PfAgentTrapsReceiversEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of managers to send traps to.  The number of
+                 entries is given by the value of agentConfigNumTrapReceivers"
+        ::= { pfAgentConfig 7}
+
+pfAgentTrapsReceiversEntry OBJECT-TYPE
+        SYNTAX PfAgentTrapsReceiversEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The managers to send traps to."
+        INDEX  { trapsIndex }
+        ::= { pfAgentTrapsReceiversTable 1 }
+
+PfAgentTrapsReceiversEntry ::=
+        SEQUENCE {
+                trapsIndex              INTEGER,
+                trapsReceiverAddr       IpAddress,
+                receiverCommunityString DisplayString,
+                receiverNmsType         INTEGER,
+                receiverSeverityLevel   INTEGER,
+                receiverDescription     DisplayString
+        }
+
+trapsIndex OBJECT-TYPE
+        SYNTAX INTEGER (0..65535)
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a trap receiver entry."
+        ::= { pfAgentTrapsReceiversEntry 1 }
+
+trapsReceiverAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The IP address of the manager to send a trap to."
+        ::= { pfAgentTrapsReceiversEntry 2 }
+
+receiverCommunityString OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..19))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The community name to use in the trap when
+                 sent to the manager."
+        ::= { pfAgentTrapsReceiversEntry 3 }
+
+receiverNmsType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                none(1),
+                pf-trap(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The trap group that NMS desired."
+        ::= { pfAgentTrapsReceiversEntry 4 }
+
+receiverSeverityLevel OBJECT-TYPE
+        SYNTAX  INTEGER {
+                informational(1),
+                warning(2),
+                severe(3)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The severity level of traps to be received by this manager."
+        ::= { pfAgentTrapsReceiversEntry 5 }
+
+receiverDescription OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..31))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Description of trap receivers"
+        ::= { pfAgentTrapsReceiversEntry 6 }
+
+
+-- ===========================================================================
+--
+-- pfAgentAccessControlTable
+-- 
+-- ===========================================================================
+pfAgentAccessControlTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF PfAgentAccessControlEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of managers which can access the device with private
+                community string."
+        ::= { pfAgentConfig 8}
+
+pfAgentAccessControlEntry OBJECT-TYPE
+        SYNTAX PfAgentAccessControlEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The managers."
+        INDEX  { accessIndex}
+        ::= { pfAgentAccessControlTable 1 }
+
+PfAgentAccessControlEntry ::=
+        SEQUENCE {
+                accessIndex
+                        INTEGER,
+                accessControlAddr
+                        IpAddress,
+                accessControlMode
+                        INTEGER
+        }
+
+accessIndex OBJECT-TYPE
+        SYNTAX INTEGER (0..65535)
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a access control entry."
+        ::= { pfAgentAccessControlEntry 1 }
+
+accessControlAddr OBJECT-TYPE
+        SYNTAX IpAddress
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The IP address of the manager to access the device."
+        ::= { pfAgentAccessControlEntry 2 }
+
+accessControlMode OBJECT-TYPE
+        SYNTAX  INTEGER {
+                permitted (1),
+                denied (2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Access type, only read/Write access type can change parameter
+                 of the device."
+        ::= { pfAgentAccessControlEntry 3 }
+
+pfDeviceInlet	    OBJECT IDENTIFIER ::= { pfDevice 1 }      
+-- ===========================================================================
+--
+-- pfDeviceInlet
+--
+--	Inlet  Group
+--
+-- ===========================================================================
+pfDeviceInletNumber OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The inlet number on this device."
+        ::= { pfDeviceInlet 1}
+
+pfDeviceInletConfigTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF PfDeviceInletConfigEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of inlet on this device."
+        ::= { pfDeviceInlet 2}
+
+pfDeviceInletConfigEntry OBJECT-TYPE
+        SYNTAX PfDeviceInletConfigEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The inlet number of device."
+        INDEX  { inletConfigIndex}
+        ::= { pfDeviceInletConfigTable 1 }
+
+PfDeviceInletConfigEntry ::=
+        SEQUENCE {
+                inletConfigIndex
+                        INTEGER,
+                inletConfigDesc
+                        DisplayString,
+                inletConfigVoltageHigh
+                        INTEGER,
+                inletConfigVoltageHighAction
+                        INTEGER,
+                inletConfigVoltageLow
+                        INTEGER,
+                inletConfigVoltageLowAction
+                        INTEGER,
+                inletConfigCurrentHigh
+                        INTEGER,
+                inletConfigCurrentHighAction
+                        INTEGER,
+                inletConfigFrequencyHigh
+                        INTEGER,
+                inletConfigfrequencyHighAction
+                        INTEGER,                
+                inletConfigFrequencyLow
+                        INTEGER,
+                inletConfigfrequencyLowAction
+                        INTEGER
+        }
+
+inletConfigIndex OBJECT-TYPE
+        SYNTAX INTEGER (0..65535)
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a access inlet configuration table."
+        ::= { pfDeviceInletConfigEntry 1 }
+
+inletConfigDesc OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..31))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "A Description of inlet of device."
+        ::= { pfDeviceInletConfigEntry 2 }
+
+inletConfigVoltageHigh OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) -- 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The Inlet high voltage threshold, in volts."
+        ::= { pfDeviceInletConfigEntry 3 }
+
+inletConfigVoltageHighAction OBJECT-TYPE
+        SYNTAX  INTEGER {
+                outletsOff (1),
+                nothing (2)
+                } 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reaction of the device when inlet voltage higher than set point."
+        ::= { pfDeviceInletConfigEntry 4 }
+
+inletConfigVoltageLow OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) -- 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The Inlet low voltage threshold, in volts."
+        ::= { pfDeviceInletConfigEntry 5 }
+
+inletConfigVoltageLowAction OBJECT-TYPE
+        SYNTAX  INTEGER {
+                outletsOff (1),
+                nothing (2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reaction of the device when inlet voltage lower than set point."
+        ::= { pfDeviceInletConfigEntry 6 }
+        
+inletConfigCurrentHigh OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) -- 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The Inlet low voltage threshold, in amps."
+        ::= { pfDeviceInletConfigEntry 7 }
+
+inletConfigCurrentHighAction OBJECT-TYPE
+        SYNTAX  INTEGER {
+                outletsOff (1),
+                nothing (2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reaction of the device when inlet current higher than set point."
+        ::= { pfDeviceInletConfigEntry 8 }
+
+inletConfigFrequencyHigh OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) -- 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The Inlet high frequency threshold, in hz."
+        ::= { pfDeviceInletConfigEntry 9 }
+
+inletConfigfrequencyHighAction OBJECT-TYPE
+        SYNTAX  INTEGER {
+                outletsOff (1),
+                nothing (2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reaction of the device when inlet frequency higher than set point."
+        ::= { pfDeviceInletConfigEntry 10 }
+
+inletConfigFrequencyLow OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) -- 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The Inlet low frequency threshold, in hz."
+        ::= { pfDeviceInletConfigEntry 11 }
+
+inletConfigfrequencyLowAction OBJECT-TYPE
+        SYNTAX  INTEGER {
+                outletsOff (1),
+                nothing (2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reaction of the device when inlet frequency lower than set point."
+        ::= { pfDeviceInletConfigEntry 12 }
+
+pfDeviceInletStatusTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF PfDeviceInletStatusEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of inlet on this device."
+        ::= { pfDeviceInlet 3}
+
+pfDeviceInletStatusEntry OBJECT-TYPE
+        SYNTAX PfDeviceInletStatusEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The inlet number of device."
+        INDEX  { inletStatusIndex}
+        ::= { pfDeviceInletStatusTable 1 }
+
+PfDeviceInletStatusEntry ::=
+        SEQUENCE {
+                inletStatusIndex
+                        INTEGER,
+                inletStatusVoltage
+                        INTEGER,
+                inletStatusCurrent
+                        INTEGER,
+                inletStatusFrequency
+                        INTEGER
+        }
+
+inletStatusIndex OBJECT-TYPE
+        SYNTAX INTEGER (0..65535)
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a access inlet configuration table."
+        ::= { pfDeviceInletStatusEntry 1 }
+
+inletStatusVoltage OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) -- 
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The Inlet Voltage in 0.1 volts"
+        ::= { pfDeviceInletStatusEntry 2 }
+        
+inletStatusCurrent OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) --
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The Inlet Current in 0.1 Amp."
+        ::= { pfDeviceInletStatusEntry 3 }
+
+inletStatusFrequency OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) -- 
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The Inlet Frequency in 0.1 Hz"
+        ::= { pfDeviceInletStatusEntry 4 }
+
+pfDeviceOutlet	    OBJECT IDENTIFIER ::= { pfDevice 2 }      
+-- ===========================================================================
+--
+-- pfDeviceOutlet
+--
+--	Inlet  Group
+--
+-- ===========================================================================
+pfDeviceOutletNumber OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The outlet number on this device."
+        ::= { pfDeviceOutlet 1}
+
+pfDeviceOutletConfigTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF PfDeviceOutletConfigEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of outlet on this device."
+        ::= { pfDeviceOutlet 2}
+
+pfDeviceOutletConfigEntry OBJECT-TYPE
+        SYNTAX PfDeviceOutletConfigEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The inlet number of device."
+        INDEX  { inletConfigIndex}
+        ::= { pfDeviceOutletConfigTable 1 }
+
+PfDeviceOutletConfigEntry ::=
+        SEQUENCE {
+                outletConfigIndex
+                        INTEGER,
+                outletConfigDesc
+                        DisplayString,
+                outletConfigLocation
+                        DisplayString,
+                outletConfigOnDelay
+                        INTEGER,
+                outletConfigOffDelay
+                        INTEGER,
+                outletConfigCurrentHigh
+                        INTEGER,
+                outletConfigCurrentHighAction
+                        INTEGER
+         }
+
+outletConfigIndex OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a access inlet configuration table."
+        ::= { pfDeviceOutletConfigEntry 1 }
+
+outletConfigDesc OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..31))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "A Description of outlet of device."
+        ::= { pfDeviceOutletConfigEntry 2 }
+
+outletConfigLocation OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..31))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Location of device connectted to this outlet."
+        ::= { pfDeviceOutletConfigEntry 3 }
+
+outletConfigOnDelay OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The delay time before turn on tis outlet, in seconds."
+        ::= { pfDeviceOutletConfigEntry 4 }
+
+outletConfigOffDelay OBJECT-TYPE
+        SYNTAX INTEGER
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The delay time before turn off tis outlet, in seconds."
+        ::= { pfDeviceOutletConfigEntry 5 }
+
+outletConfigCurrentHigh OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) -- 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The outlet high current threshold, in amp."
+        ::= { pfDeviceOutletConfigEntry 6 }
+
+outletConfigCurrentHighAction OBJECT-TYPE
+        SYNTAX  INTEGER {
+                outletOff (1),
+                nothing (2)
+                } 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Reaction of the device when outlet current higher than set point."
+        ::= { pfDeviceOutletConfigEntry 7 }
+
+   
+
+pfDeviceOutletStatusTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF PfDeviceOutletStatusEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of outlet on this device."
+        ::= { pfDeviceOutlet 3}
+
+pfDeviceOutletStatusEntry OBJECT-TYPE
+        SYNTAX PfDeviceOutletStatusEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The outlet number of device."
+        INDEX  { outletStatusIndex}
+        ::= { pfDeviceOutletStatusTable 1 }
+
+PfDeviceOutletStatusEntry ::=
+        SEQUENCE {
+                outletStatusIndex
+                        INTEGER,
+                outletStatusStatus
+                        INTEGER,
+                outletStatusCurrent
+                        INTEGER,
+                outletStatusStateTime
+                        INTEGER,
+                outletStatusTimeToGo
+                        INTEGER
+        }
+
+outletStatusIndex OBJECT-TYPE
+        SYNTAX INTEGER (0..65535)
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a access outlet configuration table."
+        ::= { pfDeviceOutletStatusEntry 1 }
+
+outletStatusStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknow (1),
+                outletOff (2),
+                outletOn (3),
+                outletOffToOn (4),
+                outletOnToOff (5),
+		outletCycling (6)
+                }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "Outlet state"
+        ::= { pfDeviceOutletStatusEntry 2 }     
+
+outletStatusCurrent OBJECT-TYPE
+        SYNTAX INTEGER (1..65500) --
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The outlet Current in 0.1 Amp."
+        ::= { pfDeviceOutletStatusEntry 3 }
+
+outletStatusStateTime OBJECT-TYPE
+        SYNTAX  INTEGER 
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "Time in seconds since the outlet changed to current state."
+        ::= { pfDeviceOutletStatusEntry 4 }     
+
+outletStatusTimeToGo OBJECT-TYPE
+        SYNTAX  INTEGER 
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "Remain time the outlet state will be changed by agent, in seconds"
+        ::= { pfDeviceOutletStatusEntry 5 }     
+
+pfDeviceOutletControlTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF PfDeviceOutletControlEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of outlet on this device."
+        ::= { pfDeviceOutlet 4}
+
+pfDeviceOutletControlEntry OBJECT-TYPE
+        SYNTAX PfDeviceOutletControlEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The outlet number of device."
+        INDEX  { outletControlIndex}
+        ::= { pfDeviceOutletControlTable 1 }
+
+PfDeviceOutletControlEntry ::=
+        SEQUENCE {
+                outletControlIndex
+                        INTEGER,
+                outletControlControl
+                        INTEGER
+        }
+
+outletControlIndex OBJECT-TYPE
+        SYNTAX INTEGER (0..65535)
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a access outlet configuration table."
+        ::= { pfDeviceOutletControlEntry 1 }
+
+outletControlControl OBJECT-TYPE
+        SYNTAX INTEGER {
+		none(1),
+                cancelAction(2),
+                onImmediately(3),
+                offImmediately(4),
+                cycleImmediately(5),
+                onByActionTimer(6),
+                offByActionTimer(7),
+                cycleByActionTimer(8),
+                onThenOffByActionTimers(9),
+                offThenOnByActionTimers(10)
+	}
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Set to control the outlet perform action as requested."
+        ::= { pfDeviceOutletControlEntry 2 }
+
+pfDeviceOutletControlAll OBJECT-TYPE
+        SYNTAX INTEGER {
+		none(1),
+                cancelAction(2),
+                onImmediately(3),
+                offImmediately(4),
+                cycleImmediately(5),
+                onByActionTimers(6),
+                offByActionTimers(7),
+                cycleByActionTimers(8),
+                onThenOffByActionTimers(9),
+                offThenOnByActionTimers(10)
+	}
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Set to control all outlets perform action as requested."
+        ::= { pfDeviceOutlet 5}
+
+pfDeviceCcOut	    OBJECT IDENTIFIER ::= { pfDevice 3 }      
+-- ===========================================================================
+--
+-- pfDeviceCCOut
+--
+--	Contact Closure Output Group
+--
+-- ===========================================================================
+pfDeviceCcOutNumber OBJECT-TYPE
+        SYNTAX  INTEGER
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The contact closure output number on this device."
+        ::= { pfDeviceCcOut 1}
+
+pfDeviceCcOutConfigTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF PfDeviceCcOutConfigEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of contact closure output on this device."
+        ::= { pfDeviceCcOut 2}
+
+pfDeviceCcOutConfigEntry OBJECT-TYPE
+        SYNTAX PfDeviceCcOutConfigEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The CC number of device."
+        INDEX  { ccOutConfigIndex}
+        ::= { pfDeviceCcOutConfigTable 1 }
+
+PfDeviceCcOutConfigEntry ::=
+        SEQUENCE {
+                ccOutConfigIndex
+                        INTEGER,
+                ccOutConfigDesc
+                        DisplayString,
+                ccOutConfigEventAction
+                        INTEGER,
+                ccOutConfigCloseDelay
+                        INTEGER,
+                ccOutConfigOpenDelay
+                        INTEGER
+         }
+
+ccOutConfigIndex OBJECT-TYPE
+        SYNTAX INTEGER (0..65535)
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to access contact closure output configuration table."
+        ::= { pfDeviceCcOutConfigEntry 1 }
+
+ccOutConfigDesc OBJECT-TYPE
+        SYNTAX DisplayString (SIZE(0..31))
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "A Description of a contact closure output of device."
+        ::= { pfDeviceCcOutConfigEntry 2 }
+
+ccOutConfigEventAction OBJECT-TYPE
+        SYNTAX INTEGER {
+		yes (1),
+		no (2)
+	}
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enable/disble the contact closure output to react to events."
+        ::= { pfDeviceCcOutConfigEntry 3 }
+
+ccOutConfigCloseDelay OBJECT-TYPE
+        SYNTAX INTEGER 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The delay time in seconds when the contact closure output set to close."
+        ::= { pfDeviceCcOutConfigEntry 4 }
+
+ccOutConfigOpenDelay OBJECT-TYPE
+        SYNTAX INTEGER 
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "The delay time in seconds when the contact closure output set to open."
+        ::= { pfDeviceCcOutConfigEntry 5 }
+
+pfDeviceCcOutStatusTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF PfDeviceCcOutStatusEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of contact closure output on this device."
+        ::= { pfDeviceCcOut 3}
+
+pfDeviceCcOutStatusEntry OBJECT-TYPE
+        SYNTAX PfDeviceCcOutStatusEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The CC number of device."
+        INDEX  { ccOutStatusIndex}
+        ::= { pfDeviceCcOutStatusTable 1 }
+
+PfDeviceCcOutStatusEntry ::=
+        SEQUENCE {
+                ccOutStatusIndex
+                        INTEGER,
+                ccOutStatusStatus
+                        INTEGER,
+                ccOutStatusTimeOnState
+                        INTEGER
+         }
+
+ccOutStatusIndex OBJECT-TYPE
+        SYNTAX INTEGER (0..65535)
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to access contact closure output configuration table."
+        ::= { pfDeviceCcOutStatusEntry 1 }
+
+ccOutStatusStatus OBJECT-TYPE
+        SYNTAX INTEGER {
+		closed (1),
+		open (2)
+	}
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "State of a contact closure output of device."
+        ::= { pfDeviceCcOutStatusEntry 2 }
+
+ccOutStatusTimeOnState OBJECT-TYPE
+        SYNTAX INTEGER 
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "Time in seconds since the contact closure output changed to current state."
+        ::= { pfDeviceCcOutStatusEntry 3 }
+
+pfDeviceCcOutControlTable OBJECT-TYPE
+        SYNTAX SEQUENCE OF PfDeviceCcOutControlEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "A list of contact closure output on this device."
+        ::= { pfDeviceCcOut 4}
+
+pfDeviceCcOutControlEntry OBJECT-TYPE
+        SYNTAX PfDeviceCcOutControlEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+                "The outlet number of device."
+        INDEX  { ccOutControlIndex}
+        ::= { pfDeviceCcOutControlTable 1 }
+
+PfDeviceCcOutControlEntry ::=
+        SEQUENCE {
+                ccOutControlIndex
+                        INTEGER,
+		ccOutControlControl
+			INTEGER
+        }
+
+ccOutControlIndex OBJECT-TYPE
+        SYNTAX INTEGER (0..65535)
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "The index to a access contact closure output configuration table."
+        ::= { pfDeviceCcOutControlEntry 1 }
+
+ccOutControlControl OBJECT-TYPE
+        SYNTAX INTEGER {
+		none(1),
+                cancelAction(2),
+                closeImmediately(3),
+                openImmediately(4),
+                cycleImmediately(5),
+                closeByCloseTimer(6),
+                openByOpenTimer(7),
+                cycleByActionTimer(8),
+                closeThenOpenByActionTimers(9),
+                openThenCloseByActionTimers(10)
+	}
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Set to control the contact closure output perform action as requested."
+        ::= { pfDeviceCcOutControlEntry 2 }
+
+pfEnvEmd	    OBJECT IDENTIFIER ::= { pfEnv 1 }      
+-- ===========================================================================
+--
+-- pfEnvEmd
+--
+--	Environmental Monitor Device Group
+--
+-- ===========================================================================
+
+pfEnvEmdStatus	    OBJECT IDENTIFIER ::= { pfEnvEmd 1 }      
+-- ===========================================================================
+--
+-- pfEnvEmd
+--
+--	Environmental Monitor Device Status Group
+--
+-- ===========================================================================
+
+pfEnvEmdStatusEmdType OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknown(1),
+                disabled(2),
+                eMD-HT(3),
+                eMD-T(4)
+                }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Type."
+        ::= { pfEnvEmdStatus 1 }
+
+pfEnvEmdStatusTemperature OBJECT-TYPE
+        SYNTAX INTEGER (1..10000) --
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Temperature in 0.1 degree C."
+        ::= { pfEnvEmdStatus  2 }
+
+pfEnvEmdStatusHumidity OBJECT-TYPE
+        SYNTAX INTEGER (1..10000) --
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Humidity in 0.1%."
+        ::= { pfEnvEmdStatus  3 }
+
+pfEnvEmdStatusAlarm1 OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknown(1),
+                disabled(2),
+                alarm(3),
+                normal(4)
+                }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Alarm-1 state."
+        ::= { pfEnvEmdStatus 4 }
+
+pfEnvEmdStatusAlarm2 OBJECT-TYPE
+        SYNTAX  INTEGER {
+                unknown(1),
+                disabled(2),
+                alarm(3),
+                normal(4)
+                }
+        ACCESS read-only
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Alarm-2 state."
+        ::= { pfEnvEmdStatus 5 }
+
+pfEnvEmdConfig	    OBJECT IDENTIFIER ::= { pfEnvEmd 2 }      
+-- ===========================================================================
+--
+-- pfEnvEmd
+--
+--	Environmental Monitor Device Configuration Group
+--
+-- ===========================================================================
+pfEnvEmdConfigEmdPresence OBJECT-TYPE
+        SYNTAX  INTEGER {
+                disabled(1),
+                autoDetect(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Configure the EMD presence by auto-detect or not exist (disabled)."
+        ::= { pfEnvEmdConfig 1 }
+
+pfEnvEmdConfigEmdName OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The name of Emd."
+       ::= { pfEnvEmdConfig 2 }
+
+pfEnvEmdConfigTemp	    OBJECT IDENTIFIER ::= { pfEnvEmdConfig 3 }      
+-- ===========================================================================
+--
+-- pfEnvEmdConfigTemp
+--
+--	Environmental Monitor Device Temperature Configuration Group
+--
+-- ===========================================================================
+pfEnvEmdConfigTempName OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The name of EMD Temperature sensor."
+       ::= { pfEnvEmdConfigTemp 1 }
+
+pfEnvEmdConfigTempHighSetPoint OBJECT-TYPE
+        SYNTAX INTEGER (1..10000) --
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Temperature set point high, alarm will active when temperature 
+		 over this value, in degree C."
+        ::= { pfEnvEmdConfigTemp  2 }
+
+pfEnvEmdConfigTempHighStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enabled/disabled the high setpoint be applied or not"
+        ::= { pfEnvEmdConfigTemp 3 }
+
+pfEnvEmdConfigTempLowSetPoint OBJECT-TYPE
+        SYNTAX INTEGER (1..10000) --
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Temperature set point high, alarm will active when temperature 
+		 under this value, in degree C."
+        ::= { pfEnvEmdConfigTemp  4 }
+
+pfEnvEmdConfigTempLowStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enabled/disabled the low setpoint be applied or not"
+        ::= { pfEnvEmdConfigTemp 5 }
+
+pfEnvEmdConfigTempOffset OBJECT-TYPE
+        SYNTAX  INTEGER {
+                t0p0(1),
+                t0p5(2),
+                t1p0(3),
+                t1p5(4),
+                t2p0(5),
+                t2p5(6),
+                t3p0(7),
+                t-0p5(8),
+                t-1p0(9),
+                t-1p5(10),
+                t-2p0(11),
+                t-2p5(12),
+                t-3p0(13)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Offset of temperature in degree C to adjust EMD temperature measurement."
+        ::= { pfEnvEmdConfigTemp 6 }
+        
+pfEnvEmdConfigHumi	    OBJECT IDENTIFIER ::= { pfEnvEmdConfig 4 }      
+-- ===========================================================================
+--
+-- pfEnvEmdConfigHumi
+--
+--	Environmental Monitor Device Humidity Configuration Group
+--
+-- ===========================================================================
+pfEnvEmdConfigHumiName OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The name of EMD Humidity."
+       ::= { pfEnvEmdConfigHumi 1 }
+
+pfEnvEmdConfigHumiHighSetPoint OBJECT-TYPE
+        SYNTAX INTEGER (1..10000) --
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "EMD humidity set point high, alarm will active when humidity 
+		 over this value, in %."
+        ::= { pfEnvEmdConfigHumi  2 }
+
+pfEnvEmdConfigHumiHighStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enabled/disabled the high setpoint be applied or not"
+        ::= { pfEnvEmdConfigHumi 3 }
+
+pfEnvEmdConfigHumiLowSetPoint OBJECT-TYPE
+        SYNTAX INTEGER (1..10000) --
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "EMD humidity set point low, alarm will active when humidity 
+		 under this value, in %."
+        ::= { pfEnvEmdConfigHumi  4 }
+
+pfEnvEmdConfigHumiLowStatus OBJECT-TYPE
+        SYNTAX  INTEGER {
+                enabled(1),
+                disabled(2)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Enabled/disabled the high setpoint be applied or not"
+        ::= { pfEnvEmdConfigHumi 5 }
+
+pfEnvEmdConfigHumiOffset OBJECT-TYPE
+        SYNTAX  INTEGER {
+                h0p0(1),
+                h1p0(2),
+                h2p0(3),
+                h3p0(4),
+                h4p0(5),
+                h5p0(6),
+                h6p0(7),
+                h-1p0(8),
+                h-2p0(9),
+                h-3p0(10),
+                h-4p0(11),
+                h-5p0(12),
+                h-6p0(13)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "Emd Hum Offset;"
+        ::= { pfEnvEmdConfigHumi 6 }
+
+pfEnvEmdConfigAlarm1	    OBJECT IDENTIFIER ::= { pfEnvEmdConfig 5 }      
+-- ===========================================================================
+--
+-- pfEnvEmdConfigAlarm1
+--
+--	Environmental Monitor Device Alarm-1 Configuration Group
+--
+-- ===========================================================================
+pfEnvEmdConfigAlarm1Name OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The name of EMD Alarm-1."
+       ::= { pfEnvEmdConfigAlarm1 1 }
+
+pfEnvEmdConfigAlarm1Type OBJECT-TYPE
+        SYNTAX  INTEGER {
+                disabled(1),
+                normalOpen(2),
+                normalClose(3)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Alarm-1 type"
+        ::= { pfEnvEmdConfigAlarm1 2 }
+
+pfEnvEmdConfigAlarm2	    OBJECT IDENTIFIER ::= { pfEnvEmdConfig 6 }      
+-- ===========================================================================
+--
+-- pfEnvEmdConfigAlarm2
+--
+--	Environmental Monitor Device Alarm-2 Configuration Group
+--
+-- ===========================================================================
+pfEnvEmdConfigAlarm2Name OBJECT-TYPE
+       SYNTAX DisplayString (SIZE (0..31))
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+               "The name of EMD Alarm-2."
+       ::= { pfEnvEmdConfigAlarm2 1 }
+
+pfEnvEmdConfigAlarm2Type OBJECT-TYPE
+        SYNTAX  INTEGER {
+                disabled(1),
+                normalOpen(2),
+                normalClose(3)
+                }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+                "EMD Alarm-2 type"
+        ::= { pfEnvEmdConfigAlarm2 2 }
+
+
+-- ===========================================================================
+-- pfTraps
+--
+-- PF8 Trap group
+-- ===========================================================================
+
+   -- This section defines the well-known notifications sent by
+   -- PF8 agents.
+
+pfInletVoltageTooHigh TRAP-TYPE
+        ENTERPRISE pfTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusVoltage,
+        inletConfigVoltageHigh,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "CRITICAL: The input voltage over high threshold."
+        ::= 1
+
+pfInletVoltageNotTooHigh TRAP-TYPE
+        ENTERPRISE pfTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusVoltage,
+        inletConfigVoltageHigh,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "WARNING: The input voltage return from over high threshold."
+        ::= 2
+
+pfInletVoltageTooLow TRAP-TYPE
+        ENTERPRISE pfTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusVoltage,
+        inletConfigVoltageLow,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "CRITICAL: The input voltage under low threshold."
+        ::= 3
+
+pfInletVoltageNotTooLow TRAP-TYPE
+        ENTERPRISE pfTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusVoltage,
+        inletConfigVoltageLow,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "WARNING: The input voltage return from under low threshold."
+        ::= 4
+
+pfInletCurrentTooHigh TRAP-TYPE
+        ENTERPRISE pfTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusCurrent,
+        inletConfigCurrentHigh,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "CRITICAL: The input current over high threshold."
+        ::= 5
+
+pfInletCurrentNotTooHigh TRAP-TYPE
+        ENTERPRISE pfTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusCurrent,
+        inletConfigCurrentHigh,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "WARNING: The input current return from over high threshold."
+        ::= 6
+
+pfInletFrequencyTooHigh TRAP-TYPE
+        ENTERPRISE pfTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusFrequency,
+        inletConfigFrequencyHigh,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "CRITICAL: The input frequency over high threshold."
+        ::= 7
+
+pfInletFrequencyNotTooHigh TRAP-TYPE
+        ENTERPRISE pfTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusFrequency,
+        inletConfigFrequencyHigh,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "WARNING: The input frequency return from over high threshold."
+        ::= 8
+
+pfInletFrequencyTooLow TRAP-TYPE
+        ENTERPRISE pfTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusFrequency,
+        inletConfigFrequencyLow,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "CRITICAL: The input frequency under low threshold."
+        ::= 9
+
+pfInletFrequencyNotTooLow TRAP-TYPE
+        ENTERPRISE pfTraps
+        VARIABLES {
+	inletConfigIndex,
+        inletStatusFrequency,
+        inletConfigFrequencyLow,
+        inletConfigDesc
+        }
+        DESCRIPTION
+                "WARNING: The input frequency return from under low threshold."
+        ::= 10
+
+pfOutletCurrentTooHigh TRAP-TYPE
+        ENTERPRISE pfTraps
+        VARIABLES {
+	outletConfigIndex,
+        outletStatusCurrent,
+        outletConfigCurrentHigh,
+        outletConfigDesc
+        }
+        DESCRIPTION
+                "CRITICAL: The output current of outlet over high threshold."
+        ::= 11
+
+pfOutletCurrentNotTooHigh TRAP-TYPE
+        ENTERPRISE pfTraps
+        VARIABLES {
+	outletConfigIndex,
+        outletStatusCurrent,
+        outletConfigCurrentHigh,
+        outletConfigDesc
+        }
+        DESCRIPTION
+                "WARNING: The output current of outlet return from over high threshold."
+        ::= 12
+
+pfOutletStateChanged TRAP-TYPE
+        ENTERPRISE pfTraps
+        VARIABLES {
+	outletConfigIndex,
+	outletStatusStatus,
+        outletConfigDesc
+        }
+        DESCRIPTION
+                "INFORMATION: The outlet state had changed from on to off, or from off to on."
+        ::= 13
+
+pfEmdTemperatureNotHigh TRAP-TYPE
+        ENTERPRISE      pfTraps
+        VARIABLES {
+        pfEnvEmdStatusTemperature,
+        pfEnvEmdConfigTempHighSetPoint,
+        pfEnvEmdConfigTempName
+        }
+        DESCRIPTION
+                "INFORMATION: emd Temperature Not High."
+        ::= 14
+
+pfEmdTemperatureTooHigh TRAP-TYPE
+        ENTERPRISE      pfTraps
+        VARIABLES {
+        pfEnvEmdStatusTemperature,
+        pfEnvEmdConfigTempHighSetPoint,
+        pfEnvEmdConfigTempName
+        }
+        DESCRIPTION
+                "WARNING:  emd Temperature Too High."
+        ::= 15
+
+pfEmdTemperatureNotLow TRAP-TYPE
+        ENTERPRISE      pfTraps
+        VARIABLES {
+        pfEnvEmdStatusTemperature,
+        pfEnvEmdConfigTempLowSetPoint,
+        pfEnvEmdConfigTempName
+        }
+        DESCRIPTION
+                "INFORMATION: emd Temperature Not Low."
+        ::= 16
+
+pfEmdTemperatureTooLow TRAP-TYPE
+        ENTERPRISE      pfTraps
+        VARIABLES {
+        pfEnvEmdStatusTemperature,
+        pfEnvEmdConfigTempLowSetPoint,
+        pfEnvEmdConfigTempName
+        }
+        DESCRIPTION
+                "WARNING: emd Temperature Too Low."
+        ::= 17
+
+pfEmdHumidityNotHigh TRAP-TYPE
+        ENTERPRISE      pfTraps
+        VARIABLES {
+        pfEnvEmdStatusHumidity,
+        pfEnvEmdConfigHumiHighSetPoint,
+        pfEnvEmdConfigHumiName
+        }
+        DESCRIPTION
+                "INFORMATION: emd Humidity Not High."
+        ::= 18
+
+pfEmdHumidityTooHigh TRAP-TYPE
+        ENTERPRISE      pfTraps
+        VARIABLES {
+        pfEnvEmdStatusHumidity,
+        pfEnvEmdConfigHumiHighSetPoint,
+        pfEnvEmdConfigHumiName
+        }
+        DESCRIPTION
+                "WARNING: emd Humidity Too High."
+        ::= 19
+
+pfEmdHumidityNotLow TRAP-TYPE
+        ENTERPRISE      pfTraps
+        VARIABLES {
+        pfEnvEmdStatusHumidity,
+        pfEnvEmdConfigHumiLowSetPoint,
+        pfEnvEmdConfigHumiName
+        }
+        DESCRIPTION
+                "INFORMATION: emd Humidity Not Low."
+        ::= 20
+
+pfEmdHumidityTooLow TRAP-TYPE
+        ENTERPRISE      pfTraps
+        VARIABLES {
+        pfEnvEmdStatusHumidity,
+        pfEnvEmdConfigHumiLowSetPoint,
+        pfEnvEmdConfigHumiName
+        }
+        DESCRIPTION
+                "WARNING: emd Humidity Too Low."
+        ::= 21
+
+pfEmdAlarm1Normal TRAP-TYPE
+        ENTERPRISE      pfTraps
+        VARIABLES {
+        pfEnvEmdConfigAlarm1Type,
+        pfEnvEmdConfigAlarm1Name
+        }
+        DESCRIPTION
+                "INFORMATION: emd Alarm1 Normal."
+        ::= 22
+
+pfEmdAlarm1Active TRAP-TYPE
+        ENTERPRISE      pfTraps
+        VARIABLES {
+        pfEnvEmdConfigAlarm1Type,
+        pfEnvEmdConfigAlarm1Name
+        }
+        DESCRIPTION
+                "WARNING: emd Alarm1 Active."
+        ::= 23
+        
+pfEmdAlarm2Normal TRAP-TYPE
+        ENTERPRISE      pfTraps
+        VARIABLES {
+        pfEnvEmdConfigAlarm2Type,
+        pfEnvEmdConfigAlarm2Name
+        }
+        DESCRIPTION
+                "INFORMATION: emd Alarm2 Normal."
+        ::= 24
+
+pfEmdAlarm2Active TRAP-TYPE
+        ENTERPRISE      pfTraps
+        VARIABLES {
+        pfEnvEmdConfigAlarm2Type,
+        pfEnvEmdConfigAlarm2Name
+        }
+        DESCRIPTION
+                "WARNING: emd Alarm2 Active."
+        ::= 25
+
+
+   END

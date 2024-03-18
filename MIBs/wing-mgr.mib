@@ -1,0 +1,245 @@
+-- Version:  v1.0.3
+-- Date:     1/16/2017
+-- Copyright @ 2017 RLE Technologies.  All rights reserved worldwide.
+-- This MIB defines objects for the RLE WiNG SNMP Agent.
+-- Revision History:
+-- *************************************************************************
+-- 1/16/2017 - v1.0.3 Created
+-- *************************************************************************
+
+RLE-WiNG-MGR-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+    DisplayString FROM SNMPv2-TC
+    MODULE-IDENTITY, OBJECT-TYPE, IpAddress, enterprises, Integer32, Gauge32, NOTIFICATION-TYPE FROM SNMPv2-SMI;
+
+rle MODULE-IDENTITY
+    LAST-UPDATED	"201701160000Z"
+    ORGANIZATION	"RLE Technologies"
+    CONTACT-INFO        "Rick Stelzer
+                         104 Racquette Dr
+                         Fort Collins, CO 80524
+                         rstelzer@rletech.com"
+    DESCRIPTION         "Wing-Mgr Mib"
+    REVISION	    	"201701160000Z"
+    DESCRIPTION         "Original version"
+    ::= { enterprises 3184 }
+
+products OBJECT IDENTIFIER ::= { rle 1 }
+wingMgr   OBJECT IDENTIFIER ::= { products 15 }
+
+wingMgrIdent OBJECT IDENTIFIER ::= { wingMgr 1 }
+
+wingMgrIdentManufacturer OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION         "The Monitor Control Unit manufacturer."
+    ::= { wingMgrIdent 1 }
+
+wingMgrIdentModel OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION         "The Monitor Control Unit Model designation."
+    ::= { wingMgrIdent 2 }
+
+wingMgrIdentSoftwareVersion OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION         "The SNMP Agent software version."
+    ::= { wingMgrIdent 3 }
+
+wingMgrSensors OBJECT IDENTIFIER ::= { wingMgr 2 }
+
+numberOfSensors OBJECT-TYPE
+    SYNTAX              Integer32 (0..2147483647)
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION         "The number of sensors recorded by the WiNG-MGR. Used
+                         to indicate the number of sensorTable entries."
+    ::= { wingMgrSensors 1 }
+
+sensorsTemperatureUnits OBJECT-TYPE
+    SYNTAX 		Integer32(0..1)
+    MAX-ACCESS 		read-only
+    STATUS 		current
+    DESCRIPTION 	"Current units for temperature values. 0 = Degrees Fahrenheit, 1 = Degrees Celsius"
+    ::= { wingMgrSensors 2 }
+
+sensorTable OBJECT-TYPE
+    SYNTAX              SEQUENCE OF SensorTableEntry
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION         "A list of snmp sensor object values."
+    ::= { wingMgrSensors 3 }
+
+sensorTableEntry OBJECT-TYPE
+    SYNTAX              SensorTableEntry
+    MAX-ACCESS              not-accessible
+    STATUS              current
+    DESCRIPTION         "An sensor table entry containing data for a specific sensor."
+    INDEX               { sensorIndex }
+    ::= { sensorTable 1 }
+
+ SensorTableEntry ::= SEQUENCE {
+    sensorIndex          Integer32,
+    sensorModel          DisplayString,
+    sensorSerialNumber   DisplayString,
+    sensorName           DisplayString,
+    sensorLocation       DisplayString,
+    sensorReading1       Integer32,
+    sensorReading2       Integer32,
+    sensorReading3       Integer32,
+    sensorBattery        Integer32,
+    sensorOutOfService   Gauge32,
+    sensorAge            Integer32,
+    sensorOfflineDelay   Integer32
+    }
+
+sensorIndex OBJECT-TYPE
+    SYNTAX              Integer32 (0..400)
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION         "The index in the sensor table for a particular
+                        snmp sensor object. Used to address table entries."
+    ::= { sensorTableEntry 1 }
+
+sensorModel OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION         "Sensor Model string"
+    ::= { sensorTableEntry 2 }
+
+sensorSerialNumber OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION         "Sensor Serial Number - sixteen byte ascii string"
+    ::= { sensorTableEntry 3 }
+
+sensorName				OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION         "The sensor name"
+    ::= { sensorTableEntry 4 }
+
+sensorLocation			OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION         "The sensor location"
+    ::= { sensorTableEntry 5 }
+
+sensorReading1 OBJECT-TYPE
+    SYNTAX              Integer32 (-2147483648..2147483647)
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION         "Sensor data reading #1 in a converted value based
+                        on the sensor model. For sensors with temperature,
+                        this field will be the temperature reading (x10)."
+    ::= { sensorTableEntry 6 }
+
+sensorReading2 OBJECT-TYPE
+    SYNTAX              Integer32 (-2147483648..2147483647)
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION         "Sensor data reading #2 in a converted value based
+                        on the sensor model. For sensors with humidity,
+                        this field will be the humidity reading."
+    ::= { sensorTableEntry 7 }
+
+sensorReading3 OBJECT-TYPE
+    SYNTAX              Integer32 (-2147483648..2147483647)
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION         "Sensor data reading #3 in a converted value based
+                        on the sensor model. For digital input sensors, this will be
+                        the digital counter."
+    ::= { sensorTableEntry 8 }
+
+sensorBattery OBJECT-TYPE
+    SYNTAX              Integer32 (-2147483648..2147483647)
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION         "May be the battery voltage in centivolts or percentage
+                         of sensor battery life remaining per run hour settings."
+    ::= { sensorTableEntry 9 }
+
+sensorOutOfService OBJECT-TYPE
+    SYNTAX 		Gauge32
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION 	"Sensor availability. 0 = Sensor is online, 1 = Sensor is offline"
+    ::= { sensorTableEntry 10 }
+
+sensorAge OBJECT-TYPE
+    SYNTAX              Integer32 (0..2147483647)
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION         "The age of the sensor data in seconds"
+    ::= { sensorTableEntry 11 }
+
+sensorOfflineDelay OBJECT-TYPE
+    SYNTAX              Integer32 (0..2147483647)
+    MAX-ACCESS          read-write
+    STATUS              current
+    DESCRIPTION         "The delay time in minutes that a sensor is flagged
+                         as out of service"
+    ::= { sensorTableEntry 12 }
+
+wingMgrTrapData OBJECT IDENTIFIER ::= { wingMgr 3 }
+
+wingMgrTrapSensorNumber OBJECT-TYPE
+    SYNTAX              Integer32
+    MAX-ACCESS          accessible-for-notify
+    STATUS              current
+    DESCRIPTION         "The sensor number (1-400)."
+    ::= { wingMgrTrapData 1 }
+
+wingMgrTrapSensorName OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          accessible-for-notify
+    STATUS              current
+    DESCRIPTION         "The sensor description name."
+    ::= { wingMgrTrapData 2 }
+
+wingMgrTrapSensorText OBJECT-TYPE
+    SYNTAX              DisplayString
+    MAX-ACCESS          accessible-for-notify
+    STATUS              current
+    DESCRIPTION         "A text string associated with the sensor trap."
+    ::= { wingMgrTrapData 3 }
+
+wingMgrTraps OBJECT IDENTIFIER ::= { wingMgr 4 }
+
+wingMgrSensorAlarmTrap NOTIFICATION-TYPE
+    OBJECTS          { wingMgrTrapSensorNumber, wingMgrTrapSensorName, wingMgrTrapSensorText }
+    STATUS              current
+    DESCRIPTION         "A sensor has reached an alarm state."
+    ::= { wingMgrTraps 1 }
+
+wingMgrSensorWarningTrap NOTIFICATION-TYPE
+    OBJECTS          { wingMgrTrapSensorNumber, wingMgrTrapSensorName, wingMgrTrapSensorText }
+    STATUS              current
+    DESCRIPTION         "A sensor has reached a warning state."
+    ::= { wingMgrTraps 2 }
+
+wingMgrSensorOfflineTrap NOTIFICATION-TYPE
+    OBJECTS          { wingMgrTrapSensorNumber, wingMgrTrapSensorName, wingMgrTrapSensorText }
+    STATUS              current
+    DESCRIPTION         "A sensor has went offline."
+    ::= { wingMgrTraps 3 }
+
+wingMgrSensorReturnToNormalTrap NOTIFICATION-TYPE
+    OBJECTS          { wingMgrTrapSensorNumber, wingMgrTrapSensorName, wingMgrTrapSensorText }
+    STATUS              current
+    DESCRIPTION         "A sensor alarm/warning has returned to normal."
+    ::= { wingMgrTraps 4 }
+
+
+END
+

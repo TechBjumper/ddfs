@@ -1,0 +1,4214 @@
+<?xml version="1.0"?>
+<!-- Test Modbus related information -->
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+         ddfid="cummins_pcc_2100_trumbo" ddfname="Cummins Generator/ATS (ModLon II Gateway)" ddfversion="1" canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+
+	<device deviceid="cummins_pcc2100_modlon2_gateway">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<setProductData ruleid="vendordata" field="vendor">Cummins</setProductData>
+		<!-- Modlon II Gateway talks lonworks to PowerCommand Digital Controls used to monitor generators -->
+		<setProductData ruleid="modeldata" field="model">ModLon II Gateway</setProductData>
+		<!--<setProductData ruleid="modeldata" field="model"><mapValue mapid="devicetype_valuemap"><getOid>gendevicetype</getOid></mapValue></setProductData>-->
+		<setProductData ruleid="typedata" field="type">Generator</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+		<valueMap ruleid="devicetype_valuemap">
+			<valueIn>3</valueIn><valueOut>PCC 3200</valueOut>
+			<valueIn>5</valueIn><valueOut>PCC 3100</valueOut>
+			<valueIn>11</valueIn><valueOut>PCC 2100</valueOut>
+			<valueIn>10</valueIn><valueOut>PC ATS</valueOut>
+			<valueIn>7</valueIn><valueOut>CCM ATS</valueOut>
+			<valueIn>*</valueIn><valueOut>PCC ?</valueOut>
+		</valueMap>
+	</device>
+
+	<device deviceid="cummins_genset">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<stateSensor ruleid="gen_device_status" index="gendevicestatus">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>state</type>
+			<sensorId>GEN<rowNumber/>_DEVICE_STATUS</sensorId>
+			<value>
+				<mapValue mapid="gendevicestatus_valuemap"><getRowOid>gendevicestatus</getRowOid></mapValue>
+			</value>
+			<label>Generator<space/><rowNumber/><space/>- Device Status</label>
+			<enum>gendevicestatus_enummap</enum>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</stateSensor>
+
+		<!-- Device Status Enums -->
+		<valueMap ruleid="gendevicestatus_valuemap">
+			<valueIn>0</valueIn><valueOut>1</valueOut>
+			<valueIn>1</valueIn><valueOut>2</valueOut>
+			<valueIn>2</valueIn><valueOut>3</valueOut>
+			<valueIn>3</valueIn><valueOut>4</valueOut>
+			<valueIn>4</valueIn><valueOut>5</valueOut>
+			<valueIn>5</valueIn><valueOut>6</valueOut>
+			<valueIn>*</valueIn><valueOut>0</valueOut>
+		</valueMap>
+
+		<stateSensor ruleid="gen_device_faultcode" index="gendevicefaultcode">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>state</type>
+			<sensorId>GEN<rowNumber/>_DEVICE_FAULT_CODE</sensorId>
+			<value>
+				<mapValue mapid="gendevicefaultcode_valuemap"><getRowOid>gendevicefaultcode</getRowOid></mapValue>
+			</value>
+			<label>Generator<space/><rowNumber/><space/>- Fault Code</label>
+			<enum>gendevicefaultcode_enummap</enum>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</stateSensor>
+
+		<!-- Device Fault Code Enums -->
+		<valueMap ruleid="gendevicefaultcode_valuemap">
+			<valueIn>1311</valueIn><valueOut>1</valueOut>
+			<valueIn>1312</valueIn><valueOut>2</valueOut>
+			<valueIn>1313</valueIn><valueOut>3</valueOut>
+			<valueIn>1314</valueIn><valueOut>4</valueOut>
+			<valueIn>1317</valueIn><valueOut>5</valueOut>
+			<valueIn>1318</valueIn><valueOut>6</valueOut>
+			<valueIn>*</valueIn><valueOut>0</valueOut>
+		</valueMap>
+
+		<stateSensor ruleid="gen_device_faulttype" index="gendevicefaulttype">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>state</type>
+			<sensorId>GEN<rowNumber/>_DEVICE_FAULT_TYPE</sensorId>
+			<value>
+				<mapValue mapid="gendevicefaulttype_valuemap"><getRowOid>gendevicefaulttype</getRowOid></mapValue>
+			</value>
+			<label>Generator<space/><rowNumber/><space/>- Fault Type</label>
+			<enum>gendevicefaulttype_enummap</enum>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</stateSensor>
+
+		<!-- Device Fault Type Enums -->
+		<valueMap ruleid="gendevicefaulttype_valuemap">
+			<valueIn>0</valueIn><valueOut>1</valueOut>
+			<valueIn>1</valueIn><valueOut>2</valueOut>
+			<valueIn>2</valueIn><valueOut>3</valueOut>
+			<valueIn>3</valueIn><valueOut>4</valueOut>
+			<valueIn>4</valueIn><valueOut>5</valueOut>
+			<valueIn>*</valueIn><valueOut>0</valueOut>
+		</valueMap>
+
+		<stateSensor ruleid="gen_norm_power_state" index="gennfpa110">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>state</type>
+			<sensorId>GEN<rowNumber/>_NORM_POWER_STATE</sensorId>
+			<value>
+				<mapValue mapid="gennormpowerstate_valuemap">
+					<formatNumber>
+						<bitwise_and>
+							<op><getRowOid>gennfpa110</getRowOid></op>
+							<op>32768</op> <!-- 0x8000=bit 15 (doc is backwards regarding bit.  doc is correct regarding LSB/MSB) -->
+						</bitwise_and>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Generator<space/><rowNumber/><space/>- Normal Power State</label>
+			<enum>genactivestate_enummap</enum>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</stateSensor>
+
+		<valueMap ruleid="gennormpowerstate_valuemap">
+			<valueIn>32768</valueIn>  <valueOut>1</valueOut>
+			<valueIn>*</valueIn>      <valueOut>0</valueOut>
+		</valueMap>
+
+		<stateSensor ruleid="gen_batt_volt_state" index="gennfpa110">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>state</type>
+			<sensorId>GEN<rowNumber/>_BATT_VOLT_STATE</sensorId>
+			<value>
+				<mapValue mapid="genbattvoltstate_valuemap">
+					<formatNumber>
+						<bitwise_and>
+							<op><getRowOid>gennfpa110</getRowOid></op>
+							<op>3072</op> <!-- 0x0C00=bits 10 and 11 (doc is backwards regarding bit.  doc is correct regarding LSB/MSB) -->
+						</bitwise_and>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Generator<space/><rowNumber/><space/>- Battery Voltage State</label>
+			<enum>genlowhighstate_enummap</enum>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</stateSensor>
+
+		<valueMap ruleid="genbattvoltstate_valuemap">
+			<valueIn>2048</valueIn>  <valueOut>2</valueOut>
+			<valueIn>1024</valueIn>  <valueOut>1</valueOut>
+			<valueIn>*</valueIn>     <valueOut>0</valueOut>
+		</valueMap>
+
+		<stateSensor ruleid="gen_cool_temp_state" index="gennfpa110">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>state</type>
+			<sensorId>GEN<rowNumber/>_COOL_TEMP_STATE</sensorId>
+			<value>
+				<mapValue mapid="gencooltempstate_valuemap">
+					<formatNumber>
+						<bitwise_and>
+							<op><getRowOid>gennfpa110</getRowOid></op>
+							<op>128</op> <!-- 0x0080=bit 7 (doc is backwards regarding bit.  doc is correct regarding LSB/MSB) -->
+						</bitwise_and>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Generator<space/><rowNumber/><space/>- Coolant Temperature State</label>
+			<enum>genlowstate_enummap</enum>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</stateSensor>
+
+		<valueMap ruleid="gencooltempstate_valuemap">
+			<valueIn>128</valueIn>  <valueOut>1</valueOut>
+			<valueIn>*</valueIn>    <valueOut>0</valueOut>
+		</valueMap>
+
+		<stateSensor ruleid="gen_eng_temp_state" index="gennfpa110">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>state</type>
+			<sensorId>GEN<rowNumber/>_OIL_TEMP_STATE</sensorId>
+			<value>
+				<mapValue mapid="genengtempstate_valuemap">
+					<formatNumber>
+						<bitwise_and>
+							<op><getRowOid>gennfpa110</getRowOid></op>
+							<op>96</op> <!-- 0x0060=bits 5 and 6 (doc is backwards regarding bit.  doc is correct regarding LSB/MSB) -->
+						</bitwise_and>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Generator<space/><rowNumber/><space/>- Engine Temperature State</label>
+			<enum>genwarncritstate_enummap</enum>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</stateSensor>
+
+		<valueMap ruleid="genengtempstate_valuemap">
+			<valueIn>32</valueIn>  <valueOut>2</valueOut>
+			<valueIn>64</valueIn>  <valueOut>1</valueOut>
+			<valueIn>*</valueIn>   <valueOut>0</valueOut>
+		</valueMap>
+
+		<stateSensor ruleid="gen_oil_press_state" index="gennfpa110">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>state</type>
+			<sensorId>GEN<rowNumber/>_OIL_PRESS_STATE</sensorId>
+			<value>
+				<mapValue mapid="genoilpressstate_valuemap">
+					<formatNumber>
+						<bitwise_and>
+							<op><getRowOid>gennfpa110</getRowOid></op>
+							<op>24</op> <!-- 0x0018=bits 3 and 4 (doc is backwards regarding bit.  doc is correct regarding LSB/MSB) -->
+						</bitwise_and>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Generator<space/><rowNumber/><space/>- Oil Pressure State</label>
+			<enum>genwarncritstate_enummap</enum>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</stateSensor>
+
+		<valueMap ruleid="genoilpressstate_valuemap">
+			<valueIn>8</valueIn>  <valueOut>2</valueOut>
+			<valueIn>16</valueIn> <valueOut>1</valueOut>
+			<valueIn>*</valueIn>  <valueOut>0</valueOut>
+		</valueMap>
+
+		<stateSensor ruleid="gen_cool_level_state" index="gennfpa110">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>state</type>
+			<sensorId>GEN<rowNumber/>_COOL_LEVEL_STATE</sensorId>
+			<value>
+				<mapValue mapid="gencoollevelstate_valuemap">
+					<formatNumber>
+						<bitwise_and>
+							<op><getRowOid>gennfpa110</getRowOid></op>
+							<op>2</op> <!-- 0x0002=bit 1 (doc is backwards regarding bit.  doc is correct regarding LSB/MSB) -->
+						</bitwise_and>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Generator<space/><rowNumber/><space/>- Coolant Level State</label>
+			<enum>genlowstate_enummap</enum>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</stateSensor>
+
+		<valueMap ruleid="gencoollevelstate_valuemap">
+			<valueIn>2</valueIn>  <valueOut>1</valueOut>
+			<valueIn>*</valueIn>  <valueOut>0</valueOut>
+		</valueMap>
+
+		<stateSensor ruleid="gen_fuel_level_state" index="gennfpa110">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>state</type>
+			<sensorId>GEN<rowNumber/>_FUEL_LEVEL_STATE</sensorId>
+			<value>
+				<mapValue mapid="genfuellevelstate_valuemap">
+					<formatNumber>
+						<bitwise_and>
+							<op><getRowOid>gennfpa110</getRowOid></op>
+							<op>1</op> <!-- 0x0001=bit 0 (doc is backwards regarding bit.  doc is correct regarding LSB/MSB) -->
+						</bitwise_and>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>Generator<space/><rowNumber/><space/>- Fuel Level State</label>
+			<enum>genlowstate_enummap</enum>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</stateSensor>
+
+		<valueMap ruleid="genfuellevelstate_valuemap">
+			<valueIn>1</valueIn>  <valueOut>1</valueOut>
+			<valueIn>*</valueIn>  <valueOut>0</valueOut>
+		</valueMap>
+
+		<enumMap ruleid="gendevicefaultcode_enummap">
+			<label>Unknown</label>
+			<label>Pump 1 No Flow</label>
+			<label>Main Tank Low</label>
+			<label>Day Tank Low</label>
+			<label>Pump 2 No Flow</label>
+			<label>Main Tank Rupture</label>
+			<label>Day Tank Rupture</label>
+		</enumMap>
+
+		<enumMap ruleid="gendevicefaulttype_enummap">
+			<label>Unknown</label>
+			<label>Normal</label>
+			<label>Warning</label>
+			<label>Derate</label>
+			<label>Shutdown with Cooldown</label>
+			<label>Shutdown</label>
+		</enumMap>
+
+		<enumMap ruleid="gendevicestatus_enummap">
+			<label>Unknown</label>
+			<label>Stopped</label>
+			<label>Start Pending</label>
+			<label>Warmup at Idle</label>
+			<label>Running</label>
+			<label>Cooldown at Rated</label>
+			<label>Cooldown at Idle</label>
+		</enumMap>
+
+		<enumMap ruleid="genwarncritstate_enummap">
+			<label>Ok</label>
+			<label>Warning</label>
+			<label>Critical</label>
+		</enumMap>
+
+		<enumMap ruleid="genlowhighstate_enummap">
+			<label>Ok</label>
+			<label>Low</label>
+			<label>High</label>
+		</enumMap>
+
+		<enumMap ruleid="genlowstate_enummap">
+			<label>Ok</label>
+			<label>Low</label>
+		</enumMap>
+
+		<enumMap ruleid="genactivestate_enummap">
+			<label>Clear</label>
+			<label>Active</label>
+		</enumMap>
+
+		<!-- Note: doc is backwards regarding bit.  doc is correct regarding LSB/MSB -->
+		<!-- If register not supported by controller model, value will be 0 -->
+		<!-- Not so nice because alarm config on ISXC 6.2+ will indicate alarms are possible when they are not -->
+		<alarmFlags2 ruleid="gen_nfpa110_alarms" index="gennfpa110">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<value><getRowOid>gennfpa110</getRowOid></value>
+
+			<!-- Customer requested as sensor bit 15
+        -->
+
+			<alarmFlagsTest mask="4000" match="4000" log="no">
+				<name>
+					<activeText>Generator<space/><rowNumber/><space/>- Genset Supplying Load</activeText>
+					<inactiveText>Generator<space/><rowNumber/><space/>- Genset Supplying Load Cleared</inactiveText>
+				</name>
+				<severity>error</severity>
+				<category>Output</category>
+				<description>
+					<activeText>The system has detected a Genset Supplying Load condition for Generator<space/><rowNumber/><space/>.</activeText>
+					<inactiveText>The Genset Supplying Load condition for Generator<space/><rowNumber/><space/>has been cleared.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+			<alarmFlagsTest mask="2000" match="2000" log="no">
+				<name>
+					<activeText>Generator<space/><rowNumber/><space/>- Genset Running</activeText>
+					<inactiveText>Generator<space/><rowNumber/><space/>- Genset Running Cleared</inactiveText>
+				</name>
+				<severity>error</severity>
+				<category>Output</category>
+				<description>
+					<activeText>The system has detected a Genset Running condition for Generator<space/><rowNumber/><space/>.</activeText>
+					<inactiveText>The Genset Running condition for Generator<space/><rowNumber/><space/>has been cleared.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+			<alarmFlagsTest mask="1000" match="1000" log="no">
+				<name>
+					<activeText>Generator<space/><rowNumber/><space/>- Genset Not In Auto</activeText>
+					<inactiveText>Generator<space/><rowNumber/><space/>- Genset Not In Auto Cleared</inactiveText>
+				</name>
+				<severity>error</severity>
+				<category>Output</category>
+				<description>
+					<activeText>The system has detected a Genset Not In Auto condition for Generator<space/><rowNumber/><space/>.</activeText>
+					<inactiveText>The Genset Not In Auto condition for Generator<space/><rowNumber/><space/>has been cleared.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+
+			<!-- Customer requested as sensor bits 10..11
+        -->
+
+			<alarmFlagsTest mask="200" match="200" log="no">
+				<name>
+					<activeText>Generator<space/><rowNumber/><space/>- Charger AC failure</activeText>
+					<inactiveText>Generator<space/><rowNumber/><space/>- Charger AC failure Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Output</category>
+				<description>
+					<activeText>The system has detected a Charger AC failure condition for Generator<space/><rowNumber/><space/>.</activeText>
+					<inactiveText>The Charger AC failure condition for Generator<space/><rowNumber/><space/>has been cleared.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+			<alarmFlagsTest mask="100" match="100" log="no">
+				<name>
+					<activeText>Generator<space/><rowNumber/><space/>- Fail to Start</activeText>
+					<inactiveText>Generator<space/><rowNumber/><space/>- Fail to Start Cleared</inactiveText>
+				</name>
+				<severity>error</severity>
+				<category>Output</category>
+				<description>
+					<activeText>The system has detected a Fail to Start condition for Generator<space/><rowNumber/><space/>.</activeText>
+					<inactiveText>The Fail to Start condition for Generator<space/><rowNumber/><space/>has been cleared.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+
+			<!-- Customer requested as sensor bits 5..6
+        -->
+
+			<!-- Customer requested as sensor bits 3..4 (another customer requested bit 3 as alarm)
+        -->
+			<alarmFlagsTest mask="8" match="8" log="no">
+				<name>
+					<activeText>Generator<space/><rowNumber/><space/>- Low Oil Pressure</activeText>
+					<inactiveText>Generator<space/><rowNumber/><space/>- Low Oil Pressure Cleared</inactiveText>
+				</name>
+				<severity>error</severity>
+				<category>Output</category>
+				<description>
+					<activeText>The system has detected a Low Oil Pressure condition for Generator<space/><rowNumber/><space/>.</activeText>
+					<inactiveText>The Low Oil Pressure condition for Generator<space/><rowNumber/><space/>has been cleared.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+			<alarmFlagsTest mask="4" match="4" log="no">
+				<name>
+					<activeText>Generator<space/><rowNumber/><space/>- Overspeed Warning</activeText>
+					<inactiveText>Generator<space/><rowNumber/><space/>- Overspeed Warning Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Output</category>
+				<description>
+					<activeText>The system has detected an Overspeed Warning condition for Generator<space/><rowNumber/><space/>.</activeText>
+					<inactiveText>The Overspeed Warning condition for Generator<space/><rowNumber/><space/>has been cleared.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+
+			<!-- Customer requested as sensor bit 1
+        -->
+
+			<!-- Customer requested as sensor bit 0 (another customer requested bit 0 as alarm)
+        -->
+			<alarmFlagsTest mask="1" match="1" log="no">
+				<name>
+					<activeText>Generator<space/><rowNumber/><space/>- Low Fuel Level</activeText>
+					<inactiveText>Generator<space/><rowNumber/><space/>- Low Fuel Level Cleared</inactiveText>
+				</name>
+				<severity>error</severity>
+				<category>Output</category>
+				<description>
+					<activeText>The system has detected a Low Fuel Level condition for Generator<space/><rowNumber/><space/>.</activeText>
+					<inactiveText>The Low Fuel Level condition for Generator<space/><rowNumber/><space/>has been cleared.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags2>
+
+		<!-- Note: doc is backwards regarding bit.  doc is correct regarding LSB/MSB -->
+		<!-- If register not supported by controller model, value will be 0 -->
+		<!-- Not so nice because alarm config on ISXC 6.2+ will indicate alarms are possible when they are not -->
+		<alarmFlags2 ruleid="gen_extended_alarms" index="genextended">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<value><getRowOid>genextended</getRowOid></value>
+			<alarmFlagsTest mask="8" match="8" log="no">
+				<name>
+					<activeText>Generator<space/><rowNumber/><space/>- Load Demand</activeText>
+					<inactiveText>Generator<space/><rowNumber/><space/>- Load Demand Cleared</inactiveText>
+				</name>
+				<severity>error</severity>
+				<category>Output</category>
+				<description>
+					<activeText>The system has detected a Load Demand condition for Generator<space/><rowNumber/><space/>.</activeText>
+					<inactiveText>The Load Demand condition for Generator<space/><rowNumber/><space/>has been cleared.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags2>
+
+
+		<numSensor ruleid="gen_frequency" index="genfrequency">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>frequency</type>
+			<sensorId>GEN<rowNumber/>_FREQUENCY_1</sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>genfrequency</getRowOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Generator<space/><rowNumber/><space/>- Frequency</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_power_factor" index="genpowerfactor">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<and>
+					<op><neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq></op>
+					<!-- not supported int16 value appears to be 7FFF -->
+					<op><neq><op><getRowOid default="32767">genpowerfactor</getRowOid></op><op>32767</op></neq></op>
+				</and>
+			</rowTest>
+			<type>num/powerfactor</type>
+			<sensorId>GEN<rowNumber/>_TOTAL_POWER_FACTOR_1</sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>genpowerfactor</getRowOid></op>
+					<op>0.00005</op>
+				</mult>
+			</value>
+			<label>Generator<space/><rowNumber/><space/>- Total Power Factor</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_apparent_power" index="genapparentpower">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>GEN<rowNumber/>_TOTAL_POWER_KVA_1</sensorId>
+			<value><getRowOid>genapparentpower</getRowOid></value>
+			<label>Generator<space/><rowNumber/><space/>- Total Apparent Power</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_real_power" index="genrealpower">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>num/powerKW</type>
+			<sensorId>GEN<rowNumber/>_TOTAL_POWER_KW_1</sensorId>
+			<value><getRowOid>genrealpower</getRowOid></value>
+			<label>Generator<space/><rowNumber/><space/>- Total Real Power</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_reactive_power" index="genreactivepower">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>num/powerKVAR</type>
+			<sensorId>GEN<rowNumber/>_TOTAL_POWER_KVAR_1</sensorId>
+			<value><getRowOid>genreactivepower</getRowOid></value>
+			<label>Generator<space/><rowNumber/><space/>- Total Reactive Power</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_voltage_ab" index="genvoltageab">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>GEN<rowNumber/>_VOLTAGE_LL_1</sensorId>
+			<value><getRowOid>genvoltageab</getRowOid></value>
+			<label>Generator<space/><rowNumber/><space/>- Voltage Phase A-B</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_voltage_bc" index="genvoltagebc">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>GEN<rowNumber/>_VOLTAGE_LL_2</sensorId>
+			<value><getRowOid>genvoltagebc</getRowOid></value>
+			<label>Generator<space/><rowNumber/><space/>- Voltage Phase B-C</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_voltage_ca" index="genvoltageca">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>GEN<rowNumber/>_VOLTAGE_LL_3</sensorId>
+			<value><getRowOid>genvoltageca</getRowOid></value>
+			<label>Generator<space/><rowNumber/><space/>- Voltage Phase C-A</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_voltage_an" index="genvoltagean">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>GEN<rowNumber/>_VOLTAGE_LN_1</sensorId>
+			<value><getRowOid>genvoltagean</getRowOid></value>
+			<label>Generator<space/><rowNumber/><space/>- Voltage Phase A-N</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_voltage_bn" index="genvoltagebn">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>GEN<rowNumber/>_VOLTAGE_LN_2</sensorId>
+			<value><getRowOid>genvoltagebn</getRowOid></value>
+			<label>Generator<space/><rowNumber/><space/>- Voltage Phase B-N</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_voltage_cn" index="genvoltagecn">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>GEN<rowNumber/>_VOLTAGE_LN_3</sensorId>
+			<value><getRowOid>genvoltagecn</getRowOid></value>
+			<label>Generator<space/><rowNumber/><space/>- Voltage Phase C-N</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_current_a" index="gencurrenta">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>GEN<rowNumber/>_CURRENT_1</sensorId>
+			<value><getRowOid>gencurrenta</getRowOid></value>
+			<label>Generator<space/><rowNumber/><space/>- Current Phase A</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_current_b" index="gencurrentb">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>GEN<rowNumber/>_CURRENT_2</sensorId>
+			<value><getRowOid>gencurrentb</getRowOid></value>
+			<label>Generator<space/><rowNumber/><space/>- Current Phase B</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_current_c" index="gencurrentc">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>GEN<rowNumber/>_CURRENT_3</sensorId>
+			<value><getRowOid>gencurrentc</getRowOid></value>
+			<label>Generator<space/><rowNumber/><space/>- Current Phase C</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_battery_voltage" index="genbatteryvoltage">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>GEN<rowNumber/>_BATT_VOLTAGE</sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>genbatteryvoltage</getRowOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Generator<space/><rowNumber/><space/>- Battery Voltage</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_oil_pressure" index="genoilpressure">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>GEN<rowNumber/>_OIL_PRESSURE</sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>genoilpressure</getRowOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>Generator<space/><rowNumber/><space/>- Oil Pressure</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_oil_temp" index="genoiltemp">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present or least sensor is not present -->
+				<and> <!-- doc says not supported on pcc3200 -->
+					<op><neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq></op>
+					<!-- not supported uint16 value appears to be FFFF -->
+					<op><neq><op><getRowOid default="65535">genoiltemp</getRowOid></op><op>65535</op></neq></op>
+				</and>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>GEN<rowNumber/>_ENGINE_OIL_TEMP</sensorId>
+			<value>
+				<sub>
+					<op>
+						<mult>
+							<op><getRowOid>genoiltemp</getRowOid></op>
+							<op>0.1</op>
+						</mult>
+					</op>
+					<op>273</op>
+				</sub>
+			</value>
+			<label>Generator<space/><rowNumber/><space/>- Oil Temperature</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_coolant_temp" index="gencoolanttemp">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>GEN<rowNumber/>_ENGINE_COOLANT_TEMP</sensorId>
+			<value>
+				<sub>
+					<op>
+						<mult>
+							<op><getRowOid>gencoolanttemp</getRowOid></op>
+							<op>0.1</op>
+						</mult>
+					</op>
+					<op>273</op>
+				</sub>
+			</value>
+			<label>Generator<space/><rowNumber/><space/>- Coolant Temperature</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_engine_speed" index="genenginespeed">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>fanspeed</type>
+			<sensorId>GEN<rowNumber/>_ENGINE_SPEED</sensorId>
+			<value><getRowOid>genenginespeed</getRowOid></value>
+			<valueInc>1</valueInc>
+			<label>Generator<space/><rowNumber/><space/>- Engine Speed</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_engine_starts" index="genenginestarts">
+			<rowTest> <!-- if temp is 0 kelvin, safe to say generator is not present -->
+				<neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq>
+			</rowTest>
+			<type>num</type>
+			<sensorId>GEN<rowNumber/>_ENGINE_STARTS</sensorId>
+			<value><getRowOid>genenginestarts</getRowOid></value>
+			<valueInc>1</valueInc>
+			<label>Generator<space/><rowNumber/><space/>- Engine Starts</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="gen_engine_runtime" index="genengineruntime">
+			<rowTest>
+				<and>
+					<!-- if temp is 0 kelvin, safe to say generator is not present -->
+					<op><neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq></op>
+					<!-- not supported uint32 value appears to be FFFF FFFF -->
+					<op><neq><op><getRowOid default="4294967295">genengineruntime</getRowOid></op><op>4294967295</op></neq></op>
+				</and>
+			</rowTest>
+			<type>runhours</type>
+			<sensorId>GEN<rowNumber/>_ENGINE_RUNHOURS</sensorId>
+			<value>
+				<div>
+					<op><getRowOid>genengineruntime</getRowOid></op>
+					<op>
+						<mult>
+							<op><mapValue mapid="devicetype_runtime_units_valuemap"><getOid default="0">gendevicetype<rowNumber/></getOid></mapValue></op>
+							<op>10</op> <!-- all controllers report in tenths -->
+						</mult>
+					</op>
+				</div>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Generator<space/><rowNumber/><space/>- Engine Runtime</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<!-- I think they all report in seconds but different controllers locally display in different time units -->
+		<valueMap ruleid="devicetype_runtime_units_valuemap">
+			<valueIn>3</valueIn><valueOut>3600</valueOut>  <!-- PCC 3200 -->
+			<valueIn>5</valueIn><valueOut>3600</valueOut>  <!-- PCC 3100 -->
+			<valueIn>11</valueIn><valueOut>3600</valueOut> <!-- PCC 2100 -->
+			<valueIn>*</valueIn><valueOut>3600</valueOut>
+		</valueMap>
+
+		<numSensor ruleid="gen_total_fuel" index="gentotalfuel">
+			<rowTest>
+				<and>
+					<!-- if temp is 0 kelvin, safe to say generator is not present -->
+					<op><neq><op><getOid default="0">gencoolanttemp<rowNumber/></getOid></op><op>0</op></neq></op>
+					<!-- not supported uint32 value appears to be FFFF FFFF -->
+					<op><neq><op><getRowOid default="4294967295">gentotalfuel</getRowOid></op><op>4294967295</op></neq></op>
+				</and>
+			</rowTest>
+			<type>num</type>
+			<units>liters</units>
+			<sensorId>GEN<rowNumber/>_TOTAL_FUEL</sensorId>
+			<value>
+				<mult> <!-- comes in as gallons but we'll store in liters -->
+					<op>
+						<mult>
+							<op><getRowOid>gentotalfuel</getRowOid></op>
+							<op>0.01</op>
+						</mult>
+					</op>
+					<op>3.785412</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Generator<space/><rowNumber/><space/>- Total Fuel</label>
+			<sensorSet>Generator<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+	</device>
+
+	<device deviceid="cummins_ats">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<!-- Cummins bulletin says ATS State registers and NFPA110 registers (bits 0 & 1) always report Neutral position (0) -->
+		<!-- Cummins says to use NFPA110 Extended registers bits 2 & 3 (to us bits 13 & 12) -->
+		<stateSensor ruleid="ats_device_status" index="atsextended">
+			<type>state</type>
+			<sensorId>XATS<rowNumber/>_DEVICE_STATUS</sensorId>
+			<value>
+				<mapValue mapid="atsdevicestatus_valuemap">
+					<formatNumber>
+						<bitwise_and>
+							<op><getRowOid>atsextended</getRowOid></op>
+							<op>12288</op> <!-- 0x3000=bits 12&13 (doc is backwards regarding bit.  doc is correct regarding LSB/MSB) -->
+						</bitwise_and>
+					</formatNumber>
+				</mapValue>
+			</value>
+			<label>ATS<space/><rowNumber/><space/>- Device Status</label>
+			<enum>atsdevicestatus_enummap</enum>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</stateSensor>
+
+		<!-- Device Status Enums -->
+		<valueMap ruleid="atsdevicestatus_valuemap">
+			<valueIn>0</valueIn>    <valueOut>1</valueOut>
+			<valueIn>8192</valueIn> <valueOut>2</valueOut>
+			<valueIn>4096</valueIn> <valueOut>3</valueOut>
+			<valueIn>12288</valueIn><valueOut>4</valueOut>
+			<valueIn>*</valueIn>    <valueOut>0</valueOut>
+		</valueMap>
+
+		<enumMap ruleid="atsdevicestatus_enummap">
+			<label>Unknown</label>
+			<label>Neutral Position</label>
+			<label>Source 1 Connected</label>
+			<label>Source 2 Connected</label>
+			<label>Source 1 and 2 Connected</label>
+		</enumMap>
+
+
+		<numSensor ruleid="ats_frequency" index="atsfrequency">
+			<type>frequency</type>
+			<sensorId>XATS<rowNumber/>_OUTPUT_FREQUENCY</sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>atsfrequency</getRowOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>ATS<space/><rowNumber/><space/>- Frequency</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_power_factor" index="atspowerfactor">
+			<rowTest> <!-- if freq is 0 hz, safe to say ats is not present -->
+				<and>
+					<op><neq><op><getOid default="0">atsfrequency<rowNumber/></getOid></op><op>0</op></neq></op>
+					<!-- not supported int16 value appears to be 7FFF -->
+					<op><neq><op><getRowOid default="32767">atspowerfactor</getRowOid></op><op>32767</op></neq></op>
+				</and>
+			</rowTest>
+			<type>num/powerfactor</type>
+			<sensorId>XATS<rowNumber/>_OUTPUT_TOTAL_POWER_FACTOR</sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>atspowerfactor</getRowOid></op>
+					<op>0.00005</op>
+				</mult>
+			</value>
+			<label>ATS<space/><rowNumber/><space/>- Total Power Factor</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_apparent_power" index="atsapparentpower">
+			<rowTest> <!-- if freq is 0 hz, safe to say ats is not present -->
+				<and>
+					<op><neq><op><getOid default="0">atsfrequency<rowNumber/></getOid></op><op>0</op></neq></op>
+					<!-- not supported int16 value appears to be 7FFF -->
+					<op><neq><op><getRowOid default="32767">atsapparentpower</getRowOid></op><op>32767</op></neq></op>
+				</and>
+			</rowTest>
+			<type>num/powerKVA</type>
+			<sensorId>XATS<rowNumber/>_OUTPUT_TOTAL_APPARENT_POWER</sensorId>
+			<value><getRowOid>atsapparentpower</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>- Total Apparent Power</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_real_power" index="atsrealpower">
+			<rowTest> <!-- if freq is 0 hz, safe to say ats is not present -->
+				<and>
+					<op><neq><op><getOid default="0">atsfrequency<rowNumber/></getOid></op><op>0</op></neq></op>
+					<!-- not supported int16 value appears to be 7FFF -->
+					<op><neq><op><getRowOid default="32767">atsrealpower</getRowOid></op><op>32767</op></neq></op>
+				</and>
+			</rowTest>
+			<type>num/powerKW</type>
+			<sensorId>XATS<rowNumber/>_OUTPUT_TOTAL_POWER</sensorId>
+			<value><getRowOid>atsrealpower</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>- Total Real Power</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_reactive_power" index="atsreactivepower">
+			<rowTest> <!-- if freq is 0 hz, safe to say ats is not present -->
+				<and>
+					<op><neq><op><getOid default="0">atsfrequency<rowNumber/></getOid></op><op>0</op></neq></op>
+					<!-- not supported int16 value appears to be 7FFF -->
+					<op><neq><op><getRowOid default="32767">atsreactivepower</getRowOid></op><op>32767</op></neq></op>
+				</and>
+			</rowTest>
+			<type>num/powerKVAR</type>
+			<sensorId>XATS<rowNumber/>_OUTPUT_TOTAL_REACTIVE_POWER</sensorId>
+			<value><getRowOid>atsreactivepower</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>- Total Reactive Power</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_voltage_ab" index="atsvoltageab">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_OUTPUT_PHASE_1_VOLTAGE_L2L</sensorId>
+			<value><getRowOid>atsvoltageab</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>- Voltage Phase A-B</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_voltage_bc" index="atsvoltagebc">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_OUTPUT_PHASE_2_VOLTAGE_L2L</sensorId>
+			<value><getRowOid>atsvoltagebc</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>- Voltage Phase B-C</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_voltage_ca" index="atsvoltageca">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_OUTPUT_PHASE_3_VOLTAGE_L2L</sensorId>
+			<value><getRowOid>atsvoltageca</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>- Voltage Phase C-A</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_voltage_an" index="atsvoltagean">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_OUTPUT_PHASE_1_VOLTAGE_L2N</sensorId>
+			<value><getRowOid>atsvoltagean</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>- Voltage Phase A-N</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_voltage_bn" index="atsvoltagebn">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_OUTPUT_PHASE_2_VOLTAGE_L2N</sensorId>
+			<value><getRowOid>atsvoltagebn</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>- Voltage Phase B-N</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_voltage_cn" index="atsvoltagecn">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_OUTPUT_PHASE_3_VOLTAGE_L2N</sensorId>
+			<value><getRowOid>atsvoltagecn</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>- Voltage Phase C-N</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_current_a" index="atscurrenta">
+			<rowTest>
+				<!-- not supported uint16 value appears to be FFFFFFF -->
+				<op><neq><op><getRowOid default="65535">atscurrenta</getRowOid></op><op>65535</op></neq></op>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>XATS<rowNumber/>_OUTPUT_PHASE_1_CURRENT</sensorId>
+			<value><getRowOid>atscurrenta</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>- Current Phase A</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_current_b" index="atscurrentb">
+			<rowTest>
+				<!-- not supported uint16 value appears to be FFFFFFF -->
+				<op><neq><op><getRowOid default="65535">atscurrentb</getRowOid></op><op>65535</op></neq></op>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>XATS<rowNumber/>_OUTPUT_PHASE_2_CURRENT</sensorId>
+			<value><getRowOid>atscurrentb</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>- Current Phase B</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_current_c" index="atscurrentc">
+			<rowTest>
+				<!-- not supported uint16 value appears to be FFFFFFF -->
+				<op><neq><op><getRowOid default="65535">atscurrentc</getRowOid></op><op>65535</op></neq></op>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>XATS<rowNumber/>_OUTPUT_PHASE_3_CURRENT</sensorId>
+			<value><getRowOid>atscurrentc</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>- Current Phase C</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source1_frequency" index="atssource1frequency">
+			<type>frequency</type>
+			<sensorId>XATS<rowNumber/>_SOURCE1_FREQUENCY</sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>atssource1frequency</getRowOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>ATS<space/><rowNumber/><space/>Source 1 - Frequency</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source1_power_factor" index="atssource1powerfactor">
+			<rowTest>
+				<!-- not supported int16 value appears to be 7FFF -->
+				<op><neq><op><getRowOid default="32767">atssource1powerfactor</getRowOid></op><op>32767</op></neq></op>
+			</rowTest>
+			<type>num/powerfactor</type>
+			<sensorId>XATS<rowNumber/>_SOURCE1_TOTAL_POWER_FACTOR</sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>atssource1powerfactor</getRowOid></op>
+					<op>0.00005</op>
+				</mult>
+			</value>
+			<label>ATS<space/><rowNumber/><space/>Source 1 - Total Power Factor</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source1_apparent_power" index="atssource1apparentpower">
+			<type>num/powerKVA</type>
+			<sensorId>XATS<rowNumber/>_SOURCE1_TOTAL_APPARENT_POWER</sensorId>
+			<value><getRowOid>atssource1apparentpower</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 1 - Total Apparent Power</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source1_real_power" index="atssource1realpower">
+			<type>num/powerKW</type>
+			<sensorId>XATS<rowNumber/>_SOURCE1_TOTAL_POWER</sensorId>
+			<value><getRowOid>atssource1realpower</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 1 - Total Real Power</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source1_reactive_power" index="atssource1reactivepower">
+			<type>num/powerKVAR</type>
+			<sensorId>XATS<rowNumber/>_SOURCE1_TOTAL_REACTIVE_POWER</sensorId>
+			<value><getRowOid>atssource1reactivepower</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 1 - Total Reactive Power</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source1_voltage_ab" index="atssource1voltageab">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE1_PHASE_1_VOLTAGE_L2L</sensorId>
+			<value><getRowOid>atssource1voltageab</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 1 - Voltage Phase A-B</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source1_voltage_bc" index="atssource1voltagebc">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE1_PHASE_2_VOLTAGE_L2L</sensorId>
+			<value><getRowOid>atssource1voltagebc</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 1 - Voltage Phase B-C</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source1_voltage_ca" index="atssource1voltageca">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE1_PHASE_3_VOLTAGE_L2L</sensorId>
+			<value><getRowOid>atssource1voltageca</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 1 - Voltage Phase C-A</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source1_voltage_an" index="atssource1voltagean">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE1_PHASE_1_VOLTAGE_L2N</sensorId>
+			<value><getRowOid>atssource1voltagean</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 1 - Voltage Phase A-N</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source1_voltage_bn" index="atssource1voltagebn">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE1_PHASE_2_VOLTAGE_L2N</sensorId>
+			<value><getRowOid>atssource1voltagebn</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 1 - Voltage Phase B-N</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source1_voltage_cn" index="atssource1voltagecn">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE1_PHASE_3_VOLTAGE_L2N</sensorId>
+			<value><getRowOid>atssource1voltagecn</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 1 - Voltage Phase C-N</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source1_current_a" index="atssource1currenta">
+			<type>amperage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE1_PHASE_1_CURRENT</sensorId>
+			<value><getRowOid>atssource1currenta</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 1 - Current Phase A</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source1_current_b" index="atssource1currentb">
+			<type>amperage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE1_PHASE_2_CURRENT</sensorId>
+			<value><getRowOid>atssource1currentb</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 1 - Current Phase B</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source1_current_c" index="atssource1currentc">
+			<type>amperage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE1_PHASE_3_CURRENT</sensorId>
+			<value><getRowOid>atssource1currentc</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 1 - Current Phase C</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source2_frequency" index="atssource2frequency">
+			<type>frequency</type>
+			<sensorId>XATS<rowNumber/>_SOURCE2_FREQUENCY</sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>atssource2frequency</getRowOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<label>ATS<space/><rowNumber/><space/>Source 2 - Frequency</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source2_power_factor" index="atssource2powerfactor">
+			<rowTest>
+				<!-- not supported int16 value appears to be 7FFF -->
+				<op><neq><op><getRowOid default="32767">atssource2powerfactor</getRowOid></op><op>32767</op></neq></op>
+			</rowTest>
+			<type>num/powerfactor</type>
+			<sensorId>XATS<rowNumber/>_SOURCE2_TOTAL_POWER_FACTOR</sensorId>
+			<value>
+				<mult>
+					<op><getRowOid>atssource2powerfactor</getRowOid></op>
+					<op>0.00005</op>
+				</mult>
+			</value>
+			<label>ATS<space/><rowNumber/><space/>Source 2 - Total Power Factor</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source2_apparent_power" index="atssource2apparentpower">
+			<type>num/powerKVA</type>
+			<sensorId>XATS<rowNumber/>_SOURCE2_TOTAL_APPARENT_POWER</sensorId>
+			<value><getRowOid>atssource2apparentpower</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 2 - Total Apparent Power</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source2_real_power" index="atssource2realpower">
+			<type>num/powerKW</type>
+			<sensorId>XATS<rowNumber/>_SOURCE2_TOTAL_POWER</sensorId>
+			<value><getRowOid>atssource2realpower</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 2 - Total Real Power</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source2_reactive_power" index="atssource2reactivepower">
+			<type>num/powerKVAR</type>
+			<sensorId>XATS<rowNumber/>_SOURCE2_TOTAL_REACTIVE_POWER</sensorId>
+			<value><getRowOid>atssource2reactivepower</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 2 - Total Reactive Power</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source2_voltage_ab" index="atssource2voltageab">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE2_PHASE_1_VOLTAGE_L2L</sensorId>
+			<value><getRowOid>atssource2voltageab</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 2 - Voltage Phase A-B</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source2_voltage_bc" index="atssource2voltagebc">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE2_PHASE_2_VOLTAGE_L2L</sensorId>
+			<value><getRowOid>atssource2voltagebc</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 2 - Voltage Phase B-C</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source2_voltage_ca" index="atssource2voltageca">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE2_PHASE_3_VOLTAGE_L2L</sensorId>
+			<value><getRowOid>atssource2voltageca</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 2 - Voltage Phase C-A</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source2_voltage_an" index="atssource2voltagean">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE2_PHASE_1_VOLTAGE_L2N</sensorId>
+			<value><getRowOid>atssource2voltagean</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 2 - Voltage Phase A-N</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source2_voltage_bn" index="atssource2voltagebn">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE2_PHASE_2_VOLTAGE_L2N</sensorId>
+			<value><getRowOid>atssource2voltagebn</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 2 - Voltage Phase B-N</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source2_voltage_cn" index="atssource2voltagecn">
+			<type>voltage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE2_PHASE_3_VOLTAGE_L2N</sensorId>
+			<value><getRowOid>atssource2voltagecn</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 2 - Voltage Phase C-N</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source2_current_a" index="atssource2currenta">
+			<type>amperage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE2_PHASE_1_CURRENT</sensorId>
+			<value><getRowOid>atssource2currenta</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 2 - Current Phase A</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source2_current_b" index="atssource2currentb">
+			<type>amperage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE2_PHASE_2_CURRENT</sensorId>
+			<value><getRowOid>atssource2currentb</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 2 - Current Phase B</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="ats_source2_current_c" index="atssource2currentc">
+			<type>amperage</type>
+			<sensorId>XATS<rowNumber/>_SOURCE2_PHASE_3_CURRENT</sensorId>
+			<value><getRowOid>atssource2currentc</getRowOid></value>
+			<label>ATS<space/><rowNumber/><space/>Source 2 - Current Phase C</label>
+			<sensorSet>ATS<space/><rowNumber/><space/>Sensors</sensorSet>
+		</numSensor>
+
+	</device>
+
+	<protocol>
+		<modbus>
+
+			<!-- GEN registers -->
+
+			<table_ref_id indexid="gendevicetype">
+				<entry num="0">gendevicetype0</entry>
+				<entry num="1">gendevicetype1</entry>
+				<entry num="2">gendevicetype2</entry>
+				<entry num="3">gendevicetype3</entry>
+				<entry num="4">gendevicetype4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="gendevicestatus">
+				<entry num="0">gendevicestatus0</entry>
+				<entry num="1">gendevicestatus1</entry>
+				<entry num="2">gendevicestatus2</entry>
+				<entry num="3">gendevicestatus3</entry>
+				<entry num="4">gendevicestatus4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="gendevicefaultcode">
+				<entry num="0">gendevicefaultcode0</entry>
+				<entry num="1">gendevicefaultcode1</entry>
+				<entry num="2">gendevicefaultcode2</entry>
+				<entry num="3">gendevicefaultcode3</entry>
+				<entry num="4">gendevicefaultcode4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="gendevicefaulttype">
+				<entry num="0">gendevicefaulttype0</entry>
+				<entry num="1">gendevicefaulttype1</entry>
+				<entry num="2">gendevicefaulttype2</entry>
+				<entry num="3">gendevicefaulttype3</entry>
+				<entry num="4">gendevicefaulttype4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="gennfpa110">
+				<entry num="0">gennfpa1100</entry>
+				<entry num="1">gennfpa1101</entry>
+				<entry num="2">gennfpa1102</entry>
+				<entry num="3">gennfpa1103</entry>
+				<entry num="4">gennfpa1104</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genextended">
+				<entry num="0">genextended0</entry>
+				<entry num="1">genextended1</entry>
+				<entry num="2">genextended2</entry>
+				<entry num="3">genextended3</entry>
+				<entry num="4">genextended4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genfrequency">
+				<entry num="0">genfrequency0</entry>
+				<entry num="1">genfrequency1</entry>
+				<entry num="2">genfrequency2</entry>
+				<entry num="3">genfrequency3</entry>
+				<entry num="4">genfrequency4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genpowerfactor">
+				<entry num="0">genpowerfactor0</entry>
+				<entry num="1">genpowerfactor1</entry>
+				<entry num="2">genpowerfactor2</entry>
+				<entry num="3">genpowerfactor3</entry>
+				<entry num="4">genpowerfactor4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genapparentpower">
+				<entry num="0">genapparentpower0</entry>
+				<entry num="1">genapparentpower1</entry>
+				<entry num="2">genapparentpower2</entry>
+				<entry num="3">genapparentpower3</entry>
+				<entry num="4">genapparentpower4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genrealpower">
+				<entry num="0">genrealpower0</entry>
+				<entry num="1">genrealpower1</entry>
+				<entry num="2">genrealpower2</entry>
+				<entry num="3">genrealpower3</entry>
+				<entry num="4">genrealpower4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genreactivepower">
+				<entry num="0">genreactivepower0</entry>
+				<entry num="1">genreactivepower1</entry>
+				<entry num="2">genreactivepower2</entry>
+				<entry num="3">genreactivepower3</entry>
+				<entry num="4">genreactivepower4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genvoltageab">
+				<entry num="0">genvoltageab0</entry>
+				<entry num="1">genvoltageab1</entry>
+				<entry num="2">genvoltageab2</entry>
+				<entry num="3">genvoltageab3</entry>
+				<entry num="4">genvoltageab4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genvoltagebc">
+				<entry num="0">genvoltagebc0</entry>
+				<entry num="1">genvoltagebc1</entry>
+				<entry num="2">genvoltagebc2</entry>
+				<entry num="3">genvoltagebc3</entry>
+				<entry num="4">genvoltagebc4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genvoltageca">
+				<entry num="0">genvoltageca0</entry>
+				<entry num="1">genvoltageca1</entry>
+				<entry num="2">genvoltageca2</entry>
+				<entry num="3">genvoltageca3</entry>
+				<entry num="4">genvoltageca4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genvoltagean">
+				<entry num="0">genvoltagean0</entry>
+				<entry num="1">genvoltagean1</entry>
+				<entry num="2">genvoltagean2</entry>
+				<entry num="3">genvoltagean3</entry>
+				<entry num="4">genvoltagean4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genvoltagebn">
+				<entry num="0">genvoltagebn0</entry>
+				<entry num="1">genvoltagebn1</entry>
+				<entry num="2">genvoltagebn2</entry>
+				<entry num="3">genvoltagebn3</entry>
+				<entry num="4">genvoltagebn4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genvoltagecn">
+				<entry num="0">genvoltagecn0</entry>
+				<entry num="1">genvoltagecn1</entry>
+				<entry num="2">genvoltagecn2</entry>
+				<entry num="3">genvoltagecn3</entry>
+				<entry num="4">genvoltagecn4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="gencurrenta">
+				<entry num="0">gencurrenta0</entry>
+				<entry num="1">gencurrenta1</entry>
+				<entry num="2">gencurrenta2</entry>
+				<entry num="3">gencurrenta3</entry>
+				<entry num="4">gencurrenta4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="gencurrentb">
+				<entry num="0">gencurrentb0</entry>
+				<entry num="1">gencurrentb1</entry>
+				<entry num="2">gencurrentb2</entry>
+				<entry num="3">gencurrentb3</entry>
+				<entry num="4">gencurrentb4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="gencurrentc">
+				<entry num="0">gencurrentc0</entry>
+				<entry num="1">gencurrentc1</entry>
+				<entry num="2">gencurrentc2</entry>
+				<entry num="3">gencurrentc3</entry>
+				<entry num="4">gencurrentc4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genbatteryvoltage">
+				<entry num="0">genbatteryvoltage0</entry>
+				<entry num="1">genbatteryvoltage1</entry>
+				<entry num="2">genbatteryvoltage2</entry>
+				<entry num="3">genbatteryvoltage3</entry>
+				<entry num="4">genbatteryvoltage4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genoilpressure">
+				<entry num="0">genoilpressure0</entry>
+				<entry num="1">genoilpressure1</entry>
+				<entry num="2">genoilpressure2</entry>
+				<entry num="3">genoilpressure3</entry>
+				<entry num="4">genoilpressure4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genoiltemp">
+				<entry num="0">genoiltemp0</entry>
+				<entry num="1">genoiltemp1</entry>
+				<entry num="2">genoiltemp2</entry>
+				<entry num="3">genoiltemp3</entry>
+				<entry num="4">genoiltemp4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="gencoolanttemp">
+				<entry num="0">gencoolanttemp0</entry>
+				<entry num="1">gencoolanttemp1</entry>
+				<entry num="2">gencoolanttemp2</entry>
+				<entry num="3">gencoolanttemp3</entry>
+				<entry num="4">gencoolanttemp4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genfuelrate">
+				<entry num="0">genfuelrate0</entry>
+				<entry num="1">genfuelrate1</entry>
+				<entry num="2">genfuelrate2</entry>
+				<entry num="3">genfuelrate3</entry>
+				<entry num="4">genfuelrate4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genenginespeed">
+				<entry num="0">genenginespeed0</entry>
+				<entry num="1">genenginespeed1</entry>
+				<entry num="2">genenginespeed2</entry>
+				<entry num="3">genenginespeed3</entry>
+				<entry num="4">genenginespeed4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genenginestarts">
+				<entry num="0">genenginestarts0</entry>
+				<entry num="1">genenginestarts1</entry>
+				<entry num="2">genenginestarts2</entry>
+				<entry num="3">genenginestarts3</entry>
+				<entry num="4">genenginestarts4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="genengineruntime">
+				<entry num="0">genengineruntime0</entry>
+				<entry num="1">genengineruntime1</entry>
+				<entry num="2">genengineruntime2</entry>
+				<entry num="3">genengineruntime3</entry>
+				<entry num="4">genengineruntime4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="gentotalfuel">
+				<entry num="0">gentotalfuel0</entry>
+				<entry num="1">gentotalfuel1</entry>
+				<entry num="2">gentotalfuel2</entry>
+				<entry num="3">gentotalfuel3</entry>
+				<entry num="4">gentotalfuel4</entry>
+			</table_ref_id>
+
+			<!-- gen 0 -->
+			<value_ref_id valid="gendevicetype0">
+				<function>3</function>
+				<start_addr>8</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gendevicestatus0">
+				<function>3</function>
+				<start_addr>10</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gendevicefaultcode0">
+				<function>3</function>
+				<start_addr>11</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gendevicefaulttype0">
+				<function>3</function>
+				<start_addr>12</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gennfpa1100">
+				<function>3</function>
+				<start_addr>15</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genextended0">
+				<function>3</function>
+				<start_addr>16</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genfrequency0">
+				<function>3</function>
+				<start_addr>17</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genpowerfactor0">
+				<function>3</function>
+				<start_addr>18</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genapparentpower0">
+				<function>3</function>
+				<start_addr>19</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genrealpower0">
+				<function>3</function>
+				<start_addr>20</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genreactivepower0">
+				<function>3</function>
+				<start_addr>21</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltageab0">
+				<function>3</function>
+				<start_addr>22</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagebc0">
+				<function>3</function>
+				<start_addr>23</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltageca0">
+				<function>3</function>
+				<start_addr>24</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagean0">
+				<function>3</function>
+				<start_addr>25</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagebn0">
+				<function>3</function>
+				<start_addr>26</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagecn0">
+				<function>3</function>
+				<start_addr>27</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencurrenta0">
+				<function>3</function>
+				<start_addr>28</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencurrentb0">
+				<function>3</function>
+				<start_addr>29</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencurrentc0">
+				<function>3</function>
+				<start_addr>30</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genbatteryvoltage0">
+				<function>3</function>
+				<start_addr>34</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genoilpressure0">
+				<function>3</function>
+				<start_addr>35</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genoiltemp0">
+				<function>3</function>
+				<start_addr>36</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencoolanttemp0">
+				<function>3</function>
+				<start_addr>37</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genfuelrate0">
+				<function>3</function>
+				<start_addr>40</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genenginespeed0">
+				<function>3</function>
+				<start_addr>41</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genenginestarts0">
+				<function>3</function>
+				<start_addr>42</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genengineruntime0">
+				<function>3</function>
+				<start_addr>43</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="gentotalfuel0">
+				<function>3</function>
+				<start_addr>47</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+
+			<!-- gen 1 -->
+			<value_ref_id valid="gendevicetype1">
+				<function>3</function>
+				<start_addr>108</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gendevicestatus1">
+				<function>3</function>
+				<start_addr>110</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gendevicefaultcode1">
+				<function>3</function>
+				<start_addr>111</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gendevicefaulttype1">
+				<function>3</function>
+				<start_addr>112</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gennfpa1101">
+				<function>3</function>
+				<start_addr>115</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genextended1">
+				<function>3</function>
+				<start_addr>116</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genfrequency1">
+				<function>3</function>
+				<start_addr>117</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genpowerfactor1">
+				<function>3</function>
+				<start_addr>118</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genapparentpower1">
+				<function>3</function>
+				<start_addr>119</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genrealpower1">
+				<function>3</function>
+				<start_addr>120</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genreactivepower1">
+				<function>3</function>
+				<start_addr>121</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltageab1">
+				<function>3</function>
+				<start_addr>122</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagebc1">
+				<function>3</function>
+				<start_addr>123</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltageca1">
+				<function>3</function>
+				<start_addr>124</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagean1">
+				<function>3</function>
+				<start_addr>125</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagebn1">
+				<function>3</function>
+				<start_addr>126</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagecn1">
+				<function>3</function>
+				<start_addr>127</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencurrenta1">
+				<function>3</function>
+				<start_addr>128</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencurrentb1">
+				<function>3</function>
+				<start_addr>129</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencurrentc1">
+				<function>3</function>
+				<start_addr>130</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genbatteryvoltage1">
+				<function>3</function>
+				<start_addr>134</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genoilpressure1">
+				<function>3</function>
+				<start_addr>135</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genoiltemp1">
+				<function>3</function>
+				<start_addr>136</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencoolanttemp1">
+				<function>3</function>
+				<start_addr>137</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genfuelrate1">
+				<function>3</function>
+				<start_addr>140</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genenginespeed1">
+				<function>3</function>
+				<start_addr>141</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genenginestarts1">
+				<function>3</function>
+				<start_addr>142</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genengineruntime1">
+				<function>3</function>
+				<start_addr>143</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="gentotalfuel1">
+				<function>3</function>
+				<start_addr>147</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+
+			<!-- gen 2 -->
+			<value_ref_id valid="gendevicetype2">
+				<function>3</function>
+				<start_addr>208</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gendevicestatus2">
+				<function>3</function>
+				<start_addr>210</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gendevicefaultcode2">
+				<function>3</function>
+				<start_addr>211</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gendevicefaulttype2">
+				<function>3</function>
+				<start_addr>212</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gennfpa1102">
+				<function>3</function>
+				<start_addr>215</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genextended2">
+				<function>3</function>
+				<start_addr>216</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genfrequency2">
+				<function>3</function>
+				<start_addr>217</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genpowerfactor2">
+				<function>3</function>
+				<start_addr>218</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genapparentpower2">
+				<function>3</function>
+				<start_addr>219</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genrealpower2">
+				<function>3</function>
+				<start_addr>220</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genreactivepower2">
+				<function>3</function>
+				<start_addr>221</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltageab2">
+				<function>3</function>
+				<start_addr>222</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagebc2">
+				<function>3</function>
+				<start_addr>223</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltageca2">
+				<function>3</function>
+				<start_addr>224</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagean2">
+				<function>3</function>
+				<start_addr>225</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagebn2">
+				<function>3</function>
+				<start_addr>226</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagecn2">
+				<function>3</function>
+				<start_addr>227</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencurrenta2">
+				<function>3</function>
+				<start_addr>228</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencurrentb2">
+				<function>3</function>
+				<start_addr>229</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencurrentc2">
+				<function>3</function>
+				<start_addr>230</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genbatteryvoltage2">
+				<function>3</function>
+				<start_addr>234</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genoilpressure2">
+				<function>3</function>
+				<start_addr>235</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genoiltemp2">
+				<function>3</function>
+				<start_addr>236</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencoolanttemp2">
+				<function>3</function>
+				<start_addr>237</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genfuelrate2">
+				<function>3</function>
+				<start_addr>240</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genenginespeed2">
+				<function>3</function>
+				<start_addr>241</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genenginestarts2">
+				<function>3</function>
+				<start_addr>242</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genengineruntime2">
+				<function>3</function>
+				<start_addr>243</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="gentotalfuel2">
+				<function>3</function>
+				<start_addr>247</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+
+			<!-- gen 3 -->
+			<value_ref_id valid="gendevicetype3">
+				<function>3</function>
+				<start_addr>308</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gendevicestatus3">
+				<function>3</function>
+				<start_addr>310</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gendevicefaultcode3">
+				<function>3</function>
+				<start_addr>311</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gendevicefaulttype3">
+				<function>3</function>
+				<start_addr>312</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gennfpa1103">
+				<function>3</function>
+				<start_addr>315</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genextended3">
+				<function>3</function>
+				<start_addr>316</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genfrequency3">
+				<function>3</function>
+				<start_addr>317</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genpowerfactor3">
+				<function>3</function>
+				<start_addr>318</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genapparentpower3">
+				<function>3</function>
+				<start_addr>319</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genrealpower3">
+				<function>3</function>
+				<start_addr>320</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genreactivepower3">
+				<function>3</function>
+				<start_addr>321</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltageab3">
+				<function>3</function>
+				<start_addr>322</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagebc3">
+				<function>3</function>
+				<start_addr>323</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltageca3">
+				<function>3</function>
+				<start_addr>324</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagean3">
+				<function>3</function>
+				<start_addr>325</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagebn3">
+				<function>3</function>
+				<start_addr>326</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagecn3">
+				<function>3</function>
+				<start_addr>327</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencurrenta3">
+				<function>3</function>
+				<start_addr>328</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencurrentb3">
+				<function>3</function>
+				<start_addr>329</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencurrentc3">
+				<function>3</function>
+				<start_addr>330</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genbatteryvoltage3">
+				<function>3</function>
+				<start_addr>334</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genoilpressure3">
+				<function>3</function>
+				<start_addr>335</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genoiltemp3">
+				<function>3</function>
+				<start_addr>336</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencoolanttemp3">
+				<function>3</function>
+				<start_addr>337</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genfuelrate3">
+				<function>3</function>
+				<start_addr>340</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genenginespeed3">
+				<function>3</function>
+				<start_addr>341</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genenginestarts3">
+				<function>3</function>
+				<start_addr>342</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genengineruntime3">
+				<function>3</function>
+				<start_addr>343</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="gentotalfuel3">
+				<function>3</function>
+				<start_addr>347</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+
+			<!-- gen 4 -->
+			<value_ref_id valid="gendevicetype4">
+				<function>3</function>
+				<start_addr>408</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gendevicestatus4">
+				<function>3</function>
+				<start_addr>410</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gendevicefaultcode4">
+				<function>3</function>
+				<start_addr>411</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gendevicefaulttype4">
+				<function>3</function>
+				<start_addr>412</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gennfpa1104">
+				<function>3</function>
+				<start_addr>415</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genextended4">
+				<function>3</function>
+				<start_addr>416</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genfrequency4">
+				<function>3</function>
+				<start_addr>417</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genpowerfactor4">
+				<function>3</function>
+				<start_addr>418</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genapparentpower4">
+				<function>3</function>
+				<start_addr>419</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genrealpower4">
+				<function>3</function>
+				<start_addr>420</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genreactivepower4">
+				<function>3</function>
+				<start_addr>421</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltageab4">
+				<function>3</function>
+				<start_addr>422</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagebc4">
+				<function>3</function>
+				<start_addr>423</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltageca4">
+				<function>3</function>
+				<start_addr>424</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagean4">
+				<function>3</function>
+				<start_addr>425</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagebn4">
+				<function>3</function>
+				<start_addr>426</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genvoltagecn4">
+				<function>3</function>
+				<start_addr>427</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencurrenta4">
+				<function>3</function>
+				<start_addr>428</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencurrentb4">
+				<function>3</function>
+				<start_addr>429</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencurrentc4">
+				<function>3</function>
+				<start_addr>430</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genbatteryvoltage4">
+				<function>3</function>
+				<start_addr>434</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genoilpressure4">
+				<function>3</function>
+				<start_addr>435</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genoiltemp4">
+				<function>3</function>
+				<start_addr>436</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="gencoolanttemp4">
+				<function>3</function>
+				<start_addr>437</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genfuelrate4">
+				<function>3</function>
+				<start_addr>440</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genenginespeed4">
+				<function>3</function>
+				<start_addr>441</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genenginestarts4">
+				<function>3</function>
+				<start_addr>442</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="genengineruntime4">
+				<function>3</function>
+				<start_addr>443</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+			<value_ref_id valid="gentotalfuel4">
+				<function>3</function>
+				<start_addr>447</start_addr>
+				<quantity>2</quantity>
+				<type>uint_32</type>
+			</value_ref_id>
+
+
+			<!-- ATS registers -->
+
+			<table_ref_id indexid="atsdevicetype">
+				<entry num="0">atsdevicetype0</entry>
+				<entry num="1">atsdevicetype1</entry>
+				<entry num="2">atsdevicetype2</entry>
+				<entry num="3">atsdevicetype3</entry>
+				<entry num="4">atsdevicetype4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atsdevicestatus">
+				<entry num="0">atsdevicestatus0</entry>
+				<entry num="1">atsdevicestatus1</entry>
+				<entry num="2">atsdevicestatus2</entry>
+				<entry num="3">atsdevicestatus3</entry>
+				<entry num="4">atsdevicestatus4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atsnfpa110">
+				<entry num="0">atsnfpa1100</entry>
+				<entry num="1">atsnfpa1101</entry>
+				<entry num="2">atsnfpa1102</entry>
+				<entry num="3">atsnfpa1103</entry>
+				<entry num="4">atsnfpa1104</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atsextended">
+				<entry num="0">atsextended0</entry>
+				<entry num="1">atsextended1</entry>
+				<entry num="2">atsextended2</entry>
+				<entry num="3">atsextended3</entry>
+				<entry num="4">atsextended4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atsfrequency">
+				<entry num="0">atsfrequency0</entry>
+				<entry num="1">atsfrequency1</entry>
+				<entry num="2">atsfrequency2</entry>
+				<entry num="3">atsfrequency3</entry>
+				<entry num="4">atsfrequency4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atspowerfactor">
+				<entry num="0">atspowerfactor0</entry>
+				<entry num="1">atspowerfactor1</entry>
+				<entry num="2">atspowerfactor2</entry>
+				<entry num="3">atspowerfactor3</entry>
+				<entry num="4">atspowerfactor4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atsapparentpower">
+				<entry num="0">atsapparentpower0</entry>
+				<entry num="1">atsapparentpower1</entry>
+				<entry num="2">atsapparentpower2</entry>
+				<entry num="3">atsapparentpower3</entry>
+				<entry num="4">atsapparentpower4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atsrealpower">
+				<entry num="0">atsrealpower0</entry>
+				<entry num="1">atsrealpower1</entry>
+				<entry num="2">atsrealpower2</entry>
+				<entry num="3">atsrealpower3</entry>
+				<entry num="4">atsrealpower4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atsreactivepower">
+				<entry num="0">atsreactivepower0</entry>
+				<entry num="1">atsreactivepower1</entry>
+				<entry num="2">atsreactivepower2</entry>
+				<entry num="3">atsreactivepower3</entry>
+				<entry num="4">atsreactivepower4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atsvoltageab">
+				<entry num="0">atsvoltageab0</entry>
+				<entry num="1">atsvoltageab1</entry>
+				<entry num="2">atsvoltageab2</entry>
+				<entry num="3">atsvoltageab3</entry>
+				<entry num="4">atsvoltageab4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atsvoltagebc">
+				<entry num="0">atsvoltagebc0</entry>
+				<entry num="1">atsvoltagebc1</entry>
+				<entry num="2">atsvoltagebc2</entry>
+				<entry num="3">atsvoltagebc3</entry>
+				<entry num="4">atsvoltagebc4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atsvoltageca">
+				<entry num="0">atsvoltageca0</entry>
+				<entry num="1">atsvoltageca1</entry>
+				<entry num="2">atsvoltageca2</entry>
+				<entry num="3">atsvoltageca3</entry>
+				<entry num="4">atsvoltageca4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atsvoltagean">
+				<entry num="0">atsvoltagean0</entry>
+				<entry num="1">atsvoltagean1</entry>
+				<entry num="2">atsvoltagean2</entry>
+				<entry num="3">atsvoltagean3</entry>
+				<entry num="4">atsvoltagean4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atsvoltagebn">
+				<entry num="0">atsvoltagebn0</entry>
+				<entry num="1">atsvoltagebn1</entry>
+				<entry num="2">atsvoltagebn2</entry>
+				<entry num="3">atsvoltagebn3</entry>
+				<entry num="4">atsvoltagebn4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atsvoltagecn">
+				<entry num="0">atsvoltagecn0</entry>
+				<entry num="1">atsvoltagecn1</entry>
+				<entry num="2">atsvoltagecn2</entry>
+				<entry num="3">atsvoltagecn3</entry>
+				<entry num="4">atsvoltagecn4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atscurrenta">
+				<entry num="0">atscurrenta0</entry>
+				<entry num="1">atscurrenta1</entry>
+				<entry num="2">atscurrenta2</entry>
+				<entry num="3">atscurrenta3</entry>
+				<entry num="4">atscurrenta4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atscurrentb">
+				<entry num="0">atscurrentb0</entry>
+				<entry num="1">atscurrentb1</entry>
+				<entry num="2">atscurrentb2</entry>
+				<entry num="3">atscurrentb3</entry>
+				<entry num="4">atscurrentb4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atscurrentc">
+				<entry num="0">atscurrentc0</entry>
+				<entry num="1">atscurrentc1</entry>
+				<entry num="2">atscurrentc2</entry>
+				<entry num="3">atscurrentc3</entry>
+				<entry num="4">atscurrentc4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource1frequency">
+				<entry num="0">atssource1frequency0</entry>
+				<entry num="1">atssource1frequency1</entry>
+				<entry num="2">atssource1frequency2</entry>
+				<entry num="3">atssource1frequency3</entry>
+				<entry num="4">atssource1frequency4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource1powerfactor">
+				<entry num="0">atssource1powerfactor0</entry>
+				<entry num="1">atssource1powerfactor1</entry>
+				<entry num="2">atssource1powerfactor2</entry>
+				<entry num="3">atssource1powerfactor3</entry>
+				<entry num="4">atssource1powerfactor4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource1apparentpower">
+				<entry num="0">atssource1apparentpower0</entry>
+				<entry num="1">atssource1apparentpower1</entry>
+				<entry num="2">atssource1apparentpower2</entry>
+				<entry num="3">atssource1apparentpower3</entry>
+				<entry num="4">atssource1apparentpower4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource1realpower">
+				<entry num="0">atssource1realpower0</entry>
+				<entry num="1">atssource1realpower1</entry>
+				<entry num="2">atssource1realpower2</entry>
+				<entry num="3">atssource1realpower3</entry>
+				<entry num="4">atssource1realpower4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource1reactivepower">
+				<entry num="0">atssource1reactivepower0</entry>
+				<entry num="1">atssource1reactivepower1</entry>
+				<entry num="2">atssource1reactivepower2</entry>
+				<entry num="3">atssource1reactivepower3</entry>
+				<entry num="4">atssource1reactivepower4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource1voltageab">
+				<entry num="0">atssource1voltageab0</entry>
+				<entry num="1">atssource1voltageab1</entry>
+				<entry num="2">atssource1voltageab2</entry>
+				<entry num="3">atssource1voltageab3</entry>
+				<entry num="4">atssource1voltageab4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource1voltagebc">
+				<entry num="0">atssource1voltagebc0</entry>
+				<entry num="1">atssource1voltagebc1</entry>
+				<entry num="2">atssource1voltagebc2</entry>
+				<entry num="3">atssource1voltagebc3</entry>
+				<entry num="4">atssource1voltagebc4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource1voltageca">
+				<entry num="0">atssource1voltageca0</entry>
+				<entry num="1">atssource1voltageca1</entry>
+				<entry num="2">atssource1voltageca2</entry>
+				<entry num="3">atssource1voltageca3</entry>
+				<entry num="4">atssource1voltageca4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource1voltagean">
+				<entry num="0">atssource1voltagean0</entry>
+				<entry num="1">atssource1voltagean1</entry>
+				<entry num="2">atssource1voltagean2</entry>
+				<entry num="3">atssource1voltagean3</entry>
+				<entry num="4">atssource1voltagean4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource1voltagebn">
+				<entry num="0">atssource1voltagebn0</entry>
+				<entry num="1">atssource1voltagebn1</entry>
+				<entry num="2">atssource1voltagebn2</entry>
+				<entry num="3">atssource1voltagebn3</entry>
+				<entry num="4">atssource1voltagebn4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource1voltagecn">
+				<entry num="0">atssource1voltagecn0</entry>
+				<entry num="1">atssource1voltagecn1</entry>
+				<entry num="2">atssource1voltagecn2</entry>
+				<entry num="3">atssource1voltagecn3</entry>
+				<entry num="4">atssource1voltagecn4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource1currenta">
+				<entry num="0">atssource1currenta0</entry>
+				<entry num="1">atssource1currenta1</entry>
+				<entry num="2">atssource1currenta2</entry>
+				<entry num="3">atssource1currenta3</entry>
+				<entry num="4">atssource1currenta4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource1currentb">
+				<entry num="0">atssource1currentb0</entry>
+				<entry num="1">atssource1currentb1</entry>
+				<entry num="2">atssource1currentb2</entry>
+				<entry num="3">atssource1currentb3</entry>
+				<entry num="4">atssource1currentb4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource1currentc">
+				<entry num="0">atssource1currentc0</entry>
+				<entry num="1">atssource1currentc1</entry>
+				<entry num="2">atssource1currentc2</entry>
+				<entry num="3">atssource1currentc3</entry>
+				<entry num="4">atssource1currentc4</entry>
+			</table_ref_id>
+			<table_ref_id indexid="atssource2frequency">
+				<entry num="0">atssource2frequency0</entry>
+				<entry num="1">atssource2frequency1</entry>
+				<entry num="2">atssource2frequency2</entry>
+				<entry num="3">atssource2frequency3</entry>
+				<entry num="4">atssource2frequency4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource2powerfactor">
+				<entry num="0">atssource2powerfactor0</entry>
+				<entry num="1">atssource2powerfactor1</entry>
+				<entry num="2">atssource2powerfactor2</entry>
+				<entry num="3">atssource2powerfactor3</entry>
+				<entry num="4">atssource2powerfactor4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource2apparentpower">
+				<entry num="0">atssource2apparentpower0</entry>
+				<entry num="1">atssource2apparentpower1</entry>
+				<entry num="2">atssource2apparentpower2</entry>
+				<entry num="3">atssource2apparentpower3</entry>
+				<entry num="4">atssource2apparentpower4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource2realpower">
+				<entry num="0">atssource2realpower0</entry>
+				<entry num="1">atssource2realpower1</entry>
+				<entry num="2">atssource2realpower2</entry>
+				<entry num="3">atssource2realpower3</entry>
+				<entry num="4">atssource2realpower4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource2reactivepower">
+				<entry num="0">atssource2reactivepower0</entry>
+				<entry num="1">atssource2reactivepower1</entry>
+				<entry num="2">atssource2reactivepower2</entry>
+				<entry num="3">atssource2reactivepower3</entry>
+				<entry num="4">atssource2reactivepower4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource2voltageab">
+				<entry num="0">atssource2voltageab0</entry>
+				<entry num="1">atssource2voltageab1</entry>
+				<entry num="2">atssource2voltageab2</entry>
+				<entry num="3">atssource2voltageab3</entry>
+				<entry num="4">atssource2voltageab4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource2voltagebc">
+				<entry num="0">atssource2voltagebc0</entry>
+				<entry num="1">atssource2voltagebc1</entry>
+				<entry num="2">atssource2voltagebc2</entry>
+				<entry num="3">atssource2voltagebc3</entry>
+				<entry num="4">atssource2voltagebc4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource2voltageca">
+				<entry num="0">atssource2voltageca0</entry>
+				<entry num="1">atssource2voltageca1</entry>
+				<entry num="2">atssource2voltageca2</entry>
+				<entry num="3">atssource2voltageca3</entry>
+				<entry num="4">atssource2voltageca4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource2voltagean">
+				<entry num="0">atssource2voltagean0</entry>
+				<entry num="1">atssource2voltagean1</entry>
+				<entry num="2">atssource2voltagean2</entry>
+				<entry num="3">atssource2voltagean3</entry>
+				<entry num="4">atssource2voltagean4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource2voltagebn">
+				<entry num="0">atssource2voltagebn0</entry>
+				<entry num="1">atssource2voltagebn1</entry>
+				<entry num="2">atssource2voltagebn2</entry>
+				<entry num="3">atssource2voltagebn3</entry>
+				<entry num="4">atssource2voltagebn4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource2voltagecn">
+				<entry num="0">atssource2voltagecn0</entry>
+				<entry num="1">atssource2voltagecn1</entry>
+				<entry num="2">atssource2voltagecn2</entry>
+				<entry num="3">atssource2voltagecn3</entry>
+				<entry num="4">atssource2voltagecn4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource2currenta">
+				<entry num="0">atssource2currenta0</entry>
+				<entry num="1">atssource2currenta1</entry>
+				<entry num="2">atssource2currenta2</entry>
+				<entry num="3">atssource2currenta3</entry>
+				<entry num="4">atssource2currenta4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource2currentb">
+				<entry num="0">atssource2currentb0</entry>
+				<entry num="1">atssource2currentb1</entry>
+				<entry num="2">atssource2currentb2</entry>
+				<entry num="3">atssource2currentb3</entry>
+				<entry num="4">atssource2currentb4</entry>
+			</table_ref_id>
+
+			<table_ref_id indexid="atssource2currentc">
+				<entry num="0">atssource2currentc0</entry>
+				<entry num="1">atssource2currentc1</entry>
+				<entry num="2">atssource2currentc2</entry>
+				<entry num="3">atssource2currentc3</entry>
+				<entry num="4">atssource2currentc4</entry>
+			</table_ref_id>
+
+			<!-- ats 0 -->
+			<value_ref_id valid="atsdevicetype0">
+				<function>3</function>
+				<start_addr>1008</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsdevicestatus0">
+				<function>3</function>
+				<start_addr>1010</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsnfpa1100">
+				<function>3</function>
+				<start_addr>1015</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsextended0">
+				<function>3</function>
+				<start_addr>1016</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsfrequency0">
+				<function>3</function>
+				<start_addr>1017</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atspowerfactor0">
+				<function>3</function>
+				<start_addr>1018</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsapparentpower0">
+				<function>3</function>
+				<start_addr>1019</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsrealpower0">
+				<function>3</function>
+				<start_addr>1020</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsreactivepower0">
+				<function>3</function>
+				<start_addr>1021</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltageab0">
+				<function>3</function>
+				<start_addr>1022</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagebc0">
+				<function>3</function>
+				<start_addr>1023</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltageca0">
+				<function>3</function>
+				<start_addr>1024</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagean0">
+				<function>3</function>
+				<start_addr>1025</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagebn0">
+				<function>3</function>
+				<start_addr>1026</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagecn0">
+				<function>3</function>
+				<start_addr>1027</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atscurrenta0">
+				<function>3</function>
+				<start_addr>1028</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atscurrentb0">
+				<function>3</function>
+				<start_addr>1029</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atscurrentc0">
+				<function>3</function>
+				<start_addr>1030</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1frequency0">
+				<function>3</function>
+				<start_addr>1034</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1powerfactor0">
+				<function>3</function>
+				<start_addr>1035</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1apparentpower0">
+				<function>3</function>
+				<start_addr>1036</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1realpower0">
+				<function>3</function>
+				<start_addr>1037</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1reactivepower0">
+				<function>3</function>
+				<start_addr>1038</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltageab0">
+				<function>3</function>
+				<start_addr>1039</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagebc0">
+				<function>3</function>
+				<start_addr>1040</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltageca0">
+				<function>3</function>
+				<start_addr>1041</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagean0">
+				<function>3</function>
+				<start_addr>1042</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagebn0">
+				<function>3</function>
+				<start_addr>1043</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagecn0">
+				<function>3</function>
+				<start_addr>1044</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1currenta0">
+				<function>3</function>
+				<start_addr>1045</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1currentb0">
+				<function>3</function>
+				<start_addr>1046</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1currentc0">
+				<function>3</function>
+				<start_addr>1047</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2frequency0">
+				<function>3</function>
+				<start_addr>1051</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2powerfactor0">
+				<function>3</function>
+				<start_addr>1052</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2apparentpower0">
+				<function>3</function>
+				<start_addr>1053</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2realpower0">
+				<function>3</function>
+				<start_addr>1054</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2reactivepower0">
+				<function>3</function>
+				<start_addr>1055</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltageab0">
+				<function>3</function>
+				<start_addr>1056</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagebc0">
+				<function>3</function>
+				<start_addr>1057</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltageca0">
+				<function>3</function>
+				<start_addr>1058</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagean0">
+				<function>3</function>
+				<start_addr>1059</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagebn0">
+				<function>3</function>
+				<start_addr>1060</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagecn0">
+				<function>3</function>
+				<start_addr>1061</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2currenta0">
+				<function>3</function>
+				<start_addr>1062</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2currentb0">
+				<function>3</function>
+				<start_addr>1063</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2currentc0">
+				<function>3</function>
+				<start_addr>1064</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<!-- ats 1 -->
+			<value_ref_id valid="atsdevicetype1">
+				<function>3</function>
+				<start_addr>1108</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsdevicestatus1">
+				<function>3</function>
+				<start_addr>1110</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsnfpa1101">
+				<function>3</function>
+				<start_addr>1115</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsextended1">
+				<function>3</function>
+				<start_addr>1116</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsfrequency1">
+				<function>3</function>
+				<start_addr>1117</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atspowerfactor1">
+				<function>3</function>
+				<start_addr>1118</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsapparentpower1">
+				<function>3</function>
+				<start_addr>1119</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsrealpower1">
+				<function>3</function>
+				<start_addr>1120</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsreactivepower1">
+				<function>3</function>
+				<start_addr>1121</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltageab1">
+				<function>3</function>
+				<start_addr>1122</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagebc1">
+				<function>3</function>
+				<start_addr>1123</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltageca1">
+				<function>3</function>
+				<start_addr>1124</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagean1">
+				<function>3</function>
+				<start_addr>1125</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagebn1">
+				<function>3</function>
+				<start_addr>1126</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagecn1">
+				<function>3</function>
+				<start_addr>1127</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atscurrenta1">
+				<function>3</function>
+				<start_addr>1128</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atscurrentb1">
+				<function>3</function>
+				<start_addr>1129</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atscurrentc1">
+				<function>3</function>
+				<start_addr>1130</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1frequency1">
+				<function>3</function>
+				<start_addr>1134</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1powerfactor1">
+				<function>3</function>
+				<start_addr>1135</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1apparentpower1">
+				<function>3</function>
+				<start_addr>1136</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1realpower1">
+				<function>3</function>
+				<start_addr>1137</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1reactivepower1">
+				<function>3</function>
+				<start_addr>1138</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltageab1">
+				<function>3</function>
+				<start_addr>1139</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagebc1">
+				<function>3</function>
+				<start_addr>1140</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltageca1">
+				<function>3</function>
+				<start_addr>1141</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagean1">
+				<function>3</function>
+				<start_addr>1142</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagebn1">
+				<function>3</function>
+				<start_addr>1143</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagecn1">
+				<function>3</function>
+				<start_addr>1144</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1currenta1">
+				<function>3</function>
+				<start_addr>1145</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1currentb1">
+				<function>3</function>
+				<start_addr>1146</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1currentc1">
+				<function>3</function>
+				<start_addr>1147</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2frequency1">
+				<function>3</function>
+				<start_addr>1151</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2powerfactor1">
+				<function>3</function>
+				<start_addr>1152</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2apparentpower1">
+				<function>3</function>
+				<start_addr>1153</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2realpower1">
+				<function>3</function>
+				<start_addr>1154</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2reactivepower1">
+				<function>3</function>
+				<start_addr>1155</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltageab1">
+				<function>3</function>
+				<start_addr>1156</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagebc1">
+				<function>3</function>
+				<start_addr>1157</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltageca1">
+				<function>3</function>
+				<start_addr>1158</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagean1">
+				<function>3</function>
+				<start_addr>1159</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagebn1">
+				<function>3</function>
+				<start_addr>1160</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagecn1">
+				<function>3</function>
+				<start_addr>1161</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2currenta1">
+				<function>3</function>
+				<start_addr>1162</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2currentb1">
+				<function>3</function>
+				<start_addr>1163</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2currentc1">
+				<function>3</function>
+				<start_addr>1164</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<!-- ats 2 -->
+			<value_ref_id valid="atsdevicetype2">
+				<function>3</function>
+				<start_addr>1208</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsdevicestatus2">
+				<function>3</function>
+				<start_addr>1210</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsnfpa1102">
+				<function>3</function>
+				<start_addr>1215</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsextended2">
+				<function>3</function>
+				<start_addr>1216</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsfrequency2">
+				<function>3</function>
+				<start_addr>1217</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atspowerfactor2">
+				<function>3</function>
+				<start_addr>1218</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsapparentpower2">
+				<function>3</function>
+				<start_addr>1219</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsrealpower2">
+				<function>3</function>
+				<start_addr>1220</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsreactivepower2">
+				<function>3</function>
+				<start_addr>1221</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltageab2">
+				<function>3</function>
+				<start_addr>1222</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagebc2">
+				<function>3</function>
+				<start_addr>1223</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltageca2">
+				<function>3</function>
+				<start_addr>1224</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagean2">
+				<function>3</function>
+				<start_addr>1225</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagebn2">
+				<function>3</function>
+				<start_addr>1226</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagecn2">
+				<function>3</function>
+				<start_addr>1227</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atscurrenta2">
+				<function>3</function>
+				<start_addr>1228</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atscurrentb2">
+				<function>3</function>
+				<start_addr>1229</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atscurrentc2">
+				<function>3</function>
+				<start_addr>1230</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1frequency2">
+				<function>3</function>
+				<start_addr>1234</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1powerfactor2">
+				<function>3</function>
+				<start_addr>1235</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1apparentpower2">
+				<function>3</function>
+				<start_addr>1236</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1realpower2">
+				<function>3</function>
+				<start_addr>1237</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1reactivepower2">
+				<function>3</function>
+				<start_addr>1238</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltageab2">
+				<function>3</function>
+				<start_addr>1239</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagebc2">
+				<function>3</function>
+				<start_addr>1240</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltageca2">
+				<function>3</function>
+				<start_addr>1241</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagean2">
+				<function>3</function>
+				<start_addr>1242</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagebn2">
+				<function>3</function>
+				<start_addr>1243</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagecn2">
+				<function>3</function>
+				<start_addr>1244</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1currenta2">
+				<function>3</function>
+				<start_addr>1245</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1currentb2">
+				<function>3</function>
+				<start_addr>1246</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1currentc2">
+				<function>3</function>
+				<start_addr>1247</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2frequency2">
+				<function>3</function>
+				<start_addr>1251</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2powerfactor2">
+				<function>3</function>
+				<start_addr>1252</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2apparentpower2">
+				<function>3</function>
+				<start_addr>1253</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2realpower2">
+				<function>3</function>
+				<start_addr>1254</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2reactivepower2">
+				<function>3</function>
+				<start_addr>1255</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltageab2">
+				<function>3</function>
+				<start_addr>1256</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagebc2">
+				<function>3</function>
+				<start_addr>1257</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltageca2">
+				<function>3</function>
+				<start_addr>1258</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagean2">
+				<function>3</function>
+				<start_addr>1259</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagebn2">
+				<function>3</function>
+				<start_addr>1260</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagecn2">
+				<function>3</function>
+				<start_addr>1261</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2currenta2">
+				<function>3</function>
+				<start_addr>1262</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2currentb2">
+				<function>3</function>
+				<start_addr>1263</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2currentc2">
+				<function>3</function>
+				<start_addr>1264</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<!-- ats 3 -->
+			<value_ref_id valid="atsdevicetype3">
+				<function>3</function>
+				<start_addr>1308</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsdevicestatus3">
+				<function>3</function>
+				<start_addr>1310</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsnfpa1103">
+				<function>3</function>
+				<start_addr>1315</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsextended3">
+				<function>3</function>
+				<start_addr>1316</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsfrequency3">
+				<function>3</function>
+				<start_addr>1317</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atspowerfactor3">
+				<function>3</function>
+				<start_addr>1318</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsapparentpower3">
+				<function>3</function>
+				<start_addr>1319</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsrealpower3">
+				<function>3</function>
+				<start_addr>1320</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsreactivepower3">
+				<function>3</function>
+				<start_addr>1321</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltageab3">
+				<function>3</function>
+				<start_addr>1322</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagebc3">
+				<function>3</function>
+				<start_addr>1323</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltageca3">
+				<function>3</function>
+				<start_addr>1324</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagean3">
+				<function>3</function>
+				<start_addr>1325</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagebn3">
+				<function>3</function>
+				<start_addr>1326</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagecn3">
+				<function>3</function>
+				<start_addr>1327</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atscurrenta3">
+				<function>3</function>
+				<start_addr>1328</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atscurrentb3">
+				<function>3</function>
+				<start_addr>1329</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atscurrentc3">
+				<function>3</function>
+				<start_addr>1330</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1frequency3">
+				<function>3</function>
+				<start_addr>1334</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1powerfactor3">
+				<function>3</function>
+				<start_addr>1335</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1apparentpower3">
+				<function>3</function>
+				<start_addr>1336</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1realpower3">
+				<function>3</function>
+				<start_addr>1337</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1reactivepower3">
+				<function>3</function>
+				<start_addr>1338</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltageab3">
+				<function>3</function>
+				<start_addr>1339</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagebc3">
+				<function>3</function>
+				<start_addr>1340</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltageca3">
+				<function>3</function>
+				<start_addr>1341</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagean3">
+				<function>3</function>
+				<start_addr>1342</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagebn3">
+				<function>3</function>
+				<start_addr>1343</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagecn3">
+				<function>3</function>
+				<start_addr>1344</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1currenta3">
+				<function>3</function>
+				<start_addr>1345</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1currentb3">
+				<function>3</function>
+				<start_addr>1346</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1currentc3">
+				<function>3</function>
+				<start_addr>1347</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2frequency3">
+				<function>3</function>
+				<start_addr>1351</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2powerfactor3">
+				<function>3</function>
+				<start_addr>1352</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2apparentpower3">
+				<function>3</function>
+				<start_addr>1353</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2realpower3">
+				<function>3</function>
+				<start_addr>1354</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2reactivepower3">
+				<function>3</function>
+				<start_addr>1355</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltageab3">
+				<function>3</function>
+				<start_addr>1356</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagebc3">
+				<function>3</function>
+				<start_addr>1357</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltageca3">
+				<function>3</function>
+				<start_addr>1358</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagean3">
+				<function>3</function>
+				<start_addr>1359</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagebn3">
+				<function>3</function>
+				<start_addr>1360</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagecn3">
+				<function>3</function>
+				<start_addr>1361</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2currenta3">
+				<function>3</function>
+				<start_addr>1362</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2currentb3">
+				<function>3</function>
+				<start_addr>1363</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2currentc3">
+				<function>3</function>
+				<start_addr>1364</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<!-- ats 4 -->
+			<value_ref_id valid="atsdevicetype4">
+				<function>3</function>
+				<start_addr>1408</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsdevicestatus4">
+				<function>3</function>
+				<start_addr>1410</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsnfpa1104">
+				<function>3</function>
+				<start_addr>1415</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsextended4">
+				<function>3</function>
+				<start_addr>1416</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsfrequency4">
+				<function>3</function>
+				<start_addr>1417</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atspowerfactor4">
+				<function>3</function>
+				<start_addr>1418</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsapparentpower4">
+				<function>3</function>
+				<start_addr>1419</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsrealpower4">
+				<function>3</function>
+				<start_addr>1420</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsreactivepower4">
+				<function>3</function>
+				<start_addr>1421</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltageab4">
+				<function>3</function>
+				<start_addr>1422</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagebc4">
+				<function>3</function>
+				<start_addr>1423</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltageca4">
+				<function>3</function>
+				<start_addr>1424</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagean4">
+				<function>3</function>
+				<start_addr>1425</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagebn4">
+				<function>3</function>
+				<start_addr>1426</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atsvoltagecn4">
+				<function>3</function>
+				<start_addr>1427</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atscurrenta4">
+				<function>3</function>
+				<start_addr>1428</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atscurrentb4">
+				<function>3</function>
+				<start_addr>1429</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atscurrentc4">
+				<function>3</function>
+				<start_addr>1430</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1frequency4">
+				<function>3</function>
+				<start_addr>1434</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1powerfactor4">
+				<function>3</function>
+				<start_addr>1435</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1apparentpower4">
+				<function>3</function>
+				<start_addr>1436</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1realpower4">
+				<function>3</function>
+				<start_addr>1437</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1reactivepower4">
+				<function>3</function>
+				<start_addr>1438</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltageab4">
+				<function>3</function>
+				<start_addr>1439</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagebc4">
+				<function>3</function>
+				<start_addr>1440</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltageca4">
+				<function>3</function>
+				<start_addr>1441</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagean4">
+				<function>3</function>
+				<start_addr>1442</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagebn4">
+				<function>3</function>
+				<start_addr>1443</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1voltagecn4">
+				<function>3</function>
+				<start_addr>1444</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1currenta4">
+				<function>3</function>
+				<start_addr>1445</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1currentb4">
+				<function>3</function>
+				<start_addr>1446</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource1currentc4">
+				<function>3</function>
+				<start_addr>1447</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2frequency4">
+				<function>3</function>
+				<start_addr>1451</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2powerfactor4">
+				<function>3</function>
+				<start_addr>1452</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2apparentpower4">
+				<function>3</function>
+				<start_addr>1453</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2realpower4">
+				<function>3</function>
+				<start_addr>1454</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2reactivepower4">
+				<function>3</function>
+				<start_addr>1455</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltageab4">
+				<function>3</function>
+				<start_addr>1456</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagebc4">
+				<function>3</function>
+				<start_addr>1457</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltageca4">
+				<function>3</function>
+				<start_addr>1458</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagean4">
+				<function>3</function>
+				<start_addr>1459</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagebn4">
+				<function>3</function>
+				<start_addr>1460</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2voltagecn4">
+				<function>3</function>
+				<start_addr>1461</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2currenta4">
+				<function>3</function>
+				<start_addr>1462</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2currentb4">
+				<function>3</function>
+				<start_addr>1463</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+			<value_ref_id valid="atssource2currentc4">
+				<function>3</function>
+				<start_addr>1464</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<!-- Bulk read for performance. -->
+
+			<!-- gen map -->
+			<packet>
+				<function>3</function>
+				<start_addr>8</start_addr>
+				<quantity>41</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>108</start_addr>
+				<quantity>41</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>208</start_addr>
+				<quantity>41</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>308</start_addr>
+				<quantity>41</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>408</start_addr>
+				<quantity>41</quantity>
+			</packet>
+
+			<!-- ats map -->
+			<packet>
+				<function>3</function>
+				<start_addr>1008</start_addr>
+				<quantity>60</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>1108</start_addr>
+				<quantity>60</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>1208</start_addr>
+				<quantity>60</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>1308</start_addr>
+				<quantity>60</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>1408</start_addr>
+				<quantity>60</quantity>
+			</packet>
+		</modbus>
+	</protocol>
+</APC_DDF>

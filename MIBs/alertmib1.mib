@@ -1,0 +1,1387 @@
+ALERT-MIB DEFINITIONS ::= BEGIN
+
+-- For use with Sensorsoft Alert SNMP Agent, Version 1.0.XX
+-- Released Mar 31, 2006
+-- Copyright (C) 2004-2006 Sensorsoft Corporation, All rights reserved.
+
+
+IMPORTS
+	enterprises
+		FROM RFC1155-SMI
+	OBJECT-TYPE
+		FROM RFC-1212
+	TRAP-TYPE
+		FROM RFC-1215
+	IpAddress
+		FROM RFC1155-SMI;
+
+-- the Sensorsoft tree off iso(1).organization(3).dod(6).internet(1).private(4).enterprises(1)
+sensorsoft OBJECT IDENTIFIER ::= {enterprises 15848}
+
+-- the first alert holder object off the sensorsoft sub-tree
+alert OBJECT IDENTIFIER ::= {sensorsoft 1}
+		
+-- data held by Sensorsoft Alert device
+
+
+ssUnitLocation OBJECT-TYPE
+	SYNTAX OCTET STRING(SIZE(0..300))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The physical location of the Sensorsoft Alert unit."
+	::= {alert 1}
+
+ssUnitModelNumber OBJECT-TYPE
+	SYNTAX OCTET STRING
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"The model number of the Sensorsoft Alert unit."
+	::= {alert 2}
+
+ssSoftwareVersion OBJECT-TYPE
+	SYNTAX OCTET STRING
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"The version number of the software on the Sensorsoft Alert Unit."
+	::= {alert 3}
+
+
+ssNumberOfPorts OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"The number of serial ports on the Sensorsoft Alert unit."
+	::= {alert 4}
+
+
+
+ssTrapDestination1 OBJECT-TYPE
+	SYNTAX IpAddress
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The destination IP address for sending traps to the first NMS."
+	::= {alert 5}
+
+ssTrapDestination2 OBJECT-TYPE
+	SYNTAX IpAddress
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The destination IP address for sending traps to the second NMS."
+	::= {alert 6}
+
+ssPrimarySMTPServer OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..100))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the address of the primary SMTP server that will be used to send email alerts."
+	::= {alert 7}
+
+ssSecondarySMTPServer OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..100))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the address of the secondary SMTP server that will only be used to send email alerts if the primary SMTP server fails."
+	::= {alert 8}
+
+ssEmailAlertSenderAddress OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..150))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the email address of the sender when an email alert is issued."
+	::= {alert 9}
+
+
+ssDeviceIndex OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The user-defined index to select a particular device. The device on the first port is 1, the device on the second port is 2 and so on. This index will affect the contents of all objects below."
+	::= {alert 10}
+
+
+ssDeviceModel OBJECT-TYPE
+	SYNTAX OCTET STRING(SIZE(0..50))
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"The model number of the currently indexed device."
+	::= {alert 11}
+
+
+ssDeviceLocation OBJECT-TYPE
+	SYNTAX OCTET STRING(SIZE(0..300))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The user-definable text describing the physical location of the currently indexed device."
+	::= {alert 12}
+
+
+ssDeviceDescription OBJECT-TYPE
+	SYNTAX OCTET STRING(SIZE(0..300))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The user-definable short description of the currently indexed device."
+	::= {alert 13}
+
+
+ssDeviceStatus OBJECT-TYPE
+	SYNTAX OCTET STRING(SIZE(0..50))
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"The status of the currently indexed device. The status can be Normal, TIMEOUT - Device not responding, OFFLINE - TCP connection problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED"
+	::= {alert 14}
+
+
+ssNumVariables OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"The total number of variables supported by the currently indexed device."
+	::= {alert 15}
+
+
+ssVarIndex OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The user-defined index to select a particular variable in the currently indexed device. This index should not be less than 1 or greater than ssNumVariables above. This index will affect the contents of all objects below."
+	::= {alert 16}
+
+
+ssVarName OBJECT-TYPE
+	SYNTAX OCTET STRING(SIZE(0..50))
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"The name of the currently indexed variable on the currently indexed device."
+	::= {alert 17}
+
+ssVarClass OBJECT-TYPE
+	SYNTAX OCTET STRING(SIZE(0..50))
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"The class (either boolean or scalar) of the currently indexed variable on the currently indexed device."
+	::= {alert 18}
+
+ssVarReadWriteCapability OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(2))
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"This indicates whether the currently indexed variable can be read or written (i.e. RO means read only, RW means read and write)."
+	::= {alert 19} 
+
+
+ssVarReading OBJECT-TYPE
+	SYNTAX OCTET STRING(SIZE(0..50))
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"The currently indexed variable's reading. The reading is either ssBooleanData or ssScalarData along with the ssUnitOfMeasure, depending on the ssVarClass of the currently indexed variable on the currently indexed device"
+	::= {alert 20}
+
+
+ssVarStatus OBJECT-TYPE
+	SYNTAX OCTET STRING(SIZE(0..50))
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"The status of the currently indexed variable. The status can be: Normal, Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status."
+	::= {alert 21}
+
+
+ssScalarData OBJECT-TYPE
+        SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The device's data, if the currently indexed variable on the currently indexed device is of the scalar class."
+	::= {alert 22}
+
+ssUnitOfMeasure OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(1))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The unit of measure for the scalar data. For example, if the currently indexed variable is a temperature reading, then the unit of measure will be either F for Fahrenheit or C for Celsius. Boolean variables do not have unit of measure."
+	::= {alert 23} 
+
+
+ssScalarCriticalHighLimit OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"If the currently indexed variable is of scalar class, then this represents the limit that the scalar data must reach, or rise above, before this variable enters Breach of Critical High Limit status."
+	::= {alert 24}
+
+
+ssScalarWarningHighLimit OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"If the currently indexed variable is of scalar class, then this represents the limit that the scalar data must reach, or rise above, before this variable enters Breach of Warning High status."
+	::= {alert 25}
+
+
+ssScalarWarningLowLimit OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"If the currently indexed variable is of scalar class, then this represents the limit that the scalar data must reach, or fall below, before this variable enters Breach of Warning Low status."
+	::= {alert 26}
+
+
+ssScalarCriticalLowLimit OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"If the currently indexed variable is of scalar class, then this represents the limit that the scalar data must reach, or fall below, before this variable enters Breach of Critical Low status."
+	::= {alert 27}
+
+
+ssBooleanData OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..50))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The device's data, in the form of a state string, if the currently indexed variable on the currently indexed device is of the boolean class. The string will correspond to either the ssBooleanOneStateString or ssBooleanZeroStateString objects."
+	::= {alert 28}
+
+
+ssBooleanOneStateString OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..50))
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"The device's one-state string, if the currently indexed variable is of the boolean class. (i.e ON, CLOSED, WET or PWR_FAIL). "
+	::= {alert 29}
+
+ssBooleanZeroStateString OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..50))
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"The device's zero-state string, if the currently indexed variable is of the boolean class. (i.e OFF, OPEN, DRY or PWR_OK). "
+	::= {alert 30}
+
+
+ssBooleanCriticalState OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..50))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The user-definable state string, if the currently indexed variable is of the boolean class. (This string must be the value of either ssBooleanOneStateString or ssBooleanZeroStateString, depending on which state you would like to be alerted on)."
+	::= {alert 31}
+
+
+ssTrapOnScalarCriticalEnable OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"A zero value disables this trap. A value of one enables this trap. When enabled, this trap is sent when the agent detects that the currently indexed variable on the currently indexed device enters a Breach of Critical High Limit status or Breach of Critical Low Limit status.  It will be sent periodically using the time interval in minutes specified by ssTrapOnScalarCriticalInterval."
+	::= {alert 32}
+
+
+ssTrapOnScalarCriticalInterval OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The time interval in minutes between traps when the agent detects that the currently indexed variable on the currently indexed device enters a Breach of Critical High Limit status or Breach of Critical Low Limit status."
+	::= {alert 33}
+
+ssTrapOnScalarWarningEnable OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"A zero value disables this trap. A value of one enables this trap. When enabled, this trap is sent when the agent detects that the currently indexed variable on the currently indexed device enters a Breach of Warning High Limit status or Breach of Warning Low Limit status.  It will be sent periodically using the time interval in minutes specified by ssTrapOnScalarWarningInterval."
+	::= {alert 34}
+
+
+ssTrapOnScalarWarningInterval OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The time interval in minutes between traps when the agent detects that the currently indexed variable on the currently indexed device enters a Breach of Warning High Limit status or Breach of Warning Low Limit status."
+	::= {alert 35}
+
+ssTrapOnBooleanCriticalEnable OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"A zero value disables this trap. A value of one enables this trap. When enabled, this trap is sent when the agent detects that the currently indexed variable on the currently indexed device enters a Breach of Boolean Critical Limit status.  It will be sent periodically using the time interval in minutes specified by ssTrapOnBooleanCriticalInterval."
+	::= {alert 36}
+
+
+
+ssTrapOnBooleanCriticalInterval OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The time interval in minutes between traps when the agent detects that the currently indexed variable on the currently indexed device enters a Breach of Boolean Critical Limit status."
+	::= {alert 37}
+
+ssTrapOnReturnToNormalEnable OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"A zero value disables this trap. Any other value enables the trap. When enabled, this trap is sent only once."
+	::= {alert 38}
+
+
+ssEmailOnScalarCriticalSubject OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..200))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the subject line of the email that will be sent when the currently indexed variable on the currently indexed device enters Breach of Critical High Limit status or Breach of Critical Low Limit status.  The subject line can also contain the dollar variables: $L, $U, $R, and $T. The dollar variable $L, will be expanded to the currently indexed device's location.  The dollar variable $U, will be expanded to the location of the Sensorsoft Alert unit.  The dollar variable $R, will be expanded into the reading of the currently indexed variable on the currently indexed device. The dollar variable $T, will be expanded into the current date and time."
+	::= {alert 39}
+
+
+ssEmailOnScalarCriticalMessage OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..250))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the email message that will be sent when the currently indexed variable on the currently indexed device enters Breach of Critical High Limit status or Breach of Critical Low Limit status. The message line can also contain the dollar variables: $L, $U, $R, $T and $N. The dollar variable $L, will be expanded to the currently indexed device's location.  The dollar variable $U, will be expanded to the location of the Sensorsoft Alert unit. The dollar variable $R, will be expanded into the reading of the currently indexed variable on the currently indexed device. The dollar variable $T, will be expanded into the current date and time.  Finally, the dollar variable $N, will be expanded into a newline character so that the message is easier to read"
+	::= {alert 40}
+
+
+
+ssEmailOnScalarCriticalAddresses OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..300))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is a comma separated list of email recipients that will be sent an email when the currently indexed variable on the currently indexed device enters Breach of Critical High Limit status or Breach of Critical Low Limit status. For example: user@yourcompany.com, user2@yourcompany.com."
+	::= {alert 41}
+
+ssEmailOnScalarCriticalEnable OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"A zero value disables this email alert. A value of one enables this email alert. When enabled, this email is sent when the currently indexed variable on the currently indexed device enters Breach of Critical High Limit status or Breach of Critical Low Limit status.  It will be sent periodically using the time interval in minutes specified by ssEmailOnScalarCriticalInterval."
+	::= {alert 42}
+
+ssEmailOnScalarCriticalInterval OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The time interval in minutes between emails when the currently indexed variable on the currently indexed device enters Breach of Critical High Limit status or Breach of Critical Low Limit status."
+	::= {alert 43}
+
+
+ssEmailOnScalarWarningSubject OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..200))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the subject line of the email that will be sent when the currently indexed variable on the currently indexed device enters Breach of Warning High Limit status or Breach of Warning Low Limit status.  The subject can also contain the dollar variables: $L, $U, $R, and $T. The dollar variable $L, will be expanded to the currently indexed device's location.  The dollar variable $U, will be expanded to the location of the Sensorsoft Alert unit.  The dollar variable $R, will be expanded into the reading of the currently indexed variable on the currently indexed device. The dollar variable $T, will be expanded into the current date and time."
+	::= {alert 44}
+
+
+ssEmailOnScalarWarningMessage OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..250))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the message of the email that will be sent when the currently indexed variable on the currently indexed device enters Breach of Warning High Limit status or Breach of Warning Low Limit status. The message line can also contain the dollar variables: $L, $U, $R, $T and $N. The dollar variable $L, will be expanded to the currently indexed device's location.  The dollar variable $U, will be expanded to the location of the Sensorsoft Alert unit.  The dollar variable $R, will be expanded into the currently indexed variable on the currently indexed device's current reading. The dollar variable $T, will be expanded into the current date and time.  Finally, the dollar variable $N, will be expanded into a newline character so that the message is easier to read"
+	::= {alert 45}
+
+
+ssEmailOnScalarWarningAddresses OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..300))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the comma separated list of email recipients that will be sent an email when the currently indexed variable on the currently indexed device enters Breach of Warning High Limit status or Breach of Warning Low Limit status. For example: user@yourcompany.com, user2@yourcompany.com."
+	::= {alert 46}
+
+ssEmailOnScalarWarningEnable OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"A zero value disables this email alert. A value of one enables this email alert. When enabled, this email is sent when the currently indexed variable on the currently indexed device enters Breach of Warning High Limit status or Breach of Warning Low Limit status.  It will be sent periodically using the time interval in minutes specified by ssEmailOnScalarWarningInterval."
+	::= {alert 47}
+
+ssEmailOnScalarWarningInterval OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The time interval in minutes between emails when the currently indexed variable on the currently indexed device enters Breach of Warning High Limit status or Breach of Warning Low Limit status."
+	::= {alert 48}
+
+ssEmailOnBooleanCriticalSubject OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..200))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the subject line of the email that will be sent when the currently indexed variable on the currently indexed device enters Breach of Boolean Critical Limit status.  The subject can also contain the dollar variables: $L, $U, $R, and $T. The dollar variable $L, will be expanded to the currently indexed device's location.  The dollar variable $U, will be expanded to the location of the Sensorsoft Alert unit.  The dollar variable $R, will be expanded into the currently indexed variable on the currently indexed device's current reading. The dollar variable $T, will be expanded into the current date and time."
+	::= {alert 49}
+
+
+ssEmailOnBooleanCriticalMessage OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..250))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the message of the email that will be sent when the currently indexed variable on the currently indexed device enters Breach of Boolean Critical Limit status.  The message line can also contain the dollar variables: $L, $U, $R, $T and $N. The dollar variable $L, will be expanded to the currently indexed device's location.  The dollar variable $U, will be expanded to the location of the Sensorsoft Alert unit.  The dollar variable $R, will be expanded into the currently indexed variable on the currently indexed device's current reading.  The dollar variable $T, will be expanded into the current date and time.  Finally, the dollar variable $N, will be expanded into a newline character so that the message is easier to read"
+	::= {alert 50}
+
+ssEmailOnBooleanCriticalAddresses OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..300))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is a comma separated list of email recipients that will be sent an email when the currently indexed variable on the currently indexed device enters Breach of Boolean Critical Limit status.  For example: user@yourcompany.com, user2@yourcompany.com."
+	::= {alert 51}
+
+
+ssEmailOnBooleanCriticalEnable OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"A zero value disables this email alert. A value of one enables this email alert. When enabled, this email is sent when the currently indexed variable on the currently indexed device enters Breach of Boolean Critical Limit status.  It will be sent periodically using the time interval in minutes specified by ssEmailOnBooleanCriticalInterval."
+	::= {alert 52}
+
+
+ssEmailOnBooleanCriticalInterval OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The time interval in minutes between emails when the currently indexed variable on the currently indexed device enters Breach of Boolean Critical Limit status."
+	::= {alert 53}
+
+
+ssEmailOnReturnToNormalSubject OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..200))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the subject line of the email that will be sent when the currently indexed variable on the currently indexed device enters Returned To Normal status. The subject can also contain the dollar variables: $L, $U, $R, and $T. The dollar variable $L, will be expanded to the currently indexed device's location.  The dollar variable $U, will be expanded to the location of the Sensorsoft Alert unit.  The dollar variable $R, will be expanded into the currently indexed variable on the currently indexed device's current reading. The dollar variable $T, will be expanded into the current date and time."
+	::= {alert 54}
+
+
+ssEmailOnReturnToNormalMessage OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..250))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the message of the email that will be sent when the currently indexed variable on the currently indexed device enters Returned To Normal status.  The message line can also contain the dollar variables: $L, $U, $R, $T and $N. The dollar variable $L, will be expanded to the currently indexed device's location.  The dollar variable $U, will be expanded to the location of the Sensorsoft Alert unit.  The dollar variable $R, will be expanded into the currently indexed variable on the currently indexed device's current reading. The dollar variable $T, will be expanded into the current date and time.  Finally, the dollar variable $N, will be expanded into a newline character so that the message is easier to read"
+	::= {alert 55}
+
+
+ssEmailOnReturnToNormalAddresses OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..300))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is a comma separated list of email recipients that will be sent an email when the currently indexed variable on the currently indexed device enters Returned To Normal status."
+	::= {alert 56}
+
+
+ssEmailOnReturnToNormalEnable OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"A zero value disables this email alert. Any other value enables this email alert. When enabled, this alert is sent only once."
+	::= {alert 57}
+
+
+ssCommandOnScalarCriticalHigh OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..300))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the command-line string that will be executed by the shell when the currently indexed variable on the currently indexed device enters Breach of Critical High Limit status."
+	::= {alert 58}
+
+
+ssCommandOnScalarCriticalHighEnable OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"A zero value disables this command line alert. A value of one enables this command line alert. When enabled, this command line is executed when the currently indexed variable on the currently indexed device enters Breach of Critical High Limit status.  It will be sent periodically using the time interval in minutes specified by ssCommandOnScalarCriticalHighInterval."
+	::= {alert 59}
+
+ssCommandOnScalarCriticalHighInterval OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The time interval in minutes between command line execution when the currently indexed variable on the currently indexed device enters Breach of Critical High Limit status."
+	::= {alert 60}
+
+
+
+ssCommandOnScalarWarningHigh OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..300))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the command-line string that will be executed by the shell when the currently indexed variable on the currently indexed device enters Breach of Warning High Limit status."
+	::= {alert 61}
+
+ssCommandOnScalarWarningHighEnable OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"A zero value disables this command line alert. A value of one enables this command line alert. When enabled, this command line is executed when the currently indexed variable on the currently indexed device enters Breach of Warning High Limit status.  It will be sent periodically using the time interval in minutes specified by ssCommandOnScalarWarningHighInterval."
+	::= {alert 62}
+
+ssCommandOnScalarWarningHighInterval OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The time interval in minutes between command line execution when the currently indexed variable enters Breach of Warning High Limit status."
+	::= {alert 63}
+
+
+ssCommandOnScalarWarningLow OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..300))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the command-line string that will be executed by the shell when the currently indexed variable on the currently indexed device enters Breach of Warning Low Limit status."
+	::= {alert 64}
+
+ssCommandOnScalarWarningLowEnable OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"A zero value disables this command line alert. A value of one enables this command line alert. When enabled, this command line is executed when the currently indexed variable on the currently indexed device enters Breach of Warning Low Limit status.  It will be sent periodically using the time interval in minutes specified by ssCommandOnScalarWarningLowInterval."
+	::= {alert 65}
+
+ssCommandOnScalarWarningLowInterval OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The time interval in minutes between command line execution when the currently indexed variable enters Breach of Warning Low Limit status."
+	::= {alert 66}
+
+ssCommandOnScalarCriticalLow OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..300))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the command-line string that will be executed by the shell when the currently indexed variable on the currently indexed device enters Breach of Critical Low Limit status."
+	::= {alert 67}
+
+ssCommandOnScalarCriticalLowEnable OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"A zero value disables this command line alert. A value of one enables this command line alert. When enabled, this command line is executed when the currently indexed variable on the currently indexed device enters Breach of Critical Low Limit status.  It will be sent periodically using the time interval in minutes specified by ssCommandOnScalarCriticalLowInterval."
+	::= {alert 68}
+
+
+ssCommandOnScalarCriticalLowInterval OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The time interval in minutes between command line execution when the currently indexed variable enters Breach of Critical Low Limit status."
+	::= {alert 69}
+
+
+ssCommandOnBooleanCritical OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..300))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the command-line string that will be executed by the shell when the currently indexed variable on the currently indexed device enters Breach of Boolean Critical Limit status."
+	::= {alert 70}
+
+ssCommandOnBooleanCriticalEnable OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"A zero value disables this command line alert. A value of one enables this command line alert. When enabled, this command line is executed when the currently indexed variable on the currently indexed device enters Breach of Boolean Critical Limit status.  It will be sent periodically using the time interval in minutes specified by ssCommandOnBooleanCriticalInterval."
+	::= {alert 71}
+
+
+ssCommandOnBooleanCriticalInterval OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"The time interval in minutes between command line execution when the currently indexed variable enters Breach of Boolean Critical Limit status. A zero value disables this command."
+	::= {alert 72}
+
+
+ssCommandOnReturnToNormal OBJECT-TYPE
+       	SYNTAX OCTET STRING(SIZE(0..300))
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"This is the command-line string that will be executed by the shell when the currently indexed variable on the currently indexed device enters Returned To Normal status."
+	::= {alert 73}
+
+
+ssCommandOnReturnToNormalEnable OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"A zero value disables this command alert. Any other value enables this command alert. When enabled, this alert is sent only once."
+	::= {alert 74}
+
+
+
+
+alerttraps OBJECT IDENTIFIER ::= {sensorsoft 2}
+
+port1EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 1
+
+
+port2EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 2
+
+
+port3EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 3
+
+
+
+port4EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 4
+
+
+port5EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 5
+
+
+port6EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 6
+
+
+port7EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 7
+
+
+
+port8EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 8
+
+port9EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 9
+
+port10EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 10
+
+port11EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 11
+
+port12EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 12
+
+port13EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 13
+
+
+
+port14EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 14
+
+
+port15EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 15
+
+
+
+port16EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 16
+
+
+port17EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 17
+
+
+
+port18EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 18
+
+port19EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 19
+
+port20EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 20
+
+
+port21EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 21
+
+port22EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 22
+
+
+port23EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 23
+
+
+
+port24EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 24
+
+port25EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 25
+
+
+
+port26EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 26
+
+
+port27EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 27
+
+
+
+port28EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 28
+
+port29EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 29
+
+port30EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 30
+
+
+port31EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 31
+
+port32EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 32
+
+
+port33EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 33
+
+
+
+port34EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 34
+
+port35EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 35
+
+
+port36EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 36
+
+
+port37EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 37
+
+
+port38EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 38
+
+port39EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 39
+
+port40EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 40
+
+port41EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 41
+
+
+port42EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 42
+
+
+port43EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 43
+
+
+port44EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 44
+
+port45EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 45
+
+
+
+port46EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 46
+
+
+port47EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 47
+
+port48EventTrap TRAP-TYPE
+	ENTERPRISE alerttraps
+	VARIABLES {ssUnitLocation,
+                   ssDeviceLocation,
+                   ssDeviceIndex,
+                   ssDeviceStatus,
+                   ssVarIndex,
+                   ssVarStatus,
+		   ssVarReading
+                  }
+	DESCRIPTION
+	"This trap will be sent by the agent if an event occurs on this port. An event can be either device-specific or variable-specific. device-specific events include: TIMEOUT - Device Not Responding, OFFLINE - TCP Connection Problem, LOW VOLTAGE, EEPROM FAILURE or TAMPER DETECTED. The Device that caused the event can be determined by the ssDeviceIndex variable.  The actual status is given in the ssDeviceStatus variable. Variable-specific events occur on the variable (indicated by ssVarIndex) on the Device (indicated by ssDeviceIndex). These variable-specific events include: Breach of Boolean Critical Limit, Breach of Critical High Limit, Breach of Critical Low Limit, Breach of Warning Low Limit, Breach of Warning High Limit and Returned to Normal status. The actual variable-specific event that occurred is indicated by the  variable ssVarStatus."
+	::= 48
+
+
+
+END

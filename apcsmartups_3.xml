@@ -1,0 +1,4864 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- <?xml version="1.0"?> -->
+<!-- APC SmartUPS related information -->
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_2.xsd"
+         ddfid="apcsmartups" ddfname="APC SmartUPS" ddfversion="99" canremove="yes">
+  <schemaVersion>1.4</schemaVersion>
+	
+	<!-- APC UPS MIB generic device information - better than discovery at model/serial -->
+	<device deviceid="apcupsdata">
+		<oidMustExist ruleid="upsmodeltest" oid=".1.3.6.1.4.1.318.1.1.1.1.1.1.0"/>
+		<suppressRule ruleid="stompupsmibvendor" suppressid="upsmib/upsmibdiscdata/vendordata"/>
+		<setProductData ruleid="vendordata" field="vendor">American Power Conversion</setProductData>
+		<!-- Put serial number in product field -->
+		<suppressRule ruleid="stompdiscserialnum" suppressid="core/apcdiscdata/serialnum"/>
+		<suppressRule ruleid="stompdiscserialnum2" suppressid="core/apcdiscdata/serialnum2"/>
+		<setProductData ruleid="serialnum" field="apc_serial_num">
+			<getOid>.1.3.6.1.4.1.318.1.1.1.1.2.3.0</getOid>
+		</setProductData>
+		<setProductData ruleid="serialnum2" field="serial_num">
+			<getOid>.1.3.6.1.4.1.318.1.1.1.1.2.3.0</getOid>
+		</setProductData>
+	</device>
+  
+	<device deviceid="apcupsmodeldata">
+		<!-- devices that should not use the UpsBasicIdentModel -->
+		<oidMustNotMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+			<valueList>
+				<value>.1.3.6.1.4.1.318.1.3.23.1</value> <!-- Symmetra PX48 -->
+				<value>.1.3.6.1.4.1.318.1.3.23.2</value> <!-- Symmetra PX160 -->
+				<value>.1.3.6.1.4.1.318.1.3.23.5</value> <!-- Symmetra PX100 -->
+			</valueList>
+		</oidMustNotMatch>
+		<oidMustExist ruleid="upsmodeltest" oid=".1.3.6.1.4.1.318.1.1.1.1.1.1.0"/>
+		<suppressRule ruleid="stompdiscmodel" suppressid="core/apcdiscdata/modeldata"/>
+		<suppressRule ruleid="stompmib2model" suppressid="core/mib2data/modeldata"/>
+		<suppressRule ruleid="stompupsmibmodel" suppressid="upsmib/upsmibdiscdata/modeldata"/>
+		<!-- Replace model data with model from UPS MIB -->
+		<setProductData ruleid="modeldata" field="model">
+			<getOid>.1.3.6.1.4.1.318.1.1.1.1.1.1.0</getOid>
+		</setProductData>
+	</device>
+  
+	<!-- set the model type for misc UPS models not in oids.properties for ISXC 5.x -->
+	<device deviceid="undefinded_ups_models">
+		<oidMustMatch ruleid="apc_ups_sysobjid" oid=".1.3.6.1.2.1.1.2.0">
+			<valueList>
+				<value>.1.3.6.1.4.1.318.1.3.17.*</value> <!-- SUVT subtypes (covers MSTAR types) -->
+				<value>.1.3.6.1.4.1.318.1.3.27</value> <!-- Microlink UPS -->
+				<value>.1.3.6.1.4.1.318.1.3.27.*</value> <!-- Microlink UPS subtypes -->
+				<value>.1.3.6.1.4.1.318.1.3.28</value> <!-- Proxima UPS -->
+				<value>.1.3.6.1.4.1.318.1.3.28.*</value> <!-- Proxima UPS subtypes -->
+				<value>.1.3.6.1.4.1.318.1.3.23.5</value> <!-- PX2 NAM -->
+				<value>.1.3.6.1.4.1.318.1.3.30</value> <!-- EPS UPS -->
+				<value>.1.3.6.1.4.1.318.1.3.30.*</value> <!-- EPS UPS subtypes -->
+			</valueList>
+		</oidMustMatch>
+		<suppressRule ruleid="stomptype" suppressid="core/mib2data/typedata"/>
+		<setProductData ruleid="typedata" field="type">UPS</setProductData>
+	</device>
+  
+	<!-- PX2 discoveryLabelString is more descriptive than discoveryModel -->
+	<device deviceid="symmetra_px_devstatus_labeling">
+		<oidMustMatch ruleid="apc_ups_sysobjid" oid=".1.3.6.1.2.1.1.2.0">
+			<valueList>
+				<value>.1.3.6.1.4.1.318.1.3.23.1</value> <!-- Symmetra PX48 -->
+				<value>.1.3.6.1.4.1.318.1.3.23.2</value> <!-- Symmetra PX160 -->
+				<value>.1.3.6.1.4.1.318.1.3.23.5</value> <!-- Symmetra PX100 -->
+			</valueList>
+		</oidMustMatch>
+	
+		<!-- Update status sensor for general device state using apcdiscoverylabel-->
+		<suppressRule ruleid="stompdiscstatus" suppressid="core/apcdiscdatastate/apcDiscoveryStatus_row1"/>
+		<stateSensor ruleid="apcDiscoveryStatus_row1" index=".1.3.6.1.4.1.318.1.4.2.2.1.1">
+			<type>devstatus</type>
+			<sensorId>DEVSTATUS_<rowIndex/></sensorId>
+			<value>
+				<mapValue mapid="core/apcdiscdatastate/devstatus-to-index">
+					<getRowOid>.1.3.6.1.4.1.318.1.4.2.2.1.4</getRowOid>
+				</mapValue>
+			</value>
+			<label>Device Status -<space/><getRowOid>.1.3.6.1.4.1.318.1.4.2.2.1.5</getRowOid></label>
+			<sensorSet>default</sensorSet>
+		</stateSensor>
+	</device>
+  
+	<!-- SmartUPS specific functionality -->
+  <device deviceid="smartups">
+	<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+	  <valueList>
+	    <value>.1.3.6.1.4.1.311.1.1.*</value><!--PCBE Windows-->
+		<value>.1.3.6.1.4.1.318.1.3.2</value> <!-- Arakni -->
+		<value>.1.3.6.1.4.1.318.1.3.2.*</value> <!-- Other SmartUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.3</value> <!-- MatrixUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.3.*</value> <!-- Other MatrixUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.5</value> <!-- Symmetra -->
+		<value>.1.3.6.1.4.1.318.1.3.5.*</value> <!-- Other Symmetra -->
+		<value>.1.3.6.1.4.1.318.1.3.6.*</value> <!-- SmartUPS DP -->
+		<value>.1.3.6.1.4.1.318.1.3.6</value> <!-- SmartUPS DP -->
+		<value>.1.3.6.1.4.1.318.1.3.7.*</value> <!-- SmartUPS DP300E -->
+		<value>.1.3.6.1.4.1.318.1.3.7</value> <!-- SmartUPS DP300E -->
+		<value>.1.3.6.1.4.1.318.1.3.13.*</value> <!-- Other Symmetra 3P -->
+		<value>.1.3.6.1.4.1.318.1.3.13</value> <!-- Symmetra 3P -->
+		<value>.1.3.6.1.4.1.318.1.3.16.*</value> <!-- Other AIS5000 -->
+		<value>.1.3.6.1.4.1.318.1.3.16</value> <!-- AIS5000 -->
+		<value>.1.3.6.1.4.1.318.1.3.17</value> <!-- SmartUPS VT -->
+		<value>.1.3.6.1.4.1.318.1.3.17.*</value> <!-- Other SmartUPS VT -->
+		<value>.1.3.6.1.4.1.318.1.3.21.*</value> <!-- GUTOR -->
+		<value>.1.3.6.1.4.1.318.1.3.21</value> <!-- GUTOR -->
+		<value>.1.3.6.1.4.1.318.1.3.23.1</value> <!-- PX48K -->
+		<value>.1.3.6.1.4.1.318.1.3.23.5</value> <!-- PX100K -->
+        <value>.1.3.6.1.4.1.318.1.3.27</value> <!-- Microlink -->
+		<value>.1.3.6.1.4.1.318.1.3.27.*</value> <!-- Other Microlink -->
+		<value>.1.3.6.1.4.1.318.1.3.28</value> <!-- Galaxy -->
+		<value>.1.3.6.1.4.1.318.1.3.28.*</value> <!-- Other Galaxy -->
+		<value>.1.3.6.1.4.1.318.1.3.30</value> <!-- EPS UPS -->
+		<value>.1.3.6.1.4.1.318.1.3.30.*</value> <!-- EPS UPS subtypes -->
+		<value>.1.3.6.1.4.1.318.1.3.8.4.1.3.2.*</value> <!-- RMD1 -->
+		<value>.1.3.6.1.4.1.318.1.3.8.4.1.3.5.*</value> <!-- RMSY -->
+	  </valueList>
+	</oidMustMatch>
+	<oidMustExist ruleid="battstattest" oid=".1.3.6.1.4.1.318.1.1.1.2.1.1.0"/>
+	<!-- set input and output phase counts for UPS -->
+	<setProductData ruleid="inputphasecount" field="inputphasecount">1</setProductData>
+	<setProductData ruleid="outputphasecount" field="outputphasecount">1</setProductData>
+	
+		<!-- Add basic battery status	-->
+	<suppressRule ruleid="stompupsmibbattstatus" suppressid="upsmib/upsmib/upsBatteryStatus"/>
+	<stateSensor ruleid="batterystate">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.2.1.1.0</getOid>
+		</mapValue>
+	  </rowTest>
+	  <type>battstatus</type>
+	  <sensorId>BATTSTATUS</sensorId>
+	  <value>
+		<mapValue mapid="battstatus-to-index">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.2.1.1.0</getOid>
+		</mapValue>
+	  </value>
+	  <label>Battery Status</label>
+	  <sensorSet>UPS Battery Status</sensorSet>
+	</stateSensor>
+	
+		<!-- Time running on battery -->
+	<suppressRule ruleid="stompupsSecondsOnBattery" suppressid="upsmib/upsmib/upsSecondsOnBattery"/>
+	<numSensor ruleid="timeonbatt">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.2.1.2.0</getOid>
+		</mapValue>
+	  </rowTest>
+	  <type>timeinmin/timeonbatt</type>
+	  <sensorId>TIME_ON_BATT</sensorId>
+	  <value>
+		<round increment="0.1">
+		  <div>
+			<op>
+			  <getOid>.1.3.6.1.4.1.318.1.1.1.2.1.2.0</getOid>
+			</op>
+			<op>6000</op>
+		  </div>
+		</round>
+	  </value>
+	  <minValue>0</minValue>
+	  <label>Time Running on Battery</label>
+	  <sensorSet>UPS Battery Status</sensorSet>
+	</numSensor>
+	
+		<!-- UPS age -->
+	<numSensor ruleid="upsage">
+	  <type>timeindays/upsage</type>
+	  <sensorId>UPS_AGE</sensorId>
+	  <value>
+		<round increment="1">
+		  <div>
+			<op>
+			  <sub>
+				<op>
+				  <curUTCTime/>
+				</op>
+				<op>
+				  <parseDate>
+					<getOid>.1.3.6.1.4.1.318.1.1.1.1.2.2.0</getOid>
+				  </parseDate>
+				</op>
+			  </sub>
+			</op>
+			<op>86400</op>
+		  </div>
+		</round>
+	  </value>
+	  <minValue>0</minValue>
+	  <valueInc>1</valueInc>
+	  <label>UPS Age</label>
+	  <sensorSet>default</sensorSet>
+	</numSensor>
+	
+		<!-- Battery age -->
+	<numSensor ruleid="battage">
+	  <type>timeindays/batteryage</type>
+	  <sensorId>BATT_AGE</sensorId>
+	  <value>
+		<round increment="1">
+		  <div>
+			<op>
+			  <sub>
+				<op>
+				  <curUTCTime/>
+				</op>
+				<op>
+				  <parseDate>
+					<getOid>.1.3.6.1.4.1.318.1.1.1.2.1.3.0</getOid>
+				  </parseDate>
+				</op>
+			  </sub>
+			</op>
+			<op>86400</op>
+		  </div>
+		</round>
+	  </value>
+	  <minValue>0</minValue>
+	  <valueInc>1</valueInc>
+	  <label>Battery Age</label>
+	  <sensorSet>UPS Battery Status</sensorSet>
+	</numSensor>
+	
+		<!-- Percent of battery remaining -->
+	<suppressRule ruleid="stompupsEstimatedChargeRemaining" suppressid="upsmib/upsmib/upsEstimatedChargeRemaining"/>
+	<numSensor ruleid="pctofbatt">
+	  <type>pctofcapacity/pctofbatt</type>
+	  <sensorId>BATT_CAPACITY_LEFT</sensorId>
+	  <value>
+       <formatNumber printffmt="%f">
+		    <getOid>.1.3.6.1.4.1.318.1.1.1.2.2.1.0</getOid>
+       </formatNumber>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>Battery Capacity Remaining</label>
+	  <sensorSet>UPS Battery Status</sensorSet>
+	</numSensor>
+
+	<!-- Battery temperature -->
+	<suppressRule ruleid="stompupsBatteryTemperature" suppressid="upsmib/upsmib/upsBatteryTemperature"/>
+	<numSensor ruleid="tmpofbatt">
+		<type>temp/batttemp</type>
+		<sensorId>BATT_TEMP</sensorId>
+		<value>
+			<getOid>.1.3.6.1.4.1.318.1.1.1.2.2.2.0</getOid>
+		</value>
+		<valueInc>1</valueInc>
+		<label>Battery Temperature</label>
+		<sensorSet>UPS Battery Status</sensorSet>
+	</numSensor>
+	
+	<!-- Added for VALHAL-5981 - temps for individual battery frames -->
+	<suppressRule ruleid="stompupsBatteryTemperature" suppressid="upsmib/upsmib/upsBatteryTemperature"/>
+	<numSensor ruleid="advancedbatterytemp" index=".1.3.6.1.4.1.318.1.1.1.2.2.22.1.1">
+		<rowTest>
+			<mapValue mapid="smartups/battery-frame-present">
+				<getRowOid>.1.3.6.1.4.1.318.1.1.1.2.2.22.1.2</getRowOid>
+			</mapValue>
+		</rowTest>
+		<type>temp/batttemp</type>
+		<sensorId>BATT_TEMP_<rowIndex/></sensorId>
+		<value>
+			<div>
+				<op><getRowOid>.1.3.6.1.4.1.318.1.1.1.2.2.22.1.3</getRowOid></op>
+				<op>10</op>
+			</div>
+		</value>
+		<valueInc>1</valueInc>
+		<label>Battery Temperature - Frame<space/>
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.2.2.22.1.1</getRowOid>
+		</label>
+		<sensorSet>UPS Battery Status</sensorSet>
+	</numSensor>
+
+	<valueMap ruleid="battery-frame-present">
+		<valueIn>0</valueIn><valueOut>[false]</valueOut>
+		<valueIn>1</valueIn><valueOut>[true]</valueOut>
+	</valueMap>
+		
+	
+		<!-- Time remaining on battery -->
+	<suppressRule ruleid="stompupsEstimatedMinutesRemaining" suppressid="upsmib/upsmib/upsEstimatedMinutesRemaining"/>
+	<numSensor ruleid="timeremainingonbatt">
+	  <type>timeinmin/timeremainingonbatt</type>
+	  <sensorId>TIME_REMAINING_ON_BATT</sensorId>
+	  <value>
+		<round increment="0.1">
+		  <div>
+			<op>
+			  <getOid>.1.3.6.1.4.1.318.1.1.1.2.2.3.0</getOid>
+			</op>
+			<op>6000</op>
+		  </div>
+		</round>
+	  </value>
+	  <label>Battery Time Remaining</label>
+	  <sensorSet>UPS Battery Status</sensorSet>
+	</numSensor>
+
+		<!-- Battery replacement status -->
+	<stateSensor ruleid="batteryreplace">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.2.2.4.0</getOid>
+		</mapValue>
+	  </rowTest>
+	  <type>battreplace</type>
+	  <sensorId>BATTREPLACE</sensorId>
+	  <value>
+		<mapValue mapid="battreplace-to-index">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.2.2.4.0</getOid>
+		</mapValue>
+	  </value>
+	  <label>Battery Replacement Status</label>
+	  <sensorSet>UPS Battery Status</sensorSet>
+	</stateSensor>
+
+		<!-- Battery voltage -->
+	<suppressRule ruleid="stompupsBatteryVoltage" suppressid="upsmib/upsmib/upsBatteryVoltage"/>
+	<suppressRule ruleid="stompupsBatteryCurrent" suppressid="upsmib/upsmib/upsBatteryCurrent"/>
+	<numSensor ruleid="battvoltage">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.2.2.8.0</getOid>
+		</mapValue>
+	  </rowTest>
+	  <type>voltage/battvoltage</type>
+	  <sensorId>BATT_VOLTAGE</sensorId>
+	  <value>
+		<getOid>.1.3.6.1.4.1.318.1.1.1.2.2.8.0</getOid>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>Battery Voltage</label>
+	  <sensorSet>UPS Battery Status</sensorSet>
+	</numSensor>
+
+		<!-- Input voltage -->
+	<suppressRule ruleid="stompupsmibupsInputVoltage" suppressid="upsmib/upsmib/upsInputVoltage"/>
+	<suppressRule ruleid="stompupsmibupsInputCurrent" suppressid="upsmib/upsmib/upsInputCurrent"/>
+	<suppressRule ruleid="stompupsmibupsInputTruePower" suppressid="upsmib/upsmib/upsInputTruePower"/>
+	<suppressRule ruleid="stompupsmibupsBypassVoltage" suppressid="upsmib/upsmib/upsBypassVoltage"/>
+	<suppressRule ruleid="stompupsmibupsBypassCurrent" suppressid="upsmib/upsmib/upsBypassCurrent"/>
+	<suppressRule ruleid="stompupsmibupsBypassPower" suppressid="upsmib/upsmib/upsBypassPower"/>
+	<numSensor ruleid="inputvoltage">
+	  <type>voltage/inputvoltage</type>
+	  <sensorId>INPUT_VOLTAGE</sensorId>
+	  <value>
+		<getOid>.1.3.6.1.4.1.318.1.1.1.3.2.1.0</getOid>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>Input Voltage</label>
+	  <sensorSet>UPS Input Status</sensorSet>
+	</numSensor>
+
+		<!-- Max Input voltage -->
+	<numSensor ruleid="maxinputvoltage">
+	  <type>voltage/inputvoltage/max</type>
+	  <sensorId>MAX_INPUT_VOLTAGE</sensorId>
+	  <value>
+		<getOid>.1.3.6.1.4.1.318.1.1.1.3.2.2.0</getOid>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>Input Voltage (Max)</label>
+	  <sensorSet>UPS Input Status</sensorSet>
+	</numSensor>
+
+		<!-- Min Input voltage -->
+	<numSensor ruleid="mininputvoltage">
+	  <type>voltage/inputvoltage/max</type>
+	  <sensorId>MIN_INPUT_VOLTAGE</sensorId>
+	  <value>
+		<getOid>.1.3.6.1.4.1.318.1.1.1.3.2.3.0</getOid>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>Input Voltage (Min)</label>
+	  <sensorSet>UPS Input Status</sensorSet>
+	</numSensor>
+
+		<!-- Input freqency -->
+	<suppressRule ruleid="stompupsmibupsInputFrequency" suppressid="upsmib/upsmib/upsInputFrequency"/>
+	<suppressRule ruleid="stompupsmibupsBypassFrequency" suppressid="upsmib/upsmib/upsBypassFrequency"/>
+	<numSensor ruleid="inputfrequency">
+	  <type>frequency/inputfrequency</type>
+	  <sensorId>INPUT_FREQ</sensorId>
+	  <value>
+		<getOid>.1.3.6.1.4.1.318.1.1.1.3.2.4.0</getOid>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>Input Frequency</label>
+	  <sensorSet>UPS Input Status</sensorSet>
+	</numSensor>
+
+		<!-- Current output phase -->
+	<suppressRule ruleid="stompupsmibupsOutputSource" suppressid="upsmib/upsmib/upsOutputSource"/>
+	<stateSensor ruleid="outputphase">
+	  <type>phase/outputphase</type>
+	  <sensorId>OUTPUT_PHASE</sensorId>
+	  <value>
+		<mapValue mapid="phase-to-index">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.4.1.2.0</getOid>
+		</mapValue>
+	  </value>
+	  <label>Current Output Phase</label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</stateSensor>
+
+		<!-- Output voltage -->
+	<suppressRule ruleid="stompupsmibupsOutputVoltage" suppressid="upsmib/upsmib/upsOutputVoltage"/>
+	<suppressRule ruleid="stompupsmibupsOutputCurrent" suppressid="upsmib/upsmib/upsOutputCurrent"/>
+	<numSensor ruleid="outputvoltage">
+	  <type>voltage/outputvoltage</type>
+	  <sensorId>OUTPUT_VOLTAGE</sensorId>
+	  <value>
+		<getOid>.1.3.6.1.4.1.318.1.1.1.4.2.1.0</getOid>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>Output Voltage</label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+
+		<!-- Total energy used -->
+		<numSensor ruleid="total_energy_used">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.4.3.6.0</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kwatthr</type>
+			<sensorId>ENERGY_TOTAL_KWH</sensorId>
+			<value>
+				<mult>
+					<op>0.01</op>
+					<op><getOid>.1.3.6.1.4.1.318.1.1.1.4.3.6.0</getOid></op>
+				</mult>
+			</value>
+			<label>Total Output Energy Used</label>
+			<sensorSet>UPS Output Status</sensorSet>
+		</numSensor>
+		
+		<!-- Output freqency -->
+	<suppressRule ruleid="stompupsmibupsOutputFrequency" suppressid="upsmib/upsmib/upsOutputFrequency"/>
+	<numSensor ruleid="outputfrequency">
+	  <type>frequency/outputfrequency</type>
+	  <sensorId>OUTPUT_FREQ</sensorId>
+	  <value>
+		<getOid>.1.3.6.1.4.1.318.1.1.1.4.2.2.0</getOid>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>Output Frequency</label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+
+		<!-- Output Load (pct) -->
+	<suppressRule ruleid="stompupsmibupsOutputPower" suppressid="upsmib/upsmib/upsOutputPower"/>
+	<suppressRule ruleid="stompupsmibupsOutputPercentLoad" suppressid="upsmib/upsmib/upsOutputPercentLoad"/>
+	<numSensor ruleid="outputloadpct">
+	  <type>pctofcapacity/outputload</type>
+	  <sensorId>OUTPUT_LOAD_PCT</sensorId>
+	  <value>
+       <formatNumber printffmt="%f">
+		    <getOid>.1.3.6.1.4.1.318.1.1.1.4.2.3.0</getOid>
+       </formatNumber>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>Output Load</label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+
+	<!-- Current output status -->
+	<stateSensor ruleid="basic_output_status">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.4.1.1.0</getOid>
+		</mapValue>
+	  </rowTest>
+	  <type>state/upsOutputState</type>
+	  <sensorId>UPS_BASIC_OUTPUT_STATE</sensorId>
+	  <value>
+		<mapValue mapid="basic_output_state_map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.4.1.1.0</getOid>
+		</mapValue>
+	  </value>
+	  <label>UPS Output State</label>
+	  <enum>basic_output_state</enum>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</stateSensor>
+    
+    <valueMap ruleid="basic_output_state_map">
+        <valueIn>1</valueIn><valueOut>0</valueOut>
+        <valueIn>2</valueIn><valueOut>1</valueOut>
+        <valueIn>3</valueIn><valueOut>2</valueOut>
+        <valueIn>4</valueIn><valueOut>3</valueOut>
+        <valueIn>5</valueIn><valueOut>4</valueOut>
+        <valueIn>6</valueIn><valueOut>5</valueOut>
+        <valueIn>7</valueIn><valueOut>6</valueOut>
+        <valueIn>8</valueIn><valueOut>7</valueOut>
+        <valueIn>9</valueIn><valueOut>8</valueOut>
+        <valueIn>10</valueIn><valueOut>9</valueOut>
+        <valueIn>11</valueIn><valueOut>10</valueOut>
+        <valueIn>12</valueIn><valueOut>11</valueOut>
+        <valueIn>13</valueIn><valueOut>12</valueOut>
+        <valueIn>14</valueIn><valueOut>13</valueOut>
+        <valueIn>15</valueIn><valueOut>14</valueOut>
+        <valueIn>16</valueIn><valueOut>15</valueOut>
+        <valueIn>17</valueIn><valueOut>16</valueOut>
+        <valueIn>18</valueIn><valueOut>17</valueOut>
+        <valueIn>19</valueIn><valueOut>18</valueOut>
+        <valueIn>*</valueIn><valueOut>0</valueOut>
+    </valueMap>
+	
+    <enumMap ruleid="basic_output_state">
+        <label>Unknown</label>
+        <label>On Line</label>
+        <label>On Battery</label>
+        <label>Boost</label>
+        <label>Sleep (Timed)</label>
+        <label>Bypass (Software)</label>
+        <label>Off</label>
+        <label>Rebooting</label>
+        <label>Bypass (Switch)</label>
+        <label>Bypass (Hardware Failure)</label>
+        <label>Sleep (Until Power Return)</label>
+        <label>Trim</label>
+        <label>Economizer Mode</label>
+        <label>Hot Standby</label>
+        <label>Battery Test</label>
+        <label>Emergency Static Bypass</label>        
+        <label>Static Bypass Standby</label>
+        <label>Power Saving Mode</label>
+        <label>Burn-in Test</label>
+    </enumMap>
+	
+    <!-- Basic System State (VALHAL-3131)-->
+    <stateSensor ruleid="basic_system_status">
+        <rowTest>
+            <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+                <getOid>.1.3.6.1.4.1.318.1.1.1.4.1.3.0</getOid>
+            </mapValue>
+        </rowTest>
+        <type>state/upsOutputState</type>
+        <sensorId>UPS_BASIC_SYSTEM_STATE</sensorId>
+        <value>
+            <mapValue mapid="basic_system_state_map">
+                <getOid>.1.3.6.1.4.1.318.1.1.1.4.1.3.0</getOid>
+            </mapValue>
+        </value>
+        <label>UPS System State</label>
+        <enum>basic_system_state_labels</enum>
+        <sensorSet>UPS Output Status</sensorSet>
+    </stateSensor>
+    
+    <valueMap ruleid="basic_system_state_map">
+        <valueIn>1</valueIn><valueOut>0</valueOut>
+        <valueIn>2</valueIn><valueOut>1</valueOut>
+        <valueIn>3</valueIn><valueOut>2</valueOut>
+        <valueIn>4</valueIn><valueOut>3</valueOut>
+        <valueIn>5</valueIn><valueOut>4</valueOut>
+        <valueIn>6</valueIn><valueOut>5</valueOut>
+        <valueIn>7</valueIn><valueOut>6</valueOut>
+        <valueIn>8</valueIn><valueOut>7</valueOut>
+        <valueIn>9</valueIn><valueOut>8</valueOut>
+        <valueIn>10</valueIn><valueOut>9</valueOut>
+        <valueIn>11</valueIn><valueOut>10</valueOut>
+        <valueIn>12</valueIn><valueOut>11</valueOut>
+        <valueIn>13</valueIn><valueOut>12</valueOut>
+        <valueIn>14</valueIn><valueOut>13</valueOut>
+        <valueIn>*</valueIn><valueOut>0</valueOut>
+    </valueMap>
+	
+    <enumMap ruleid="basic_system_state_labels">
+        <label>Unknown</label>
+        <label>On Line</label>
+        <label>On Battery</label>
+        <label>Boost</label>
+        <label>Sleep (Timed)</label>
+        <label>Bypass (Software)</label>
+        <label>Off</label>
+        <label>Rebooting</label>
+        <label>Bypass (Switch)</label>
+        <label>Bypass (Hardware Failure)</label>
+        <label>Sleep (Until Power Return)</label>
+        <label>Trim</label>
+        <label>Economizer Mode</label>
+        <label>Inverter</label>
+    </enumMap>
+    
+    <!-- Charger State (VALHAL-3010)-->
+    <stateSensor ruleid="basic_charger_status">
+        <rowTest>
+            <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+                <getOid>.1.3.6.1.4.1.318.1.1.1.2.2.18.0</getOid>
+            </mapValue>
+        </rowTest>
+        <type>state/upsOutputState</type>
+        <sensorId>UPS_CHARGER_STATE</sensorId>
+        <value>
+            <mapValue mapid="charger_state_map">
+                <getOid>.1.3.6.1.4.1.318.1.1.1.2.2.18.0</getOid>
+            </mapValue>
+        </value>
+        <label>Charger State</label>
+        <enum>charger_state_labels</enum>
+        <sensorSet>UPS Battery Status</sensorSet>
+    </stateSensor>
+    
+    <valueMap ruleid="charger_state_map">
+        <valueIn>1</valueIn><valueOut>0</valueOut>
+        <valueIn>2</valueIn><valueOut>1</valueOut>
+        <valueIn>3</valueIn><valueOut>2</valueOut>
+        <valueIn>*</valueIn><valueOut>1</valueOut>
+    </valueMap>
+    
+    <enumMap ruleid="charger_state_labels">
+        <label>Unknown</label>
+        <label>OK</label>
+        <label>Fault</label>
+    </enumMap>
+    
+	<valueMap ruleid="battstatus-to-index">
+	  <valueIn>1</valueIn><valueOut>0</valueOut>
+	  <valueIn>2</valueIn><valueOut>1</valueOut>
+	  <valueIn>3</valueIn><valueOut>2</valueOut>
+	  <valueIn>*</valueIn><valueOut>0</valueOut>
+	</valueMap>
+	
+	<valueMap ruleid="phase-to-index">
+	  <valueIn>1</valueIn><valueOut>0</valueOut>
+	  <valueIn>2</valueIn><valueOut>1</valueOut>
+	  <valueIn>3</valueIn><valueOut>2</valueOut>
+	  <valueIn>*</valueIn><valueOut>0</valueOut>
+	</valueMap>
+	
+	<valueMap ruleid="battreplace-to-index">
+	  <valueIn>1</valueIn><valueOut>0</valueOut>
+	  <valueIn>2</valueIn><valueOut>1</valueOut>
+	  <valueIn>*</valueIn><valueOut>0</valueOut>
+	</valueMap>
+  </device>
+
+	<device deviceid="odinbattery">
+	<!-- Odin implements only some battery OIDS -->
+		<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+			<valueList>
+				<value>.1.3.6.1.4.1.318.1.3.23.2</value> <!-- Odin 160K -->
+				<value>.1.3.6.1.4.1.318.1.3.23.3</value> <!-- Odin 250K -->
+				<value>.1.3.6.1.4.1.318.1.3.23.4</value> <!-- Odin 500K -->
+			</valueList>
+		</oidMustMatch>
+		
+		<!-- UPS Age -->
+		<numSensor ruleid="upsage">
+			<type>timeindays/upsage</type>
+			<sensorId>UPS_AGE</sensorId>
+			<value>
+				<round increment="1">
+					<div>
+						<op>
+							<sub>
+								<op><curUTCTime/></op>
+								<op>
+									<parseDate><getOid>.1.3.6.1.4.1.318.1.1.1.1.2.2.0</getOid></parseDate>
+								</op>
+							</sub>
+						</op>
+						<op>86400</op>
+					</div>
+				</round>
+			</value>
+			<minValue>0</minValue>
+			<valueInc>1</valueInc>
+			<label>UPS Age</label>
+			<sensorSet>default</sensorSet>
+		</numSensor>
+		
+		<!-- Time on battery -->
+		<numSensor ruleid="timeonbatt">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.2.1.2.0</getOid>
+				</mapValue>
+			</rowTest>
+			<type>timeinmin/timeonbatt</type>
+			<sensorId>TIME_ON_BATT</sensorId>
+			<value>
+				<round increment="0.1">
+					<div>
+						<op>
+							<getOid>.1.3.6.1.4.1.318.1.1.1.2.1.2.0</getOid>
+						</op>
+						<op>6000</op>
+					</div>
+				</round>
+			</value>
+			<minValue>0</minValue>
+			<label>Time Running on Battery</label>
+			<sensorSet>UPS Battery Status</sensorSet>
+		</numSensor>
+		
+		<!-- Battery Capacity Remaining -->
+		<numSensor ruleid="pctofbatt">
+			<type>pctofcapacity/pctofbatt</type>
+			<sensorId>BATT_CAPACITY_LEFT</sensorId>
+			<value>
+				<formatNumber printffmt="%f">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.2.2.1.0</getOid>
+				</formatNumber>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Battery Capacity Remaining</label>
+			<sensorSet>UPS Battery Status</sensorSet>
+		</numSensor>
+		
+		<!-- Battery temperature -->
+		<numSensor ruleid="tmpofbatt">
+			<type>temp/batttemp</type>
+			<sensorId>BATT_TEMP</sensorId>
+			<value>
+				<getOid>.1.3.6.1.4.1.318.1.1.1.2.2.2.0</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Battery Temperature</label>
+			<sensorSet>UPS Battery Status</sensorSet>
+		</numSensor>
+
+		<!-- Time remaining on battery -->
+		<numSensor ruleid="timeremainingonbatt">
+			<type>timeinmin/timeremainingonbatt</type>
+			<sensorId>TIME_REMAINING_ON_BATT</sensorId>
+			<value>
+				<round increment="0.1">
+					<div>
+						<op><getOid>.1.3.6.1.4.1.318.1.1.1.2.2.3.0</getOid></op>
+						<op>6000</op>
+					</div>
+				</round>
+			</value>
+			<label>Battery Time Remaining</label>
+			<sensorSet>UPS Battery Status</sensorSet>
+		</numSensor>
+		
+		<!-- Current output status -->
+		<stateSensor ruleid="basic_output_status">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.4.1.1.0</getOid>
+				</mapValue>
+			</rowTest>
+			<type>state/upsOutputState</type>
+			<sensorId>UPS_BASIC_OUTPUT_STATE</sensorId>
+			<value>
+				<mapValue mapid="apcsmartups/smartups/basic_output_state_map">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.4.1.1.0</getOid>
+				</mapValue>
+			</value>
+			<label>UPS Output State</label>
+			<enum>apcsmartups/smartups/basic_output_state</enum>
+			<sensorSet>UPS Output Status</sensorSet>
+		</stateSensor>
+		
+		<!-- Battery Voltage -->
+		<numSensor ruleid="odinbatteryvoltage" index="1.3.6.1.4.1.318.1.1.1.2.3.7.1.1">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getRowOid>.1.3.6.1.4.1.318.1.1.1.2.3.7.1.3</getRowOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>BATTERY_VOLTAGE<rowNumber/></sensorId>
+			<value>
+				<mult>
+					<op>0.1</op>
+					<op><getRowOid>.1.3.6.1.4.1.318.1.1.1.2.3.7.1.3</getRowOid></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Battery Voltage -<space/>
+				<mapValue mapid="mapvoltagepolarity">
+					<getRowOid>.1.3.6.1.4.1.318.1.1.1.2.3.7.1.2</getRowOid>
+				</mapValue>
+			</label>
+			<sensorSet>UPS Battery Status</sensorSet>
+		</numSensor>
+		
+		<!-- Battery Current -->
+		<numSensor ruleid="odinbatterycurrent" index="1.3.6.1.4.1.318.1.1.1.2.3.8.1.1">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getRowOid>.1.3.6.1.4.1.318.1.1.1.2.3.8.1.3</getRowOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>BATTERY_CURRENT<rowNumber/></sensorId>
+			<value>
+				<mult>
+					<op>0.1</op>
+					<op><getRowOid>.1.3.6.1.4.1.318.1.1.1.2.3.8.1.3</getRowOid></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Battery Current -<space/>
+				<mapValue mapid="mapvoltagepolarity">
+					<getRowOid>.1.3.6.1.4.1.318.1.1.1.2.3.8.1.2</getRowOid>
+				</mapValue>
+			</label>
+			<sensorSet>UPS Battery Status</sensorSet>
+		</numSensor>
+		
+		<!-- Odin total energy used-->
+		<numSensor ruleid="odin_total_energy">
+			<type>num/kwatthr</type>
+			<sensorId>ENERGY_TOTAL_KWH</sensorId>
+			<value>
+				<mult>
+					<op>0.01</op>
+					<op><getOid>.1.3.6.1.4.1.318.1.1.1.4.3.6.0</getOid></op>
+				</mult>
+			</value>
+			<label>Total Output Energy Used</label>
+			<sensorSet>UPS Output Status</sensorSet>
+		</numSensor>
+		
+		<valueMap ruleid="mapvoltagepolarity">
+			<valueIn>0</valueIn><valueOut>Positive</valueOut>
+			<valueIn>1</valueIn><valueOut>Negative</valueOut>
+			<valueIn>*</valueIn><valueOut>Unknown</valueOut>
+		</valueMap>
+	</device>
+	
+	<!-- UPS displaying valid battery current -->
+	<device deviceid="smartupsbattamps">
+		<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+			<valueList>
+				<value>.1.3.6.1.4.1.311.1.1.*</value><!--PCBE Windows -->
+				<value>.1.3.6.1.4.1.318.1.3.6</value> <!-- SmartUPS DP100E -->
+				<value>.1.3.6.1.4.1.318.1.3.6.*</value> <!-- SmartUPS DP100E -->
+				<value>.1.3.6.1.4.1.318.1.3.7.*</value> <!-- SmartUPS DP300E -->
+				<value>.1.3.6.1.4.1.318.1.3.7</value> <!-- SmartUPS DP300E -->
+				<value>.1.3.6.1.4.1.318.1.3.17</value> <!-- SmartUPS VT -->
+				<value>.1.3.6.1.4.1.318.1.3.17.*</value> <!-- Other SmartUPS VT -->
+				<value>.1.3.6.1.4.1.318.1.3.13.*</value> <!-- Other Symmetra 3P -->
+				<value>.1.3.6.1.4.1.318.1.3.13</value> <!-- Symmetra 3P -->
+				<value>.1.3.6.1.4.1.318.1.3.16.*</value> <!-- Other AIS5000 -->
+				<value>.1.3.6.1.4.1.318.1.3.16</value> <!-- AIS5000 -->
+				<value>.1.3.6.1.4.1.318.1.3.23</value> <!-- Symmetra PX2 -->
+				<value>.1.3.6.1.4.1.318.1.3.23.*</value> <!-- Other Symmetra PX2 -->
+				<value>.1.3.6.1.4.1.318.1.3.27</value> <!-- Microlink -->
+				<value>.1.3.6.1.4.1.318.1.3.27.*</value> <!-- Other Microlink -->
+				<value>.1.3.6.1.4.1.318.1.3.28</value> <!-- Proxima -->
+				<value>.1.3.6.1.4.1.318.1.3.28.*</value> <!-- Other Proxima -->
+				<value>.1.3.6.1.4.1.318.1.3.30</value> <!-- EPS UPS -->
+				<value>.1.3.6.1.4.1.318.1.3.30.*</value> <!-- EPS UPS subtypes -->
+			</valueList>
+		</oidMustMatch>
+		<oidMustExist ruleid="battstattest" oid=".1.3.6.1.4.1.318.1.1.1.2.2.9.0"/>
+		
+		<!-- Battery amperage -->
+		<numSensor ruleid="battamps">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.2.2.9.0</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage/battamps</type>
+			<sensorId>BATT_AMPERAGE</sensorId>
+			<value>
+				<getOid>.1.3.6.1.4.1.318.1.1.1.2.2.9.0</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Battery Current</label>
+			<sensorSet>UPS Battery Status</sensorSet>
+		</numSensor>
+	</device>
+
+	<!-- Smart UPS displaying dc current -->
+	<device deviceid="smartupstotaldccurrent">
+		<!-- the following smartups display meaningful total dc current -->
+		<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+			<valueList>
+				<value>.1.3.6.1.4.1.311.1.1.*</value><!--PCBE Windows -->
+				<value>.1.3.6.1.4.1.318.1.3.6</value> <!-- SmartUPS DP100E -->
+				<value>.1.3.6.1.4.1.318.1.3.6.*</value> <!-- SmartUPS DP100E -->
+				<value>.1.3.6.1.4.1.318.1.3.16.*</value> <!-- Other AIS5000 -->
+				<value>.1.3.6.1.4.1.318.1.3.16</value> <!-- AIS5000 -->
+			</valueList>
+		</oidMustMatch>
+		<oidMustExist ruleid="battstattest" oid=".1.3.6.1.4.1.318.1.1.1.2.2.10.0"/>	
+		
+		<!-- Total DC amperage -->
+		<numSensor ruleid="totaldcamps">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.2.2.10.0</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage/totaldcamps</type>
+			<sensorId>TOTAL_DC_AMPERAGE</sensorId>
+			<value>
+				<getOid>.1.3.6.1.4.1.318.1.1.1.2.2.10.0</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Total DC Current</label>
+			<sensorSet>UPS Battery Status</sensorSet>
+		</numSensor>
+	</device>
+  
+	<!-- External Battery Packs -->
+	<device deviceid="batterypackstatus">
+		<oidMustMatch ruleid="upssysid" oid=".1.3.6.1.2.1.1.2.0">
+			<valueList>
+				<value>.1.3.6.1.4.1.311.1.1.*</value><!--PCBE Windows -->
+				<value>.1.3.6.1.4.1.318.1.3.3</value> <!-- MatrixUPS -->
+				<value>.1.3.6.1.4.1.318.1.3.3.*</value> <!-- Other MatrixUPS -->
+				<value>.1.3.6.1.4.1.318.1.3.5</value> <!-- Symmetra -->
+				<value>.1.3.6.1.4.1.318.1.3.5.*</value> <!-- Other Symmetra -->
+				<value>.1.3.6.1.4.1.318.1.3.13.*</value> <!-- Other Symmetra 3P -->
+				<value>.1.3.6.1.4.1.318.1.3.13</value> <!-- Symmetra 3P -->
+				<value>.1.3.6.1.4.1.318.1.3.17</value> <!-- SmartUPS VT -->
+				<value>.1.3.6.1.4.1.318.1.3.17.*</value> <!-- Other SmartUPS VT -->
+				<value>.1.3.6.1.4.1.318.1.3.23</value> <!-- Symmetra PX2 -->
+				<value>.1.3.6.1.4.1.318.1.3.23.*</value> <!-- Other Symmetra PX2 -->
+				<value>.1.3.6.1.4.1.318.1.3.28</value> <!-- Galaxy -->
+				<value>.1.3.6.1.4.1.318.1.3.28.*</value> <!-- Other Galaxy-->
+				<value>.1.3.6.1.4.1.318.1.3.30</value> <!-- EPS UPS -->
+				<value>.1.3.6.1.4.1.318.1.3.30.*</value> <!-- EPS UPS subtypes -->
+			</valueList>
+		</oidMustMatch>
+		<oidMustExist oid=".1.3.6.1.4.1.318.1.1.1.2.2.5.0"/>
+		
+		<!-- Number of external battery packs -->
+		<numSensor ruleid="goodextbattpacks">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.2.2.5.0</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num</type>
+			<sensorId>EXT_BATT_PACKS</sensorId>
+			<value>
+				<getOid>.1.3.6.1.4.1.318.1.1.1.2.2.5.0</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Number of External Battery Packs</label>
+			<sensorSet>UPS Battery Status</sensorSet>
+		</numSensor>
+		
+		<!-- Number of bad external battery packs -->
+		<numSensor ruleid="badextbattpacks">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.2.2.6.0</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num</type>
+			<sensorId>BAD_EXT_BATT_PACKS</sensorId>
+			<value>
+				<getOid>.1.3.6.1.4.1.318.1.1.1.2.2.6.0</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Number of Bad External Battery Packs</label>
+			<sensorSet>UPS Battery Status</sensorSet>
+		</numSensor>
+	</device>
+	
+	<!-- Better version of battery percentage/temp/volts/amps -->
+  <device deviceid="hiprecpctbatt">
+	<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+	  <valueList>
+	  <value>.1.3.6.1.4.1.311.1.1.*</value><!--PCBE Windows -->
+		<value>.1.3.6.1.4.1.318.1.3.2</value><!-- Arakni -->
+		<value>.1.3.6.1.4.1.318.1.3.2.*</value> <!-- Other SmartUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.3</value> <!-- MatrixUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.3.*</value> <!-- Other MatrixUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.6.*</value> <!-- SmartUPS DP -->
+		<value>.1.3.6.1.4.1.318.1.3.6</value> <!-- SmartUPS DP -->
+		<value>.1.3.6.1.4.1.318.1.3.7.*</value> <!-- SmartUPS DP300E -->
+		<value>.1.3.6.1.4.1.318.1.3.7</value> <!-- SmartUPS DP300E -->
+        <value>.1.3.6.1.4.1.318.1.3.27</value> <!-- Microlink -->
+		<value>.1.3.6.1.4.1.318.1.3.27.*</value> <!-- Other Microlink -->
+		<value>.1.3.6.1.4.1.318.1.3.8.4.1.3.2.*</value> <!-- RMD1 -->
+	  </valueList>
+	</oidMustMatch>
+	<oidMustExist oid=".1.3.6.1.4.1.318.1.1.1.2.3.1.0"/>
+	<suppressRule suppressid="apcsmartups/smartups/pctofbatt"/>
+	<numSensor ruleid="pctofbatt">
+	  <type>pctofcapacity/pctofbatt</type>
+	  <sensorId>BATT_CAPACITY_LEFT</sensorId>
+	  <value>
+     <formatNumber printffmt="%f">
+      <mult>
+        <op><getOid>.1.3.6.1.4.1.318.1.1.1.2.3.1.0</getOid></op>
+        <op>0.1</op>
+      </mult>
+     </formatNumber>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>Battery Capacity Remaining</label>
+	  <sensorSet>UPS Battery Status</sensorSet>
+	</numSensor>
+	<suppressRule suppressid="apcsmartups/smartups/tmpofbatt"/>
+	<numSensor ruleid="tmpofbatt">
+	  <type>temp/batttemp</type>
+	  <sensorId>BATT_TEMP</sensorId>
+	  <value>
+		<mult>
+		  <op>
+			<getOid>.1.3.6.1.4.1.318.1.1.1.2.3.2.0</getOid>
+		  </op>
+		  <op>0.1</op>
+		</mult>
+	  </value>
+	  <label>Battery Temperature</label>
+	  <sensorSet>UPS Battery Status</sensorSet>
+	</numSensor>
+	<suppressRule suppressid="apcsmartups/smartups/battvoltage"/>
+	<numSensor ruleid="battvoltage">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.2.3.4.0</getOid>
+		</mapValue>
+	  </rowTest>
+	  <type>voltage/battvoltage</type>
+	  <sensorId>BATT_VOLTAGE</sensorId>
+	  <value>
+		<mult>
+		  <op>
+			<getOid>.1.3.6.1.4.1.318.1.1.1.2.3.4.0</getOid>
+		  </op>
+		  <op>0.1</op>
+		</mult>
+	  </value>
+	  <label>Battery Voltage</label>
+	  <sensorSet>UPS Battery Status</sensorSet>
+	</numSensor>
+  </device>
+
+	<!-- Better version of input voltage/frequency -->
+  <device deviceid="hiprecinput">
+	<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+	  <valueList>
+	  <value>.1.3.6.1.4.1.311.1.1.*</value><!--PCBE Windows -->
+		<value>.1.3.6.1.4.1.318.1.3.2</value><!-- Arakni -->
+		<value>.1.3.6.1.4.1.318.1.3.2.*</value> <!-- Other SmartUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.3</value> <!-- MatrixUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.3.*</value> <!-- Other MatrixUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.6.*</value> <!-- SmartUPS DP -->
+		<value>.1.3.6.1.4.1.318.1.3.6</value> <!-- SmartUPS DP -->
+		<value>.1.3.6.1.4.1.318.1.3.7.*</value> <!-- SmartUPS DP300E -->
+		<value>.1.3.6.1.4.1.318.1.3.7</value> <!-- SmartUPS DP300E -->
+        <value>.1.3.6.1.4.1.318.1.3.27</value> <!-- Microlink -->
+		<value>.1.3.6.1.4.1.318.1.3.27.*</value> <!-- Other Microlink -->
+		<value>.1.3.6.1.4.1.318.1.3.8.4.1.3.2.*</value> <!-- RMD1 -->
+	  </valueList>
+	</oidMustMatch>
+	<oidMustExist oid=".1.3.6.1.4.1.318.1.1.1.3.3.1.0"/>
+		<!-- Input voltage -->
+	<suppressRule suppressid="apcsmartups/smartups/inputvoltage"/>
+	<numSensor ruleid="inputvoltage">
+	  <type>voltage/inputvoltage</type>
+	  <sensorId>INPUT_VOLTAGE</sensorId>
+	  <value>
+		<mult>
+		  <op>
+			<getOid>.1.3.6.1.4.1.318.1.1.1.3.3.1.0</getOid>
+		  </op>
+		  <op>0.1</op>
+		</mult>
+	  </value>
+	  <label>Input Voltage</label>
+	  <sensorSet>UPS Input Status</sensorSet>
+	</numSensor>
+		<!-- Max Input voltage -->
+	<suppressRule suppressid="apcsmartups/smartups/maxinputvoltage"/>
+	<numSensor ruleid="maxinputvoltage">
+	  <type>voltage/inputvoltage/max</type>
+	  <sensorId>MAX_INPUT_VOLTAGE</sensorId>
+	  <value>
+		<mult>
+		  <op>
+			<getOid>.1.3.6.1.4.1.318.1.1.1.3.3.2.0</getOid>
+		  </op>
+		  <op>0.1</op>
+		</mult>
+	  </value>
+	  <label>Input Voltage (Max)</label>
+	  <sensorSet>UPS Input Status</sensorSet>
+	</numSensor>
+		<!-- Min Input voltage -->
+	<suppressRule suppressid="apcsmartups/smartups/mininputvoltage"/>
+	<numSensor ruleid="mininputvoltage">
+	  <type>voltage/inputvoltage/max</type>
+	  <sensorId>MIN_INPUT_VOLTAGE</sensorId>
+	  <value>
+		<mult>
+		  <op>
+			<getOid>.1.3.6.1.4.1.318.1.1.1.3.3.3.0</getOid>
+		  </op>
+		  <op>0.1</op>
+		</mult>
+	  </value>
+	  <label>Input Voltage (Min)</label>
+	  <sensorSet>UPS Input Status</sensorSet>
+	</numSensor>
+		<!-- Input freqency -->
+	<suppressRule suppressid="apcsmartups/smartups/inputfrequency"/>
+	<numSensor ruleid="inputfrequency">
+	  <type>frequency/inputfrequency</type>
+	  <sensorId>INPUT_FREQ</sensorId>
+	  <value>
+		<mult>
+		  <op>
+			<getOid>.1.3.6.1.4.1.318.1.1.1.3.3.4.0</getOid>
+		  </op>
+		  <op>0.1</op>
+		</mult>
+	  </value>
+	  <label>Input Frequency</label>
+	  <sensorSet>UPS Input Status</sensorSet>
+	</numSensor>
+  </device>
+
+	<!-- Better version of output voltage/frequency/load/amps -->
+  <device deviceid="hiprecoutput">
+	<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+	  <valueList>
+	  <value>.1.3.6.1.4.1.311.1.1.*</value><!--PCBE Windows -->
+		<value>.1.3.6.1.4.1.318.1.3.2</value><!-- Arakni -->
+		<value>.1.3.6.1.4.1.318.1.3.2.*</value> <!-- Other SmartUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.3</value> <!-- MatrixUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.3.*</value> <!-- Other MatrixUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.6.*</value> <!-- SmartUPS DP -->
+		<value>.1.3.6.1.4.1.318.1.3.6</value> <!-- SmartUPS DP -->
+		<value>.1.3.6.1.4.1.318.1.3.7.*</value> <!-- SmartUPS DP300E -->
+		<value>.1.3.6.1.4.1.318.1.3.7</value> <!-- SmartUPS DP300E -->
+        <value>.1.3.6.1.4.1.318.1.3.27</value> <!-- Microlink -->
+		<value>.1.3.6.1.4.1.318.1.3.27.*</value> <!-- Other Microlink -->
+		<value>.1.3.6.1.4.1.318.1.3.8.4.1.3.2.*</value> <!-- RMD1 -->
+	  </valueList>
+	</oidMustMatch>
+	<oidMustExist oid=".1.3.6.1.4.1.318.1.1.1.4.3.1.0"/>
+		<!-- Output voltage -->
+	<suppressRule suppressid="apcsmartups/smartups/outputvoltage"/>
+	<numSensor ruleid="outputvoltage">
+	  <type>voltage/outputvoltage</type>
+	  <sensorId>OUTPUT_VOLTAGE</sensorId>
+	  <value>
+		<mult>
+		  <op>
+			<getOid>.1.3.6.1.4.1.318.1.1.1.4.3.1.0</getOid>
+		  </op>
+		  <op>0.1</op>
+		</mult>
+	  </value>
+	  <label>Output Voltage</label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+		<!-- Output freqency -->
+	<suppressRule suppressid="apcsmartups/smartups/outputfrequency"/>
+	<numSensor ruleid="outputfrequency">
+	  <type>frequency/outputfrequency</type>
+	  <sensorId>OUTPUT_FREQ</sensorId>
+	  <value>
+		<mult>
+		  <op>
+			<getOid>.1.3.6.1.4.1.318.1.1.1.4.3.2.0</getOid>
+		  </op>
+		  <op>0.1</op>
+		</mult>
+	  </value>
+	  <label>Output Frequency</label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+		<!-- Output Load (pct) -->
+	<suppressRule suppressid="apcsmartups/smartups/outputloadpct"/>
+	<numSensor ruleid="outputloadpct">
+	  <type>pctofcapacity/outputload</type>
+	  <sensorId>OUTPUT_LOAD_PCT</sensorId>
+	  <value>
+    <formatNumber printffmt="%f">
+		<mult>
+		  <op><getOid>.1.3.6.1.4.1.318.1.1.1.4.3.3.0</getOid></op>
+		  <op>0.1</op>
+		</mult>
+     </formatNumber>
+	  </value>
+     <valueInc>1</valueInc>
+	  <label>Output Load</label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+  </device>
+
+	<!-- show last self-test and runtime calibration status -->
+  <device deviceid="advanceteststatus">
+	<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+	  <valueList>
+	  <value>.1.3.6.1.4.1.311.1.1.*</value><!--PCBE Windows -->
+		<value>.1.3.6.1.4.1.318.1.3.2</value> <!-- Arakni -->
+		<value>.1.3.6.1.4.1.318.1.3.2.*</value> <!-- Other SmartUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.3</value> <!-- MatrixUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.3.*</value> <!-- Other MatrixUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.5</value> <!-- Symmetra -->
+		<value>.1.3.6.1.4.1.318.1.3.5.*</value> <!-- Other Symmetra -->
+		<value>.1.3.6.1.4.1.318.1.3.6.*</value> <!-- SmartUPS DP -->
+		<value>.1.3.6.1.4.1.318.1.3.6</value> <!-- SmartUPS DP -->
+		<value>.1.3.6.1.4.1.318.1.3.7.*</value> <!-- SmartUPS DP300E -->
+		<value>.1.3.6.1.4.1.318.1.3.7</value> <!-- SmartUPS DP300E -->
+		<value>.1.3.6.1.4.1.318.1.3.13.*</value> <!-- Other Symmetra 3P -->
+		<value>.1.3.6.1.4.1.318.1.3.13</value> <!-- Symmetra 3P -->
+		<value>.1.3.6.1.4.1.318.1.3.16.*</value> <!-- Other AIS5000 -->
+		<value>.1.3.6.1.4.1.318.1.3.16</value> <!-- AIS5000 -->
+		<value>.1.3.6.1.4.1.318.1.3.17</value> <!-- SmartUPS VT -->
+		<value>.1.3.6.1.4.1.318.1.3.17.*</value> <!-- Other SmartUPS VT -->
+		<value>.1.3.6.1.4.1.318.1.3.21.*</value> <!-- GUTOR -->
+		<value>.1.3.6.1.4.1.318.1.3.21</value> <!-- GUTOR -->
+		<value>.1.3.6.1.4.1.318.1.3.23</value> <!-- Symmetra PX2 -->
+		<value>.1.3.6.1.4.1.318.1.3.23.*</value> <!-- Other Symmetra PX2 -->
+        <value>.1.3.6.1.4.1.318.1.3.27</value> <!-- Microlink -->
+		<value>.1.3.6.1.4.1.318.1.3.27.*</value> <!-- Other Microlink -->
+		<value>.1.3.6.1.4.1.318.1.3.28</value> <!-- Proxima -->
+		<value>.1.3.6.1.4.1.318.1.3.28.*</value> <!-- Other Proxima -->
+		<value>.1.3.6.1.4.1.318.1.3.30</value> <!-- EPS UPS -->
+		<value>.1.3.6.1.4.1.318.1.3.30.*</value> <!-- EPS UPS subtypes -->
+		<value>.1.3.6.1.4.1.318.1.3.8.4.1.3.2.*</value> <!-- RMD1 -->
+		<value>.1.3.6.1.4.1.318.1.3.8.4.1.3.5.*</value> <!-- RMSY -->
+	  </valueList>
+	</oidMustMatch>
+	<oidMustExist ruleid="upshasadvancetest" oid=".1.3.6.1.4.1.318.1.1.1.7.2.3.0"/>
+	<stateSensor ruleid="advtestdiagresults">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.7.2.3.0</getOid>
+		</mapValue>
+	  </rowTest>
+	  <type>state/diagresult</type>
+	  <sensorId>ADV_DIAG_RESULT</sensorId>
+	  <value>
+		<mapValue mapid="diag-result-to-enum">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.7.2.3.0</getOid>
+		</mapValue>
+	  </value>
+	  <label>Self-Test Status</label>
+	  <enum>advancediagresults</enum>
+	  <sensorSet>UPS Battery Status</sensorSet>
+	</stateSensor>
+	<stateSensor ruleid="advruntimecalresults">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.7.2.6.0</getOid>
+		</mapValue>
+	  </rowTest>
+	  <type>state/runtimecalresult</type>
+	  <sensorId>ADV_RUNTIMECAL_RESULT</sensorId>
+	  <value>
+		<mapValue mapid="rtcal-result-to-enum">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.7.2.6.0</getOid>
+		</mapValue>
+	  </value>
+	  <label>Runtime Calibration Status</label>
+	  <enum>advanceruntimecalresults</enum>
+	  <sensorSet>UPS Battery Status</sensorSet>
+	</stateSensor>
+	<valueMap ruleid="diag-result-to-enum">
+	  <valueIn>1</valueIn><valueOut>0</valueOut>
+	  <valueIn>2</valueIn><valueOut>1</valueOut>
+	  <valueIn>3</valueIn><valueOut>2</valueOut>
+	  <valueIn>4</valueIn><valueOut>3</valueOut>
+	  <valueIn>*</valueIn><valueOut>3</valueOut>
+	</valueMap>
+	<valueMap ruleid="rtcal-result-to-enum">
+	  <valueIn>1</valueIn><valueOut>0</valueOut>
+	  <valueIn>2</valueIn><valueOut>1</valueOut>
+	  <valueIn>3</valueIn><valueOut>2</valueOut>
+	  <valueIn>*</valueIn><valueOut>2</valueOut>
+	</valueMap>
+	<enumMap ruleid="advancediagresults">
+	  <label>OK</label>
+	  <label>Failed</label>
+	  <label>Invalid Test</label>
+	  <label>Test In Progress</label>
+	</enumMap>
+	<enumMap ruleid="advanceruntimecalresults">
+	  <label>OK</label>
+	  <label>Invalid Calibration</label>
+	  <label>Calibration In Progress</label>
+	</enumMap>
+  </device>
+  
+	<!-- output current for UPS types with valid output current -->
+	<device deviceid="smartupsoutputcurrent">
+		<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+			<valueList>
+				<value>.1.3.6.1.4.1.311.1.1.*</value><!--PCBE Windows-->
+				<value>.1.3.6.1.4.1.318.1.3.2</value> <!-- Arakni -->
+				<value>.1.3.6.1.4.1.318.1.3.2.*</value> <!-- Other SmartUPS -->
+				<value>.1.3.6.1.4.1.318.1.3.3</value> <!-- MatrixUPS -->
+				<value>.1.3.6.1.4.1.318.1.3.3.*</value> <!-- Other MatrixUPS -->
+				<value>.1.3.6.1.4.1.318.1.3.5</value> <!-- Symmetra -->
+				<value>.1.3.6.1.4.1.318.1.3.5.*</value> <!-- Other Symmetra -->
+				<value>.1.3.6.1.4.1.318.1.3.6.*</value> <!-- SmartUPS DP -->
+				<value>.1.3.6.1.4.1.318.1.3.6</value> <!-- SmartUPS DP -->
+				<value>.1.3.6.1.4.1.318.1.3.7.*</value> <!-- SmartUPS DP300E -->
+				<value>.1.3.6.1.4.1.318.1.3.7</value> <!-- SmartUPS DP300E -->
+				<value>.1.3.6.1.4.1.318.1.3.13.*</value> <!-- Other Symmetra 3P -->
+				<value>.1.3.6.1.4.1.318.1.3.13</value> <!-- Symmetra 3P -->
+				<value>.1.3.6.1.4.1.318.1.3.16.*</value> <!-- Other AIS5000 -->
+				<value>.1.3.6.1.4.1.318.1.3.16</value> <!-- AIS5000 -->
+				<value>.1.3.6.1.4.1.318.1.3.17</value> <!-- SmartUPS VT -->
+				<value>.1.3.6.1.4.1.318.1.3.17.*</value> <!-- Other SmartUPS VT -->
+				<value>.1.3.6.1.4.1.318.1.3.23</value> <!-- Symmetra PX2 -->
+				<value>.1.3.6.1.4.1.318.1.3.23.*</value> <!-- Other Symmetra PX2 -->
+				<value>.1.3.6.1.4.1.318.1.3.27</value> <!-- Microlink -->
+				<value>.1.3.6.1.4.1.318.1.3.27.*</value> <!-- Other Microlink -->
+				<value>.1.3.6.1.4.1.318.1.3.8.4.1.3.2.*</value> <!-- RMD1 -->
+				<value>.1.3.6.1.4.1.318.1.3.8.4.1.3.5.*</value> <!-- RMSY -->
+			</valueList>
+		</oidMustMatch>
+		<oidMustExist oid="1.3.6.1.4.1.318.1.1.1.4.2.4.0"/>
+		
+		<numSensor ruleid="total_output_current">
+			<type>amperage</type>
+			<sensorId>UPSOUTPUTCURRENT_1</sensorId>
+			<value>
+				<mult>
+					<op>0.1</op>
+					<op><getOid>.1.3.6.1.4.1.318.1.1.1.4.3.4.0</getOid></op>
+				</mult>
+			</value>
+			<label>Output Current</label>
+			<sensorSet>UPS Output Status</sensorSet>
+		</numSensor>
+	</device>
+
+	<!-- voltage/current/power by phase for units supporting phase MIB -->
+	<!-- input (all inputs) -->
+	<device deviceid="smartupsphaseinput">
+		<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+			<valueList>
+				<value>.1.3.6.1.4.1.311.1.1.*</value><!--PCBE Windows -->
+				<value>.1.3.6.1.4.1.318.1.3.3</value> <!-- MatrixUPS -->
+				<value>.1.3.6.1.4.1.318.1.3.3.*</value> <!-- Other MatrixUPS -->
+				<value>.1.3.6.1.4.1.318.1.3.5</value> <!-- Symmetra -->
+				<value>.1.3.6.1.4.1.318.1.3.5.*</value> <!-- Other Symmetra -->
+				<value>.1.3.6.1.4.1.318.1.3.6.*</value> <!-- SmartUPS DP -->
+				<value>.1.3.6.1.4.1.318.1.3.6</value> <!-- SmartUPS DP -->
+				<value>.1.3.6.1.4.1.318.1.3.7.*</value> <!-- SmartUPS DP300E -->
+				<value>.1.3.6.1.4.1.318.1.3.7</value> <!-- SmartUPS DP300E -->
+				<value>.1.3.6.1.4.1.318.1.3.13.*</value> <!-- Other Symmetra 3P -->
+				<value>.1.3.6.1.4.1.318.1.3.13</value> <!-- Symmetra 3P -->
+				<value>.1.3.6.1.4.1.318.1.3.16.*</value> <!-- Other AIS5000 -->
+				<value>.1.3.6.1.4.1.318.1.3.16</value> <!-- AIS5000 -->
+				<value>.1.3.6.1.4.1.318.1.3.17</value> <!-- SmartUPS VT -->
+				<value>.1.3.6.1.4.1.318.1.3.17.*</value> <!-- Other SmartUPS VT -->
+				<value>.1.3.6.1.4.1.318.1.3.21.*</value> <!-- GUTOR -->
+				<value>.1.3.6.1.4.1.318.1.3.21</value> <!-- GUTOR -->
+				<value>.1.3.6.1.4.1.318.1.3.23</value> <!-- Symmetra PX2 -->
+				<value>.1.3.6.1.4.1.318.1.3.23.*</value> <!-- Other Symmetra PX2 -->
+				<value>.1.3.6.1.4.1.318.1.3.28</value> <!-- Proxima -->
+				<value>.1.3.6.1.4.1.318.1.3.28.*</value> <!-- Other Proxima -->
+				<value>.1.3.6.1.4.1.318.1.3.30</value> <!-- EPS UPS -->
+				<value>.1.3.6.1.4.1.318.1.3.30.*</value> <!-- EPS UPS subtypes -->
+				<value>.1.3.6.1.4.1.318.1.3.8.4.1.3.5.*</value> <!-- RMSY -->
+			</valueList>
+		</oidMustMatch>
+		
+		<!-- phase input table index for this input must exist -->
+		<oidMustExist oid=".1.3.6.1.4.1.318.1.1.1.9.2.2.1.1.1"/>
+		
+		<!-- define the number of input phases for the UPS -->
+		<suppressRule ruleid="deleteinputphasecount" suppressid="apcsmartups/smartups/inputphasecount"/>
+		<setProductData ruleid="inputphasecount" field="inputphasecount">
+			<getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.2.1</getOid>
+		</setProductData>
+	
+		<!-- display voltage data for all phases-->
+		<suppressRule suppressid="apcsmartups/smartups/inputvoltage"/>
+		<suppressRule suppressid="apcsmartups/hiprecinput/inputvoltage"/>
+		<suppressRule suppressid="apcsmartups/smartups/mininputvoltage"/>
+		<suppressRule suppressid="apcsmartups/hiprecinput/mininputvoltage"/>
+		<suppressRule suppressid="apcsmartups/smartups/maxinputvoltage"/>
+		<suppressRule suppressid="apcsmartups/hiprecinput/maxinputvoltage"/>
+		
+		<suppressRule suppressid="upsmib/upsmib/upsInputVoltage" />
+		<numSensor ruleid="inputvolts" index=".1.3.6.1.4.1.318.1.1.1.9.2.3.1.2">
+			<rowTest>
+				<mapValue mapid="delete-null-sensor">
+					<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.3</getRowOid>
+				</mapValue>
+			</rowTest>
+			<type>voltageAC</type>
+			<sensorId>INPUT1_VAC_<rowIndex/></sensorId>
+			<value>
+				<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.3</getRowOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>
+				<mapValue mapid="inputenum-to-inputstring-map">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+						<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+					</getOid>
+				</mapValue>
+				<space/>Input Voltage - Phase
+				<space/>
+				<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.2</getRowOid>
+			</label>
+			<sensorSet>UPS
+				<space/>
+				<mapValue mapid="inputenum-to-inputstring-map">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+						<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+					</getOid>
+				</mapValue>
+				<space/>Input Status
+			</sensorSet>
+		</numSensor>
+	
+		<!-- display apparent power data for all phases-->
+		<numSensor ruleid="inputapparentpower" index=".1.3.6.1.4.1.318.1.1.1.9.2.3.1.2">
+			<rowTest>
+				<mapValue mapid="delete-null-sensor">
+					<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.12</getRowOid>
+				</mapValue>
+			</rowTest>
+			<type>powerVA</type>
+			<sensorId>INPUT1_VA_<rowIndex/></sensorId>
+			<value>
+				<mult>
+				<op>
+					<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.12</getRowOid>
+				</op>
+				<op>1000</op>
+				</mult>
+			</value>
+			<valueInc>1</valueInc>
+			<label>
+				<mapValue mapid="inputenum-to-inputstring-map">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+						<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+					</getOid>
+				</mapValue>
+				<space/>Input Apparent Power - Phase
+				<space/>
+				<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.2</getRowOid>
+			</label>
+			<sensorSet>UPS
+				<space/>
+				<mapValue mapid="inputenum-to-inputstring-map">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+						<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+					</getOid>
+				</mapValue>
+				<space/>Input Status
+			</sensorSet>
+		</numSensor>
+		
+		<!-- display power data for all phases-->
+		<suppressRule suppressid="upsmib/upsmib/upsInputTruePower" />
+		<numSensor ruleid="inputpower" index=".1.3.6.1.4.1.318.1.1.1.9.2.3.1.2">
+			<rowTest>
+				<mapValue mapid="delete-null-sensor">
+					<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.9</getRowOid>
+				</mapValue>
+			</rowTest>
+			<type>powerW</type>
+			<sensorId>INPUT1_WATTS_<rowIndex/></sensorId>
+			<value>
+				<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.9</getRowOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>
+				<mapValue mapid="inputenum-to-inputstring-map">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+						<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+					</getOid>
+				</mapValue>
+				<space/>Input Power - Phase
+				<space/>
+				<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.2</getRowOid>
+			</label>
+			<sensorSet>UPS
+				<space/>
+				<mapValue mapid="inputenum-to-inputstring-map">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+						<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+					</getOid>
+				</mapValue>
+				<space/>Input Status
+			</sensorSet>
+		</numSensor>
+		
+		<!-- display the phase orientation -->
+		<stateSensor ruleid="inputphaseorientation" index=".1.3.6.1.4.1.318.1.1.1.9.2.2.1.1">
+			<rowTest>
+				<mapValue mapid="delete-null-sensor">
+					<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.3</getRowOid>
+				</mapValue>
+			</rowTest>
+			<type>state/phaseorientation</type>
+			<sensorId>INPUT1_ORIENTATION_<rowIndex/></sensorId>
+			<value>
+				<mapValue mapid="apcphaseorientationmap">
+					<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.3</getRowOid>
+				</mapValue>
+			</value>
+			<label>
+				<mapValue mapid="inputenum-to-inputstring-map">
+					<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5</getRowOid>
+				</mapValue>
+				<space/>Input Phase Orientation
+			</label>
+			<enum>apcphaseorientation</enum>
+			<sensorSet>UPS
+				<space/>
+				<mapValue mapid="inputenum-to-inputstring-map">
+					<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5</getRowOid>
+				</mapValue>
+				<space/>Input Status
+			</sensorSet>
+		</stateSensor>
+	
+		<valueMap ruleid="delete-null-sensor">
+			<valueIn>-1</valueIn><valueOut>[false]</valueOut>
+			<valueIn>*</valueIn><valueOut>[true]</valueOut>
+		</valueMap>
+		<valueMap ruleid="apcphaseorientationmap">
+			<valueIn>1</valueIn><valueOut>0</valueOut>
+			<valueIn>2</valueIn><valueOut>1</valueOut>
+			<valueIn>3</valueIn><valueOut>2</valueOut>
+			<valueIn>4</valueIn><valueOut>3</valueOut>
+			<valueIn>5</valueIn><valueOut>4</valueOut>
+			<valueIn>*</valueIn><valueOut>0</valueOut>
+		</valueMap>
+		<valueMap ruleid="inputenum-to-inputstring-map">
+			<valueIn>1</valueIn><valueOut>Unknown</valueOut>
+			<valueIn>2</valueIn><valueOut>Main</valueOut>
+			<valueIn>3</valueIn><valueOut>Bypass</valueOut>
+		</valueMap>
+		<enumMap ruleid="apcphaseorientation">
+			<label>Unknown</label>
+			<label>Single Phase</label>
+			<label>Split Phase</label>
+			<label>Phase to Neutral (3P)</label>
+			<label>Phase to Phase (3P)</label>
+		</enumMap>
+		
+		
+	<suppressRule suppressid="apcsmartups/smartups/inputfrequency"/>
+	<suppressRule suppressid="apcsmartups/hiprecinput/inputfrequency"/>
+	<suppressRule suppressid="upsmib/upsmib/upsInputFrequency" />
+	<numSensor ruleid="inputfrequency" index=".1.3.6.1.4.1.318.1.1.1.9.2.2.1.1">
+	  <rowTest>
+		<mapValue mapid="delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.4</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>frequency</type>
+	  <sensorId>INPUT1_HZ_
+		<rowIndex/>
+	  </sensorId>
+	  <value>
+		<mult>
+		  <op>
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.4</getRowOid>
+		  </op>
+		  <op>0.1</op>
+		</mult>
+	  </value>
+	  <label>
+		<mapValue mapid="inputenum-to-inputstring-map">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5</getRowOid>
+		</mapValue>
+		<space/>Input Frequency
+	  </label>
+	  <sensorSet>UPS
+		<space/>
+		<mapValue mapid="inputenum-to-inputstring-map">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5</getRowOid>
+		</mapValue>
+		<space/>Input Status
+	  </sensorSet>
+	</numSensor>
+		<!-- read input current for all phases -->
+
+	<suppressRule suppressid="upsmib/upsmib/upsInputCurrent" />
+	<numSensor ruleid="inputamps" index=".1.3.6.1.4.1.318.1.1.1.9.2.3.1.2">
+	  <rowTest>
+		<mapValue mapid="delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.6</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>amperage/input/phase</type>
+	  <sensorId>INPUT_CURRENT_
+		<rowIndex/>
+	  </sensorId>
+	  <value>
+		<mult>
+		  <op>
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.6</getRowOid>
+		  </op>
+		  <op>0.1</op>
+		</mult>
+	  </value>
+	  <label>
+		<mapValue mapid="inputenum-to-inputstring-map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+		  </getOid>
+		</mapValue>
+		<space/>Input Current - Phase
+		<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.2</getRowOid>
+	  </label>
+	  <sensorSet>UPS
+		<space/>
+		<mapValue mapid="inputenum-to-inputstring-map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+		  </getOid>
+		</mapValue>
+		<space/>Input Status
+	  </sensorSet>
+	</numSensor>
+  </device>
+  <device deviceid="threephaseUPSinputpower">
+  	<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+	  <valueList>
+		<value>.1.3.6.1.4.1.318.1.3.5</value> <!-- Symmetra -->
+		<value>.1.3.6.1.4.1.318.1.3.5.*</value> <!-- Other Symmetra -->
+		<value>.1.3.6.1.4.1.318.1.3.7</value> <!-- SmartUPS DP300E -->
+		<value>.1.3.6.1.4.1.318.1.3.7.*</value> <!-- SmartUPS DP300E -->
+		<value>.1.3.6.1.4.1.318.1.3.13</value> <!-- Symmetra 3P -->
+		<value>.1.3.6.1.4.1.318.1.3.13.*</value> <!-- Other Symmetra 3P -->
+		<value>.1.3.6.1.4.1.318.1.3.16</value> <!-- AIS5000 -->
+		<value>.1.3.6.1.4.1.318.1.3.16.*</value> <!-- Other AIS5000 -->
+		<value>.1.3.6.1.4.1.318.1.3.21</value> <!-- GUTOR -->
+		<value>.1.3.6.1.4.1.318.1.3.21.*</value> <!-- GUTOR -->
+		<value>.1.3.6.1.4.1.318.1.3.23</value> <!-- Symmetra PX2 -->
+		<value>.1.3.6.1.4.1.318.1.3.23.*</value> <!-- Other Symmetra PX2 -->
+	  </valueList>
+	</oidMustMatch>
+		<!-- phase input table index for this input must exist -->
+	<oidMustExist oid=".1.3.6.1.4.1.318.1.1.1.9.2.2.1.1.1"/>
+
+	<suppressRule suppressid="upsmib/upsmib/upsInputTruePower" />
+  	<numSensor ruleid="inputwattsphase" index=".1.3.6.1.4.1.318.1.1.1.9.2.3.1.2">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.9</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>num/powerKW</type>
+	  <sensorId>INPUT_POWER_
+		<rowIndex/>
+	  </sensorId>
+	  <value>
+	    <div>
+	      <op><getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.9</getRowOid></op>
+	      <op>1000</op>
+	    </div>
+	  </value>
+	  <label>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+		  </getOid>
+		</mapValue>
+		<space/>Input Power - Phase
+		<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.2</getRowOid>
+	  </label>
+	  <sensorSet>UPS
+		<space/>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+		  </getOid>
+		</mapValue>
+		<space/>Input Status
+	  </sensorSet>
+	</numSensor>
+	
+	<numSensor ruleid="inputvaphase" index=".1.3.6.1.4.1.318.1.1.1.9.2.3.1.2">
+	  <!-- voltage and current must be present, and orientation must be L-L -->
+	  <rowTest>
+	  	<and>
+	  		<op>
+	  			<!-- phase current -->
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+				  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.6</getRowOid>
+				</mapValue>
+			</op>
+			<op>
+				<!-- phase voltage -->
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+				  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.3</getRowOid>
+				</mapValue>
+			</op>
+		</and>
+	  </rowTest>
+	  <type>num/powerKVA</type>
+	  <sensorId>INPUT_APPARENT_POWER_
+		<rowIndex/>
+	  </sensorId>
+	  <value>
+	  	<mult>
+	  		<op>
+	  			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.6</getRowOid>
+	  		</op>
+	  		<op>
+	  			<div>
+	  			    <!-- phase current is scaled and adjusted for L-L or L-N voltage above -->
+	  				<op><getRowOid>1.3.6.1.4.1.318.1.1.1.9.2.3.1.3</getRowOid></op>
+	  				<op>
+	  				  <mapValue mapid="phasescalefactor">
+				  		<getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.3.<getRowOid>1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid></getOid>
+				      </mapValue>
+	  				</op>
+	  			</div>
+	  		</op>
+		</mult>
+	  </value>
+	  <label>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+		  </getOid>
+		</mapValue>
+		<space/>Input Apparent Power - Phase
+		<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.2</getRowOid>
+	  </label>
+	  <sensorSet>UPS
+		<space/>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+		  </getOid>
+		</mapValue>
+		<space/>Input Status
+	  </sensorSet>
+	</numSensor>
+	
+	<numSensor ruleid="inputwattstotal" index=".1.3.6.1.4.1.318.1.1.1.9.2.2.1.1">
+	  <rowTest>
+	    <and>
+		  <op>
+		    <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		      <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.9.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.1</getOid>
+		    </mapValue>
+		  </op>
+		  <op>
+		    <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		      <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.9.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.2</getOid>
+		    </mapValue>
+		  </op>
+		  <op>
+		    <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		      <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.9.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.3</getOid>
+		    </mapValue>
+		  </op>
+		</and>
+	  </rowTest>
+	  <type>num/powerKW</type>
+	  <sensorId>INPUT_POWER_TOTAL_<rowIndex/></sensorId>
+	  <value>
+	    <div>
+	      <op>
+		    <add>
+		      <op>
+	            <add>
+			      <op><getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.9.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.1</getOid></op>
+		          <op><getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.9.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.2</getOid></op>
+		        </add>
+		      </op>
+		      <op><getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.9.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.3</getOid></op>
+		    </add>
+		  </op>
+		  <op>1000</op>
+		</div>
+	  </value>
+	  <label>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5</getRowOid>
+		</mapValue>
+		<space/>Input Power Total
+	  </label>
+	  <sensorSet>UPS
+		<space/>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5</getRowOid>
+		</mapValue>
+		<space/>Input Status
+	  </sensorSet>
+	</numSensor>
+	
+	<numSensor ruleid="inputapparentpowertotal" index=".1.3.6.1.4.1.318.1.1.1.9.2.2.1.1">
+	  <rowTest>
+	    <and>
+		  <op>
+		    <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		      <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.3.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.1</getOid>
+		    </mapValue>
+		  </op>
+		  <op>
+		    <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		      <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.3.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.2</getOid>
+		    </mapValue>
+		  </op>
+		  <op>
+		    <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		      <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.3.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.3</getOid>
+		    </mapValue>
+		  </op>
+		  <op>
+		    <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		      <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.6.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.1</getOid>
+		    </mapValue>
+		  </op>
+		  <op>
+		    <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		      <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.6.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.2</getOid>
+		    </mapValue>
+		  </op>
+		  <op>
+		    <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		      <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.6.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.3</getOid>
+		    </mapValue>
+		  </op>
+		</and>
+	  </rowTest>
+	  <type>num/powerKVA</type>
+	  <sensorId>INPUT_APPARENT_POWER_TOTAL_<rowIndex/></sensorId>
+	  <value>
+	    <div>
+	      <op>
+	        <add>
+	          <op>
+	            <add>
+	              <op>
+	                <mult>
+	                  <op><getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.3.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.1</getOid></op>
+	                  <op><getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.6.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.1</getOid></op>
+	                </mult>
+	              </op>
+	              <op>
+	                <mult>
+	                  <op><getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.3.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.2</getOid></op>
+	                  <op><getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.6.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.2</getOid></op>
+	                </mult>
+	              </op>
+	            </add>
+	          </op>
+	          <op>
+	            <mult>
+	              <op><getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.3.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.3</getOid></op>
+	              <op><getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.6.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.3</getOid></op>
+	            </mult>
+	          </op>
+	        </add>
+	      </op>
+	      <op>
+	        <mapValue mapid="phasescalefactor">
+			  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.3</getRowOid>
+		    </mapValue>
+	      </op>
+	    </div>
+	  </value>
+	  <label>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5</getRowOid>
+		</mapValue>
+		<space/>Input Apparent Power Total
+	  </label>
+	  <sensorSet>UPS
+		<space/>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5</getRowOid>
+		</mapValue>
+		<space/>Input Status
+	  </sensorSet>
+	</numSensor>
+
+	<valueMap ruleid="phasescalefactor">
+	    <!-- scale factor is sqrt(3) * deciamps-amps * va-kva for L-L-->
+	    <valueIn>5</valueIn><valueOut>17321</valueOut>
+	    <valueIn>*</valueIn><valueOut>10000</valueOut>
+	</valueMap>
+  </device>
+  
+  <device deviceid="threephaseUPSinputVA">
+    <!-- Replace derived input apparent power sensors for devices which report input apparent power by phase  -->
+    <oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+	  <valueList>
+		<value>.1.3.6.1.4.1.318.1.3.5</value> <!-- Symmetra -->
+		<value>.1.3.6.1.4.1.318.1.3.5.*</value> <!-- Other Symmetra -->
+		<value>.1.3.6.1.4.1.318.1.3.7</value> <!-- SmartUPS DP300E -->
+		<value>.1.3.6.1.4.1.318.1.3.7.*</value> <!-- SmartUPS DP300E -->
+		<value>.1.3.6.1.4.1.318.1.3.13</value> <!-- Symmetra 3P -->
+		<value>.1.3.6.1.4.1.318.1.3.13.*</value> <!-- Other Symmetra 3P -->
+		<value>.1.3.6.1.4.1.318.1.3.16</value> <!-- AIS5000 -->
+		<value>.1.3.6.1.4.1.318.1.3.16.*</value> <!-- Other AIS5000 -->
+		<value>.1.3.6.1.4.1.318.1.3.21</value> <!-- GUTOR -->
+		<value>.1.3.6.1.4.1.318.1.3.21.*</value> <!-- GUTOR -->
+		<value>.1.3.6.1.4.1.318.1.3.23</value> <!-- Symmetra PX2 -->
+		<value>.1.3.6.1.4.1.318.1.3.23.*</value> <!-- Other Symmetra PX2 -->
+	  </valueList>
+	</oidMustMatch>
+	<oidMustExist oid=".1.3.6.1.4.1.318.1.1.1.9.2.3.1.12.1.1.1"/>
+	<suppressRule suppressid="apcsmartups/threephaseUPSinputpower/inputvaphase"/>
+	<suppressRule suppressid="apcsmartups/threephaseUPSinputpower/inputapparentpowertotal"/>
+	<numSensor ruleid="inputapparentpower" index=".1.3.6.1.4.1.318.1.1.1.9.2.3.1.2">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.12</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>num/powerKVA</type>
+	  <sensorId>INPUT_APPARENT_POWER_
+		<rowIndex/>
+	  </sensorId>
+	  <value>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.12</getRowOid>
+	  </value>
+	  <label>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+		  </getOid>
+		</mapValue>
+		<space/>Input Apparent Power - Phase
+		<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.2</getRowOid>
+	  </label>
+	  <sensorSet>UPS
+		<space/>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+		  </getOid>
+		</mapValue>
+		<space/>Input Status
+	  </sensorSet>
+	</numSensor>
+	<numSensor ruleid="inputapparentpowertotal" index=".1.3.6.1.4.1.318.1.1.1.9.2.2.1.1">
+	  <rowTest>
+	    <and>
+		  <op>
+		    <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		      <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.12.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.1</getOid>
+		    </mapValue>
+		  </op>
+		  <op>
+		    <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		      <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.12.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.2</getOid>
+		    </mapValue>
+		  </op>
+		  <op>
+		    <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		      <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.12.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.3</getOid>
+		    </mapValue>
+		  </op>
+		</and>
+	  </rowTest>
+	  <type>num/powerKVA</type>
+	  <sensorId>INPUT_APPARENT_POWER_TOTAL_<rowIndex/></sensorId>
+	  <value>
+	    <add>
+	      <op>
+	        <add>
+		      <op>
+		        <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.12.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.1</getOid>
+		      </op>
+		      <op>
+		        <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.12.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.2</getOid>
+		      </op>
+		    </add>
+		  </op>
+	      <op>
+	        <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.12.<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.1</getRowOid>.1.3</getOid>
+	      </op>
+	    </add>
+	  </value>
+	  <label>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5</getRowOid>
+		</mapValue>
+		<space/>Input Apparent Power Total
+	  </label>
+	  <sensorSet>UPS
+		<space/>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5</getRowOid>
+		</mapValue>
+		<space/>Input Status
+	  </sensorSet>
+	</numSensor>
+  </device>
+	<!-- OUTPUT PHASES -->
+  <device deviceid="smartupsphaseoutput">
+	<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+	  <valueList>
+	  <value>.1.3.6.1.4.1.311.1.1.*</value><!--PCBE Windows -->
+		<value>.1.3.6.1.4.1.318.1.3.3</value> <!-- MatrixUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.3.*</value> <!-- Other MatrixUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.5</value> <!-- Symmetra -->
+		<value>.1.3.6.1.4.1.318.1.3.5.*</value> <!-- Other Symmetra -->
+		<value>.1.3.6.1.4.1.318.1.3.6.*</value> <!-- SmartUPS DP -->
+		<value>.1.3.6.1.4.1.318.1.3.6</value> <!-- SmartUPS DP -->
+		<value>.1.3.6.1.4.1.318.1.3.7.*</value> <!-- SmartUPS DP300E -->
+		<value>.1.3.6.1.4.1.318.1.3.7</value> <!-- SmartUPS DP300E -->
+		<value>.1.3.6.1.4.1.318.1.3.13.*</value> <!-- Other Symmetra 3P -->
+		<value>.1.3.6.1.4.1.318.1.3.13</value> <!-- Symmetra 3P -->
+		<value>.1.3.6.1.4.1.318.1.3.16.*</value> <!-- Other AIS5000 -->
+		<value>.1.3.6.1.4.1.318.1.3.16</value> <!-- AIS5000 -->
+		<value>.1.3.6.1.4.1.318.1.3.17</value> <!-- SmartUPS VT -->
+		<value>.1.3.6.1.4.1.318.1.3.17.*</value> <!-- Other SmartUPS VT -->
+		<value>.1.3.6.1.4.1.318.1.3.21.*</value> <!-- GUTOR -->
+		<value>.1.3.6.1.4.1.318.1.3.21</value> <!-- GUTOR -->
+		<value>.1.3.6.1.4.1.318.1.3.23</value> <!-- Symmetra PX2 -->
+		<value>.1.3.6.1.4.1.318.1.3.23.*</value> <!-- Other Symmetra PX2 -->
+		<value>.1.3.6.1.4.1.318.1.3.28</value> <!-- Proxima -->
+		<value>.1.3.6.1.4.1.318.1.3.28.*</value> <!-- Other Proxima -->
+		<value>.1.3.6.1.4.1.318.1.3.30</value> <!-- EPS UPS -->
+		<value>.1.3.6.1.4.1.318.1.3.30.*</value> <!-- EPS UPS subtypes -->
+		<value>.1.3.6.1.4.1.318.1.3.8.4.1.3.5.*</value> <!-- RMSY -->
+	  </valueList>
+	</oidMustMatch>
+	<oidMustExist oid=".1.3.6.1.4.1.318.1.1.1.9.3.1.0"/>
+	<oidMustNotMatch ruleid="hasnophaseoutput" oid=".1.3.6.1.4.1.318.1.1.1.9.3.1.0">
+	  <valueList>
+		<value>0
+		</value>
+	  </valueList>
+	</oidMustNotMatch>
+	<!-- define the number of output phases for the UPS -->
+	<suppressRule ruleid="deleteoutputphasecount" suppressid="apcsmartups/smartups/outputphasecount"/>
+	<setProductData ruleid="outputphasecount" field="outputphasecount">
+	  <getOid>.1.3.6.1.4.1.318.1.1.1.9.3.2.1.2.1</getOid>
+	</setProductData>
+	<suppressRule suppressid="apcsmartups/smartups/outputvoltage"/>
+	<suppressRule suppressid="apcsmartups/hiprecoutput/outputvoltage"/>
+	<numSensor ruleid="phaseoutputvolts" index=".1.3.6.1.4.1.318.1.1.1.9.3.3.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.3</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>voltageAC</type>
+	  <sensorId>OUTPUT_VAC_
+		<rowNumber/>
+	  </sensorId>
+	  <value>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.3</getRowOid>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>Output Voltage - Phase
+		<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.2</getRowOid>
+	  </label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+	<suppressRule suppressid="apcsmartups/smartupsoutputcurrent/total_output_current"/>
+	<numSensor ruleid="phaseoutputamps" index=".1.3.6.1.4.1.318.1.1.1.9.3.3.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.4</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>amperage</type>
+	  <sensorId>UPSOUTPUTCURRENT_
+		<rowNumber/>
+	  </sensorId>
+	  <value>
+		<mult>
+		  <op>
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.4</getRowOid>
+		  </op>
+		  <op>0.1</op>
+
+		</mult>
+	  </value>
+	  <label>Output Current - Phase
+		<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.2</getRowOid>
+	  </label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+	<suppressRule suppressid="apcsmartups/smartups/outputloadpct"/>
+	<suppressRule suppressid="apcsmartups/hiprecoutput/outputloadpct"/>
+	<numSensor ruleid="phaseoutputloadpctva" index=".1.3.6.1.4.1.318.1.1.1.9.3.3.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.10</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>pctofcapacity/percentload</type>
+	  <sensorId>OUTPUT_PCT_VA_
+		<rowNumber/>
+	  </sensorId>
+	  <value>
+     <formatNumber printffmt="%f">
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.10</getRowOid>
+     </formatNumber>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>Output Power Percent VA - Phase
+		<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.2</getRowOid>
+	  </label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+	<numSensor ruleid="phaseoutputva" index=".1.3.6.1.4.1.318.1.1.1.9.3.3.1.1.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.7.1.1</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>powerVA/apparentpower/phase</type>
+	  <sensorId>OUTPUT_APPARENT_POWER_
+		<rowIndex/>
+	  </sensorId>
+	  <value>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.7.1.1</getRowOid>
+	  </value>
+	  <label>Output Power VA - Phase<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.2.1.1</getRowOid>
+	  </label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+	<numSensor ruleid="phaseoutputloadpctwatts" index=".1.3.6.1.4.1.318.1.1.1.9.3.3.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.16</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>pctofcapacity/percentload</type>
+	  <sensorId>OUTPUT_PCT_W_PHASE
+		<rowNumber/>
+	  </sensorId>
+	  <value>
+     <formatNumber printffmt="%f">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.16</getRowOid>
+     </formatNumber>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>Output Power Percent Watts - Phase
+		<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.2</getRowOid>
+	  </label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+	<numSensor ruleid="phaseoutputwatts" index=".1.3.6.1.4.1.318.1.1.1.9.3.3.1.1.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.13.1.1</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>powerW</type>
+	  <sensorId>OUTPUT_POWER_<rowIndex/></sensorId>
+	  <value>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.13.1.1</getRowOid>
+	  </value>
+	  <label>Output Power Watts - Phase<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.2.1.1</getRowOid>
+	  </label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+	<suppressRule suppressid="apcsmartups/smartups/outputphase"/>
+	<stateSensor ruleid="outputphaseorientation" index=".1.3.6.1.4.1.318.1.1.1.9.3.2.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.2.1.3</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>state/phaseorientation</type>
+	  <sensorId>PHASE_ORIENTATION_
+		<rowNumber/>
+	  </sensorId>
+	  <value>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/apcphaseorientationmap">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.2.1.3</getRowOid>
+		</mapValue>
+	  </value>
+	  <label>Output Phase Orientation</label>
+	  <enum>apcsmartups/smartupsphaseinput/apcphaseorientation</enum>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</stateSensor>
+	<suppressRule suppressid="apcsmartups/smartups/outputfrequency"/>
+	<suppressRule suppressid="apcsmartups/hiprecoutput/outputfrequency"/>
+	<numSensor ruleid="outputfrequency" index=".1.3.6.1.4.1.318.1.1.1.9.3.2.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.2.1.4</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>frequency</type>
+	  <sensorId>UPS_PHASE_OUTPUT_FREQ_
+		<rowNumber/>
+	  </sensorId>
+	  <value>
+		<mult>
+		  <op>
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.2.1.4</getRowOid>
+		  </op>
+		  <op>0.1</op>
+		</mult>
+	  </value>
+	  <label>Output Frequency</label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+  </device>
+  
+  
+	<device deviceid="threephasetotalpower">
+		<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+			<valueList>
+				<value>.1.3.6.1.4.1.311.1.1.*</value><!--PCBE Windows -->
+				<value>.1.3.6.1.4.1.318.1.3.3</value> <!-- MatrixUPS -->
+				<value>.1.3.6.1.4.1.318.1.3.3.*</value> <!-- Other MatrixUPS -->
+				<value>.1.3.6.1.4.1.318.1.3.5</value> <!-- Symmetra -->
+				<value>.1.3.6.1.4.1.318.1.3.5.*</value> <!-- Other Symmetra -->
+				<value>.1.3.6.1.4.1.318.1.3.6.*</value> <!-- SmartUPS DP -->
+				<value>.1.3.6.1.4.1.318.1.3.6</value> <!-- SmartUPS DP -->
+				<value>.1.3.6.1.4.1.318.1.3.7.*</value> <!-- SmartUPS DP300E -->
+				<value>.1.3.6.1.4.1.318.1.3.7</value> <!-- SmartUPS DP300E -->
+				<value>.1.3.6.1.4.1.318.1.3.13.*</value> <!-- Other Symmetra 3P -->
+				<value>.1.3.6.1.4.1.318.1.3.13</value> <!-- Symmetra 3P -->
+				<value>.1.3.6.1.4.1.318.1.3.16.*</value> <!-- Other AIS5000 -->
+				<value>.1.3.6.1.4.1.318.1.3.16</value> <!-- AIS5000 -->
+				<value>.1.3.6.1.4.1.318.1.3.17</value> <!-- SmartUPS VT -->
+				<value>.1.3.6.1.4.1.318.1.3.17.*</value> <!-- Other SmartUPS VT -->
+				<value>.1.3.6.1.4.1.318.1.3.21</value> <!-- GUTOR -->
+				<value>.1.3.6.1.4.1.318.1.3.21.*</value> <!-- Other GUTOR -->
+				<value>.1.3.6.1.4.1.318.1.3.23</value> <!-- Symmetra PX2 -->
+				<value>.1.3.6.1.4.1.318.1.3.23.*</value> <!-- Other Symmetra PX2 -->
+				<value>.1.3.6.1.4.1.318.1.3.8.4.1.3.5.*</value> <!-- RMSY -->
+			</valueList>
+		</oidMustMatch>
+		<oidMustExist oid=".1.3.6.1.4.1.318.1.1.1.9.3.2.1.2.1"/>
+		<oidMustMatch ruleid="phasecount" oid=".1.3.6.1.4.1.318.1.1.1.9.3.2.1.2.1">
+			<valueList><value>3</value></valueList>
+		</oidMustMatch>
+	
+		<numSensor ruleid="totaloutputapparentpower">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.7.1.1.3</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerVA</type>
+			<sensorId>OUTPUT_APPARENT_POWER_TOTAL</sensorId>
+			<value>
+				<add>
+					<op>
+						<add>
+							<op><getOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.7.1.1.1</getOid></op>
+							<op><getOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.7.1.1.2</getOid></op>
+						</add>
+					</op>
+					<op><getOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.7.1.1.3</getOid></op>
+				</add>
+			</value>
+			<label>Total Output Apparent Power</label>
+			<sensorSet>UPS Output Status</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="totaloutputactivepower">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.13.1.1.3</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerW</type>
+			<sensorId>OUTPUT_POWER_TOTAL</sensorId>
+			<value>
+				<add>
+					<op>
+						<add>
+							<op><getOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.13.1.1.1</getOid></op>
+							<op><getOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.13.1.1.2</getOid></op>
+						</add>
+					</op>
+					<op><getOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.13.1.1.3</getOid></op>
+				</add>
+			</value>
+			<label>Total Output Active Power</label>
+			<sensorSet>UPS Output Status</sensorSet>
+		</numSensor>
+	</device>
+  
+  <device deviceid="switchedoutlets">
+	<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+	  <valueList>
+	  <value>.1.3.6.1.4.1.311.1.1.*</value><!--PCBE Windows -->
+		<value>.1.3.6.1.4.1.318.1.3.2</value> <!-- SmartUPS -->
+		<value>.1.3.6.1.4.1.318.1.3.2.*</value> <!-- Other SmartUPS -->
+        <value>.1.3.6.1.4.1.318.1.3.27</value> <!-- Microlink -->
+		<value>.1.3.6.1.4.1.318.1.3.27.*</value> <!-- Other Microlink -->
+	  </valueList>
+	</oidMustMatch>
+	<oidMustExist ruleid="hasswitchedoutlets" oid=".1.3.6.1.4.1.318.1.1.1.12.1.2.1.1" istree="yes"/>
+	<stateSensor ruleid="outletstate" index=".1.3.6.1.4.1.318.1.1.1.12.1.2.1.1">
+	  <type>state/outletstate</type>
+	  <sensorId>OUTLET_STATE_
+		<rowNumber/>
+	  </sensorId>
+	  <value>
+		<mapValue mapid="outletstatusmap">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.12.1.2.1.3</getRowOid>
+		</mapValue>
+	  </value>
+	  <label>Outlet State -
+		<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.12.1.2.1.2</getRowOid>
+	  </label>
+	  <enum>outletstatus</enum>
+	  <sensorSet>Outlet Status</sensorSet>
+	</stateSensor>
+	<valueMap ruleid="outletstatusmap">
+	  <valueIn>1</valueIn>
+	  <valueOut>0</valueOut>
+	  <valueIn>2</valueIn>
+	  <valueOut>1</valueOut>
+	  <valueIn>*</valueIn>
+	  <valueOut>2</valueOut>
+	</valueMap>
+	<enumMap ruleid="outletstatus">
+	  <label>On</label>
+	  <label>Off</label>
+	  <label>Unknown</label>
+	</enumMap>
+  </device>
+  <!-- switchgear status for Odin/PX2 -->
+  <device deviceid="switchgear_status">
+	<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+	  <valueList>
+		<value>.1.3.6.1.4.1.318.1.3.23</value> <!-- Symmetra PX2 -->
+		<value>.1.3.6.1.4.1.318.1.3.23.*</value> <!-- Other Symmetra PX2 -->
+	  </valueList>
+	</oidMustMatch>
+	<oidMustNotMatch ruleid="switchgear_present" oid=".1.3.6.1.4.1.318.1.1.1.13.5.1.1.0">
+	  <valueList><value>0</value></valueList>
+	</oidMustNotMatch>
+	<stateSensor ruleid="switchgear_input_status">
+	  <type>state/switchgear_state</type>
+	  <sensorId>SWITCHGEAR_INPUT_STATUS</sensorId>
+	  <value>
+		<mapValue mapid="switchgear_state_map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.13.5.1.2.0</getOid>
+		</mapValue>
+	  </value>
+	  <label>Q1 Input Switch Status</label>
+	  <enum>switchgear_states</enum>
+	  <sensorSet>Switchgear Status</sensorSet>
+	</stateSensor>
+	<stateSensor ruleid="switchgear_output_status">
+	  <type>state/switchgear_state</type>
+	  <sensorId>SWITCHGEAR_OUTPUT_STATUS</sensorId>
+	  <value>
+		<mapValue mapid="switchgear_state_map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.13.5.1.3.0</getOid>
+		</mapValue>
+	  </value>
+	  <label>Q2 Output Switch Status</label>
+	  <enum>switchgear_states</enum>
+	  <sensorSet>Switchgear Status</sensorSet>
+	</stateSensor>
+	<stateSensor ruleid="switchgear_bypass_status">
+	  <type>state/switchgear_state</type>
+	  <sensorId>SWITCHGEAR_BYPASS_STATUS</sensorId>
+	  <value>
+		<mapValue mapid="switchgear_state_map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.13.5.1.4.0</getOid>
+		</mapValue>
+	  </value>
+	  <label>Q3 Bypass Switch Status</label>
+	  <enum>switchgear_states</enum>
+	  <sensorSet>Switchgear Status</sensorSet>
+	</stateSensor>
+	<stateSensor ruleid="switchgear_bypass_input_status">
+	  <type>state/switchgear_state</type>
+	  <sensorId>SWITCHGEAR_BYPASS_INPUT_STATUS</sensorId>
+	  <value>
+		<mapValue mapid="switchgear_state_map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.13.5.1.5.0</getOid>
+		</mapValue>
+	  </value>
+	  <label>Q5 Bypass Input Switch Status</label>
+	  <enum>switchgear_states</enum>
+	  <sensorSet>Switchgear Status</sensorSet>
+	</stateSensor>
+	<valueMap ruleid="switchgear_state_map">
+	  <valueIn>1</valueIn><valueOut>0</valueOut>
+	  <valueIn>2</valueIn><valueOut>1</valueOut>
+	  <valueIn>3</valueIn><valueOut>2</valueOut>
+	  <valueIn>4</valueIn><valueOut>3</valueOut>
+	  <valueIn>*</valueIn><valueOut>0</valueOut>
+	</valueMap>
+	<enumMap ruleid="switchgear_states">
+	  <label>Unknown</label>
+	  <label>Not Installed</label>
+	  <label>Open</label>
+	  <label>Closed</label>
+	</enumMap>
+  </device>
+  <device deviceid="parallelsystemoutput">
+	  <oidMustExist ruleid="remotesystemcountexists" oid=".1.3.6.1.4.1.318.1.1.1.14.2.0"/>
+	  <oidMustNotMatch ruleid="remotesystemsconnected" oid = ".1.3.6.1.4.1.318.1.1.1.14.2.0">
+		  <valueList>
+			  <value>-1</value>
+			  <value>0</value>
+			  <value>1</value>
+		  </valueList>
+	  </oidMustNotMatch>
+	  <numSensor ruleid="parallel_system_count">
+          <type>num</type>
+          <sensorId>PARALLEL_SYS_COUNT</sensorId>
+          <value><getOid>.1.3.6.1.4.1.318.1.1.1.14.2.0</getOid></value>
+          <valueInc>1</valueInc>
+          <label>Parallel Systems</label>
+          <sensorSet>Parallel System</sensorSet>
+      </numSensor>
+	  <numSensor ruleid="parallel_system_output_current" index=".1.3.6.1.4.1.318.1.1.1.14.8.1.1">
+		  <rowTest>
+              <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+                  <getRowOid>.1.3.6.1.4.1.318.1.1.1.14.8.1.3</getRowOid>
+              </mapValue>
+          </rowTest>
+		  <type>amperage</type>
+		  <sensorId>PARALLEL_SYS_OUTPUT_CURRENT_<rowNumber/></sensorId>
+		  <value><getRowOid>.1.3.6.1.4.1.318.1.1.1.14.8.1.3</getRowOid></value>
+		  <valueInc>1</valueInc>
+		  <label>Parallel System Output Current - Phase<space/><getRowOid>.1.3.6.1.4.1.318.1.1.1.14.8.1.2</getRowOid></label>
+		  <sensorSet>Parallel System</sensorSet>
+	  </numSensor>
+	  <numSensor ruleid="parallel_system_output_load" index=".1.3.6.1.4.1.318.1.1.1.14.8.1.1">
+          <rowTest>
+              <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+                  <getRowOid>.1.3.6.1.4.1.318.1.1.1.14.8.1.4</getRowOid>
+              </mapValue>
+          </rowTest>
+          <type>num/powerKVA</type>
+          <sensorId>PARALLEL_SYS_OUTPUT_APPARENT_POWER_<rowNumber/></sensorId>
+          <value>
+            <mult>
+              <op>0.001</op>
+              <op><getRowOid>.1.3.6.1.4.1.318.1.1.1.14.8.1.4</getRowOid></op>
+            </mult>
+          </value>
+          <label>Parallel System Output Apparent Power - Phase<space/><getRowOid>.1.3.6.1.4.1.318.1.1.1.14.8.1.2</getRowOid></label>
+          <sensorSet>Parallel System</sensorSet>
+      </numSensor>
+      <numSensor ruleid="parallel_system_output_percent_load" index=".1.3.6.1.4.1.318.1.1.1.14.8.1.1">
+          <rowTest>
+              <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+                  <getRowOid>.1.3.6.1.4.1.318.1.1.1.14.8.1.5</getRowOid>
+              </mapValue>
+          </rowTest>
+          <type>pctofcapacity</type>
+          <sensorId>PARALLEL_SYS_OUTPUT_PERCENT_LOAD_<rowNumber/></sensorId>
+          <value><getRowOid>.1.3.6.1.4.1.318.1.1.1.14.8.1.5</getRowOid></value>
+          <valueInc>1</valueInc>
+          <label>Parallel System Output Load - Phase<space/><getRowOid>.1.3.6.1.4.1.318.1.1.1.14.8.1.2</getRowOid></label>
+          <sensorSet>Parallel System</sensorSet>
+      </numSensor>
+      <numSensor ruleid="parallel_system_output_power" index=".1.3.6.1.4.1.318.1.1.1.14.8.1.1">
+          <rowTest>
+              <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+                  <getRowOid>.1.3.6.1.4.1.318.1.1.1.14.8.1.6</getRowOid>
+              </mapValue>
+          </rowTest>
+          <type>num/powerKW</type>
+          <sensorId>PARALLEL_SYS_OUTPUT_ACTIVE_POWER_<rowNumber/></sensorId>
+          <value>
+            <mult>
+              <op>0.001</op>
+              <op><getRowOid>.1.3.6.1.4.1.318.1.1.1.14.8.1.6</getRowOid></op>
+            </mult>
+          </value>
+          <label>Parallel System Output Power - Phase<space/><getRowOid>.1.3.6.1.4.1.318.1.1.1.14.8.1.2</getRowOid></label>
+          <sensorSet>Parallel System</sensorSet>
+      </numSensor>
+	  <numSensor ruleid="parallel_total_output_active_power">
+		  <rowTest>
+		      <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		          <getOid>.1.3.6.1.4.1.318.1.1.1.14.5.0</getOid>
+		      </mapValue>
+	      </rowTest>
+		  <type>num/powerKW</type>
+		  <sensorId>PARALLEL_TOTAL_OUTPUT_ACTIVE_POWER</sensorId>
+		  <value><getOid>.1.3.6.1.4.1.318.1.1.1.14.5.0</getOid></value>
+		  <valueInc>1</valueInc>
+		  <label>Parallel System Total Output Power</label>
+		  <sensorSet>Parallel System</sensorSet>
+	  </numSensor>
+	  <numSensor ruleid="parallel_total_output_apparent_power">
+		  <rowTest>
+		      <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		          <getOid>.1.3.6.1.4.1.318.1.1.1.14.6.0</getOid>
+		      </mapValue>
+	      </rowTest>
+		  <type>num/powerKVA</type>
+		  <sensorId>PARALLEL_TOTAL_OUTPUT_APPARENT_POWER</sensorId>
+		  <value><getOid>.1.3.6.1.4.1.318.1.1.1.14.6.0</getOid></value>
+		  <valueInc>1</valueInc>
+		  <label>Parallel System Total Output Apparent Power</label>
+		  <sensorSet>Parallel System</sensorSet>
+	  </numSensor>
+	  <numSensor ruleid="parallel_total_load_pct">
+		  <rowTest>
+		      <mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		          <getOid>.1.3.6.1.4.1.318.1.1.1.14.11.0</getOid>
+		      </mapValue>
+	      </rowTest>
+		  <type>pctofcapacity</type>
+		  <sensorId>PARALLEL_TOTAL_PERCENT_LOAD</sensorId>
+		  <value><getOid>.1.3.6.1.4.1.318.1.1.1.14.11.0</getOid></value>
+		  <valueInc>1</valueInc>
+		  <label>Parallel System Total Output Load</label>
+		  <sensorSet>Parallel System</sensorSet>
+	  </numSensor>
+  </device>
+  <device deviceid="smartupssplitphase">
+	<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+	  <valueList>
+		<value>.1.3.6.1.4.1.318.1.3.2</value> <!-- SmartUPS -->
+        <value>.1.3.6.1.4.1.318.1.3.27</value> <!-- Microlink -->
+		<value>.1.3.6.1.4.1.318.1.3.27.*</value> <!-- Other Microlink -->
+	  </valueList>
+	</oidMustMatch>
+	<oidMustMatch ruleid="splitphase" oid=".1.3.6.1.4.1.318.1.1.1.9.3.2.1.3.1">
+	  <valueList>
+		<value>3
+		</value>
+	  </valueList>
+	</oidMustMatch>
+		<!-- suppress single phase rules -->
+	<suppressRule suppressid="apcsmartups/smartups/inputvoltage"/>
+	<suppressRule suppressid="apcsmartups/hiprecinput/inputvoltage"/>
+	<suppressRule suppressid="apcsmartups/smartups/mininputvoltage"/>
+	<suppressRule suppressid="apcsmartups/hiprecinput/mininputvoltage"/>
+	<suppressRule suppressid="apcsmartups/smartups/maxinputvoltage"/>
+	<suppressRule suppressid="apcsmartups/hiprecinput/maxinputvoltage"/>
+
+		<!-- input voltage -->
+	<suppressRule suppressid="upsmib/upsmib/upsInputVoltage" />
+	<numSensor ruleid="inputvolts" index=".1.3.6.1.4.1.318.1.1.1.9.2.3.1.2">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.3</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>voltageAC</type>
+	  <sensorId>INPUT1_VAC_
+		<rowIndex/>
+	  </sensorId>
+	  <value>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.3</getRowOid>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+		  </getOid>
+		</mapValue>
+		<space/>Input Voltage - Phase
+		<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.2</getRowOid>
+	  </label>
+	  <sensorSet>UPS
+		<space/>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+		  </getOid>
+		</mapValue>
+		<space/>Input Status
+	  </sensorSet>
+	</numSensor>
+		<!-- display the phase orientation -->
+	<stateSensor ruleid="inputphaseorientation" index=".1.3.6.1.4.1.318.1.1.1.9.2.2.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.3</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>state/phaseorientation</type>
+	  <sensorId>INPUT1_ORIENTATION_
+		<rowIndex/>
+	  </sensorId>
+	  <value>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/apcphaseorientationmap">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.3</getRowOid>
+		</mapValue>
+	  </value>
+	  <label>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5</getRowOid>
+		</mapValue>
+		<space/>Input Phase Orientation
+	  </label>
+	  <enum>apcsmartups/smartupsphaseinput/apcphaseorientation</enum>
+	  <sensorSet>UPS
+		<space/>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5</getRowOid>
+		</mapValue>
+		<space/>Input Status
+	  </sensorSet>
+	</stateSensor>
+		<!-- input frequency -->
+	<suppressRule suppressid="apcsmartups/smartups/inputfrequency"/>
+	<suppressRule suppressid="apcsmartups/hiprecinput/inputfrequency"/>
+	<suppressRule suppressid="upsmib/upsmib/upsInputFrequency" />
+	<numSensor ruleid="inputfrequency" index=".1.3.6.1.4.1.318.1.1.1.9.2.2.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.4</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>frequency</type>
+	  <sensorId>INPUT1_HZ_
+		<rowIndex/>
+	  </sensorId>
+	  <value>
+		<mult>
+		  <op>
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.4</getRowOid>
+		  </op>
+		  <op>0.1</op>
+		</mult>
+	  </value>
+	  <label>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5</getRowOid>
+		</mapValue>
+		<space/>Input Frequency
+	  </label>
+	  <sensorSet>UPS
+		<space/>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5</getRowOid>
+		</mapValue>
+		<space/>Input Status
+	  </sensorSet>
+	</numSensor>
+
+		<!-- read input current for all phases -->
+	<suppressRule suppressid="upsmib/upsmib/upsInputCurrent" />
+	<numSensor ruleid="inputamps" index=".1.3.6.1.4.1.318.1.1.1.9.2.3.1.2">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.6</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>amperage</type>
+	  <sensorId>INPUT_CURRENT_
+		<rowIndex/>
+	  </sensorId>
+	  <value>
+		<mult>
+		  <op>
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.6</getRowOid>
+		  </op>
+		  <op>0.1</op>
+		</mult>
+	  </value>
+	  <label>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+		  </getOid>
+		</mapValue>
+		<space/>Input Current - Phase
+		<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.2</getRowOid>
+	  </label>
+	  <sensorSet>UPS
+		<space/>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/inputenum-to-inputstring-map">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.9.2.2.1.5.
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.2.3.1.1</getRowOid>
+		  </getOid>
+		</mapValue>
+		<space/>Input Status
+	  </sensorSet>
+	</numSensor>
+		<!-- output voltage -->
+	<suppressRule suppressid="apcsmartups/smartups/outputvoltage"/>
+	<suppressRule suppressid="apcsmartups/hiprecoutput/outputvoltage"/>
+	<numSensor ruleid="phaseoutputvolts" index=".1.3.6.1.4.1.318.1.1.1.9.3.3.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.3</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>voltageAC</type>
+	  <sensorId>OUTPUT_VAC_
+		<rowNumber/>
+	  </sensorId>
+	  <value>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.3</getRowOid>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>Output Voltage - Phase
+		<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.2</getRowOid>
+	  </label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+		<!-- output current -->
+	<suppressRule suppressid="apcsmarups/smartupsoutputcurrent/total_output_current"/>
+	<numSensor ruleid="phaseoutputamps" index=".1.3.6.1.4.1.318.1.1.1.9.3.3.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.4</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>amperage</type>
+	  <sensorId>UPSOUTPUTCURRENT_
+		<rowNumber/>
+	  </sensorId>
+	  <value>
+		<mult>
+		  <op>
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.4</getRowOid>
+		  </op>
+		  <op>0.1</op>
+		</mult>
+	  </value>
+	  <label>Output Current - Phase
+		<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.2</getRowOid>
+	  </label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+		<!-- output load percent -->
+	<suppressRule suppressid="apcsmartups/smartups/outputloadpct"/>
+	<suppressRule suppressid="apcsmartups/hiprecoutput/outputloadpct"/>
+	<numSensor ruleid="phaseoutputloadpctva" index=".1.3.6.1.4.1.318.1.1.1.9.3.3.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.10</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>pctofcapacity/percentload</type>
+	  <sensorId>OUTPUT_PCT_VA_
+		<rowNumber/>
+	  </sensorId>
+	  <value>
+     <formatNumber printffmt="%f">
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.10</getRowOid>
+    </formatNumber>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>Output Power Percent VA - Phase
+		<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.2</getRowOid>
+	  </label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+		<!-- output load va -->
+	<numSensor ruleid="phaseoutputva" index=".1.3.6.1.4.1.318.1.1.1.9.3.3.1.1.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.7.1.1</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>powerVA/apparentpower/phase</type>
+	  <sensorId>OUTPUT_APPARENT_POWER_<rowIndex/></sensorId>
+	  <value>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.7.1.1</getRowOid>
+	  </value>
+	  <label>Output Power VA - Phase
+		<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.2.1.1</getRowOid>
+	  </label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+	<numSensor ruleid="phaseoutputloadpctwatts" index=".1.3.6.1.4.1.318.1.1.1.9.3.3.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.16</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>pctofcapacity/percentload</type>
+	  <sensorId>OUTPUT_PCT_W_PHASE
+		<rowNumber/>
+	  </sensorId>
+	  <value>
+     <formatNumber printffmt="%f">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.16</getRowOid>
+     </formatNumber>
+	  </value>
+	  <valueInc>1</valueInc>
+	  <label>Output Power Percent Watts - Phase
+		<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.2</getRowOid>
+	  </label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+		<!-- power in watts, but we don't have pf, so assuming pf=1 and using va -->
+	<numSensor ruleid="phaseoutputwatts" index=".1.3.6.1.4.1.318.1.1.1.9.3.3.1.1.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.13.1.1</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>powerW/power/phase</type>
+	  <sensorId>OUTPUT_POWER_<rowIndex/></sensorId>
+	  <value>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.13.1.1</getRowOid>
+	  </value>
+	  <label>Output Power Watts - Phase<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.2.1.1</getRowOid>
+	  </label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+		<!-- output phase orientation -->
+	<suppressRule suppressid="apcsmartups/smartups/outputphase"/>
+	<stateSensor ruleid="outputphaseorientation" index=".1.3.6.1.4.1.318.1.1.1.9.3.2.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.2.1.3</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>state/phaseorientation</type>
+	  <sensorId>PHASE_ORIENTATION_
+		<rowNumber/>
+	  </sensorId>
+	  <value>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/apcphaseorientationmap">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.2.1.3</getRowOid>
+		</mapValue>
+	  </value>
+	  <label>Output Phase Orientation</label>
+	  <enum>apcsmartups/smartupsphaseinput/apcphaseorientation</enum>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</stateSensor>
+		<!-- output phase frequency -->
+	<suppressRule suppressid="apcsmartups/smartups/outputfrequency"/>
+	<suppressRule suppressid="apcsmartups/hiprecoutput/outputfrequency"/>
+	<numSensor ruleid="outputfrequency" index=".1.3.6.1.4.1.318.1.1.1.9.3.2.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.2.1.4</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>frequency</type>
+	  <sensorId>UPS_PHASE_OUTPUT_FREQ_
+		<rowNumber/>
+	  </sensorId>
+	  <value>
+		<mult>
+		  <op>
+			<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.2.1.4</getRowOid>
+		  </op>
+		  <op>0.1</op>
+		</mult>
+	  </value>
+	  <label>Output Frequency</label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+  </device>
+  <device deviceid="substitutePhasePower">
+	<oidMustMatch ruleid="threephasepowermissing" oid=".1.3.6.1.4.1.318.1.1.1.9.3.3.1.13" istree="yes">
+	  <valueList>
+		<value>-1</value>
+	  </valueList>
+	</oidMustMatch>
+	<oidMustNotMatch ruleid="galaxysysobjid" oid=".1.3.6.1.2.1.1.2.0">
+	  <valueList>
+		<value>.1.3.6.1.4.1.318.1.3.28</value> <!-- Galaxy -->
+        <value>.1.3.6.1.4.1.318.1.3.28.*</value> <!-- other Galaxy -->
+		<value>.1.3.6.1.4.1.318.1.3.30</value> <!-- EPS UPS -->
+		<value>.1.3.6.1.4.1.318.1.3.30.*</value> <!-- EPS UPS subtypes -->
+	  </valueList>
+	</oidMustNotMatch>
+	<suppressRule suppressid="apcsmartups/smartupsphaseoutput/phaseoutputwatts"/>
+	<suppressRule suppressid="apcsmartups/smartupssplitphase/phaseoutputwatts"/>
+	<!-- substitute the watts value with VA for devices which dont support watts per phase -->
+	<numSensor ruleid="phaseoutputwatts" index=".1.3.6.1.4.1.318.1.1.1.9.3.3.1.1.1.1">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <!-- removed the extra .1.1 -->
+		  <getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.7.1.1</getRowOid>
+		</mapValue>
+	  </rowTest>
+	  <type>powerW</type>
+	  <sensorId>OUTPUT_POWER_<rowIndex/></sensorId>
+	  <value>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.7.1.1</getRowOid>
+	  </value>
+	  <label>Output Power Watts - Phase<space/>
+		<getRowOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.2.1.1</getRowOid>
+	  </label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+  </device>
+  
+  <!-- use VA in place of watts for UPS models which don't support watts measurement -->
+	<device deviceid="substitutethreephasetotalpower">
+		<oidMustExist oid=".1.3.6.1.4.1.318.1.1.1.9.3.2.1.2.1"/>
+		<oidMustMatch ruleid="phasecount" oid=".1.3.6.1.4.1.318.1.1.1.9.3.2.1.2.1">
+			<valueList><value>3</value></valueList>
+		</oidMustMatch>
+		<oidMustMatch ruleid="threephasepowermissing" oid=".1.3.6.1.4.1.318.1.1.1.9.3.3.1.13" istree="yes">
+			<valueList>
+				<value>-1</value>
+			</valueList>
+		</oidMustMatch>
+		<oidMustNotMatch ruleid="galaxysysobjid" oid=".1.3.6.1.2.1.1.2.0">
+			<valueList>
+				<value>.1.3.6.1.4.1.318.1.3.28</value> <!-- Galaxy -->
+				<value>.1.3.6.1.4.1.318.1.3.28.*</value> <!-- other Galaxy -->
+				<value>.1.3.6.1.4.1.318.1.3.30</value> <!-- EPS UPS -->
+				<value>.1.3.6.1.4.1.318.1.3.30.*</value> <!-- EPS UPS subtypes -->
+			</valueList>
+		</oidMustNotMatch>
+		<suppressRule suppressid="apcsmartups/threephasetotalpower/totaloutputactivepower"/>
+		
+		<numSensor ruleid="totaloutputactivepower">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.7.1.1.3</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerW</type>
+			<sensorId>OUTPUT_POWER_TOTAL</sensorId>
+			<value>
+				<add>
+					<op>
+						<add>
+							<op><getOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.7.1.1.1</getOid></op>
+							<op><getOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.7.1.1.2</getOid></op>
+						</add>
+					</op>
+					<op><getOid>.1.3.6.1.4.1.318.1.1.1.9.3.3.1.7.1.1.3</getOid></op>
+				</add>
+			</value>
+			<label>Total Output Active Power</label>
+			<sensorSet>UPS Output Status</sensorSet>
+		</numSensor>
+	</device>
+  
+	<!-- support for MSTAR, Proxima, and Galaxy specific oids -->
+	<device deviceid="mstar_proxima_advoutput">
+		<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+			<valueList>
+				<value>.1.3.6.1.4.1.318.1.3.28</value> <!-- Galaxy -->
+				<value>.1.3.6.1.4.1.318.1.3.28.*</value> <!-- Other Galaxy -->
+				<value>.1.3.6.1.4.1.318.1.3.30</value> <!-- EPS UPS -->
+				<value>.1.3.6.1.4.1.318.1.3.30.*</value> <!-- EPS UPS subtypes -->
+			</valueList>
+		</oidMustMatch>
+
+		<!-- suppress other rules that would duplicate these sensors -->
+		<suppressRule suppressid="apcsmartups/smartups/outputloadpct"/>
+		<suppressRule suppressid="apcsmartups/hiprecoutput/outputloadpct"/>
+
+		<!-- suppress rules which do not apply to MSTAR/Galaxy -->
+		<suppressRule suppressid="apcsmartups/smartups/batterystate"/>
+		<suppressRule suppressid="apcsmartups/smartups/upsage"/>
+		<suppressRule suppressid="apcsmartups/smartups/battage"/>
+		<suppressRule suppressid="apcsmartups/smartups/batteryreplace"/>
+		<suppressRule suppressid="apcsmartups/smartups/timeonbatt"/>
+		
+		<!-- Was asked to enable in VALHAL-3131 & VALHAL-4034.  not sure why 
+        it was supressed
+		<suppressRule suppressid="apcsmartups/smartups/basic_output_status"/>
+		-->
+		
+        
+        
+		<!-- Output Load (pct) -->
+		<numSensor ruleid="outputloadpct">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.4.2.3.0</getOid>
+				</mapValue>
+				</rowTest>
+			<type>pctofcapacity/outputload</type>
+			<sensorId>OUTPUT_LOAD_PCT</sensorId>
+			<value>
+				<formatNumber printffmt="%f">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.4.2.3.0</getOid>
+				</formatNumber>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Total Output Percent Load</label>
+			<sensorSet>UPS Output Status</sensorSet>
+		</numSensor>
+	
+		<!-- Output Active Power -->
+		<numSensor ruleid="total_output_active_power">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.4.2.8.0</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerW</type>
+			<sensorId>TOTAL_OUTPUT_ACTIVE_POWER</sensorId>
+			<value>
+				<getOid>.1.3.6.1.4.1.318.1.1.1.4.2.8.0</getOid>
+			</value>
+			<label>Total Output Active Power</label>
+			<sensorSet>UPS Output Status</sensorSet>
+		</numSensor>
+	
+		<!-- Output Apparent Power -->
+		<numSensor ruleid="total_output_apparent_power">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.4.2.9.0</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerVA</type>
+			<sensorId>TOTAL_OUTPUT_APPARENT_POWER</sensorId>
+			<value>
+				<getOid>.1.3.6.1.4.1.318.1.1.1.4.2.9.0</getOid>
+			</value>
+			<label>Total Output Apparent Power</label>
+			<sensorSet>UPS Output Status</sensorSet>
+		</numSensor>
+	
+		<!-- Total Input Active Power -->
+		<numSensor ruleid="total_input_active_power">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>1.3.6.1.4.1.318.1.1.1.3.2.12.0</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerW</type>
+			<sensorId>TOTAL_INPUT_ACTIVE_POWER</sensorId>
+			<value>
+				<mult>
+					<op><getOid>.1.3.6.1.4.1.318.1.1.1.3.2.12.0</getOid></op>
+					<op>1000</op>
+				</mult>
+			</value>
+			<label>Total Input Active Power</label>
+			<sensorSet>UPS Main Input Status</sensorSet>
+		</numSensor>
+	
+		<!-- Total Input Apparent Power -->
+		<numSensor ruleid="total_input_apparent_power">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.3.2.11.0</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerVA</type>
+			<sensorId>TOTAL_INPUT_APPARENT_POWER</sensorId>
+			<value>
+				<mult>
+					<op><getOid>.1.3.6.1.4.1.318.1.1.1.3.2.11.0</getOid></op>
+					<op>1000</op>
+				</mult>
+			</value>
+			<label>Total Input Apparent Power</label>
+			<sensorSet>UPS Main Input Status</sensorSet>
+		</numSensor>
+		
+		<!-- Total Bypass Input Active Power -->
+		<numSensor ruleid="total_bypass_input_active_power">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.3.2.14.0</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerW</type>
+			<sensorId>TOTAL_BYPASS_INPUT_ACTIVE_POWER</sensorId>
+			<value>
+				<mult>
+					<op><getOid>.1.3.6.1.4.1.318.1.1.1.3.2.14.0</getOid></op>
+					<op>1000</op>
+				</mult>
+			</value>
+			<label>Total Bypass Input Active Power</label>
+			<sensorSet>UPS Main Input Status</sensorSet>
+		</numSensor>
+	
+		<!-- Total Bypass Input Apparent Power -->
+		<numSensor ruleid="total_bypass_input_apparent_power">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.3.2.13.0</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerVA</type>
+			<sensorId>TOTAL_BYPASS_INPUT_APPARENT_POWER</sensorId>
+			<value>
+				<mult>
+					<op><getOid>.1.3.6.1.4.1.318.1.1.1.3.2.13.0</getOid></op>
+					<op>1000</op>
+				</mult>
+			</value>
+			<label>Total Bypass Input Apparent Power</label>
+			<sensorSet>UPS Main Input Status</sensorSet>
+		</numSensor>
+		
+		<!-- system internal temperature -->
+		<numSensor ruleid="system_internal_temp">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.4.1.4.0</getOid>
+				</mapValue>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>UPS_INTERNAL_TEMP</sensorId>
+			<value><getOid>.1.3.6.1.4.1.318.1.1.1.4.1.4.0</getOid></value>
+			<label>UPS Internal Temperature</label>
+			<sensorSet>UPS Battery Status</sensorSet>
+		</numSensor>
+	
+		<!-- battery state for systems with batteries -->
+		<stateSensor ruleid="batterystate">
+			<rowTest>
+				<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.2.2.9.0</getOid>
+				</mapValue>
+			</rowTest>
+			<type>battstatus</type>
+			<sensorId>BATTSTATUS</sensorId>
+			<value>
+				<mapValue mapid="apcsmartups/smartups/battstatus-to-index">
+					<getOid>.1.3.6.1.4.1.318.1.1.1.2.1.1.0</getOid>
+				</mapValue>
+			</value>
+			<label>Battery Status</label>
+			<sensorSet>UPS Battery Status</sensorSet>
+		</stateSensor>
+		
+		<!-- Galaxy Switchgear Breaker States -->
+		<stateSensor ruleid="galaxy_breaker_states" index=".1.3.6.1.4.1.318.1.1.1.13.5.1.7.1.1">
+			<type>state/breakerposition</type>
+			<sensorId>UPS_BREAKER_STATE_<rowIndex/></sensorId>
+			<value>
+				<mapValue mapid="galaxy_breaker_state_map">
+					<getRowOid>.1.3.6.1.4.1.318.1.1.1.13.5.1.7.1.5</getRowOid>
+				</mapValue>
+			</value>
+			<label>
+				Breaker State -<space/>
+				<getRowOid>.1.3.6.1.4.1.318.1.1.1.13.5.1.7.1.3</getRowOid>
+			</label>
+			<enum>galaxy_breaker_state</enum>
+			<sensorSet>UPS Breaker Status</sensorSet>
+		</stateSensor>
+		<valueMap ruleid="galaxy_breaker_state_map">
+			<valueIn>1</valueIn><valueOut>0</valueOut>
+			<valueIn>2</valueIn><valueOut>1</valueOut>
+			<valueIn>3</valueIn><valueOut>2</valueOut>
+			<valueIn>*</valueIn><valueOut>0</valueOut>
+		</valueMap>
+		<enumMap ruleid="galaxy_breaker_state">
+			<label>Unknown</label>
+			<label>Opened</label>
+			<label>Closed</label>
+		</enumMap>
+	</device>
+  
+  <device deviceid="mstar_3to1_output">
+	<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+	  <valueList>
+		<value>.1.3.6.1.4.1.318.1.3.28.14</value> <!-- MSTAR 10kva 3:1 -->
+		<value>.1.3.6.1.4.1.318.1.3.28.15</value> <!-- MSTAR 15kva 3:1 -->
+		<value>.1.3.6.1.4.1.318.1.3.28.16</value> <!-- MSTAR 20kva 3:1 -->
+		<value>.1.3.6.1.4.1.318.1.3.28.17</value> <!-- MSTAR 30kva 3:1 -->
+	  </valueList>
+	</oidMustMatch>
+	<!-- suppress other rules that would duplicate these sensors -->
+	<suppressRule suppressid="apcsmartups/smartupsphaseoutput/phaseoutputvolts"/>
+	<suppressRule suppressid="apcsmartups/smartupsphaseoutput/phaseoutputamps"/>
+	<suppressRule suppressid="apcsmartups/smartupsphaseoutput/phaseoutputloadpctva"/>
+	<suppressRule suppressid="apcsmartups/smartupsphaseoutput/phaseoutputva"/>
+	<suppressRule suppressid="apcsmartups/smartupsphaseoutput/phaseoutputloadpctwatts"/>
+	<suppressRule suppressid="apcsmartups/smartupsphaseoutput/phaseoutputwatts"/>
+	<numSensor ruleid="total_output_current">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.4.2.4.0</getOid>
+		</mapValue>
+	  </rowTest>
+	  <type>amperage</type>
+	  <sensorId>TOTAL_OUTPUT_CURRENT</sensorId>
+	  <value><getOid>.1.3.6.1.4.1.318.1.1.1.4.2.4.0</getOid></value>
+	  <label>Total Output Current</label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+	<numSensor ruleid="total_output_voltage">
+	  <rowTest>
+		<mapValue mapid="apcsmartups/smartupsphaseinput/delete-null-sensor">
+		  <getOid>.1.3.6.1.4.1.318.1.1.1.4.2.1.0</getOid>
+		</mapValue>
+	  </rowTest>
+	  <type>voltageAC</type>
+	  <sensorId>TOTAL_OUTPUT_VOLTAGE</sensorId>
+	  <value><getOid>.1.3.6.1.4.1.318.1.1.1.4.2.1.0</getOid></value>
+	  <label>Total Output Voltage</label>
+	  <sensorSet>UPS Output Status</sensorSet>
+	</numSensor>
+  </device>
+  <device deviceid="mstar_ssc">
+	<oidMustMatch ruleid="smartupssysid" oid=".1.3.6.1.2.1.1.2.0">
+	  <valueList>
+		<value>.1.3.6.1.4.1.318.1.3.28</value> <!-- MSTAR -->
+		<value>.1.3.6.1.4.1.318.1.3.28.*</value> <!-- MSTAR sub-types -->
+		<value>.1.3.6.1.4.1.318.1.3.30</value> <!-- EPS UPS -->
+		<value>.1.3.6.1.4.1.318.1.3.30.*</value> <!-- EPS UPS subtypes -->
+	  </valueList>
+	</oidMustMatch>
+	<oidMustMatch ruleid="batterynotinstalled" oid=".1.3.6.1.4.1.318.1.1.1.2.2.9.0">
+	  <valueList>
+		<value>-1</value>
+	  </valueList>
+	</oidMustMatch>
+	<suppressRule ruleid="suppressbattpct" suppressid="apcsmartups/smartups/pctofbatt"/>
+	<suppressRule ruleid="suppressbatttmp" suppressid="apcsmartups/smartups/tmpofbatt"/>
+	<suppressRule ruleid="suppressbatttimerem" suppressid="apcsmartups/smartups/timeremainingonbatt"/>
+	<suppressRule ruleid="suppressbattstatus" suppressid="apcsmartups/smartups/batterystate"/>
+  </device>
+	<!-- Basic output status alerts -->
+  <device deviceid="upsBasicState">
+		<!-- Don't do this for essential devices -->
+	<oidMustNotExist ruleid="essentialtest" oid=".1.3.6.1.4.1.318.1.4.2.9.0"/>
+	<oidMustExist ruleid="outputStateExists" oid=".1.3.6.1.4.1.318.1.1.1.11.1.1.0"/>
+	<oidMustNotMatch ruleid="outputStateSupported" oid=".1.3.6.1.4.1.318.1.1.1.11.1.1.0">
+	  <valueList>
+		<value>UNKNOWN
+		</value>
+	  </valueList>
+	</oidMustNotMatch>
+		
+						
+		<!-- make sure generic device status alarms (Critical/Warning condition exists) are not generated as well -->
+	<suppressRule ruleid="stompgenericalarms" suppressid="core/apcdiscgenericalarms/apcDiscoveryStatus_row1"/>
+	<alarmFlags ruleid="outputState">
+	  <value>
+		<baseNToInt base="2">
+		  <reverseString>
+			<getOid>.1.3.6.1.4.1.318.1.1.1.11.1.1.0</getOid>
+		  </reverseString>
+		</baseNToInt>
+	  </value>
+	  <!-- On battery - power failure event 0x0109 cleared=0x010A -->
+	  <!-- Note - make sure self-test and battery calibrate are NOT active, so we don't make bad alert -->
+	  <alarmFlagsTest mask="4000202" match="2">
+		<name>
+		  <activeText>Power Failure</activeText>
+		  <inactiveText>Power Failure Cleared</inactiveText>
+		</name>
+		<severity>warning</severity>
+		<category>Input</category>
+		<description>
+		  <activeText>On battery power in response to an input power problem.</activeText>
+		  <inactiveText>No longer on battery power.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Make sure the UPS is connected to its power source correctly, and that source is providing the proper power.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Low battery - event 0x010F cleared=0x0110 but only when not discharged battery -->
+	  <alarmFlagsTest mask="404" match="4">
+		<name>
+		  <activeText>Low Battery</activeText>
+		  <inactiveText>Low Battery Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Battery</category>
+		<description>
+		  <activeText>The battery power is too low to continue to support the load; the UPS will shut down if input power does not return to normal soon.</activeText>
+		  <inactiveText>A low battery condition no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>The UPS cannot continue to use its battery power to support its load equipment. The remaining runtime equals, or is less than, the runtime defined by its "Low Battery" setting. Consider upgrading to a UPS that provides more runtime.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Replace battery - event 0x0119 cleared=0x011A -->
+	  <alarmFlagsTest mask="10" match="10">
+		<name>
+		  <activeText>Replacement Battery Needed</activeText>
+		  <inactiveText>Battery Replaced</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Battery</category>
+		<description>
+		  <activeText>At least one faulty battery exists.</activeText>
+		  <inactiveText>A faulty battery no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Replace all faulty batteries.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Serial communications lost -->
+	  <alarmFlagsTest mask="20" match="0">
+		<name>
+		  <activeText>Local Management-To-UPS Communication Lost</activeText>
+		  <inactiveText>Local Management-To-UPS Communication Restored</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Communication</category>
+		<description>
+		  <activeText>Lost the local network management interface-to-UPS communication.</activeText>
+		  <inactiveText>Restored the local network management interface-to-UPS communication.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Make sure the UPS and its agent are connected to each other properly, and that normal power is available to both.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- AVR Boost Active - log -->
+	  <alarmFlagsTest mask="40" match="40">
+		<name>
+		  <activeText>AVR Boost Active</activeText>
+		  <inactiveText>AVR Boost No Longer Active</inactiveText>
+		</name>
+		<severity>warning</severity>
+		<category>Output</category>
+		<description>
+		  <activeText>AVR (Automatic Voltage Regulator) Boost is active.</activeText>
+		  <inactiveText>AVR (Automatic Voltage Regulator) Boost is no longer active.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>No action required.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- AVR Trim Active - log -->
+	  <alarmFlagsTest mask="80" match="80">
+		<name>
+		  <activeText>AVR Trim Active</activeText>
+		  <inactiveText>AVR Trim No Longer Active</inactiveText>
+		</name>
+		<severity>warning</severity>
+		<category>Output</category>
+		<description>
+		  <activeText>AVR (Automatic Voltage Regulator) Trim is active.</activeText>
+		  <inactiveText>AVR (Automatic Voltage Regulator) Trim is no longer active.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>No action required.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Overload - event 0x0103, cleared=0x0104 -->
+	  <alarmFlagsTest mask="100" match="100">
+		<name>
+		  <activeText>Overload</activeText>
+		  <inactiveText>Overload Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Output</category>
+		<description>
+		  <activeText>The load exceeds 100% of rated capacity.</activeText>
+		  <inactiveText>The load no longer exceeds 100% of rated capactity.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Reduce the load on the UPS to a safe level (less than 100%) or upgrade to a unit that can support the existing load.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+	  <!-- Battery discharged - event 0x0108, cleared=0x0109 -->
+	  <alarmFlagsTest mask="400" match="400">
+		<name>
+		  <activeText>Discharged Battery</activeText>
+		  <inactiveText>Discharged Battery Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Battery</category>
+		<description>
+		  <activeText>The battery power is too low to support the load; if power fails, the UPS will be shut down immediately.</activeText>
+		  <inactiveText>A discharged battery condition no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>This condition typically exists following a runtime calibration, or when the UPS returns to online operation following a prolonged power failure. In both cases, monitoring the UPS should show that battery power is recharging.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Manual bypass - event 0x11d cleared=0x11e -->
+	  <alarmFlagsTest mask="800" match="800">
+		<name>
+		  <activeText>In Bypass: UPS Switch</activeText>
+		  <inactiveText>No Longer In Bypass</inactiveText>
+		</name>
+		<severity>warning</severity>
+		<category>Bypass</category>
+		<description>
+		  <activeText>In bypass in response to the bypass switch at the UPS, typically for maintenance.</activeText>
+		  <inactiveText>No longer in bypass.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>The switch at the UPS was used to put the UPS into bypass mode, typically for maintenance. Since the UPS cannot support its load if a power failure occurs, return the UPS to online operation as soon as possible.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Software bypass - event 0x11c cleared=0x11e -->
+	  <alarmFlagsTest mask="1000" match="1000">
+		<name>
+		  <activeText>In Bypass: User-Initiated</activeText>
+		  <inactiveText>No Longer In Bypass</inactiveText>
+		</name>
+		<severity>warning</severity>
+		<category>Bypass</category>
+		<description>
+		  <activeText>In bypass in response to the UPS front-panel or a user-initiated software command, typically for maintenance.</activeText>
+		  <inactiveText>No longer in bypass.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>A user-initiated command from a management application or UPS accessory put the UPS into bypass mode, typically for maintenance. Since the UPS cannot support its load if a power failure occurs, return the UPS to online operation as soon as possible.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- In Bypass due to Internal Fault: event 0x11b cleared=0x11e -->
+	  <alarmFlagsTest mask="2000" match="2000">
+		<name>
+		  <activeText>In Bypass: Hardware Fault</activeText>
+		  <inactiveText>No Longer In Bypass</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Bypass</category>
+		<description>
+		  <activeText>In bypass in response to an internal hardware fault.</activeText>
+		  <inactiveText>No longer in bypass.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure is preventing the UPS from supporting its load if a power failure occurs.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- In Bypass due to Supply Failure: event 0x11f cleared=0x11e -->
+	  <alarmFlagsTest mask="4000" match="4000">
+		<name>
+		  <activeText>Bypass Power Supply Fault</activeText>
+		  <inactiveText>Bypass Power Supply Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A bypass power supply fault exists.</activeText>
+		  <inactiveText>A bypass power supply fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- In Bypass due to Fan Failure: event 0x120 cleared=0x11e -->
+	  <alarmFlagsTest mask="8000" match="8000">
+		<name>
+		  <activeText>Base Module Fan Fault</activeText>
+		  <inactiveText>Base Module Fan Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A base module fan fault exists.</activeText>
+		  <inactiveText>A base module fan fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Sleeping on a timer -->
+	  <alarmFlagsTest mask="10000" match="10000">
+		<name>
+		  <activeText>Sleeping on Timer</activeText>
+		  <inactiveText>No Longer Sleeping on Timer</inactiveText>
+		</name>
+		<severity>warning</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>Sleeping on a timer.</activeText>
+		  <inactiveText>No longer sleeping on a timer.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>No action required.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Sleeping until Utility Power Returns -->
+	  <alarmFlagsTest mask="20000" match="20000">
+		<name>
+		  <activeText>Sleeping Until Utility Power Returns</activeText>
+		  <inactiveText>No Longer Sleeping Until Utility Power Returns</inactiveText>
+		</name>
+		<severity>warning</severity>
+		<category>Input</category>
+		<description>
+		  <activeText>Sleeping until utility power returns.</activeText>
+		  <inactiveText>No longer sleeping until utility power returns.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Make sure the UPS is connected to its power source correctly, and that source is providing the proper power.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+	  	<!-- Output Power Turned Off (Flag 19 reports UPS On) -->
+	  <alarmFlagsTest mask="40000" match="0">
+		<name>
+		  <activeText>Output Power Turned Off</activeText>
+		  <inactiveText>Output Power Now Turned On</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Output</category>
+		<description>
+		  <activeText>The output power is turned off.</activeText>
+		  <inactiveText>The output power is now turned on.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>When the load equipment is ready to use the output power from the UPS, turn on the UPS.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Battery Pack Communication Lost: event 0x0122, cleared=0x0121 -->
+	  <alarmFlagsTest mask="100000" match="100000">
+		<name>
+		  <activeText>Battery Pack Communications Lost</activeText>
+		  <inactiveText>Battery Pack Communications Restored</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Battery</category>
+		<description>
+		  <activeText>Lost communication with the battery packs.</activeText>
+		  <inactiveText>Restored communication with the battery packs.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Make sure the battery packs are connected correctly.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Graceful Shutdown Initiated: event 0x0125, cleared=???? -->
+	  <alarmFlagsTest mask="200000" match="200000">
+		<name>
+		  <activeText>Graceful Shutdown Initiated</activeText>
+		  <inactiveText>Graceful Shutdown Completed</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Output</category>
+		<description>
+		  <activeText>A graceful shutdown process is being used to shut down the load equipment before the UPS turns off.</activeText>
+		  <inactiveText>A graceful shutdown process has completed.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Save and close any files at any device that receives power from the UPS. The UPS will turn off as soon as the time defined by a shutdown delay at that UPS expires.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Smart Boost or Smart Trim Fault -->
+	  <alarmFlagsTest mask="400000" match="400000">
+		<name>
+		  <activeText>Smart Boost/Trim Fault</activeText>
+		  <inactiveText>Smart Boost/Trim Restored</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Output</category>
+		<description>
+		  <activeText>A fault has occured with the Smart Boost/Trim for the UPS.</activeText>
+		  <inactiveText>The Smart Boost/Trim has been restored.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support)</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Output Voltage Out Of Range: event 0x022b, cleared=0x022c -->
+	  <alarmFlagsTest mask="800000" match="800000">
+		<name>
+		  <activeText>Output Voltage Out Of Range</activeText>
+		  <inactiveText>Output Voltage Now In Range</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Output</category>
+		<description>
+		  <activeText>The output voltage is outside its defined limits.</activeText>
+		  <inactiveText>The output voltage is no longer outside its defined limits.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support)</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Battery Charger Failure : event 0x012a, cleared=0x012b -->
+	  <alarmFlagsTest mask="1000000" match="1000000">
+		<name>
+		  <activeText>Battery Charger Fault</activeText>
+		  <inactiveText>Battery Charger Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Battery</category>
+		<description>
+		  <activeText>A battery charger fault exists.</activeText>
+		  <inactiveText>A battery charger fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support)</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- High Battery Temperature : event 0x012c, cleared=0x012d -->
+	  <alarmFlagsTest mask="2000000" match="2000000">
+		<name>
+		  <activeText>Battery High Temperature Violation</activeText>
+		  <inactiveText>Battery High Temperature Violation Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Battery</category>
+		<description>
+		  <activeText>The internal battery temperature exceeds the critical threshold.</activeText>
+		  <inactiveText>The internal battery temperature no longer exceeds the critical threshold.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Make sure the cooling solutions for the battery environment, and the central air conditioning system, are functioning properly.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>	
+			<!-- No Batteries Attached : event 0x012f, cleared=0x0130 -->
+	  <alarmFlagsTest mask="40000000" match="40000000">
+		<name>
+		  <activeText>Battery Disconnected</activeText>
+		  <inactiveText>Battery Reconnected</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Battery</category>
+		<description>
+		  <activeText>The battery is not installed properly.</activeText>
+		  <inactiveText>The battery is now installed.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Make sure a battery is properly installed at the UPS.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+	</alarmFlags>
+  </device>
+
+  <!-- supports fan fault and site wiring fault alarms for single phase smartups -->
+  <device deviceid="upsSmartUpsAdvAbnormalCondition">
+		<!-- Don't do this for essential devices -->
+	<oidMustNotExist ruleid="essentialtest" oid=".1.3.6.1.4.1.318.1.4.2.9.0"/>
+	<oidMustExist ruleid="upsAdvAbnormalExists" oid=".1.3.6.1.4.1.318.1.1.1.11.2.1.0"/>
+	<oidMustNotMatch ruleid="upsAdvAbnormalSupported" oid=".1.3.6.1.4.1.318.1.1.1.11.2.1.0">
+	  <valueList>
+		<value>UNKNOWN
+		</value>
+		<value>NOT SUPPORTED
+		</value>
+		<value>
+		</value>
+	  </valueList>
+	</oidMustNotMatch>
+	<oidMustMatch ruleid="sysObjIdtest" oid=".1.3.6.1.2.1.1.2.0">
+	  <valueList>
+		<value>.1.3.6.1.4.1.318.1.3.2</value> <!-- Smart UPS -->
+		<value>.1.3.6.1.4.1.318.1.3.2.*</value> <!-- Smart UPS subtypes -->
+	  </valueList>
+	</oidMustMatch>
+	<!-- make sure generic device status alarms (Critical/Warning condition exists) are not generated as well -->
+	<suppressRule ruleid="stompgenericalarms" suppressid="core/apcdiscgenericalarms/apcDiscoveryStatus_row1"/>
+	<alarmFlags ruleid="upsAdvAbnormal">
+	  <value>
+		<baseNToInt base="2">
+		  <reverseString>
+			<getOid>.1.3.6.1.4.1.318.1.1.1.11.2.1.0</getOid>
+		  </reverseString>
+		</baseNToInt>
+	  </value>
+	  <!-- System Level Fan Failure: event 0x021D cleared=0x021E -->
+	  <alarmFlagsTest mask="00004000" match="00004000">
+		<name>
+		  <activeText>System Level Fan Fault</activeText>
+		  <inactiveText>System Level Fan Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>System level fan fault exists.</activeText>
+		  <inactiveText>System level fan fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+	  <!-- Site Wiring Fault: event 0x0235 cleared=0x0236 -->
+	  <alarmFlagsTest mask="04000000" match="04000000">
+		<name>
+		  <activeText>Site Wiring Fault</activeText>
+		  <inactiveText>Site Wiring Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A site wiring fault has been detected.</activeText>
+		  <inactiveText>A site wiring fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Have a licensed electrician ensure that the proper input wiring is connected to the UPS. This includes the proper phase rotation, a proper neutral connection, a proper ground connection, and a proper grounding electrode conductor connection.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+	</alarmFlags>
+  </device>
+  
+	<!-- UPS Advanced Abnormal Condition alerts -->
+  <device deviceid="upsAdvAbnormalCondition">
+		<!-- Don't do this for essential devices -->
+	<oidMustNotExist ruleid="essentialtest" oid=".1.3.6.1.4.1.318.1.4.2.9.0"/>
+	<oidMustExist ruleid="upsAdvAbnormalExists" oid=".1.3.6.1.4.1.318.1.1.1.11.2.1.0"/>
+	<oidMustNotMatch ruleid="upsAdvAbnormalSupported" oid=".1.3.6.1.4.1.318.1.1.1.11.2.1.0">
+	  <valueList>
+		<value>UNKNOWN
+		</value>
+		<value>NOT SUPPORTED
+		</value>
+		<value>
+		</value>
+	  </valueList>
+	</oidMustNotMatch>
+	<!-- exclude Smart-UPS -->
+	<oidMustNotMatch ruleid="sysObjIdtest" oid=".1.3.6.1.2.1.1.2.0">
+	  <valueList>
+		<value>.1.3.6.1.4.1.318.1.3.2</value> <!-- Smart UPS -->
+		<value>.1.3.6.1.4.1.318.1.3.2.*</value> <!-- Smart UPS subtypes -->
+	  </valueList>
+	</oidMustNotMatch>
+				
+		<!-- make sure generic device status alarms (Critical/Warning condition exists) are not generated as well -->
+	<suppressRule ruleid="stompgenericalarms" suppressid="core/apcdiscgenericalarms/apcDiscoveryStatus_row1"/>
+	<alarmFlags ruleid="upsAdvAbnormal">
+
+	  <value>
+		<baseNToInt base="2">
+		  <reverseString>
+			<getOid>.1.3.6.1.4.1.318.1.1.1.11.2.1.0</getOid>
+		  </reverseString>
+		</baseNToInt>
+	  </value>
+			<!-- Power Module Failure: event 0x0201 cleared=0x0202 -->
+	  <alarmFlagsTest mask="00000001" match="00000001">
+		<name>
+		  <activeText>Power Module Fault</activeText>
+		  <inactiveText>Power Module Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A power module fault exists.</activeText>
+		  <inactiveText>A power module fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Replace all faulty modules.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Main Intelligent Module Failure: event 0x0203 cleared=0x0204 -->
+	  <alarmFlagsTest mask="00000002" match="00000002">
+		<name>
+		  <activeText>Intelligence Module Fault</activeText>
+		  <inactiveText>Intelligence Module Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A main intelligence module fault exists.</activeText>
+		  <inactiveText>A main intelligence module fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Redeundant Intelligent Module Failure: event 0x0205 cleared=0x0206 -->
+	  <alarmFlagsTest mask="00000004" match="00000004">
+		<name>
+		  <activeText>Redundant Intelligence Module Fault</activeText>
+		  <inactiveText>Redundant Intelligence Module Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A redundant intelligence module fault exists.</activeText>
+		  <inactiveText>A redundant intelligence module fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Battery Failure: event 0x0207 cleared=0x0208 -->
+	  <alarmFlagsTest mask="00000008" match="00000008">
+		<name>
+		  <activeText>Battery Fault</activeText>
+		  <inactiveText>Battery Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Battery</category>
+		<description>
+		  <activeText>A battery fault exists.</activeText>
+		  <inactiveText>A battery fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Replace all faulty batteries.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Load (kVA) Alarm Threshold Violation: event 0x0209 cleared=0x020A -->
+	  <alarmFlagsTest mask="00000010" match="00000010">
+		<name>
+		  <activeText>Load (kVA) Alarm Violation</activeText>
+		  <inactiveText>Load (kVA) Alarm Violation Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Output</category>
+		<description>
+		  <activeText>A load (kVA) alarm threshold violation exists.</activeText>
+		  <inactiveText>A load (kVA) alarm threshold violation no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Make sure the threshold is set correctly at the UPS. Reduce the load to a safe level (less than 100%), or upgrade to a unit that can support the existing load</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Redundancy lost: event 0x020B cleared=0x020C -->
+	  <alarmFlagsTest mask="00000020" match="00000020">
+		<name>
+		  <activeText>Redundancy Lost</activeText>
+		  <inactiveText>Redundancy Restored</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>Lost power module redundancy.</activeText>
+		  <inactiveText>Restored power module redundancy.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>The UPS can no longer detect any redundant power modules. Correct any power module problems (removed or failed), add power modules, or reduce the load.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Redundancy alarm: event 0x020D cleared=0x020E -->
+	  <alarmFlagsTest mask="00000040" match="00000040">
+		<name>
+		  <activeText>Redundancy Alarm</activeText>
+		  <inactiveText>Redundancy Alarm Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A redundancy alarm threshold violation exists.</activeText>
+		  <inactiveText>A redundancy alarm threshold violation no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Make sure the threshold is set correctly at the UPS. Add power modules, or reduce the load, if necessary.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Bypass not in range (voltage/freq): event 0x020F cleared=0x0210 -->
+	  <alarmFlagsTest mask="00000080" match="00000080">
+		<name>
+		  <activeText>Input Voltage Or Frequency Cannot Support Bypass</activeText>
+		  <inactiveText>Input Voltage And Frequency Can Now Support Bypass</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Bypass</category>
+		<description>
+		  <activeText>An input voltage or frequency problem prevents switching to bypass mode.</activeText>
+		  <inactiveText>An input voltage or frequency problem no longer prevents switching to bypass mode.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Correct the input power problem, if possible, or wait for the input power problem to clear. Note: Some UPS systems have settings that allow the UPS to switch to bypass if this status exists when a hardware failure occurs. In such cases, correct the power problem, or shut down the equipment powered by the UPS.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Bypass Contactor Stuck in Bypass Condition: event 0x0211 cleared=0x0212 -->
+	  <alarmFlagsTest mask="00000100" match="00000100">
+		<name>
+		  <activeText>Bypass Relay Stuck In Bypass Mode</activeText>
+		  <inactiveText>Bypass Relay Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Bypass</category>
+		<description>
+		  <activeText>The bypass relay is stuck in its bypass position.</activeText>
+		  <inactiveText>The bypass relay is no longer stuck in its bypass position.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Bypass Contactor Stuck in On-Line Condition: event 0x0213 cleared=0x0214 -->
+	  <alarmFlagsTest mask="00000200" match="00000200">
+		<name>
+		  <activeText>Bypass Relay Stuck In Online Mode</activeText>
+		  <inactiveText>Bypass Relay Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Bypass</category>
+		<description>
+		  <activeText>The bypass relay is stuck in its online position.</activeText>
+		  <inactiveText>The bypass relay is no longer stuck in its online position.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- In Bypass due to an Internal Fault: event 0x0215 cleared=0x0216 -->
+	  <alarmFlagsTest mask="00000400" match="00000400">
+		<name>
+		  <activeText>In Bypass: Hardware Fault</activeText>
+		  <inactiveText>No Longer In Bypass</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Bypass</category>
+		<description>
+		  <activeText>In bypass in response to an internal hardware fault.</activeText>
+		  <inactiveText>No longer in bypass.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure is preventing the UPS from supporting its load if a power failure occurs. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- In Bypass due to an Overload: event 0x0217 cleared=0x0218 -->
+	  <alarmFlagsTest mask="00000800" match="00000800">
+		<name>
+		  <activeText>In Bypass: Overload</activeText>
+		  <inactiveText>No Longer In Bypass</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Bypass</category>
+		<description>
+		  <activeText>In bypass in response to an overload.</activeText>
+		  <inactiveText>No longer in bypass.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Reduce the load on the UPS to a safe level (less than 100%) or upgrade to a unit that can support the existing load.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- In Maintenance Bypass: event 0x0219 cleared=0x021A -->
+	  <alarmFlagsTest mask="00001000" match="00001000">
+		<name>
+		  <activeText>In Bypass: For Maintenance</activeText>
+		  <inactiveText>No Longer In Bypass</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Bypass</category>
+		<description>
+		  <activeText>In bypass for maintenance.</activeText>
+		  <inactiveText>No longer in bypass.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>The switch at the UPS was used to put the UPS into bypass mode, typically for maintenance. Since the UPS cannot support its load if a power failure occurs, return the UPS to online operation as soon as possible.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Input Circuit Braker Tripped Open: event 0x021B cleared=0x021C -->
+	  <alarmFlagsTest mask="00002000" match="00002000">
+		<name>
+		  <activeText>Input Circuit Breaker Open</activeText>
+		  <inactiveText>Input Circuit Breaker Now Closed</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Input</category>
+		<description>
+		  <activeText>The input circuit breaker is open.</activeText>
+		  <inactiveText>The input circuit break is no longer open.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Close the circuit breaker.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- System Level Fan Failure: event 0x021D cleared=0x021E -->
+	  <alarmFlagsTest mask="00004000" match="00004000">
+		<name>
+		  <activeText>System Level Fan Fault</activeText>
+		  <inactiveText>System Level Fan Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>System level fan fault exists.</activeText>
+		  <inactiveText>System level fan fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Redundant Intelligent Module In Control: event 0x021F cleared=0x0220 -->
+	  <alarmFlagsTest mask="00008000" match="00008000">
+		<name>
+		  <activeText>Redundant Intelligence Module In Control</activeText>
+		  <inactiveText>Main Intelligence Module Now In Control</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>The redundant intelligence module is in control.</activeText>
+		  <inactiveText>The main intelligence module is now in control.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Correct the main intelligence module problem (it was removed or failed) that switched control to the redundant intelligence module.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- IIC Inter-Module Communication Failure: event 0x0221 cleared=0x0222 -->
+	  <alarmFlagsTest mask="00010000" match="00010000">
+		<name>
+		  <activeText>IIC Bus Fault</activeText>
+		  <inactiveText>IIC Bus Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>An IIC bus communication fault exists.</activeText>
+		  <inactiveText>An IIC bus communication fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- No Working Power Modules: event 0x0223 cleared=0x0224 -->
+	  <alarmFlagsTest mask="00020000" match="00020000">
+		<name>
+		  <activeText>No Power Modules Detected</activeText>
+		  <inactiveText>Power Modules Now Detected</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>No power modules detected as installed.</activeText>
+		  <inactiveText>Power modules are now detected.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Make sure the power modules are installed and connected securely.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Load Shutdown From Bypass; Input Frequency: event 0x0225 cleared=0x0226 -->
+	  <alarmFlagsTest mask="00040000" match="00040000">
+		<name>
+		  <activeText>Shut Down Due To Power Problem While In Bypass</activeText>
+		  <inactiveText>Power Problem That Caused A Shutdown While In Bypass Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Input</category>
+		<description>
+		  <activeText>An input voltage or frequency problem occured while in bypass, turning off the UPS.</activeText>
+		  <inactiveText>The problem that caused the UPS to turn off while in bypass no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>The "Drop Load" value is selected for the "If UPS fails, and frequency or voltage is out of range" option at the UPS, and a frequency or voltage deviation occurred while in bypass. The UPS front panel display can be used to turn on the output power when the input power is corrected.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Runtime Below Alarm Threshold: event 0x0227 cleared=0x0228 -->
+	  <alarmFlagsTest mask="00080000" match="00080000">
+		<name>
+		  <activeText>Runtime Alarm</activeText>
+		  <inactiveText>Runtime Alarm Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Battery</category>
+		<description>
+		  <activeText>A runtime alarm threshold violation exists.</activeText>
+		  <inactiveText>A runtime alarm threshold violation no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Make sure the threshold is set correctly at the device. Reduce the load to conserve as much of the remaining runtime as needed to support critical systems. Consider adding additional batteries or upgrading to a UPS that provides more runtime.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Extended Run Frame Fault: event 0x0229 cleared=0x022A -->
+	  <alarmFlagsTest mask="00100000" match="00100000">
+		<name>
+		  <activeText>Extended Run Frame Fault</activeText>
+		  <inactiveText>Extended Run Frame Fault Cleared Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>An extended run frame fault exists.</activeText>
+		  <inactiveText>An extended run frame fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Make sure the frame is connected properly to the UPS.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Output Voltage out of Range: event 0x022B cleared=0x022C -->
+	  <alarmFlagsTest mask="00200000" match="00200000">
+		<name>
+		  <activeText>Output Voltage Out Of Range</activeText>
+		  <inactiveText>Output Voltage Now In Range</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Output</category>
+		<description>
+		  <activeText>The output voltage is outside its defined limits.</activeText>
+		  <inactiveText>The output voltage is no longer outside its defined limits.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support)</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- UPS Not Synchronized: event 0x022D cleared=0x022E -->
+	  <alarmFlagsTest mask="00400000" match="00400000">
+		<name>
+		  <activeText>Not Synchronized Fault</activeText>
+		  <inactiveText>Not Synchronized Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A phase synchronization fault exists.</activeText>
+		  <inactiveText>A phase synchronization fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>		
+			<!-- No Batteries Installed: event 0x022F cleared=0x0230 -->
+	  <alarmFlagsTest mask="00800000" match="00800000">
+		<name>
+		  <activeText>Battery Disconnected</activeText>
+		  <inactiveText>Battery Reconnected</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Battery</category>
+		<description>
+		  <activeText>The battery is not installed properly.</activeText>
+		  <inactiveText>The battery is now installed.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Make sure a battery is properly installed at the UPS.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>		
+			<!-- Battery Voltage High: event 0x0231 cleared=0x0232 -->
+	  <alarmFlagsTest mask="01000000" match="01000000">
+		<name>
+		  <activeText>Battery High Voltage Violation</activeText>
+		  <inactiveText>Battery High Voltage Violation Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Battery</category>
+		<description>
+		  <activeText>The battery voltage exceeds the Nominal Battery Voltage rating.</activeText>
+		  <inactiveText>The battery voltage no longer exceeds the Nominal Battery Voltage rating.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Make sure the UPS is connected to its power source correctly, and that source is providing the proper power.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>		
+			<!-- UPS Specific Fault Detected: event 0x0233 cleared=0x0234 -->
+	  <alarmFlagsTest mask="02000000" match="02000000">
+		<name>
+		  <activeText>Non-specific Fault: Access UPS keyboard for details</activeText>
+		  <inactiveText>Non-specific Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A non-specific fault has occurred.  Access the UPS keyboard for details.</activeText>
+		  <inactiveText>The non-specific fault has cleared.</inactiveText>
+		</description>
+		<alarmRecommendedActions/>
+	  </alarmFlagsTest>		
+			<!-- Site Wiring Fault: event 0x0235 cleared=0x0236 -->
+	  <alarmFlagsTest mask="04000000" match="04000000">
+		<name>
+		  <activeText>Site Wiring Fault</activeText>
+		  <inactiveText>Site Wiring Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A site wiring fault has been detected.</activeText>
+		  <inactiveText>A site wiring fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Have a licensed electrician ensure that the proper input wiring is connected to the UPS. This includes the proper phase rotation, a proper neutral connection, a proper ground connection, and a proper grounding electrode conductor connection.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>		
+			<!-- Backfeed Protection Relay Opened: event 0x0237 cleared=0x0238 -->
+	  <alarmFlagsTest mask="08000000" match="08000000">
+		<name>
+		  <activeText>Backfeed Relay Open</activeText>
+		  <inactiveText>Backfeed Relay Now Closed</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>The backfeed relay is open.</activeText>
+		  <inactiveText>The backfeed relay is no longer open.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+	</alarmFlags>
+  </device>
+	<!-- Symmetra-3 specific faults -->
+  <device deviceid="upsAdvStateSymmetra3PhaseSpecificFaults">
+		<!-- Don't do this for essential devices -->
+	<oidMustNotExist ruleid="essentialtest" oid=".1.3.6.1.4.1.318.1.4.2.9.0"/>
+	<oidMustExist ruleid="upsAdvStateSymmetra3PhaseSpecificFaultsExists" oid=".1.3.6.1.4.1.318.1.1.1.11.2.2.0"/>
+	<oidMustNotMatch ruleid="upsAdvStateSymmetra3PhaseSpecificFaultsSupported" oid=".1.3.6.1.4.1.318.1.1.1.11.2.2.0">
+	  <valueList>
+		<value>UNKNOWN
+		</value>
+		<value>NOT SUPPORTED
+		</value>
+		<value>
+		</value>
+	  </valueList>
+	</oidMustNotMatch>
+				
+		<!-- make sure generic device status alarms (Critical/Warning condition exists) are not generated as well -->
+	<suppressRule ruleid="stompgenericalarms" suppressid="core/apcdiscgenericalarms/apcDiscoveryStatus_row1"/>
+	<alarmFlags ruleid="upsAdvStateSymmetra3PhaseSpecificFaults">
+	  <value>
+		<baseNToInt base="2">
+		  <reverseString>
+			<getOid>.1.3.6.1.4.1.318.1.1.1.11.2.2.0</getOid>
+		  </reverseString>
+		</baseNToInt>
+	  </value>
+			<!-- External Switch Gear Failure: event ? cleared=? -->
+	  <alarmFlagsTest mask="00000001" match="00000001">
+		<name>
+		  <activeText>External Switch Gear Failure</activeText>
+		  <inactiveText>External Switch Gear Failure Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>The external switch gear has failed.</activeText>
+		  <inactiveText>The external switch gear failure has cleared.</inactiveText>
+		</description>
+		<alarmRecommendedActions/>
+	  </alarmFlagsTest>
+			<!-- External Transformer Over Temperature: event=0A03 cleared=0A04 -->
+	  <alarmFlagsTest mask="00000002" match="00000002">
+		<name>
+		  <activeText>Isolation Transformer Temperature Too High</activeText>
+		  <inactiveText>High Isolation Transformer Temperature Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>The isolation transformer temperature is too high.</activeText>
+		  <inactiveText>The isolation transformer temperature is no longer too high.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- External DC Circuit Breaker Tripped: event=0A05 cleared=0A06 -->
+	  <alarmFlagsTest mask="00000004" match="00000004">
+		<name>
+		  <activeText>External DC Disconnect Switch Open</activeText>
+		  <inactiveText>External DC Disconnect Switch Now Closed</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>The external DC disconnect switch is open.</activeText>
+		  <inactiveText>The external DC disconnect switch is no longer open.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Close the switch.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- System Power Supply Failure: event=0A07 cleared=0A08 -->
+	  <alarmFlagsTest mask="00000008" match="00000008">
+		<name>
+		  <activeText>System Power Supply Card Fault</activeText>
+		  <inactiveText>System Power Supply Card Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A system power supply card fault exists.</activeText>
+		  <inactiveText>A system power supply card fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Battery Monitor Card Failure: event=0A09 cleared=0A0A -->
+	  <alarmFlagsTest mask="00000010" match="00000010">
+		<name>
+		  <activeText>Battery Monitor Card Fault</activeText>
+		  <inactiveText>Battery Monitor Card Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A battery monitor card fault exists.</activeText>
+		  <inactiveText>A battery monitor card fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Remove and reinsert the card to make sure it is installed securely. If the problem persists, replace the card or contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Battery Monitor Card Removed: event=0A0B cleared=0A0C -->
+	  <alarmFlagsTest mask="00000020" match="00000020">
+		<name>
+		  <activeText>Battery Monitor Card Removed</activeText>
+		  <inactiveText>Battery Monitor Card Fault Inserted</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A battery monitor card was removed.</activeText>
+		  <inactiveText>A battery monitor card was inserted.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Remove and reinsert the card to make sure it is installed securely. If the problem persists, replace the card or contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- XR Communications Card Failure: event=0A0D cleared=0A0E -->
+	  <alarmFlagsTest mask="00000040" match="00000040">
+		<name>
+		  <activeText>XR Communications Card Fault</activeText>
+		  <inactiveText>XR Communications Card Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>An extended run frame (XR) communications card fault exists.</activeText>
+		  <inactiveText>An extended run frame (XR) communications card fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Remove and reinsert the card to make sure it is installed securely. If the problem persists, replace the card or contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- XR Communications Card Removed: event=0A0F cleared=0A10 -->
+	  <alarmFlagsTest mask="00000080" match="00000080">
+		<name>
+		  <activeText>XR Communications Card Removed</activeText>
+		  <inactiveText>XR Communications Card Fault Inserted</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>An extended run frame (XR) communications card was removed.</activeText>
+		  <inactiveText>An extended run frame (XR) communications card was inserted.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Remove and reinsert the card to make sure it is installed securely. If the problem persists, replace the card or contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- External Switch Gear Monitoring Card Failure: event=0A11 cleared=0A12 -->
+	  <alarmFlagsTest mask="00000100" match="00000100">
+		<name>
+		  <activeText>External Switch Gear Communications Card Fault</activeText>
+		  <inactiveText>External Switch Gear Communications Card Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>An external switch gear communications card fault exists.</activeText>
+		  <inactiveText>An external switch gear communications card fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Remove and reinsert the card to make sure it is installed securely. If the problem persists, replace the card or contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- External Switch Gear Monitoring Card Failure Removed: event=0A13 cleared=0A14 -->
+	  <alarmFlagsTest mask="00000200" match="00000200">
+		<name>
+		  <activeText>External Switch Gear Communications Card Removed</activeText>
+		  <inactiveText>External Switch Gear Communications Card Fault Inserted</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>An external switch gear communications card was removed.</activeText>
+		  <inactiveText>An external switch gear communications card was inserted.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Remove and reinsert the card to make sure it is installed securely. If the problem persists, replace the card or contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Internal DC Circuit Breaker Tripped: event=0A15 cleared=0A16 -->
+	  <alarmFlagsTest mask="00000400" match="00000400">
+		<name>
+		  <activeText>Internal DC Disconnect Switch Open</activeText>
+		  <inactiveText>Internal DC Disconnect Switch Now Closed</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>The internal DC disconnect switch is open.</activeText>
+		  <inactiveText>The internal DC disconnect switch is no longer open.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Static Bypass Switch Failure: event=0A17 cleared=0A18 -->
+	  <alarmFlagsTest mask="00000800" match="00000800">
+		<name>
+		  <activeText>Static Bypass Switch Module Fault</activeText>
+		  <inactiveText>Static Bypass Switch Module Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Bypass</category>
+		<description>
+		  <activeText>A static bypass switch module fault exists.</activeText>
+		  <inactiveText>A static bypass switch module fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- System EEPROM Removed: event=0A19 cleared=0A1A -->
+	  <alarmFlagsTest mask="00001000" match="00001000">
+		<name>
+		  <activeText>System ID Card Removed</activeText>
+		  <inactiveText>System ID Card Inserted</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>The system ID card was removed.</activeText>
+		  <inactiveText>The system ID card was inserted.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Remove and reinsert the card to make sure it is installed securely. If the problem persists, replace the card or contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- System EEPROM Failure: event=0A1B cleared=0A1C -->
+	  <alarmFlagsTest mask="00002000" match="00002000">
+		<name>
+		  <activeText>System Identification Card Fault</activeText>
+		  <inactiveText>System Identification Card Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>The system identification card fault exists.</activeText>
+		  <inactiveText>The system identification card fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Remove and reinsert the card to make sure it is installed securely. If the problem persists, replace the card or contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- UPS in Forced Bypass: event=0A1D cleared=0A1E -->
+	  <alarmFlagsTest mask="00004000" match="00004000">
+		<name>
+		  <activeText>In Forced Bypass</activeText>
+		  <inactiveText>Returned from Forced Bypass</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Bypass</category>
+		<description>
+		  <activeText>In bypass in response to the InfraStruXure PDU or UPS static switch.</activeText>
+		  <inactiveText>No longer in forced bypass.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>The InfraStruXure PDU Q breakers, or the UPS static switch, were used to force the UPS into bypass mode, typically for maintenance. Since the UPS cannot support its load if a power failure occurs, return the UPS to online operation as soon as possible.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+	</alarmFlags>
+  </device>
+	<!-- DP-300 specific faults -->
+  <device deviceid="upsAdvStateDP300ESpecificFaults">
+		<!-- Don't do this for essential devices -->
+	<oidMustNotExist ruleid="essentialtest" oid=".1.3.6.1.4.1.318.1.4.2.9.0"/>
+	<oidMustExist ruleid="upsAdvStateDP300ESpecificFaultsExists" oid=".1.3.6.1.4.1.318.1.1.1.11.2.3.0"/>
+	<oidMustNotMatch ruleid="upsAdvStateDP300ESpecificFaultsSupported" oid=".1.3.6.1.4.1.318.1.1.1.11.2.3.0">
+	  <valueList>
+		<value>UNKNOWN
+		</value>
+		<value>NOT SUPPORTED
+		</value>
+		<value>
+		</value>
+	  </valueList>
+	</oidMustNotMatch>
+				
+		<!-- make sure generic device status alarms (Critical/Warning condition exists) are not generated as well -->
+	<suppressRule ruleid="stompgenericalarms" suppressid="core/apcdiscgenericalarms/apcDiscoveryStatus_row1"/>
+	<alarmFlags ruleid="upsAdvStateDP300ESpecificFaults">
+	  <value>
+		<baseNToInt base="2">
+		  <reverseString>
+			<getOid>.1.3.6.1.4.1.318.1.1.1.11.2.3.0</getOid>
+		  </reverseString>
+		</baseNToInt>
+	  </value>
+			<!-- Peak Current Limiter Active: event ? cleared=? -->
+	  <alarmFlagsTest mask="00000001" match="00000001">
+		<name>
+		  <activeText>Peak Current Limiter Active</activeText>
+		  <inactiveText>Peak Current Limiter Now Inactive</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>The peak current limiter is active.</activeText>
+		  <inactiveText>The peak current limiter is no longer active.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Bypass Power Supply Fault: event=0A03 cleared=0A04 -->
+	  <alarmFlagsTest mask="00000002" match="00000002">
+		<name>
+		  <activeText>Bypass Power Supply Fault</activeText>
+		  <inactiveText>Bypass Power Supply Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A bypass power supply fault exists.</activeText>
+		  <inactiveText>A bypass power supply fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Delta Current Limiter Active: event=0A05 cleared=0A06 -->
+	  <alarmFlagsTest mask="00000004" match="00000004">
+		<name>
+		  <activeText>Delta Current Limiter Active</activeText>
+		  <inactiveText>Delta Current Limiter Now Inactive</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>The delta current limiter is active.</activeText>
+		  <inactiveText>The delta current limiter is no longer active.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Fan Fault: event=0A07 cleared=0A08 -->
+	  <alarmFlagsTest mask="00000008" match="00000008">
+		<name>
+		  <activeText>Fan Fault</activeText>
+		  <inactiveText>Fan Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A fan fault exists.</activeText>
+		  <inactiveText>A fan fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- High DC warning: event=0A09 cleared=0A0A -->
+	  <alarmFlagsTest mask="00000010" match="00000010">
+		<name>
+		  <activeText>High DC Warning</activeText>
+		  <inactiveText>High DC Warning Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A high direct current (DC) warning exists.</activeText>
+		  <inactiveText>A high direct current (DC) warning no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Inverter Voltage Error: event=0A0B cleared=0A0C -->
+	  <alarmFlagsTest mask="00000020" match="00000020">
+		<name>
+		  <activeText>Inverter Voltage Fault</activeText>
+		  <inactiveText>Inverter Voltage Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>An inverter voltage fault exists.</activeText>
+		  <inactiveText>An inverter voltage fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Parallel Synchronization Error: event=0A0D cleared=0A0E -->
+	  <alarmFlagsTest mask="00000040" match="00000040">
+		<name>
+		  <activeText>Parallel Synchronization Fault</activeText>
+		  <inactiveText>Parallel Synchronization Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A parallel synchronization fault exists.</activeText>
+		  <inactiveText>A parallel synchronization fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Second Power Supply Fault: event=0A0F cleared=0A10 -->
+	  <alarmFlagsTest mask="00000080" match="00000080">
+		<name>
+		  <activeText>Second Power Supply Fault</activeText>
+		  <inactiveText>Second Power Supply Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A second power supply fault exists.</activeText>
+		  <inactiveText>A second power supply fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Internal Power Supply Fault: event=0A11 cleared=0A12 -->
+	  <alarmFlagsTest mask="00000100" match="00000100">
+		<name>
+		  <activeText>Internal Power Supply Fault</activeText>
+		  <inactiveText>Internal Power Supply Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>An internal power supply fault exists.</activeText>
+		  <inactiveText>An internal power supply fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Static Bypass Switch High Temperature: event=0A1B cleared=0A1C -->
+	  <alarmFlagsTest mask="00002000" match="00002000">
+		<name>
+		  <activeText>Static Bypass Switch High Temperature</activeText>
+		  <inactiveText>Static Bypass Switch High Temperature Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Bypass</category>
+		<description>
+		  <activeText>The static bypass switch temperature is too high.</activeText>
+		  <inactiveText>The static bypass switch temperature is no longer too high.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- High Battery Temperature: event=0A1D cleared=0A1E -->
+	  <alarmFlagsTest mask="00004000" match="00004000">
+		<name>
+		  <activeText>Battery High-Temperature Violation</activeText>
+		  <inactiveText>Battery High-Temperature Violation Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Battery</category>
+		<description>
+		  <activeText>The battery temperature exceeds the critical threshold.</activeText>
+		  <inactiveText>The battery temperature no longer exceeds the critical threshold.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Make sure the cooling solutions for the battery environment, and the central air conditioning system, are functioning properly.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Battery Weak: event=0A1F cleared=0A20 -->
+	  <alarmFlagsTest mask="00008000" match="00008000">
+		<name>
+		  <activeText>Weak Battery</activeText>
+		  <inactiveText>Weak Battery Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Battery</category>
+		<description>
+		  <activeText>A weak battery exists.</activeText>
+		  <inactiveText>A weak battery no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Replace all faulty batteries.</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- System Locked in Operation Mode: event=0A23 cleared=0A24 -->
+	  <alarmFlagsTest mask="00020000" match="00020000">
+		<name>
+		  <activeText>Operational Mode Lock</activeText>
+		  <inactiveText>Operational Mode Lock Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>The system is locked in operational mode.</activeText>
+		  <inactiveText>The system is no longer locked in operational mode.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- RAM1 Memory Write Error: event=0A25 cleared=0A26 -->
+	  <alarmFlagsTest mask="00040000" match="00040000">
+		<name>
+		  <activeText>RAM1 Memory Write Fault</activeText>
+		  <inactiveText>RAM1 Memory Write Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A RAM1 memory write fault exists.</activeText>
+		  <inactiveText>A RAM1 memory write fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Memory Write Error: event=0A27 cleared=0A28 -->
+	  <alarmFlagsTest mask="00080000" match="00080000">
+		<name>
+		  <activeText>Memory Write Fault</activeText>
+		  <inactiveText>Memory Write Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A memory write fault exists.</activeText>
+		  <inactiveText>A memory write fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Communication to VQ Bypass Lost: event=0A29 cleared=0A2A -->
+	  <alarmFlagsTest mask="00100000" match="00100000">
+		<name>
+		  <activeText>VQ Bypass Communication Lost</activeText>
+		  <inactiveText>VQ Bypass Communication Restored</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>Lost communication with the VQ bypass.</activeText>
+		  <inactiveText>Restored communication with the VQ bypass.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Communication to VQ Output Lost: event=0A2B cleared=0A2C -->
+	  <alarmFlagsTest mask="00200000" match="00200000">
+		<name>
+		  <activeText>VQ Output Communication Lost</activeText>
+		  <inactiveText>VQ Output Communication Restored</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>Lost communication with the VQ output.</activeText>
+		  <inactiveText>Restored communication with the VQ output.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Communication to DMU Lost: event=0A2D cleared=0A2E -->
+	  <alarmFlagsTest mask="00400000" match="00400000">
+		<name>
+		  <activeText>DMU Communication Lost</activeText>
+		  <inactiveText>DMU Communication Restored</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>Lost communication with the DMU.</activeText>
+		  <inactiveText>Restored communication with the DMU.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Communication to Controller Lost: event=0A2F cleared=0A30 -->
+	  <alarmFlagsTest mask="00800000" match="00800000">
+		<name>
+		  <activeText>Controller Communication Lost</activeText>
+		  <inactiveText>Controller Communication Restored</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>Lost communication with the controller.</activeText>
+		  <inactiveText>Restored communication with the controller.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Communication to Parallel IF Lost: event=0A2F cleared=0A30 -->
+	  <alarmFlagsTest mask="01000000" match="01000000">
+		<name>
+		  <activeText>Parallel IF Communication Lost</activeText>
+		  <inactiveText>Parallel IF Communication Restored</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>Lost communication with the parallel interface (IF).</activeText>
+		  <inactiveText>Restored communication with the parallel interface (IF).</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- External Shutdown Accepted: event=0A31 cleared=0A32 -->
+	  <alarmFlagsTest mask="02000000" match="02000000">
+		<name>
+		  <activeText>External Shutdown Accepted</activeText>
+		  <inactiveText>External Shutdown Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>An external shutdown was accepted.</activeText>
+		  <inactiveText>An external shutdown is no longer accepted.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- DC Capacitor Charge Error: event=0A33 cleared=0A34 -->
+	  <alarmFlagsTest mask="04000000" match="04000000">
+		<name>
+		  <activeText>DC Capacitor Charge Fault</activeText>
+		  <inactiveText>DC Capacitor Charge Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A direct current (DC) capacitor charge fault exists.</activeText>
+		  <inactiveText>A direct current (DC) capacitor charge fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Communication to VQ Mains Lost: event=0A35 cleared=0A36 -->
+	  <alarmFlagsTest mask="08000000" match="08000000">
+		<name>
+		  <activeText>VQ Mains Communication Lost</activeText>
+		  <inactiveText>VQ Mains Communication Restored</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>Lost communication with the VQ Mains.</activeText>
+		  <inactiveText>Restored communication with the VQ Mains.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Bypass Synchronization Error: event=0A37 cleared=0A38 -->
+	  <alarmFlagsTest mask="10000000" match="10000000">
+		<name>
+		  <activeText>Bypass Synchronization Fault</activeText>
+		  <inactiveText>Bypass Synchronization Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Bypass</category>
+		<description>
+		  <activeText>A bypass synchronization fault exists.</activeText>
+		  <inactiveText>A bypass synchronization fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+			<!-- Charge Error: event=0A39 cleared=0A3A -->
+	  <alarmFlagsTest mask="20000000" match="20000000">
+		<name>
+		  <activeText>Charge Fault</activeText>
+		  <inactiveText>Charge Fault Cleared</inactiveText>
+		</name>
+		<severity>critical</severity>
+		<category>Device</category>
+		<description>
+		  <activeText>A charge fault exists.</activeText>
+		  <inactiveText>A charge fault no longer exists.</inactiveText>
+		</description>
+		<alarmRecommendedActions>
+		  <recommendedActionId>An internal hardware failure exists. Contact APC Support (http://www.apc.com/go/direct/index.cfm?tag=support).</recommendedActionId>
+		</alarmRecommendedActions>
+	  </alarmFlagsTest>
+	</alarmFlags>
+  </device>
+</APC_DDF>

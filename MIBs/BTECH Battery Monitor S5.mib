@@ -1,0 +1,169 @@
+--------------------------------------------------------------------------------
+-- BTECH Battery Monitor S5.MIB
+--
+-- April 2006  Bob Entwisle
+--
+-- Copyright (c) 2006 by BTECH, Inc.
+-- All rights reserved.
+-- 
+-- Revision 1.00 4/17/2006 11:20AM
+--------------------------------------------------------------------------------
+
+BTECH-Battery-Monitor-S5 DEFINITIONS ::= BEGIN
+
+    IMPORTS
+    	enterprises
+    		FROM RFC1155-SMI 
+        OBJECT-TYPE
+            FROM RFC-1212
+        TRAP-TYPE
+            FROM RFC-1215
+        DisplayString
+            FROM RFC1213-MIB;
+
+
+btech           OBJECT IDENTIFIER ::= { enterprises 26059 }
+battery         OBJECT IDENTIFIER ::= { btech 1 }
+monitor         OBJECT IDENTIFIER ::= { battery 1 }
+s5              OBJECT IDENTIFIER ::= { monitor 1 }
+alarm           OBJECT IDENTIFIER ::= { s5 2 }
+
+-- the following is for documentation purposes, since we currently only
+-- support v1 traps.
+s5Traps     OBJECT IDENTIFIER ::= { s5 3 }
+
+-- Connect Status
+--
+Connect     OBJECT-TYPE
+            SYNTAX     INTEGER (-32768..32767)
+            ACCESS     read-only
+            STATUS     current
+            DESCRIPTION
+                "Others Connect to S5 ...
+                 B0=Observer B1=BVM B2=Modbus
+                 if > 0 traps only sent with Observer connection"
+            ::= { s5 1 }
+
+-- Alarm Description
+--
+Severity    OBJECT-TYPE
+            SYNTAX     INTEGER (-32768..32767)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                "1=Critical 2=Major 4=Minor 8=Warning"
+            ::= { alarm 1 }
+
+Description OBJECT-TYPE
+            SYNTAX     DisplayString (SIZE (35))
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                "Phrase Describing alarm"
+            ::= { alarm 2 }
+
+Type        OBJECT-TYPE
+            SYNTAX     INTEGER (-32768..32767)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                "Alarm Type Number-
+                 See Table In User's Manual"
+            ::= { alarm 3 }
+
+Year        OBJECT-TYPE
+            SYNTAX     INTEGER (-32768..32767)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                "Year"
+            ::= { alarm 4 }
+
+Month       OBJECT-TYPE
+            SYNTAX     INTEGER (-32768..32767)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                "Month"
+            ::= { alarm 5 }
+
+Day         OBJECT-TYPE
+            SYNTAX     INTEGER (-32768..32767)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                "Day"
+            ::= { alarm 6 }
+
+Hour        OBJECT-TYPE
+            SYNTAX     INTEGER (-32768..32767)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                "Hour"
+            ::= { alarm 7 }
+
+Minute      OBJECT-TYPE
+            SYNTAX     INTEGER (-32768..32767)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                "Minute"
+            ::= { alarm 8 }
+
+Second      OBJECT-TYPE
+            SYNTAX     INTEGER (-32768..32767)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                "Second"
+            ::= { alarm 9 }
+
+String      OBJECT-TYPE
+            SYNTAX     INTEGER (-32768..32767)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                "String"
+            ::= { alarm 10 }
+
+Unit        OBJECT-TYPE
+            SYNTAX     INTEGER (-32768..32767)
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                "Unit"
+            ::= { alarm 11 }
+
+Value       OBJECT-TYPE
+            SYNTAX     DisplayString (SIZE (16))
+            MAX-ACCESS read-only
+            STATUS     current
+            DESCRIPTION
+                "Value"
+            ::= { alarm 12 }
+
+--
+explicit-trap NOTIFICATION-TYPE
+        OBJECTS    {
+                    Severity,
+                    Description,
+                    Type,
+                    Year,
+                    Month,
+                    Day,
+                    Hour,
+                    Minute,
+                    Second,
+                    String,
+                    Unit,
+                    Value    
+                   }
+        STATUS     mandatory
+        DESCRIPTION
+                "Trap Number(Specific): Type
+                 Trap includes array of objects (Bindings) 
+                 that descripe the alarm"
+        ::= { s5Traps 1 }
+
+END

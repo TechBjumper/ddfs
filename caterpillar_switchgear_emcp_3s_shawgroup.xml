@@ -1,0 +1,1754 @@
+<?xml version="1.0"?>
+  <!-- Test Modbus related information -->
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+  ddfid="caterpillar_switchgear_emcp_3s_shawgroup" ddfname="Caterpillar Switchgear (EMCP3S) - The Shaw Group"
+  ddfversion="6" canremove="yes">
+  <schemaVersion>1.6</schemaVersion>
+
+      <!--
+        Notes: 
+            Caterpillar spec defines support for 16 generators.
+                Customer only wants 3.
+
+            The calculation for Instant Fuel Consumption is specific to The Shaw Group.  
+            The values for the KW rating of the generators, and their fuel consumption at
+            100% are specific to them.
+            
+            Gen 1 and Gen 3 names are swapped, as requested by customer.
+            Sensor Ids have not been changed, so Gen 1 has GEN3 sensor ids and vice versa.
+            
+      -->
+
+  <device deviceid="caterpillar_switchgear">
+    <oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+    <setProductData ruleid="vendordata" field="vendor">Caterpillar</setProductData>
+
+    <!-- EMCP3 used to monitor generators -->
+    <setProductData ruleid="modeldata" field="model">Electronic Modular Control Panel 3.S</setProductData>
+
+    <!-- Generator -->
+    <setProductData ruleid="typedata" field="type">Generator</setProductData>
+
+    <setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+    <!-- Master device sensors -->
+    <stateSensor ruleid="reg_0_alarms_emergency_mode">
+      <type>state</type>
+      <sensorId>ALARMS_REG_0_EMERGENCY_MODE_STATUS</sensorId>
+      <value>
+        <mapValue mapid="bit_status_vm">
+          <formatNumber>
+            <!-- Determined by byte 0, bit 0 -->
+            <bitwise_and>
+              <op>
+                <getOid>reg_0_masterdevicealarms</getOid>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Emergency Mode Status (Alarms Register)</label>
+      <enum>bit_status_em</enum>
+      <sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="reg_1_emergency_mode">
+      <type>state</type>
+      <sensorId>REG_1_EMERGENCY_MODE_STATUS</sensorId>
+      <value>
+        <mapValue mapid="bit_status_vm">
+          <formatNumber>
+            <!-- Determined by byte 0, bit 0 -->
+            <bitwise_and>
+              <op>
+                <getOid>reg_1_masterdevicestatus</getOid>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Emergency Mode Status (Register 1)</label>
+      <enum>bit_status_em</enum>
+      <sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="reg_2_load_mgmt_mode">
+      <type>state</type>
+      <sensorId>REG_2_LOAD_MGMT_MODE_STATUS</sensorId>
+      <value>
+        <mapValue mapid="bit_status_vm">
+          <formatNumber>
+            <!-- Determined by byte 0, bit 0 -->
+            <bitwise_and>
+              <op>
+                <getOid>reg_2_masterdevicestatus</getOid>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Load Management Mode Status</label>
+      <enum>bit_status_em</enum>
+      <sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="reg_2_emergency_mode">
+      <type>state</type>
+      <sensorId>REG_2_EMERGENCY_MODE_STATUS</sensorId>
+      <value>
+        <mapValue mapid="bit_status_vm">
+          <formatNumber>
+            <!-- Determined by byte 0, bit 1 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op>
+                    <getOid>reg_2_masterdevicestatus</getOid>
+                  </op>
+                  <op>1</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Emergency Mode Status (Register 2)</label>
+      <enum>bit_status_em</enum>
+      <sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="reg_2_return_to_normal">
+      <type>state</type>
+      <sensorId>REG_2_RETURN_TO_NORMAL_STATUS</sensorId>
+      <value>
+        <mapValue mapid="bit_status_vm">
+          <formatNumber>
+            <!-- Determined by byte 0, bit 9 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op>
+                    <getOid>reg_2_masterdevicestatus</getOid>
+                  </op>
+                  <op>9</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Return To Normal Status</label>
+      <enum>bit_status_em</enum>
+      <sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="reg_2_return_to_emergency">
+      <type>state</type>
+      <sensorId>REG_2_RETURN_TO_EMERGENCY_STATUS</sensorId>
+      <value>
+        <mapValue mapid="bit_status_vm">
+          <formatNumber>
+            <!-- Determined by byte 0, bit 10 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op>
+                    <getOid>reg_2_masterdevicestatus</getOid>
+                  </op>
+                  <op>10</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>Return To Emergency Status</label>
+      <enum>bit_status_em</enum>
+      <sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="reg_2_system_alarm_active">
+      <type>state</type>
+      <sensorId>REG_2_SYSTEM_ALARM_ACTIVE_STATUS</sensorId>
+      <value>
+        <mapValue mapid="bit_status_vm">
+          <formatNumber>
+            <!-- Determined by byte 0, bit 13 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op>
+                    <getOid>reg_2_masterdevicestatus</getOid>
+                  </op>
+                  <op>13</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label>System Alarm Active Status</label>
+      <enum>bit_status_em</enum>
+      <sensorSet>System Sensors</sensorSet>
+    </stateSensor>
+
+
+    <!-- Generator sensors -->
+    <stateSensor ruleid="gen_available_status" index="gen_reg_0_status_table">
+      <type>state</type>
+      <sensorId><rowIndex/>_AVAILABLE_STATUS</sensorId>
+      <value>
+        <mapValue mapid="bit_status_vm">
+          <formatNumber>
+            <!-- Determined by byte 0, bit 4 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op>
+                    <getRowOid>gen_reg_0_status_table</getRowOid>
+                  </op>
+                  <op>4</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Available Status</label>
+      <enum>bit_status_em</enum>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="gen_generator_running_status" index="gen_reg_0_status_table">
+      <type>state</type>
+      <sensorId><rowIndex/>_RUNNING_STATUS</sensorId>
+      <value>
+        <mapValue mapid="bit_status_vm">
+          <formatNumber>
+            <!-- Determined by byte 0, bit 5 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op>
+                    <getRowOid>gen_reg_0_status_table</getRowOid>
+                  </op>
+                  <op>5</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Running Status</label>
+      <enum>bit_status_em</enum>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="gen_cooldown_table" index="gen_reg_0_status_table">
+      <type>state</type>
+      <sensorId><rowIndex/>_COOLDOWN_STATUS</sensorId>
+      <value>
+        <mapValue mapid="bit_status_vm">
+          <formatNumber>
+            <!-- Determined by byte 0, bit 6 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op>
+                    <getRowOid>gen_reg_0_status_table</getRowOid>
+                  </op>
+                  <op>6</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Cooldown Status</label>
+      <enum>bit_status_em</enum>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="gen_reg_1_generator_fault" index="gen_reg_0_status_table">
+      <type>state</type>
+      <sensorId><rowIndex/>FAULT_STATUS</sensorId>
+      <value>
+        <mapValue mapid="bit_status_vm">
+          <formatNumber>
+            <!-- Determined by byte 0, bit 9 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op>
+                    <getRowOid>gen_reg_0_status_table</getRowOid>
+                  </op>
+                  <op>9</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Fault Status</label>
+      <enum>bit_status_em</enum>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </stateSensor>
+    
+    <stateSensor ruleid="gen_reg_3_fail_to_synch" index="gen_reg_3_alarms_table">
+      <type>state</type>
+      <sensorId><rowIndex/>_FAIL_TO_SYNCH_STATUS</sensorId>
+      <value>
+        <mapValue mapid="bit_status_vm">
+          <formatNumber>
+            <!-- Determined by byte 0, bit 9 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op>
+                    <getRowOid>gen_reg_3_alarms_table</getRowOid>
+                  </op>
+                  <op>9</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Fail To Synch Status</label>
+      <enum>bit_status_em</enum>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </stateSensor>
+
+    <stateSensor ruleid="gen_reg_3_low_fuel_level" index="gen_reg_3_alarms_table">
+      <type>state</type>
+      <sensorId><rowIndex/>_LOW_FUEL_LEVEL_STATUS</sensorId>
+      <value>
+        <mapValue mapid="bit_status_vm">
+          <formatNumber>
+            <!-- Determined by byte 0, bit 10 -->
+            <bitwise_and>
+              <op>
+                <right_shift>
+                  <op>
+                    <getRowOid>gen_reg_3_alarms_table</getRowOid>
+                  </op>
+                  <op>10</op>
+                </right_shift>
+              </op>
+              <op>1</op>
+            </bitwise_and>
+          </formatNumber>
+        </mapValue>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Low Fuel Level Status</label>
+      <enum>bit_status_em</enum>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </stateSensor>
+
+    <numSensor ruleid="gen_kw" index="gen_kw_table">
+      <type>num/powerKW</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_kw_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>KW</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_kvar" index="gen_kvar_table">
+      <type>num/powerKVAR</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_kvar_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>KVAR</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_voltage_phase_ab" index="gen_voltage_phase_a_b_table">
+      <type>voltage</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_voltage_phase_a_b_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Voltage Phase A - B</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_voltage_phase_b_c" index="gen_voltage_phase_b_c_table">
+      <type>voltage</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_voltage_phase_b_c_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Voltage Phase B - C</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_voltage_phase_c_a" index="gen_voltage_phase_c_a_table">
+      <type>voltage</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_voltage_phase_c_a_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Voltage Phase C - A</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_avg_voltage_l_l" index="gen_avg_voltage_l_l_table">
+      <type>voltage</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_avg_voltage_l_l_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Average Voltage (L-L)</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_amps_phase_a" index="gen_amps_phase_a_table">
+      <type>amperage/phaseamperage</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_amps_phase_a_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Amps Phase A</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_amps_phase_b" index="gen_amps_phase_b_table">
+      <type>amperage/phaseamperage</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_amps_phase_b_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Amps Phase B</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_amps_phase_c" index="gen_amps_phase_c_table">
+      <type>amperage/phaseamperage</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_amps_phase_c_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Amps Phase C</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_avg_amps" index="gen_avg_amps_table">
+      <type>amperage</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <mult>
+        <op><getRowOid>gen_avg_amps_table</getRowOid></op>
+        <op>0.1</op>
+        </mult>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Average Amps</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_frequency" index="gen_frequency_table">
+      <type>frequency</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <mult>
+          <op>
+            <getRowOid>gen_frequency_table</getRowOid>
+          </op>
+          <op>0.01</op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Frequency</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_power_factor" index="gen_power_factor_table">
+      <type>num/powerfactor</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <mult>
+          <op>
+            <getRowOid>gen_power_factor_table</getRowOid>
+          </op>
+          <op>0.001</op>
+        </mult>
+      </value>
+      <valueInc>0.001</valueInc>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Power Factor</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_bus_volts" index="gen_bus_volts_table">
+      <type>voltage</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_bus_volts_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Bus Voltage</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_bus_frequency" index="gen_bus_frequency_table">
+      <type>frequency</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <mult>
+          <op>
+            <getRowOid>gen_bus_frequency_table</getRowOid>
+          </op>
+          <op>0.01</op>
+        </mult>
+      </value>
+      <valueInc>0.01</valueInc>      
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Bus Frequency</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_kwh" index="gen_kwh_table">
+      <type>num/kwatthr</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_kwh_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>KWH</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_hvarh" index="gen_hvarh_table">
+      <type>num/kVARhr</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_hvarh_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>KVARH</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_engine_starts" index="gen_engine_starts_table">
+      <type>num</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_engine_starts_table</getRowOid>
+      </value>
+      <!-- Make the number show up as a whole number -->
+      <valueInc>1.0</valueInc>      
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Engine Starts</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_engine_operating_hours" index="gen_engine_operating_hours_table">
+      <type>timeinhrs</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <mult>
+          <op>
+            <getRowOid>gen_engine_operating_hours_table</getRowOid>
+          </op>
+          <op>0.1</op>
+        </mult>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Engine Operating Hours</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_rpm" index="gen_rpm_table">
+      <type>num</type>
+      <units>rpm</units>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_rpm_table</getRowOid>
+      </value>
+      <!-- Make the number show up as a whole number -->
+      <valueInc>1.0</valueInc>      
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>RPM</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_oil_temp_table" index="gen_oil_temp_table">
+      <type>temp</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_oil_temp</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Oil Temp</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_oil_pressure" index="gen_oil_pressure_table">
+      <type>pressure</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_oil_pressure_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Oil Pressure</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_cooleant_temp" index="gen_cooleant_temp_table">
+      <type>temp</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_cooleant_temp_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Coolant Temp</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_exhaust_manifold1_temp" index="gen_exhaust_manifold1_temp_table">
+      <type>temp</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_exhaust_manifold1_temp_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Exhaust Manifold 1 Temp</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_exhaust_manifold2_temp" index="gen_exhaust_manifold2_temp_table">
+      <type>temp</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_exhaust_manifold2_temp_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Exhaust Manifold 2 Temp</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <!-- Fuel consumption is based on % load times 105 gallons per hour (1.75 gallons per minute) -->
+    <!-- % load calculated by current KW / 1500KW  (Each generator is 1500KW)  -->
+    <!-- For a calculation of (KW/1500) x 1.75 -->
+    <numSensor ruleid="gen_instant_fuel_consumption" index="gen_kw_table">
+      <type>num</type>
+      <units>gallonspermin</units>
+      <sensorId><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue>_INSTANT_FUEL_CONSUMPTION</sensorId>
+      <value>
+        <mult>
+          <op>
+            <div>
+              <op>
+                <getRowOid>gen_kw_table</getRowOid>
+              </op>
+              <op>
+                1500
+              </op>
+            </div>      
+          </op>
+          <op>
+            1.75
+          </op>
+        </mult>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Instant Fuel Consumption</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_batt_voltage" index="gen_batt_voltage_table">
+      <type>voltage/battvoltage</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <mult>
+        <op>
+          <getRowOid>gen_batt_voltage_table</getRowOid>
+        </op>
+        <op>0.1</op>
+        </mult>
+        </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Battery Voltage</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+ 
+    <numSensor ruleid="gen_engine_status" index="gen_engine_status_table">
+      <type>num</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_engine_status_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Engine Status Word</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_crank_case_pressure" index="gen_crank_case_pressure_table">
+      <type>pressure</type> <!-- Value comes in from device in inches of water.  Need to convert to kPa -->
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_crank_case_pressure_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Crank Case Pressure</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_filter_diff_pressure" index="gen_filter_diff_pressure_table">
+      <type>pressure/filterdiffpress</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_filter_diff_pressure_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Oil Filter Diff Pressure</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_fuel_filter_diff_pressure" index="gen_fuel_filter_diff_pressure_table">
+      <type>pressure/filterdiffpress</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_fuel_filter_diff_pressure_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Fuel Filter Diff Pressure</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_fuel_pressure" index="gen_fuel_pressure_table">
+      <type>pressure</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_fuel_pressure_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Fuel Pressure</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_boost_pressure" index="gen_boost_pressure_table">
+      <type>pressure</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_boost_pressure_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Boost Pressure</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_air_filter_diff_pressure" index="gen_air_filter_diff_pressure_table">
+      <type>pressure/filterdiffpress</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_air_filter_diff_pressure_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Air Filter Diff Pressure</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <numSensor ruleid="gen_atmospheric_pressure" index="gen_atmospheric_pressure_table">
+      <type>pressure</type>
+      <sensorId><rowIndex/></sensorId>
+      <value>
+        <getRowOid>gen_atmospheric_pressure_table</getRowOid>
+      </value>
+      <label><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Atmospheric Pressure</label>
+      <sensorSet><mapValue mapid="gen_sensorlabel"><rowNumber/></mapValue><space/>Sensors</sensorSet>
+    </numSensor>
+
+    <!-- Bit Status value map -->
+    <valueMap ruleid="bit_status_vm">
+      <valueIn>0</valueIn><valueOut>0</valueOut>
+      <valueIn>1</valueIn><valueOut>1</valueOut>
+      <valueIn>*</valueIn><valueOut>0</valueOut>
+    </valueMap>
+
+    <valueMap ruleid="engine_status_vm">
+      <valueIn>0</valueIn><valueOut>0</valueOut>  <!-- Unknown -->
+      <valueIn>1</valueIn><valueOut>1</valueOut>  <!-- Available -->
+      <valueIn>2</valueIn><valueOut>2</valueOut>  <!-- Running -->
+      <valueIn>4</valueIn><valueOut>3</valueOut>  <!-- Cooldown -->
+      <valueIn>32</valueIn><valueOut>4</valueOut>  <!-- Fault -->
+      <valueIn>*</valueIn><valueOut>5</valueOut>  <!-- Anything else:Error -->
+    </valueMap>
+
+    <!-- Bit Status Enums -->
+    <enumMap ruleid="bit_status_em">
+      <label>Not Active</label>
+      <label>Active</label>
+    </enumMap>
+
+    <enumMap ruleid="engine_status_em">
+        <label>Unknown</label>
+        <label>Available</label>
+        <label>Running</label>
+        <label>Cooldown</label>
+        <label>Fault</label>
+        <label>Error</label>
+    </enumMap>
+
+    <valueMap ruleid="gen_sensorlabel">
+      <valueIn>2</valueIn><valueOut>Gen 1</valueOut>
+      <valueIn>1</valueIn><valueOut>Gen 2</valueOut>
+      <valueIn>0</valueIn><valueOut>Gen 3</valueOut>
+      <valueIn>*</valueIn><valueOut>Gen Unknown</valueOut>
+    </valueMap>
+  </device>
+
+  <protocol>
+    <modbus>
+      <!-- Master Data Table -->
+      <value_ref_id valid="reg_0_masterdevicealarms">
+        <function>3</function>
+        <start_addr>50000</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="reg_1_masterdevicestatus">
+        <function>3</function>
+        <start_addr>50001</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="reg_2_masterdevicestatus">
+        <function>3</function>
+        <start_addr>50002</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <!-- Bulk read for performance   -->
+      <packet>
+        <function>3</function>
+        <start_addr>50000</start_addr>
+        <quantity>3</quantity>
+      </packet>
+
+
+      <!-- Tables for generator 1, 2, 3 -->
+
+      <table_ref_id indexid="gen_reg_0_status_table">
+        <entry num="0">GEN1_REG_0_STATUS</entry>
+        <entry num="1">GEN2_REG_0_STATUS</entry>
+        <entry num="2">GEN3_REG_0_STATUS</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_reg_3_alarms_table">
+        <entry num="0">GEN1_REG_3_ALARMS</entry>
+        <entry num="1">GEN2_REG_3_ALARMS</entry>
+        <entry num="2">GEN3_REG_3_ALARMS</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_kw_table">
+        <entry num="0">GEN1_KW</entry>
+        <entry num="1">GEN2_KW</entry>
+        <entry num="2">GEN3_KW</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_kvar_table">
+        <entry num="0">GEN1_POWER_KVAR</entry>
+        <entry num="1">GEN2_POWER_KVAR</entry>
+        <entry num="2">GEN3_POWER_KVAR</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_voltage_phase_a_b_table">
+        <entry num="0">GEN1_VOLTAGE_PHASE_A_B</entry>
+        <entry num="1">GEN2_VOLTAGE_PHASE_A_B</entry>
+        <entry num="2">GEN3_VOLTAGE_PHASE_A_B</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_voltage_phase_b_c_table">
+        <entry num="0">GEN1_VOLTAGE_PHASE_B_C</entry>
+        <entry num="1">GEN2_VOLTAGE_PHASE_B_C</entry>
+        <entry num="2">GEN3_VOLTAGE_PHASE_B_C</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_voltage_phase_c_a_table">
+        <entry num="0">GEN1_VOLTAGE_PHASE_C_A</entry>
+        <entry num="1">GEN2_VOLTAGE_PHASE_C_A</entry>
+        <entry num="2">GEN3_VOLTAGE_PHASE_C_A</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_avg_voltage_l_l_table">
+        <entry num="0">GEN1_AVG_VOLTAGE_L_L</entry>
+        <entry num="1">GEN2_AVG_VOLTAGE_L_L</entry>
+        <entry num="2">GEN3_AVG_VOLTAGE_L_L</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_amps_phase_a_table">
+        <entry num="0">GEN1_AMPS_PHASE_A</entry>
+        <entry num="1">GEN2_AMPS_PHASE_A</entry>
+        <entry num="2">GEN3_AMPS_PHASE_A</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_amps_phase_b_table">
+        <entry num="0">GEN1_AMPS_PHASE_B</entry>
+        <entry num="1">GEN2_AMPS_PHASE_B</entry>
+        <entry num="2">GEN3_AMPS_PHASE_B</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_amps_phase_c_table">
+        <entry num="0">GEN1_AMPS_PHASE_C</entry>
+        <entry num="1">GEN2_AMPS_PHASE_C</entry>
+        <entry num="2">GEN3_AMPS_PHASE_C</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_avg_amps_table">
+        <entry num="0">GEN1_AVG_AMPS</entry>
+        <entry num="1">GEN2_AVG_AMPS</entry>
+        <entry num="2">GEN3_AVG_AMPS</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_frequency_table">
+        <entry num="0">GEN1_FREQUENCY</entry>
+        <entry num="1">GEN2_FREQUENCY</entry>
+        <entry num="2">GEN3_FREQUENCY</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_power_factor_table">
+        <entry num="0">GEN1_POWER_FACTOR</entry>
+        <entry num="1">GEN2_POWER_FACTOR</entry>
+        <entry num="2">GEN3_POWER_FACTOR</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_bus_volts_table">
+        <entry num="0">GEN1_BUS_VOLTS</entry>
+        <entry num="1">GEN2_BUS_VOLTS</entry>
+        <entry num="2">GEN3_BUS_VOLTS</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_bus_frequency_table">
+        <entry num="0">GEN1_BUS_FREQUENCY</entry>
+        <entry num="1">GEN2_BUS_FREQUENCY</entry>
+        <entry num="2">GEN3_BUS_FREQUENCY</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_kwh_table">
+        <entry num="0">GEN1_KWH</entry>
+        <entry num="1">GEN2_KWH</entry>
+        <entry num="2">GEN3_KWH</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_hvarh_table">
+        <entry num="0">GEN1_KVARH</entry>
+        <entry num="1">GEN2_KVARH</entry>
+        <entry num="2">GEN3_KVARH</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_engine_starts_table">
+        <entry num="0">GEN1_ENGINE_STARTS</entry>
+        <entry num="1">GEN2_ENGINE_STARTS</entry>
+        <entry num="2">GEN3_ENGINE_STARTS</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_engine_operating_hours_table">
+        <entry num="0">GEN1_ENGINE_OPERATING_HOURS</entry>
+        <entry num="1">GEN2_ENGINE_OPERATING_HOURS</entry>
+        <entry num="2">GEN3_ENGINE_OPERATING_HOURS</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_rpm_table">
+        <entry num="0">GEN1_RPM</entry>
+        <entry num="1">GEN2_RPM</entry>
+        <entry num="2">GEN3_RPM</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_oil_temp_table">
+        <entry num="0">GEN1_OIL_TEMP</entry>
+        <entry num="1">GEN2_OIL_TEMP</entry>
+        <entry num="2">GEN3_OIL_TEMP</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_oil_pressure_table">
+        <entry num="0">GEN1_OIL_PRESSURE</entry>
+        <entry num="1">GEN2_OIL_PRESSURE</entry>
+        <entry num="2">GEN3_OIL_PRESSURE</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_cooleant_temp_table">
+        <entry num="0">GEN1_COOLANT_TEMP</entry>
+        <entry num="1">GEN2_COOLANT_TEMP</entry>
+        <entry num="2">GEN3_COOLANT_TEMP</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_exhaust_manifold1_temp_table">
+        <entry num="0">GEN1_EXHAUST_MANIFOLD1_TEMP</entry>
+        <entry num="1">GEN2_EXHAUST_MANIFOLD1_TEMP</entry>
+        <entry num="2">GEN3_EXHAUST_MANIFOLD1_TEMP</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_exhaust_manifold2_temp_table">
+        <entry num="0">GEN1_EXHAUST_MANIFOLD2_TEMP</entry>
+        <entry num="1">GEN2_EXHAUST_MANIFOLD2_TEMP</entry>
+        <entry num="2">GEN3_EXHAUST_MANIFOLD2_TEMP</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_instant_fuel_consumption_table">
+        <entry num="0">GEN1_INSTANT_FUEL_CONSUMPTION</entry>
+        <entry num="1">GEN2_INSTANT_FUEL_CONSUMPTION</entry>
+        <entry num="2">GEN3_INSTANT_FUEL_CONSUMPTION</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_batt_voltage_table">
+        <entry num="0">GEN1_BATTERY_VOLTAGE</entry>
+        <entry num="1">GEN2_BATTERY_VOLTAGE</entry>
+        <entry num="2">GEN3_BATTERY_VOLTAGE</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_engine_status_table">
+        <entry num="0">GEN1_ENGINE_STATUS_WORD</entry>
+        <entry num="1">GEN2_ENGINE_STATUS_WORD</entry>
+        <entry num="2">GEN3_ENGINE_STATUS_WORD</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_crank_case_pressure_table">
+        <entry num="0">GEN1_CRANK_CASE_PRESSURE</entry>
+        <entry num="1">GEN2_CRANK_CASE_PRESSURE</entry>
+        <entry num="2">GEN3_CRANK_CASE_PRESSURE</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_filter_diff_pressure_table">
+        <entry num="0">GEN1_OIL_FILTER_DIFF_PRESSURE</entry>
+        <entry num="1">GEN2_OIL_FILTER_DIFF_PRESSURE</entry>
+        <entry num="2">GEN3_OIL_FILTER_DIFF_PRESSURE</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_fuel_filter_diff_pressure_table">
+        <entry num="0">GEN1_FUEL_FILTER_DIFF_PRESSURE</entry>
+        <entry num="1">GEN2_FUEL_FILTER_DIFF_PRESSURE</entry>
+        <entry num="2">GEN3_FUEL_FILTER_DIFF_PRESSURE</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_fuel_pressure_table">
+        <entry num="0">GEN1_FUEL_PRESSURE</entry>
+        <entry num="1">GEN2_FUEL_PRESSURE</entry>
+        <entry num="2">GEN3_FUEL_PRESSURE</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_boost_pressure_table">
+        <entry num="0">GEN1_BOOST_PRESSURE</entry>
+        <entry num="1">GEN2_BOOST_PRESSURE</entry>
+        <entry num="2">GEN3_BOOST_PRESSURE</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_air_filter_diff_pressure_table">
+        <entry num="0">GEN1_AIR_FILTER_DIFF_PRESSURE</entry>
+        <entry num="1">GEN2_AIR_FILTER_DIFF_PRESSURE</entry>
+        <entry num="2">GEN3_AIR_FILTER_DIFF_PRESSURE</entry>
+      </table_ref_id>
+
+      <table_ref_id indexid="gen_atmospheric_pressure_table">
+        <entry num="0">GEN1_ATMOSPHERIC_PRESSURE</entry>
+        <entry num="1">GEN2_ATMOSPHERIC_PRESSURE</entry>
+        <entry num="2">GEN3_ATMOSPHERIC_PRESSURE</entry>
+      </table_ref_id>
+
+
+      <!-- Values referenced in generator tables -->
+      <!-- Generator 1 -->
+      <value_ref_id valid="GEN1_REG_0_STATUS">
+        <function>3</function>
+        <start_addr>50050</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_REG_3_ALARMS">
+        <function>3</function>
+        <start_addr>50053</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+
+      <value_ref_id valid="GEN1_KW">
+        <function>3</function>
+        <start_addr>50057</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_POWER_KVAR">
+        <function>3</function>
+        <start_addr>50058</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_VOLTAGE_PHASE_A_B">
+        <function>3</function>
+        <start_addr>50059</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_VOLTAGE_PHASE_B_C">
+        <function>3</function>
+        <start_addr>50060</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_VOLTAGE_PHASE_C_A">
+        <function>3</function>
+        <start_addr>50061</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_AVG_VOLTAGE_L_L">
+        <function>3</function>
+        <start_addr>50062</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_AMPS_PHASE_A">
+        <function>3</function>
+        <start_addr>50063</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_AMPS_PHASE_B">
+        <function>3</function>
+        <start_addr>50064</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_AMPS_PHASE_C">
+        <function>3</function>
+        <start_addr>50065</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_AVG_AMPS">
+        <function>3</function>
+        <start_addr>50066</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_FREQUENCY">
+        <function>3</function>
+        <start_addr>50067</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_POWER_FACTOR">
+        <function>3</function>
+        <start_addr>50068</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_BUS_VOLTS">
+        <function>3</function>
+        <start_addr>50070</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_BUS_FREQUENCY">
+        <function>3</function>
+        <start_addr>50071</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_KWH">
+        <function>3</function>
+        <start_addr>50072</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_float</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_KVARH">
+        <function>3</function>
+        <start_addr>50074</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_float</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_ENGINE_STARTS">
+        <function>3</function>
+        <start_addr>50076</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_int32</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_ENGINE_OPERATING_HOURS">
+        <function>3</function>
+        <start_addr>50078</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_int32</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_RPM">
+        <function>3</function>
+        <start_addr>50080</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_OIL_TEMP">
+        <function>3</function>
+        <start_addr>50081</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_OIL_PRESSURE">
+        <function>3</function>
+        <start_addr>50082</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_COOLANT_TEMP">
+        <function>3</function>
+        <start_addr>50083</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_EXHAUST_MANIFOLD1_TEMP">
+        <function>3</function>
+        <start_addr>50084</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_EXHAUST_MANIFOLD2_TEMP">
+        <function>3</function>
+        <start_addr>50085</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_INSTANT_FUEL_CONSUMPTION">
+        <function>3</function>
+        <start_addr>50086</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_BATTERY_VOLTAGE">
+        <function>3</function>
+        <start_addr>50087</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_ENGINE_STATUS_WORD">
+        <function>3</function>
+        <start_addr>50088</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_CRANK_CASE_PRESSURE">
+        <function>3</function>
+        <start_addr>50089</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_OIL_FILTER_DIFF_PRESSURE">
+        <function>3</function>
+        <start_addr>50090</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_FUEL_FILTER_DIFF_PRESSURE">
+        <function>3</function>
+        <start_addr>50091</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_FUEL_PRESSURE">
+        <function>3</function>
+        <start_addr>50092</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_BOOST_PRESSURE">
+        <function>3</function>
+        <start_addr>50093</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_AIR_FILTER_DIFF_PRESSURE">
+        <function>3</function>
+        <start_addr>50094</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN1_ATMOSPHERIC_PRESSURE">
+        <function>3</function>
+        <start_addr>50095</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <!-- Generator 2 -->
+      <value_ref_id valid="GEN2_REG_0_STATUS">
+        <function>3</function>
+        <start_addr>50100</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_REG_3_ALARMS">
+        <function>3</function>
+        <start_addr>50103</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_KW">
+        <function>3</function>
+        <start_addr>50107</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_POWER_KVAR">
+        <function>3</function>
+        <start_addr>50108</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_VOLTAGE_PHASE_A_B">
+        <function>3</function>
+        <start_addr>50109</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_VOLTAGE_PHASE_B_C">
+        <function>3</function>
+        <start_addr>50110</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_VOLTAGE_PHASE_C_A">
+        <function>3</function>
+        <start_addr>50111</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_AVG_VOLTAGE_L_L">
+        <function>3</function>
+        <start_addr>50112</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_AMPS_PHASE_A">
+        <function>3</function>
+        <start_addr>50113</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_AMPS_PHASE_B">
+        <function>3</function>
+        <start_addr>50114</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_AMPS_PHASE_C">
+        <function>3</function>
+        <start_addr>50115</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_AVG_AMPS">
+        <function>3</function>
+        <start_addr>50116</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_FREQUENCY">
+        <function>3</function>
+        <start_addr>50117</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_POWER_FACTOR">
+        <function>3</function>
+        <start_addr>50118</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_BUS_VOLTS">
+        <function>3</function>
+        <start_addr>50120</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_BUS_FREQUENCY">
+        <function>3</function>
+        <start_addr>50121</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_KWH">
+        <function>3</function>
+        <start_addr>50122</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_float</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_KVARH">
+        <function>3</function>
+        <start_addr>50124</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_float</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_ENGINE_STARTS">
+        <function>3</function>
+        <start_addr>50126</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_int32</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_ENGINE_OPERATING_HOURS">
+        <function>3</function>
+        <start_addr>50128</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_int32</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_RPM">
+        <function>3</function>
+        <start_addr>50130</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_OIL_TEMP">
+        <function>3</function>
+        <start_addr>50131</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_OIL_PRESSURE">
+        <function>3</function>
+        <start_addr>50132</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_COOLANT_TEMP">
+        <function>3</function>
+        <start_addr>50133</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_EXHAUST_MANIFOLD1_TEMP">
+        <function>3</function>
+        <start_addr>50134</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_EXHAUST_MANIFOLD2_TEMP">
+        <function>3</function>
+        <start_addr>50135</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_INSTANT_FUEL_CONSUMPTION">
+        <function>3</function>
+        <start_addr>50136</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_BATTERY_VOLTAGE">
+        <function>3</function>
+        <start_addr>50137</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_ENGINE_STATUS_WORD">
+        <function>3</function>
+        <start_addr>50138</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_CRANK_CASE_PRESSURE">
+        <function>3</function>
+        <start_addr>50139</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_OIL_FILTER_DIFF_PRESSURE">
+        <function>3</function>
+        <start_addr>50140</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_FUEL_FILTER_DIFF_PRESSURE">
+        <function>3</function>
+        <start_addr>50141</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_FUEL_PRESSURE">
+        <function>3</function>
+        <start_addr>50142</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_BOOST_PRESSURE">
+        <function>3</function>
+        <start_addr>50143</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_AIR_FILTER_DIFF_PRESSURE">
+        <function>3</function>
+        <start_addr>50144</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN2_ATMOSPHERIC_PRESSURE">
+        <function>3</function>
+        <start_addr>50145</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+
+      <!-- Generator 3 -->
+      <value_ref_id valid="GEN3_REG_0_STATUS">
+        <function>3</function>
+        <start_addr>50150</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_REG_3_ALARMS">
+        <function>3</function>
+        <start_addr>50153</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_KW">
+        <function>3</function>
+        <start_addr>50157</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_POWER_KVAR">
+        <function>3</function>
+        <start_addr>50158</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_VOLTAGE_PHASE_A_B">
+        <function>3</function>
+        <start_addr>50159</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_VOLTAGE_PHASE_B_C">
+        <function>3</function>
+        <start_addr>50160</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_VOLTAGE_PHASE_C_A">
+        <function>3</function>
+        <start_addr>50161</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_AVG_VOLTAGE_L_L">
+        <function>3</function>
+        <start_addr>50162</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_AMPS_PHASE_A">
+        <function>3</function>
+        <start_addr>50163</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_AMPS_PHASE_B">
+        <function>3</function>
+        <start_addr>50164</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_AMPS_PHASE_C">
+        <function>3</function>
+        <start_addr>50165</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_AVG_AMPS">
+        <function>3</function>
+        <start_addr>50166</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_FREQUENCY">
+        <function>3</function>
+        <start_addr>50167</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_POWER_FACTOR">
+        <function>3</function>
+        <start_addr>50168</start_addr>
+        <quantity>1</quantity>
+        <type>int_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_BUS_VOLTS">
+        <function>3</function>
+        <start_addr>50170</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_BUS_FREQUENCY">
+        <function>3</function>
+        <start_addr>50171</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_KWH">
+        <function>3</function>
+        <start_addr>50172</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_float</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_KVARH">
+        <function>3</function>
+        <start_addr>50174</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_float</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_ENGINE_STARTS">
+        <function>3</function>
+        <start_addr>50176</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_int32</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_ENGINE_OPERATING_HOURS">
+        <function>3</function>
+        <start_addr>50178</start_addr>
+        <quantity>2</quantity>
+        <type>swapped_int32</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_RPM">
+        <function>3</function>
+        <start_addr>50180</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_OIL_TEMP">
+        <function>3</function>
+        <start_addr>50181</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_OIL_PRESSURE">
+        <function>3</function>
+        <start_addr>50182</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_COOLANT_TEMP">
+        <function>3</function>
+        <start_addr>50183</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_EXHAUST_MANIFOLD1_TEMP">
+        <function>3</function>
+        <start_addr>50184</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_EXHAUST_MANIFOLD2_TEMP">
+        <function>3</function>
+        <start_addr>50185</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_INSTANT_FUEL_CONSUMPTION">
+        <function>3</function>
+        <start_addr>50186</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_BATTERY_VOLTAGE">
+        <function>3</function>
+        <start_addr>50187</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_ENGINE_STATUS_WORD">
+        <function>3</function>
+        <start_addr>50188</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_CRANK_CASE_PRESSURE">
+        <function>3</function>
+        <start_addr>50189</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_OIL_FILTER_DIFF_PRESSURE">
+        <function>3</function>
+        <start_addr>50190</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_FUEL_FILTER_DIFF_PRESSURE">
+        <function>3</function>
+        <start_addr>50191</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_FUEL_PRESSURE">
+        <function>3</function>
+        <start_addr>50192</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_BOOST_PRESSURE">
+        <function>3</function>
+        <start_addr>50193</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_AIR_FILTER_DIFF_PRESSURE">
+        <function>3</function>
+        <start_addr>50194</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+      <value_ref_id valid="GEN3_ATMOSPHERIC_PRESSURE">
+        <function>3</function>
+        <start_addr>50195</start_addr>
+        <quantity>1</quantity>
+        <type>uint_16</type>
+      </value_ref_id>
+
+      <type_definition type_name="swapped_float">
+          <type>float</type>                 <!-- must be one of our 'normal' modbus types -->
+          <byte_order>1,0,3,2</byte_order>   <!-- mapping of device's byte string into the order which we want -->
+      </type_definition>
+
+      <type_definition type_name="swapped_int32">
+          <type>uint_32</type>                 <!-- must be one of our 'normal' modbus types -->
+          <byte_order>1,0,3,2</byte_order>     <!-- mapping of device's byte string into the order which we want -->
+      </type_definition>
+
+
+
+      <!-- Bulk read for performance   -->
+      <packet>
+        <function>3</function>
+        <start_addr>50050</start_addr>
+        <quantity>3</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>50057</start_addr>
+        <quantity>39</quantity>
+      </packet>
+
+      <!-- Bulk read for performance   -->
+      <packet>
+        <function>3</function>
+        <start_addr>50100</start_addr>
+        <quantity>3</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>50107</start_addr>
+        <quantity>39</quantity>
+      </packet>
+
+      <!-- Bulk read for performance   -->
+      <packet>
+        <function>3</function>
+        <start_addr>50150</start_addr>
+        <quantity>3</quantity>
+      </packet>
+      <packet>
+        <function>3</function>
+        <start_addr>50157</start_addr>
+        <quantity>39</quantity>
+      </packet>
+
+    </modbus>
+  </protocol>
+</APC_DDF>
+
+

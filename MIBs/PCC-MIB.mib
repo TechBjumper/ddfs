@@ -1,0 +1,655 @@
+
+-- PCC Mib v. 1.00
+
+--   powecMIB MODULE-IDENTITY
+--       LAST-UPDATED "0603301430Z"
+--       ORGANIZATION "Power-One, Powec"
+--       CONTACT-INFO "Arild Sageboe, arild.sageboe@power-one.com"
+--       DESCRIPTION "System Information, PCC Power Systems"
+--       ::= { enterprises 5961 }
+	
+PCC-MIB DEFINITIONS ::= BEGIN
+
+	IMPORTS
+
+   	enterprises, IpAddress			FROM RFC1155-SMI
+	DisplayString 					FROM RFC1213-MIB
+   	OBJECT-TYPE           			FROM RFC-1212
+	TRAP-TYPE 	    				FROM RFC-1215;
+
+
+
+	powecMIB			OBJECT IDENTIFIER ::= { enterprises 5961 }
+	pccPowerSystem 		OBJECT IDENTIFIER ::= { powecMIB 3 }
+		
+	systemInfo 			OBJECT IDENTIFIER ::= { pccPowerSystem 1 } 
+	powerSystem			OBJECT IDENTIFIER ::= { pccPowerSystem 2 }    
+	alarmInfo			OBJECT IDENTIFIER ::= { pccPowerSystem 3 }
+	powecTrap			OBJECT IDENTIFIER ::= { pccPowerSystem 99 }
+	
+	
+-- SYSTEM INFO variables
+
+
+systemName OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"System Type String for the DC System Site"
+	::= { systemInfo 1 }
+
+powerSystemType	OBJECT-TYPE
+	SYNTAX DisplayString
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"String containing the type of power supply control module (PCC)"
+	::= { systemInfo 2 }
+
+powerSystemSoftVer	OBJECT-TYPE
+	SYNTAX DisplayString
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"String containing the software version of the control module"
+	::= { systemInfo 3 }
+
+powerSystemSerialNo	OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"Serial Number of the control module"
+	::= { systemInfo 4 }
+
+outputData OBJECT-TYPE
+	SYNTAX DisplayString
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"String containing a description of the DC Output"
+	::= { systemInfo 5 }
+
+batteryDescript OBJECT-TYPE
+	SYNTAX DisplayString
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"String containing a description of the Battery"
+	::= { systemInfo 6 }
+	
+batteryCapacity OBJECT-TYPE
+	SYNTAX INTEGER(0..30000)
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION
+		"An integer containing battery capacity in Ah"
+		
+	::= { systemInfo 7 }
+	
+	
+
+-- POWER SYSTEM variables
+
+systemVoltage		OBJECT-TYPE
+	SYNTAX INTEGER(0..30000)
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"A variable containing the system DC voltage (voltage * 100)"
+	::= { powerSystem 1 }
+
+
+loadCurrent		OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"A variable containing the system load current (current * 10)"
+	::= { powerSystem 2 }
+
+
+batteryCurrent		OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"A variable containing the battery current (current * 10)"
+	::= { powerSystem 3 }
+
+
+rectifierCurrent	OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"A variable containing the rectifier current (current * 10)"
+	::= { powerSystem 4 }  
+
+
+battTemperature	OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"A variable containing the battery temperature(Degree C)"
+	::= { powerSystem 5 }  
+	
+
+
+
+
+-- ALARM INFO variables (Alarm and Status Information)
+-- The alarmData, extraAlarmData and statusData
+-- are integers from 0-255 containing the byte value received 
+-- from the controlmodule. 
+
+numbOfAlarms	OBJECT-TYPE
+	SYNTAX INTEGER(0..100)
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"Variable containing the number of active alarms at the moment, when sent with a trap 1 indicate active, 0 indicate clear"
+	::= { alarmInfo 1 }
+
+alarmData1	OBJECT-TYPE
+	SYNTAX INTEGER(0..255)
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"A byte containing alarm data 1"
+	::= { alarmInfo 2 }
+
+alarmData2	OBJECT-TYPE
+	SYNTAX INTEGER(0..255)
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"A byte containing alarm data 2"
+	::= { alarmInfo 3 }
+
+alarmData3	OBJECT-TYPE
+	SYNTAX INTEGER(0..255)
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"A byte containing alarm data 3"
+	::= { alarmInfo 4 }
+	
+extraAlarmData1	OBJECT-TYPE
+	SYNTAX INTEGER(0..255)
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"A byte containing extra alarm data 1"
+	::= { alarmInfo 5 }
+	
+extraAlarmData2	OBJECT-TYPE
+	SYNTAX INTEGER(0..255)
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"A byte containing extra alarm data 2"
+	::= { alarmInfo 6 }
+
+
+statusData1	OBJECT-TYPE
+	SYNTAX INTEGER(0..255)
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"A byte containing status data 1"
+	::= { alarmInfo 7 }
+
+statusData2	OBJECT-TYPE
+	SYNTAX INTEGER(0..255)
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"A byte containing status data 2"
+	::= { alarmInfo 8 }
+
+statusData3	OBJECT-TYPE
+	SYNTAX INTEGER(0..255)
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"A byte containing status data 3"
+	::= { alarmInfo 9 }
+
+extAlarm1Name OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Ext.alarm 1 name"
+	::= { alarmInfo 10 }
+
+extAlarm2Name OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Ext.alarm 2 name"
+	::= { alarmInfo 11 }
+
+extAlarm3Name OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Ext.alarm 3 name"
+	::= { alarmInfo 12 }
+
+extAlarm4Name OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Ext.alarm 4 name"
+	::= { alarmInfo 13 }
+
+extAlarm5Name OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Ext.alarm 5 name"
+	::= { alarmInfo 14 }
+
+extAlarm6Name OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Ext.alarm 6 name"
+	::= { alarmInfo 15 }
+
+extAlarm7Name OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Ext.alarm 7 name"
+	::= { alarmInfo 16 }
+
+extAlarm8Name OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Ext.alarm 8 name"
+	::= { alarmInfo 17 }
+
+extAlarm9Name OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Ext.alarm 9 name"
+	::= { alarmInfo 18 }
+
+extAlarm10Name OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Ext.alarm 10 name"
+	::= { alarmInfo 19 }
+
+extAlarm11Name OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Ext.alarm 11 name"
+	::= { alarmInfo 20 }
+
+extAlarm12Name OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Ext.alarm 12 name"
+	::= { alarmInfo 21 }
+
+extAlarm13Name OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Ext.alarm 13 name"
+	::= { alarmInfo 22 }
+
+extAlarm14Name OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Ext.alarm 14 name"
+	::= { alarmInfo 23 }
+
+extAlarm15Name OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+		"Ext.alarm 15 name"
+	::= { alarmInfo 24 }
+
+
+
+-- Traps
+
+lowVoltTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Low DC Voltage Alarm "
+    ::= 1
+
+
+highVoltTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "High DC Voltage Alarm"
+    ::= 2
+    
+loadBattDisconTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Load/Battery Disconnected"
+    ::= 3
+mainsFailTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Mains Failure Alarm"
+    ::= 4
+distrFuseTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Distribution Fuse Failure"
+    ::= 5
+battFailTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Battery Test Failure"
+    ::= 6
+rectifierFailTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Module Alarm"
+    ::= 7
+
+battTempTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "High Battery Temperature Alarm"
+    ::= 8
+symmFailTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Battery Symmetry Alarm"
+    ::= 9
+battFuseTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Battery Fuse Failure"
+    ::= 10
+highLoadTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "High Load"
+    ::= 11
+urgentModFailTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Urgent Module Alarm"
+    ::= 12
+comFailTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Communication Failure"
+    ::= 13
+partLoadDisconTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Partial Load Disconnect Alarm"
+    ::= 14
+dischargingTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Battery on Discharge"
+    ::= 15
+ovShutdownTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Overvoltage Shutdown alarm"
+    ::= 16
+lowBattTempTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Low Battery Temperature"
+    ::= 17
+alarmsBlockedTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Alarms Blocked"
+    ::= 18
+extAlarm0Trap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Ext.alarm 0"
+    ::= 19
+extAlarm1Trap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Ext.alarm 1"
+    ::= 20
+extAlarm2Trap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Ext.alarm 2"
+    ::= 21
+extAlarm3Trap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Ext.alarm 3"
+    ::= 22
+extAlarm4Trap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Ext.alarm 4"
+    ::= 23
+extAlarm5Trap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Ext.alarm 5"
+    ::= 24
+extAlarm6Trap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Ext.alarm 6"
+    ::= 25
+extAlarm7Trap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Ext.alarm 7"
+    ::= 26
+extAlarm8Trap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Ext.alarm 8"
+    ::= 27
+extAlarm9Trap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Ext.alarm 9"
+    ::= 28
+extAlarm10Trap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Ext.alarm 10"
+    ::= 29
+extAlarm11Trap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Ext.alarm 11"
+    ::= 30
+extAlarm12Trap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Ext.alarm 12"
+    ::= 31
+extAlarm13Trap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Ext.alarm 13"
+    ::= 32
+extAlarm14Trap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Ext.alarm 14"
+    ::= 33
+extAlarm15Trap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "Ext.alarm 15"
+    ::= 34
+u1NormalTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "System output reference changed to Normal"
+    ::= 35
+u2BoostTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "System output reference changed to Boost"
+    ::= 36
+u3TestTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "System output reference changed to Test"
+    ::= 37
+u4SpareTrap TRAP-TYPE
+    ENTERPRISE powecTrap
+    VARIABLES {
+    		numbOfAlarms
+    }
+    DESCRIPTION
+            "System output reference changed to Spare"
+    ::= 38
+ 
+END
+

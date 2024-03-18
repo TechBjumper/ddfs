@@ -1,0 +1,836 @@
+QUEST-MINI-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE, 
+    NOTIFICATION-TYPE, 
+    MODULE-IDENTITY,
+	IpAddress,
+    enterprises, 
+    Integer32,
+	TimeTicks
+        FROM SNMPv2-SMI
+    DisplayString,
+	DateAndTime
+        FROM SNMPv2-TC;
+
+questControls MODULE-IDENTITY
+	LAST-UPDATED "201510060000Z"
+    ORGANIZATION "Quest Controls Inc"   
+    CONTACT-INFO
+        "Postal: 208 9th Street Dr. West, Palmetto FL 34221
+         Phone:  (941) 729-4799
+         EMail:  questmail@questcontrols.com"
+    DESCRIPTION
+        "MINI definitions for Quest Controls, Inc."
+	-- revisions
+	REVISION "201510060000Z"
+	DESCRIPTION
+	    "Add support for output control in the 100M platform only"	
+	REVISION "201209180000Z"
+	DESCRIPTION
+	    "Add support for function code to modbus data points"
+	REVISION "201204200000Z"
+    DESCRIPTION
+        "Add support for MiniPro"
+	REVISION "201105310000Z"
+    DESCRIPTION
+        "Add support for MiniPlus (modbus support)"
+	REVISION "201011010000Z"
+    DESCRIPTION
+        "Original Version"
+    ::= { enterprises 11476 }
+
+miniMIB OBJECT IDENTIFIER ::= { questControls 5 }
+
+-- Input Table ===========================================================
+
+miniInputTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MiniInputEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing data about the Inputs."
+    ::= { miniMIB 1 }
+
+miniInputEntry OBJECT-TYPE
+    SYNTAX      MiniInputEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A conceptual row of the Input Table, containing information
+         about one of the Inputs."
+    INDEX   {miniInputTableIndex }
+    ::= { miniInputTable 1 }
+
+MiniInputEntry ::= SEQUENCE {
+		miniInputTableIndex		Integer32,
+		miniInputName			DisplayString,
+		miniInputNumericValue	Integer32,
+		miniInputCausingAlarm	Integer32
+    }
+
+miniInputTableIndex	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"Sequence number of the table.  Local inputs will be listed first
+		 with the number being variable between the different Mini versions.
+		 The modbus inputs, if so equipped, will be listed after the local inputs."
+    ::= { miniInputEntry 1 }
+
+miniInputName	OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The name representing this input."
+    ::= { miniInputEntry 2 }
+
+miniInputNumericValue	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The converted value of the input rounded off to the nearest
+		 integer.  Note that if this input is a digital input,
+		 a 0 represents OFF and a 1 represents ON."
+    ::= { miniInputEntry 3 }
+
+miniInputCausingAlarm	OBJECT-TYPE
+    SYNTAX      Integer32 { notCausingAlarm (0) , causingAlarm (1) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"Whether or not this input is causing an alarm."
+    ::= { miniInputEntry 4 }
+
+-- Input Extended Table ===========================================================
+
+miniInputExtendedTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MiniInputExtendedEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing extended data about the Inputs."
+    ::= { miniMIB 2 }
+
+miniInputExtendedEntry OBJECT-TYPE
+    SYNTAX      MiniInputExtendedEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A conceptual row of the Input Table, containing extended information
+         about one of the Inputs."
+    INDEX   {miniInputExtendedTableIndex }
+    ::= { miniInputExtendedTable 1 }
+
+MiniInputExtendedEntry ::= SEQUENCE {
+		miniInputExtendedTableIndex	Integer32,
+		miniInputExtendedName		DisplayString,
+		miniInputExtendedNumericValue	Integer32,
+		miniInputExtendedCausingAlarm	Integer32,
+		miniInputExtendedStringValue	DisplayString,
+		miniInputExtendedType			Integer32,
+		miniInputExtendedOffset			Integer32,
+		miniInputExtendedCustomLow		Integer32,
+		miniInputExtendedCustomHigh		Integer32,
+		miniInputExtendedLogType		Integer32,
+		miniInputExtendedLogInterval	Integer32,
+		miniInputExtendedDigitalAccumOn	TimeTicks,
+		miniInputExtendedDigitalIntervalOn	TimeTicks,
+		miniInputExtendedDigitalIntervalOff	TimeTicks,
+		miniInputExtendedDigitalEventCounter	Integer32,
+		miniInputExtendedDigitalEventTimer	TimeTicks
+    }
+
+miniInputExtendedTableIndex	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"Sequence number of the table.  Note that this table only
+		contains the local inputs (no modbus if so equipped.)"
+    ::= { miniInputExtendedEntry 1 }
+
+miniInputExtendedName	OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The name representing this input."
+    ::= { miniInputExtendedEntry 2 }
+
+miniInputExtendedNumericValue	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The converted value of the input rounded off to the nearest
+		 integer.  Note that if this input is a digital input,
+		 a 0 represents OFF and a 1 represents ON."
+    ::= { miniInputExtendedEntry 3 }
+
+miniInputExtendedCausingAlarm	OBJECT-TYPE
+    SYNTAX      Integer32 { notCausingAlarm (0), causingAlarm (1) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"Whether or not this input is causing an active alarm."
+    ::= { miniInputExtendedEntry 4 }
+
+miniInputExtendedStringValue	OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The value of this input in textual form.  This is useful
+		 if the input has a decimal point."
+    ::= { miniInputExtendedEntry 5 }
+
+miniInputExtendedType	OBJECT-TYPE
+    SYNTAX      Integer32 { dryno (0), drync (1), wetno (2), wetnc (3), tempf (4), tempc (5), custom (6), volts (7) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The programmed type of the Input."
+    ::= { miniInputExtendedEntry 6 }
+
+miniInputExtendedOffset	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"For analog points, the offset applied to the converted reading."
+    ::= { miniInputExtendedEntry 7 }
+
+miniInputExtendedCustomLow	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"For custom type inputs, the value for the low end of the scale."
+    ::= { miniInputExtendedEntry 8 }
+
+miniInputExtendedCustomHigh	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"For custom type inputs, the value for the high end of the scale."
+    ::= { miniInputExtendedEntry 9 }
+
+miniInputExtendedLogType		OBJECT-TYPE
+    SYNTAX      Integer32 { notLogged (0), timeLogged (1), changeOfStateLogged (2) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The type of logging for this input.
+		notLogged - 0, timeLogged - 1, changeOfStateLogged - 2."
+    ::= { miniInputExtendedEntry 10 }
+
+miniInputExtendedLogInterval	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"A value in minutes representing how often an analog input is logged.
+		 Digital inputs will only be logged on change of state.
+		 A value of 0 here disables logging for this input."
+    ::= { miniInputExtendedEntry 11 }
+
+miniInputExtendedDigitalAccumOn	OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"For digital inputs, the accumulated on timer."
+    ::= { miniInputExtendedEntry 12 }
+
+miniInputExtendedDigitalIntervalOn	OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"For digital inputs, the interval on timer."
+    ::= { miniInputExtendedEntry 13 }
+
+miniInputExtendedDigitalIntervalOff	OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"For digital inputs, the interval off timer."
+    ::= { miniInputExtendedEntry 14 }
+
+miniInputExtendedDigitalEventCounter	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"For digital inputs, the event counter."
+    ::= { miniInputExtendedEntry 15 }
+
+miniInputExtendedDigitalEventTimer	OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"For digital InputExtendeds, the event timer."
+    ::= { miniInputExtendedEntry 16 }
+
+-- Alarm Point Table ===========================================================
+
+miniAlarmPointTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MiniAlarmPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing data about the Alarm Points."
+    ::= { miniMIB 3 }
+
+miniAlarmPointEntry OBJECT-TYPE
+    SYNTAX      MiniAlarmPointEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A conceptual row of the Alarm Point Table, containing information
+         about one of the Alarm Points."
+    INDEX   {miniAlarmPointTableIndex }
+    ::= { miniAlarmPointTable 1 }
+
+MiniAlarmPointEntry ::= SEQUENCE {
+		miniAlarmPointTableIndex		Integer32,
+        miniAlarmPointName				DisplayString,
+		miniAlarmPointStatus			Integer32,
+		miniAlarmPointSeverity			Integer32,
+		miniAlarmPointLastAlarmTime	 	DateAndTime,
+		miniAlarmPointLastClearTime		DateAndTime,
+		miniAlarmPointInputName			DisplayString,
+		miniAlarmPointInputIndex		Integer32,
+		miniAlarmPointInputValue 		Integer32
+    }
+
+miniAlarmPointTableIndex		OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The sequence number of this alarm point."
+    ::= { miniAlarmPointEntry 1 }
+
+miniAlarmPointName				OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name defined for this alarm point."
+    ::= { miniAlarmPointEntry 2 }
+
+miniAlarmPointStatus			OBJECT-TYPE
+    SYNTAX      Integer32 { clear (0), active (1) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Alarm status for the particular point.
+         An active status means the alarm point itself has satisfied the alarm condition.
+         Of course, clear means the point isn't in the alarm condition."
+    ::= { miniAlarmPointEntry 3 }
+
+miniAlarmPointSeverity			OBJECT-TYPE
+    SYNTAX      Integer32 { critical (4), major (3), minor (2), info (1) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Defined severity for the alarm point."
+    ::= { miniAlarmPointEntry 4 }
+
+miniAlarmPointLastAlarmTime	 	OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The last time this alarm point went into alarm.
+         A zero (sometimes shown as Jan 1 1980 in a MIB browser),
+         indicates the point has never alarmed."
+    ::= { miniAlarmPointEntry 5 }
+
+miniAlarmPointLastClearTime		OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The last time this alarm point cleared.
+         A zero (sometimes shown as Jan 1 1980 in a MIB browser),
+         indicates the point has never cleared."
+    ::= { miniAlarmPointEntry 6 }
+
+miniAlarmPointInputName			OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of the referred to input point for this alarm point." 
+    ::= { miniAlarmPointEntry 7 }
+
+miniAlarmPointInputIndex		OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The index number of the referred to input for this alarm point."
+    ::= { miniAlarmPointEntry 8 }
+
+miniAlarmPointInputValue 		OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The current integer value of the referred to input for this alarm point."
+    ::= { miniAlarmPointEntry 9 }
+
+-- Alarm Point Extended Table ===========================================================
+
+miniAlarmPointExtendedTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MiniAlarmPointExtendedEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing extended data about the Alarm Points."
+    ::= { miniMIB 4 }
+
+miniAlarmPointExtendedEntry OBJECT-TYPE
+    SYNTAX      MiniAlarmPointExtendedEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A conceptual row of the Alarm Point Table, containing information
+         about one of the Alarm Points."
+    INDEX   {miniAlarmPointExtendedTableIndex }
+    ::= { miniAlarmPointExtendedTable 1 }
+
+MiniAlarmPointExtendedEntry ::= SEQUENCE {
+		miniAlarmPointExtendedTableIndex		Integer32,
+        miniAlarmPointExtendedName				DisplayString,
+		miniAlarmPointExtendedStatus			Integer32,
+		miniAlarmPointExtendedSeverity			Integer32,
+		miniAlarmPointExtendedLastAlarmTime	 	DateAndTime,
+		miniAlarmPointExtendedLastClearTime		DateAndTime,
+		miniAlarmPointExtendedInputName			DisplayString,
+		miniAlarmPointExtendedInputIndex		Integer32,
+		miniAlarmPointExtendedInputValue 		Integer32,
+		miniAlarmPointExtendedComparisonType	Integer32,
+		miniAlarmPointExtendedComparisonValue	Integer32,
+		miniAlarmPointExtendedAlarmDelay		Integer32,
+		miniAlarmPointExtendedAlarmUnits		Integer32,
+		miniAlarmPointExtendedClearDelay		Integer32,
+		miniAlarmPointExtendedClearUnits		Integer32,
+		miniAlarmPointExtendedNagValue			Integer32,
+		miniAlarmPointExtendedOutputs			Integer32
+    }
+
+miniAlarmPointExtendedTableIndex		OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The sequence number of this alarm point."
+    ::= { miniAlarmPointExtendedEntry 1 }
+
+miniAlarmPointExtendedName				OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name defined for this alarm point."
+    ::= { miniAlarmPointExtendedEntry 2 }
+
+miniAlarmPointExtendedStatus			OBJECT-TYPE
+    SYNTAX      Integer32 { clear (0), active (1) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Alarm status for the particular point.
+         An active status means the alarm point itself has satisfied the alarm condition.
+         Of course, clear means the point isn't in the alarm condition."
+    ::= { miniAlarmPointExtendedEntry 3 }
+
+miniAlarmPointExtendedSeverity			OBJECT-TYPE
+    SYNTAX      Integer32 { critical (4), major (3), minor (2), info (1) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Defined severity for the alarm point."
+    ::= { miniAlarmPointExtendedEntry 4 }
+
+miniAlarmPointExtendedLastAlarmTime	 	OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The last time this alarm point went into alarm.
+         A zero (sometimes shown as Jan 1 1980 in a MIB browser),
+         indicates the point has never alarmed."
+    ::= { miniAlarmPointExtendedEntry 5 }
+
+miniAlarmPointExtendedLastClearTime		OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The last time this alarm point cleared.
+         A zero (sometimes shown as Jan 1 1980 in a MIB browser),
+         indicates the point has never cleared."
+    ::= { miniAlarmPointExtendedEntry 6 }
+
+miniAlarmPointExtendedInputName			OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The name of the referred to input point for this alarm point." 
+    ::= { miniAlarmPointExtendedEntry 7 }
+
+miniAlarmPointExtendedInputIndex		OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The index number of the referred to input for this alarm point."
+    ::= { miniAlarmPointExtendedEntry 8 }
+
+miniAlarmPointExtendedInputValue 		OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The current integer value of the referred to input for this alarm point."
+    ::= { miniAlarmPointExtendedEntry 9 }
+
+miniAlarmPointExtendedComparisonType	OBJECT-TYPE
+    SYNTAX      Integer32 { greater-than (0), less-than (1), equal-to (2), not-equal-to (3) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The comparison type for this alarm point."
+    ::= { miniAlarmPointExtendedEntry 10 }
+
+miniAlarmPointExtendedComparisonValue	OBJECT-TYPE
+    SYNTAX      Integer32 
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The comparison value for this alarm point."
+    ::= { miniAlarmPointExtendedEntry 11 }
+
+miniAlarmPointExtendedAlarmDelay		OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The alarm delay value for this alarm point.
+         Pair this with the AlarmUnits value below."
+    ::= { miniAlarmPointExtendedEntry 12 }
+
+miniAlarmPointExtendedAlarmUnits		OBJECT-TYPE
+    SYNTAX      Integer32 { seconds (0), minutes (1), hours (2) } 
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The alarm units for this alarm point."
+    ::= { miniAlarmPointExtendedEntry 13 }
+
+miniAlarmPointExtendedClearDelay		OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The clear delay value for this alarm point.
+         Pair this with the ClearUnits value below."
+    ::= { miniAlarmPointExtendedEntry 14 }
+
+miniAlarmPointExtendedClearUnits		OBJECT-TYPE
+    SYNTAX      Integer32 { seconds (0), minutes (1), hours (2) } 
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The clear units for this alarm point."
+    ::= { miniAlarmPointExtendedEntry 15 }
+
+miniAlarmPointExtendedNagValue			OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "The number in minutes this alarm will continue to be dispatched
+         until the clear condition becomes true.
+         A zero indicates this alarm just occurs once."
+    ::= { miniAlarmPointExtendedEntry 16 }
+
+miniAlarmPointExtendedOutputs			OBJECT-TYPE
+    SYNTAX      Integer32 { none (0), outputOne (1), outputTwo (2), all (3), outputThree (4), outputFour (5) } 
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Describes which (if any) outputs should energize when the alarm
+        point becomes true."
+    ::= { miniAlarmPointExtendedEntry 17 }
+
+-- Input Extended Table with Modbus data ===================================================
+
+miniInputModbusExtendedTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MiniInputModbusExtendedEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing extended data about the Modbus Inputs."
+    ::= { miniMIB 5 }
+
+miniInputModbusExtendedEntry OBJECT-TYPE
+    SYNTAX      MiniInputModbusExtendedEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A conceptual row of the Modbus Input Table, containing extended information
+         about one of the Inputs."
+    INDEX   {miniInputModbusExtendedTableIndex }
+    ::= { miniInputModbusExtendedTable 1 }
+
+MiniInputModbusExtendedEntry ::= SEQUENCE {
+		miniInputModbusExtendedTableIndex	Integer32,
+		miniInputModbusExtendedName			DisplayString,
+		miniInputModbusExtendedNumericValue	Integer32,
+		miniInputModbusExtendedCausingAlarm	Integer32,
+		miniInputModbusExtendedStringValue	DisplayString,
+		miniInputModbusExtendedSlave		Integer32,
+		miniInputModbusExtendedRegister		Integer32,
+		miniInputModbusExtendedBit			Integer32,
+		miniInputModbusExtendedFormat		Integer32,
+		miniInputModbusExtendedOffset		Integer32,
+		miniInputModbusExtendedMultiplier	DisplayString,
+		miniInputModbusExtendedLogType		Integer32,
+		miniInputModbusExtendedLogInterval	Integer32,
+		miniInputModbusExtendedFunctionCode		Integer32
+    }
+
+miniInputModbusExtendedTableIndex	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"Sequence number of the table."
+    ::= { miniInputModbusExtendedEntry 1 }
+
+miniInputModbusExtendedName	OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The name representing this input."
+    ::= { miniInputModbusExtendedEntry 2 }
+
+miniInputModbusExtendedNumericValue	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The converted value of the input rounded off to the nearest
+		 integer.  Note that if this input is a digital input,
+		 a 0 represents OFF and a 1 represents ON."
+    ::= { miniInputModbusExtendedEntry 3 }
+
+miniInputModbusExtendedCausingAlarm	OBJECT-TYPE
+    SYNTAX      Integer32 { notCausingAlarm (0), causingAlarm (1) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"Whether or not this input is causing an active alarm."
+    ::= { miniInputModbusExtendedEntry 4 }
+
+miniInputModbusExtendedStringValue	OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The value of this input in textual form.  This is useful
+		 if the input has a decimal point."
+    ::= { miniInputModbusExtendedEntry 5 }
+
+miniInputModbusExtendedSlave	OBJECT-TYPE
+    SYNTAX      Integer32 
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"Slave address of this Modbus input."
+    ::= { miniInputModbusExtendedEntry 6 }
+
+miniInputModbusExtendedRegister	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"Register number of this Modbus input."
+    ::= { miniInputModbusExtendedEntry 7 }
+
+miniInputModbusExtendedBit	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"Bit number of this Modbus input.
+		 Note that is this number is 0, the number means nothing
+		 as the input is not a bit defined point."
+    ::= { miniInputModbusExtendedEntry 8 }
+
+miniInputModbusExtendedFormat	OBJECT-TYPE
+    SYNTAX      Integer32 { unsigned16bit (0), signed32bit (1), singlebit (2), float32bit (3), lemFloat16bit (4), signed16bit (5) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The format of this Modbus input.
+		unsigned16bit - 0, signed32bit - 1, singlebit - 2, float32bit - 3, lemHalfFloat16 - 4, signed16bit - 5."
+    ::= { miniInputModbusExtendedEntry 9 }
+
+miniInputModbusExtendedOffset	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The offset applied to the Modbus input data."
+    ::= { miniInputModbusExtendedEntry 10 }
+
+miniInputModbusExtendedMultiplier	OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The value of the multiplier for this Modbus input."
+    ::= { miniInputModbusExtendedEntry 11 }
+
+miniInputModbusExtendedLogType		OBJECT-TYPE
+    SYNTAX      Integer32 { notLogged (0), timeLogged (1), changeOfStateLogged (2) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The type of logging for this Modbus input.
+		notLogged - 0, timeLogged - 1, changeOfStateLogged - 2."
+    ::= { miniInputModbusExtendedEntry 12 }
+
+miniInputModbusExtendedLogInterval	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"A value in minutes representing how often an analog input is logged.
+		 Digital inputs will only be logged on change of state.
+		 A value of 0 here disables logging for this input."
+    ::= { miniInputModbusExtendedEntry 13 }
+
+miniInputModbusExtendedFunctionCode	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The value of the function code for this Modbus Data Point."
+    ::= { miniInputModbusExtendedEntry 14 }
+
+-- Output Table ===========================================================
+
+miniOutputTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF MiniInputEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A table containing data about the Outputs."
+    ::= { miniMIB 6 }
+
+miniOutputEntry OBJECT-TYPE
+    SYNTAX      MiniOutputEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A conceptual row of the Output Table, containing information
+         about one of the Outputs."
+    INDEX   {miniOutputTableIndex }
+    ::= { miniOutputTable 1 }
+
+MiniOutputEntry ::= SEQUENCE {
+		miniOutputTableIndex		Integer32,
+		miniOutputName			DisplayString,
+		miniOutputState			Integer32,
+		miniOutputDefaultState	Integer32,
+		miniOutputActionType	Integer32,
+		miniOutputLogicLockout	Integer32,
+		miniOutputMinutesLeft	Integer32
+    }
+
+miniOutputTableIndex	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"Sequence number of the table.  The MiniPro has four outputs."
+    ::= { miniOutputEntry 1 }
+
+miniOutputName	OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The name representing this output."
+    ::= { miniOutputEntry 2 }
+
+miniOutputState	OBJECT-TYPE
+    SYNTAX      Integer32 { energized (1), deenergized (2) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+		"The current state of the output.
+		 energized - 1, deenergized - 2."
+    ::= { miniOutputEntry 3 }
+    
+miniOutputDefaultState	OBJECT-TYPE
+    SYNTAX      Integer32 { energized (1), deenergized (2) }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+		"The state the output should be in when not controlled.
+		 energized - 1, deenergized - 2."
+    ::= { miniOutputEntry 4 }
+
+miniOutputActionType	OBJECT-TYPE
+    SYNTAX      Integer32 { auto (0), energized (1), deenergized (2), oneshot (3) }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+		"The current action of the output.
+		 auto - 0, uses default state or alarm logic.
+		 energized - 1, energizes the output.
+		 deenergized - 2, deenergizes the output.
+		 oneshot - 3, the output is currently in the non-default state for a period of time.
+		 Note you cannot write oneshot here. In order to accomplish that action, you write
+		 your minutesLeft value below."
+    ::= { miniOutputEntry 5 }
+
+miniOutputMinutesLeft	OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+		"If the output is in a oneshot action, this retrieves the amount of minutes left in the action.
+		The field is undefined if the action is something else.
+		You can also write a value between 1 and 1440 into this variable to accomplish a one-shot action."
+    ::= { miniOutputEntry 6 }
+    
+miniOutputLogicLockout	OBJECT-TYPE
+    SYNTAX      Integer32 { no (0), yes (1) }
+    MAX-ACCESS  read-write
+    STATUS      current
+    DESCRIPTION
+		"A user can lockout an output from control by the alarm logic.
+		 no - 0, the output is NOT locked out, and the alarm logic can control.
+		 yes - 1, the output is locked out, and the alarm logic has no effect on the output logic."
+    ::= { miniOutputEntry 7 }
+
+
+END

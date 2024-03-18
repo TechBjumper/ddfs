@@ -1,0 +1,651 @@
+--
+--                      C&C Power BATT-TRAK MIB
+--         Management Information Base for SNMP Network Management
+--
+--      Copyright 2004 C&C Power, Inc.
+--
+--      C&C Power shall not be liable for technical or
+--      editorial errors or omissions contained herein. The information in
+--      this document is provided "as is" without warranty of any kind and
+--      is subject to change without notice. The warranties for C&C Power products
+--      are set forth in the express limited warranty statements
+--      accompanying such products. Nothing herein should be construed as
+--      constituting an additional warranty.
+--
+--      The C&C Power Enterprise number is 18642.
+--      The ASN.1 prefix to, and including the C&C Power Enterprise is:
+--           1.3.6.1.4.1.18642
+--
+--    MIB Version 1.0
+--    *********************************************************************
+--    Release History
+--       Initial Release Date: August 9, 2004 (Version 1.0)
+--       Author: Jeff Gear
+--    Revision History
+--       Date:
+--       Revision:
+--    *********************************************************************
+
+CCPowerInc-BatteryMonitor-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+      enterprises    FROM RFC1155-SMI
+      DisplayString  FROM RFC1213-MIB
+      OBJECT-TYPE    FROM RFC-1212
+      TRAP-TYPE      FROM RFC-1215;
+
+   ccpower           OBJECT IDENTIFIER ::= { enterprises 18642 }
+   dcSystem          OBJECT IDENTIFIER ::= { ccpower 1 }
+   battTrak          OBJECT IDENTIFIER ::= { ccpower 2 }
+
+   ChargeState ::= INTEGER {
+        unknown(1),
+        float(2),
+        discharge(3),
+        charge(4)
+        }
+
+   AlarmState ::= INTEGER {
+        unknown(1),
+        normal(2),
+        warning(3),
+        critical(4),
+        disconnect(5)
+        }
+
+   InputState ::= INTEGER {
+        off(1),
+        on(2)
+        }
+
+   EnabledState ::= INTEGER {
+        disabled(1),
+        enabled(2)
+        }
+
+-- *********************************************************************
+-- BattTrak.Global System Settings
+-- *********************************************************************
+
+   globalSystemSettings OBJECT IDENTIFIER ::= { battTrak 1 }
+
+-- *********************************************************************
+-- Global System Settings
+-- *********************************************************************
+
+   lowStringVoltageAlarm OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-write
+   	STATUS mandatory
+   	DESCRIPTION "Low String Voltage Alarm Setting."
+   	::= { globalSystemSettings 1 }
+
+   highStringVoltageAlarm OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-write
+   	STATUS mandatory
+   	DESCRIPTION "High String Voltage Alarm Setting."
+   	::= { globalSystemSettings 2 }
+
+   floatCurrentAlarmPerString OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-write
+   	STATUS mandatory
+   	DESCRIPTION "Float Current Alarm Per String Setting."
+   	::= { globalSystemSettings 3 }
+
+   dischargeCurrentAlarmPerString OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-write
+   	STATUS mandatory
+   	DESCRIPTION "Discharge Current Alarm Per String Setting."
+   	::= { globalSystemSettings 4 }
+
+   dischargeCurrentPercentAlarm OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-write
+   	STATUS mandatory
+   	DESCRIPTION "Discharge Current Percent Alarm Setting. Only valid in a multi-string configuration."
+   	::= { globalSystemSettings 5 }
+
+   chargeCurrentAlarm OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-write
+   	STATUS mandatory
+   	DESCRIPTION "Charge Current Alarm Setting."
+   	::= { globalSystemSettings 6 }
+
+   chargeCurrentPercentAlarm OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-write
+   	STATUS mandatory
+   	DESCRIPTION "Charge Current Percent Alarm Setting. Only valid in a multi-string configuration."
+   	::= { globalSystemSettings 7 }
+
+   ambientTemperatureAlarm OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-write
+   	STATUS mandatory
+   	DESCRIPTION "Ambient Temperature Alarm Setting."
+   	::= { globalSystemSettings 8 }
+
+   internalTemperatureAlarm OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-write
+   	STATUS mandatory
+   	DESCRIPTION "Internal Temperature Alarm Setting."
+   	::= { globalSystemSettings 9 }
+
+   thermalRunawayAlarmEnabled OBJECT-TYPE
+   	SYNTAX EnabledState
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Thermal Runaway Alarm Enabled Setting."
+   	::= { globalSystemSettings 10 }
+
+-- *********************************************************************
+-- BatteryMonitor.System Status
+-- *********************************************************************
+
+   systemStatus OBJECT IDENTIFIER ::= { battTrak 2 }
+
+-- *********************************************************************
+-- System Status
+-- *********************************************************************
+
+   chargeState OBJECT-TYPE
+   	SYNTAX ChargeState
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Battery charge State."
+   	::= { systemStatus 1 }
+
+   chargeTimer OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Estimated time remaining until charge cycle is complete. Only valid when system is in a charge state."
+   	::= { systemStatus 2 }
+
+   stringVoltage OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "String Voltage."
+   	::= { systemStatus 3 }
+
+   floatCurrent OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Float Current."
+   	::= { systemStatus 4 }
+
+   dischargeCurrent OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Discharge Current."
+   	::= { systemStatus 5 }
+
+   chargeCurrent OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Charge Current."
+   	::= { systemStatus 6 }
+
+   batteryCyclesLessThanOneMinute OBJECT-TYPE
+   	SYNTAX INTEGER
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Total number of battery cycles less than 1 minute in duration."
+   	::= { systemStatus 7 }
+
+   batteryCyclesOneToFiveMinutes OBJECT-TYPE
+   	SYNTAX INTEGER
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Total battery cycles 1 minute to 5 minutes in duration."
+   	::= { systemStatus 8 }
+
+   batteryCyclesFiveToFifteenMinutes OBJECT-TYPE
+   	SYNTAX INTEGER
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Total battery cycles 5 to 15 minutes in duration."
+   	::= { systemStatus 9 }
+
+   batteryCyclesGreaterThanFifteenMinutes OBJECT-TYPE
+   	SYNTAX INTEGER
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Total battery greater than 15 minutes in duration."
+   	::= { systemStatus 10 }
+
+   totalBatteryCycles   OBJECT-TYPE
+   	SYNTAX INTEGER
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Total battery cycles."
+   	::= { systemStatus 11 }
+
+   lastBatteryCycleDate OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Last battery cycle date."
+   	::= { systemStatus 12 }
+
+   lastBatteryCycleTime OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Last battery cycle time."
+   	::= { systemStatus 13 }
+
+   lastBatteryCycleDuration OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Last battery cycle duration."
+   	::= { systemStatus 14 }
+
+   referenceSlopeVoltage OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Reference Slope Voltage."
+   	::= { systemStatus 15 }
+
+   lastSlopeVoltage OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Last Slope Voltage."
+   	::= { systemStatus 16 }
+
+   ambientTemperature OBJECT-TYPE
+   	SYNTAX DisplayString
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "Ambient Temperature."
+   	::= { systemStatus 17 }
+
+   totalStrings OBJECT-TYPE
+   	SYNTAX INTEGER
+   	ACCESS read-only
+   	STATUS mandatory
+   	DESCRIPTION "The total number of strings."
+   	::= { systemStatus 18 }
+
+    stringStatusTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF StringStatusEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	::= { systemStatus 19 }
+
+    stringStatusEntry OBJECT-TYPE
+	SYNTAX StringStatusEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	INDEX { stringStatusTableStringNumber }
+	::= { stringStatusTable 1 }
+
+    StringStatusEntry ::=
+	SEQUENCE {
+		stringStatusTableIndex INTEGER,
+		stringStatusTableStringNumber INTEGER,
+		stringEnabled EnabledState,
+		stringCurrent DisplayString,
+		stringTemperature DisplayString,
+		stringExternalInput InputState,
+		stringDisconnectTimer DisplayString
+	 }
+     stringStatusTableIndex OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"Table index of this string status entry. This has no instrinsic value and is used for SNMP only."
+	::= { stringStatusEntry 1 }
+
+     stringStatusTableStringNumber OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION "The string number of this string status entry."
+	::= { stringStatusEntry 2 }
+
+     stringEnabled OBJECT-TYPE
+	SYNTAX EnabledState
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION "The enabled status of this string."
+	::= { stringStatusEntry 3 }
+
+     stringCurrent OBJECT-TYPE
+	SYNTAX DisplayString
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION "The current status of this string."
+	::= { stringStatusEntry 4 }
+
+     stringTemperature OBJECT-TYPE
+	SYNTAX DisplayString
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION "The temperature status of this string."
+	::= { stringStatusEntry 5 }
+
+     stringExternalInput OBJECT-TYPE
+   	SYNTAX InputState
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION "The external input status of this string."
+	::= { stringStatusEntry 6 }
+
+     stringDisconnectTimer OBJECT-TYPE
+   	SYNTAX DisplayString
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION "The disconnect timer status of this string."
+	::= { stringStatusEntry 7 }
+
+-- *********************************************************************
+-- BatteryMonitor.Alarm Status
+-- *********************************************************************
+
+   alarmStatus OBJECT IDENTIFIER ::= { battTrak 3 }
+
+-- *********************************************************************
+-- Alarm Status
+-- *********************************************************************
+
+   highVoltageAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "High voltage alarm state."
+   	::= { alarmStatus 1 }
+
+   lowVoltageAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "Low voltage alarm state."
+   	::= { alarmStatus 2 }
+
+   floatCurrentAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "Float current alarm state."
+   	::= { alarmStatus 3 }
+
+   dischargeCurrentAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "Discharge current alarm state."
+   	::= { alarmStatus 4 }
+
+   chargeCurrentAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "Charge current alarm state."
+   	::= { alarmStatus 5 }
+
+   onBatteryAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "On battery alarm state."
+   	::= { alarmStatus 6 }
+
+   ambientTemperatureAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "Ambient temperature alarm state."
+   	::= { alarmStatus 7 }
+
+   dischargeSlopeAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "Discharge slope alarm state."
+   	::= { alarmStatus 8 }
+
+   systemLogAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "System log alarm state."
+   	::= { alarmStatus 9 }
+
+   emailAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "Email alarm state."
+   	::= { alarmStatus 10 }
+
+   stringAlarmStateTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF StringAlarmStateEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	::= { alarmStatus 11 }
+
+   stringAlarmStateEntry OBJECT-TYPE
+	SYNTAX StringAlarmStateEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	INDEX { stringAlarmStateTableStringNumber }
+	::= { stringAlarmStateTable 1 }
+
+   StringAlarmStateEntry ::=
+	SEQUENCE {
+		stringAlarmStateTableIndex INTEGER,
+		stringAlarmStateTableStringNumber INTEGER,
+		stringFloatCurrentPercentAlarmState AlarmState,
+		stringDischargeCurrentPercentAlarmState AlarmState,
+		stringChargeCurrentPercentAlarmState AlarmState,
+		stringTemperatureAlarmState AlarmState,
+		stringThermalAlarmState AlarmState,
+		stringExternalAlarmState AlarmState,
+		stringNetworkAlarmState AlarmState
+	 }
+
+   stringAlarmStateTableIndex OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"Table index of this string alarm state entry. This has no instrinsic value and is used for SNMP only."
+	::= { stringAlarmStateEntry 1 }
+
+   stringAlarmStateTableStringNumber OBJECT-TYPE
+	SYNTAX INTEGER
+	ACCESS read-only
+	STATUS mandatory
+	DESCRIPTION
+		"The string number of this string status entry."
+	::= { stringAlarmStateEntry 2 }
+
+   stringFloatCurrentPercentAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "Float current percent alarm state."
+   	::= { stringAlarmStateEntry 3 }
+
+   stringDischargeCurrentPercentAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "Discharge current percent alarm state."
+   	::= { stringAlarmStateEntry 4 }
+
+   stringChargeCurrentPercentAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "Charge current percent alarm state."
+   	::= { stringAlarmStateEntry 5 }
+
+   stringTemperatureAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "Temperature alarm state."
+   	::= { stringAlarmStateEntry 6 }
+
+   stringThermalAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "Thermal alarm state."
+   	::= { stringAlarmStateEntry 7 }
+
+   stringExternalAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "External alarm state."
+   	::= { stringAlarmStateEntry 8 }
+
+   stringNetworkAlarmState  OBJECT-TYPE
+   	SYNTAX	AlarmState
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "Charge current percent alarm state."
+   	::= { stringAlarmStateEntry 9 }
+
+-- *********************************************************************
+-- BatteryMonitor.Messages
+-- *********************************************************************
+
+   trapMessage OBJECT IDENTIFIER ::= { battTrak 4 }
+
+-- *********************************************************************
+-- Trap Message
+-- *********************************************************************
+
+   trapDescription OBJECT-TYPE
+   	SYNTAX	DisplayString
+   	ACCESS	read-only
+   	STATUS	mandatory
+   	DESCRIPTION "Text description of a trap."
+   	::= { trapMessage 1 }
+
+-- *********************************************************************
+-- BatteryMonitor.Traps
+-- *********************************************************************
+
+   traps OBJECT IDENTIFIER ::= { battTrak 5 }
+
+   highVoltageAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, highVoltageAlarmState}
+   	DESCRIPTION "A highVoltageAlarmStateChange trap is generated whenever highVoltageAlarmState changes value."
+   	::= 1
+
+   lowVoltageAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, lowVoltageAlarmState}
+   	DESCRIPTION "A onBatteryAlarmStateChange trap is generated whenever lowVoltageAlarmState changes value."
+   	::= 2
+
+   floatCurrentAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, floatCurrentAlarmState}
+   	DESCRIPTION "A lowVoltageAlarmStateChange trap is generated whenever floatCurrentAlarmState changes value."
+   	::= 3
+
+   dischargeCurrentAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, dischargeCurrentAlarmState}
+   	DESCRIPTION "A dischargeCurrentAlarmStateChange trap is generated whenever dischargeCurrentAlarmState changes value."
+   	::= 4
+
+   chargeCurrentAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, chargeCurrentAlarmState}
+   	DESCRIPTION "A chargeCurrentAlarmStateChange trap is generated whenever chargeCurrentAlarmState changes value."
+   	::= 5
+
+   onBatteryAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, onBatteryAlarmState}
+   	DESCRIPTION "A onBatteryAlarmStateChange trap is generated whenever onBatteryAlarmState changes value."
+   	::= 6
+
+   ambientTemperatureAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, ambientTemperatureAlarmState}
+   	DESCRIPTION "A ambientTemperatureAlarmStateChange trap is generated whenever ambientTemperatureAlarmState changes value."
+   	::= 7
+
+   dischargeSlopeAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, dischargeSlopeAlarmState}
+   	DESCRIPTION "A dischargeSlopeAlarmStateChange trap is generated whenever dischargeSlopeAlarmState changes value."
+   	::= 8
+
+   systemLogAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, systemLogAlarmState}
+   	DESCRIPTION "A systemLogAlarmStateChange trap is generated whenever systemLogAlarmState changes value."
+   	::= 9
+
+   emailAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, emailAlarmState}
+   	DESCRIPTION "A emailAlarmStateChange trap is generated whenever emailAlarmState changes value."
+   	::= 10
+
+   stringFloatCurrentPercentAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, stringFloatCurrentPercentAlarmState, stringAlarmStateTableStringNumber}
+   	DESCRIPTION "A stringFloatCurrentPercentAlarmStateChange trap is generated for stringAlarmStateTableStringNumber whenever stringFloatCurrentPercentAlarmState changes value."
+   	::= 11
+
+   stringDischargeCurrentPercentAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, stringDischargeCurrentPercentAlarmState, stringAlarmStateTableStringNumber}
+   	DESCRIPTION "A stringDischargeCurrentPercentAlarmStateChange trap is generated for stringAlarmStateTableStringNumber whenever stringDischargeCurrentPercentAlarmState changes value."
+   	::= 12
+
+   stringChargeCurrentPercentAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, stringChargeCurrentPercentAlarmState, stringAlarmStateTableStringNumber}
+   	DESCRIPTION "A stringChargeCurrentPercentAlarmStateChange trap is generated for stringAlarmStateTableStringNumber whenever stringChargeCurrentPercentAlarmState changes value."
+   	::= 13
+
+   stringTemperatureAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, stringTemperatureAlarmState, stringAlarmStateTableStringNumber}
+   	DESCRIPTION "A stringTemperatureAlarmStateChange trap is generated for stringAlarmStateTableStringNumber whenever stringTemperatureAlarmState changes value."
+   	::= 14
+
+   stringThermalAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, stringThermalAlarmState, stringAlarmStateTableStringNumber}
+   	DESCRIPTION "A stringThermalAlarmStateChange trap is generated for stringAlarmStateTableStringNumber whenever stringThermalAlarmState changes value."
+   	::= 15
+
+   stringExternalAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, stringExternalAlarmState, stringAlarmStateTableStringNumber}
+   	DESCRIPTION "A stringExternalAlarmStateChange trap is generated for stringAlarmStateTableStringNumber whenever stringExternalAlarmState changes value."
+   	::= 16
+
+   stringNetworkAlarmStateChange TRAP-TYPE
+   	ENTERPRISE ccpower
+        VARIABLES {trapDescription, stringNetworkAlarmState, stringAlarmStateTableStringNumber}
+   	DESCRIPTION "A stringNetworkAlarmStateChange trap is generated for stringAlarmStateTableStringNumber whenever stringNetworkAlarmState changes value."
+   	::= 17
+
+END

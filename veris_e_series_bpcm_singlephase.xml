@@ -1,0 +1,1638 @@
+<?xml version="1.0"?>
+<APC_DDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+		 ddfid="veris_e_series_bpcm_singlephase" ddfname="Veris E Series BPCM - Single Phase" ddfversion="2" canremove="yes">
+		 
+	<schemaVersion>1.6</schemaVersion>
+
+	<device deviceid="veris_e_series_bpcm">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<setProductData ruleid="vendordata" field="vendor">Veris</setProductData>
+		<setProductData ruleid="modeldata" field="model">E Series</setProductData>
+		<setProductData ruleid="typedata" field="type">Branch Circuit Monitor</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+		
+		<setProductData ruleid="inputphasecount" field="inputphasecount">1</setProductData>
+		<setProductData ruleid="outputphasecount" field="outputphasecount">1</setProductData>
+
+ 		<valueMap ruleid="isModel_A-vm">
+			<valueIn>15172</valueIn><valueOut>[true]</valueOut> <!-- device ID for Model A -->
+			<valueIn>*</valueIn><valueOut>[false]</valueOut>
+		</valueMap>
+		
+ 		<valueMap ruleid="isModel_AB-vm">
+			<valueIn>15172</valueIn><valueOut>[true]</valueOut> <!-- device ID for Model A -->
+			<valueIn>15171</valueIn><valueOut>[true]</valueOut> <!-- device ID for Model B -->
+			<valueIn>*</valueIn><valueOut>[false]</valueOut>
+		</valueMap>
+		
+ 		<valueMap ruleid="isModel_ABC-vm">
+			<valueIn>15172</valueIn><valueOut>[true]</valueOut> <!-- device ID for Model A -->
+			<valueIn>15171</valueIn><valueOut>[true]</valueOut> <!-- device ID for Model B -->
+			<valueIn>15170</valueIn><valueOut>[true]</valueOut> <!-- device ID for Model C -->
+			<valueIn>*</valueIn><valueOut>[false]</valueOut>
+		</valueMap>
+
+		<numSensor ruleid="active_energy" index="registers2000-2082">
+			<type>num/kwatthr</type>
+			<!-- operations support: SINGLE_PHASE_KWH_\d+ -->
+			<sensorId>SINGLE_PHASE_KWH_<formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber></sensorId>
+			<rowTest>
+				<mapValue mapid="isModel_A-vm"><getOid>register5</getOid></mapValue>
+			</rowTest>
+			<value>
+				<getRowOid>registers2000-2082</getRowOid>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Active Energy - Meter <formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="active_power" index="registers2084-2166">
+			<type>num/powerKW</type>
+			<!-- operations support: SINGLE_PHASE_KW_\d+ -->
+			<sensorId>SINGLE_PHASE_KW_<formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber></sensorId>
+			<rowTest>
+				<mapValue mapid="isModel_A-vm"><getOid>register5</getOid></mapValue>
+			</rowTest>
+			<value>
+				<getRowOid>registers2084-2166</getRowOid>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Active Power - Meter <formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="power_factor" index="registers2168-2250">
+			<type>num/powerfactor</type>
+			<!-- operations support: SINGLE_PHASE_PF_\d+ -->
+			<sensorId>SINGLE_PHASE_PF_<formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber></sensorId>
+			<rowTest>
+				<mapValue mapid="isModel_A-vm"><getOid>register5</getOid></mapValue>
+			</rowTest>
+			<value>
+				<getRowOid>registers2168-2250</getRowOid>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Power Factor - Meter <formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="current" index="registers2252-2334">
+			<type>amperage</type>
+			<!-- operations support: SINGLE_PHASE_CURRENT_\d+ -->
+			<sensorId>SINGLE_PHASE_CURRENT_<formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber></sensorId>
+			<rowTest>
+				<mapValue mapid="isModel_ABC-vm"><getOid>register5</getOid></mapValue>
+			</rowTest>
+			<value>
+				<getRowOid>registers2252-2334</getRowOid>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Current - Meter <formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="apparent_power" index="registers2840-2922">
+			<type>num/powerKVA</type>
+			<sensorId>SINGLE_PHASE_KVA_<formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber></sensorId>
+			<rowTest>
+				<mapValue mapid="isModel_A-vm"><getOid>register5</getOid></mapValue>
+			</rowTest>
+			<value>
+				<getRowOid>registers2840-2922</getRowOid>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Apparent Power - Meter <formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+	</device>
+
+	<protocol>
+		<modbus>
+			<value_ref_id valid="register5"> <!-- Device Type (A, B, or C) -->
+				<function>3</function>
+				<start_addr>4</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="registers2000-2082"> <!-- ACTIVE_ENERGY_METER_? -->
+				<entry num="0">register2000</entry>
+				<entry num="1">register2002</entry>
+				<entry num="2">register2004</entry>
+				<entry num="3">register2006</entry>
+				<entry num="4">register2008</entry>
+				<entry num="5">register2010</entry>
+				<entry num="6">register2012</entry>
+				<entry num="7">register2014</entry>
+				<entry num="8">register2016</entry>
+				<entry num="9">register2018</entry>
+				<entry num="10">register2020</entry>
+				<entry num="11">register2022</entry>
+				<entry num="12">register2024</entry>
+				<entry num="13">register2026</entry>
+				<entry num="14">register2028</entry>
+				<entry num="15">register2030</entry>
+				<entry num="16">register2032</entry>
+				<entry num="17">register2034</entry>
+				<entry num="18">register2036</entry>
+				<entry num="19">register2038</entry>
+				<entry num="20">register2040</entry>
+				<entry num="21">register2042</entry>
+				<entry num="22">register2044</entry>
+				<entry num="23">register2046</entry>
+				<entry num="24">register2048</entry>
+				<entry num="25">register2050</entry>
+				<entry num="26">register2052</entry>
+				<entry num="27">register2054</entry>
+				<entry num="28">register2056</entry>
+				<entry num="29">register2058</entry>
+				<entry num="30">register2060</entry>
+				<entry num="31">register2062</entry>
+				<entry num="32">register2064</entry>
+				<entry num="33">register2066</entry>
+				<entry num="34">register2068</entry>
+				<entry num="35">register2070</entry>
+				<entry num="36">register2072</entry>
+				<entry num="37">register2074</entry>
+				<entry num="38">register2076</entry>
+				<entry num="39">register2078</entry>
+				<entry num="40">register2080</entry>
+				<entry num="41">register2082</entry>
+			</table_ref_id>
+			<value_ref_id valid="register2000"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=0) -->
+				<function>3</function>
+				<start_addr>1999</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2002"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=1) -->
+				<function>3</function>
+				<start_addr>2001</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2004"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=2) -->
+				<function>3</function>
+				<start_addr>2003</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2006"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=3) -->
+				<function>3</function>
+				<start_addr>2005</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2008"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=4) -->
+				<function>3</function>
+				<start_addr>2007</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2010"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=5) -->
+				<function>3</function>
+				<start_addr>2009</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2012"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=6) -->
+				<function>3</function>
+				<start_addr>2011</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2014"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=7) -->
+				<function>3</function>
+				<start_addr>2013</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2016"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=8) -->
+				<function>3</function>
+				<start_addr>2015</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2018"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=9) -->
+				<function>3</function>
+				<start_addr>2017</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2020"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=10) -->
+				<function>3</function>
+				<start_addr>2019</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2022"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=11) -->
+				<function>3</function>
+				<start_addr>2021</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2024"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=12) -->
+				<function>3</function>
+				<start_addr>2023</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2026"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=13) -->
+				<function>3</function>
+				<start_addr>2025</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2028"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=14) -->
+				<function>3</function>
+				<start_addr>2027</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2030"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=15) -->
+				<function>3</function>
+				<start_addr>2029</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2032"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=16) -->
+				<function>3</function>
+				<start_addr>2031</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2034"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=17) -->
+				<function>3</function>
+				<start_addr>2033</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2036"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=18) -->
+				<function>3</function>
+				<start_addr>2035</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2038"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=19) -->
+				<function>3</function>
+				<start_addr>2037</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2040"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=20) -->
+				<function>3</function>
+				<start_addr>2039</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2042"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=21) -->
+				<function>3</function>
+				<start_addr>2041</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2044"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=22) -->
+				<function>3</function>
+				<start_addr>2043</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2046"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=23) -->
+				<function>3</function>
+				<start_addr>2045</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2048"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=24) -->
+				<function>3</function>
+				<start_addr>2047</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2050"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=25) -->
+				<function>3</function>
+				<start_addr>2049</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2052"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=26) -->
+				<function>3</function>
+				<start_addr>2051</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2054"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=27) -->
+				<function>3</function>
+				<start_addr>2053</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2056"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=28) -->
+				<function>3</function>
+				<start_addr>2055</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2058"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=29) -->
+				<function>3</function>
+				<start_addr>2057</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2060"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=30) -->
+				<function>3</function>
+				<start_addr>2059</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2062"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=31) -->
+				<function>3</function>
+				<start_addr>2061</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2064"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=32) -->
+				<function>3</function>
+				<start_addr>2063</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2066"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=33) -->
+				<function>3</function>
+				<start_addr>2065</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2068"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=34) -->
+				<function>3</function>
+				<start_addr>2067</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2070"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=35) -->
+				<function>3</function>
+				<start_addr>2069</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2072"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=36) -->
+				<function>3</function>
+				<start_addr>2071</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2074"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=37) -->
+				<function>3</function>
+				<start_addr>2073</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2076"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=38) -->
+				<function>3</function>
+				<start_addr>2075</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2078"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=39) -->
+				<function>3</function>
+				<start_addr>2077</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2080"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=40) -->
+				<function>3</function>
+				<start_addr>2079</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2082"> <!-- ACTIVE_ENERGY_METER_  (rowNumber=41) -->
+				<function>3</function>
+				<start_addr>2081</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="registers2084-2166"> <!-- ACTIVE_POWER_METER_? -->
+				<entry num="0">register2084</entry>
+				<entry num="1">register2086</entry>
+				<entry num="2">register2088</entry>
+				<entry num="3">register2090</entry>
+				<entry num="4">register2092</entry>
+				<entry num="5">register2094</entry>
+				<entry num="6">register2096</entry>
+				<entry num="7">register2098</entry>
+				<entry num="8">register2100</entry>
+				<entry num="9">register2102</entry>
+				<entry num="10">register2104</entry>
+				<entry num="11">register2106</entry>
+				<entry num="12">register2108</entry>
+				<entry num="13">register2110</entry>
+				<entry num="14">register2112</entry>
+				<entry num="15">register2114</entry>
+				<entry num="16">register2116</entry>
+				<entry num="17">register2118</entry>
+				<entry num="18">register2120</entry>
+				<entry num="19">register2122</entry>
+				<entry num="20">register2124</entry>
+				<entry num="21">register2126</entry>
+				<entry num="22">register2128</entry>
+				<entry num="23">register2130</entry>
+				<entry num="24">register2132</entry>
+				<entry num="25">register2134</entry>
+				<entry num="26">register2136</entry>
+				<entry num="27">register2138</entry>
+				<entry num="28">register2140</entry>
+				<entry num="29">register2142</entry>
+				<entry num="30">register2144</entry>
+				<entry num="31">register2146</entry>
+				<entry num="32">register2148</entry>
+				<entry num="33">register2150</entry>
+				<entry num="34">register2152</entry>
+				<entry num="35">register2154</entry>
+				<entry num="36">register2156</entry>
+				<entry num="37">register2158</entry>
+				<entry num="38">register2160</entry>
+				<entry num="39">register2162</entry>
+				<entry num="40">register2164</entry>
+				<entry num="41">register2166</entry>
+			</table_ref_id>
+			<value_ref_id valid="register2084"> <!-- ACTIVE_POWER_METER_  (rowNumber=0) -->
+				<function>3</function>
+				<start_addr>2083</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2086"> <!-- ACTIVE_POWER_METER_  (rowNumber=1) -->
+				<function>3</function>
+				<start_addr>2085</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2088"> <!-- ACTIVE_POWER_METER_  (rowNumber=2) -->
+				<function>3</function>
+				<start_addr>2087</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2090"> <!-- ACTIVE_POWER_METER_  (rowNumber=3) -->
+				<function>3</function>
+				<start_addr>2089</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2092"> <!-- ACTIVE_POWER_METER_  (rowNumber=4) -->
+				<function>3</function>
+				<start_addr>2091</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2094"> <!-- ACTIVE_POWER_METER_  (rowNumber=5) -->
+				<function>3</function>
+				<start_addr>2093</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2096"> <!-- ACTIVE_POWER_METER_  (rowNumber=6) -->
+				<function>3</function>
+				<start_addr>2095</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2098"> <!-- ACTIVE_POWER_METER_  (rowNumber=7) -->
+				<function>3</function>
+				<start_addr>2097</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2100"> <!-- ACTIVE_POWER_METER_  (rowNumber=8) -->
+				<function>3</function>
+				<start_addr>2099</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2102"> <!-- ACTIVE_POWER_METER_  (rowNumber=9) -->
+				<function>3</function>
+				<start_addr>2101</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2104"> <!-- ACTIVE_POWER_METER_  (rowNumber=10) -->
+				<function>3</function>
+				<start_addr>2103</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2106"> <!-- ACTIVE_POWER_METER_  (rowNumber=11) -->
+				<function>3</function>
+				<start_addr>2105</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2108"> <!-- ACTIVE_POWER_METER_  (rowNumber=12) -->
+				<function>3</function>
+				<start_addr>2107</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2110"> <!-- ACTIVE_POWER_METER_  (rowNumber=13) -->
+				<function>3</function>
+				<start_addr>2109</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2112"> <!-- ACTIVE_POWER_METER_  (rowNumber=14) -->
+				<function>3</function>
+				<start_addr>2111</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2114"> <!-- ACTIVE_POWER_METER_  (rowNumber=15) -->
+				<function>3</function>
+				<start_addr>2113</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2116"> <!-- ACTIVE_POWER_METER_  (rowNumber=16) -->
+				<function>3</function>
+				<start_addr>2115</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2118"> <!-- ACTIVE_POWER_METER_  (rowNumber=17) -->
+				<function>3</function>
+				<start_addr>2117</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2120"> <!-- ACTIVE_POWER_METER_  (rowNumber=18) -->
+				<function>3</function>
+				<start_addr>2119</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2122"> <!-- ACTIVE_POWER_METER_  (rowNumber=19) -->
+				<function>3</function>
+				<start_addr>2121</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2124"> <!-- ACTIVE_POWER_METER_  (rowNumber=20) -->
+				<function>3</function>
+				<start_addr>2123</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2126"> <!-- ACTIVE_POWER_METER_  (rowNumber=21) -->
+				<function>3</function>
+				<start_addr>2125</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2128"> <!-- ACTIVE_POWER_METER_  (rowNumber=22) -->
+				<function>3</function>
+				<start_addr>2127</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2130"> <!-- ACTIVE_POWER_METER_  (rowNumber=23) -->
+				<function>3</function>
+				<start_addr>2129</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2132"> <!-- ACTIVE_POWER_METER_  (rowNumber=24) -->
+				<function>3</function>
+				<start_addr>2131</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2134"> <!-- ACTIVE_POWER_METER_  (rowNumber=25) -->
+				<function>3</function>
+				<start_addr>2133</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2136"> <!-- ACTIVE_POWER_METER_  (rowNumber=26) -->
+				<function>3</function>
+				<start_addr>2135</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2138"> <!-- ACTIVE_POWER_METER_  (rowNumber=27) -->
+				<function>3</function>
+				<start_addr>2137</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2140"> <!-- ACTIVE_POWER_METER_  (rowNumber=28) -->
+				<function>3</function>
+				<start_addr>2139</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2142"> <!-- ACTIVE_POWER_METER_  (rowNumber=29) -->
+				<function>3</function>
+				<start_addr>2141</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2144"> <!-- ACTIVE_POWER_METER_  (rowNumber=30) -->
+				<function>3</function>
+				<start_addr>2143</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2146"> <!-- ACTIVE_POWER_METER_  (rowNumber=31) -->
+				<function>3</function>
+				<start_addr>2145</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2148"> <!-- ACTIVE_POWER_METER_  (rowNumber=32) -->
+				<function>3</function>
+				<start_addr>2147</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2150"> <!-- ACTIVE_POWER_METER_  (rowNumber=33) -->
+				<function>3</function>
+				<start_addr>2149</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2152"> <!-- ACTIVE_POWER_METER_  (rowNumber=34) -->
+				<function>3</function>
+				<start_addr>2151</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2154"> <!-- ACTIVE_POWER_METER_  (rowNumber=35) -->
+				<function>3</function>
+				<start_addr>2153</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2156"> <!-- ACTIVE_POWER_METER_  (rowNumber=36) -->
+				<function>3</function>
+				<start_addr>2155</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2158"> <!-- ACTIVE_POWER_METER_  (rowNumber=37) -->
+				<function>3</function>
+				<start_addr>2157</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2160"> <!-- ACTIVE_POWER_METER_  (rowNumber=38) -->
+				<function>3</function>
+				<start_addr>2159</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2162"> <!-- ACTIVE_POWER_METER_  (rowNumber=39) -->
+				<function>3</function>
+				<start_addr>2161</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2164"> <!-- ACTIVE_POWER_METER_  (rowNumber=40) -->
+				<function>3</function>
+				<start_addr>2163</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2166"> <!-- ACTIVE_POWER_METER_  (rowNumber=41) -->
+				<function>3</function>
+				<start_addr>2165</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="registers2168-2250"> <!-- POWER_FACTOR_METER_? -->
+				<entry num="0">register2168</entry>
+				<entry num="1">register2170</entry>
+				<entry num="2">register2172</entry>
+				<entry num="3">register2174</entry>
+				<entry num="4">register2176</entry>
+				<entry num="5">register2178</entry>
+				<entry num="6">register2180</entry>
+				<entry num="7">register2182</entry>
+				<entry num="8">register2184</entry>
+				<entry num="9">register2186</entry>
+				<entry num="10">register2188</entry>
+				<entry num="11">register2190</entry>
+				<entry num="12">register2192</entry>
+				<entry num="13">register2194</entry>
+				<entry num="14">register2196</entry>
+				<entry num="15">register2198</entry>
+				<entry num="16">register2200</entry>
+				<entry num="17">register2202</entry>
+				<entry num="18">register2204</entry>
+				<entry num="19">register2206</entry>
+				<entry num="20">register2208</entry>
+				<entry num="21">register2210</entry>
+				<entry num="22">register2212</entry>
+				<entry num="23">register2214</entry>
+				<entry num="24">register2216</entry>
+				<entry num="25">register2218</entry>
+				<entry num="26">register2220</entry>
+				<entry num="27">register2222</entry>
+				<entry num="28">register2224</entry>
+				<entry num="29">register2226</entry>
+				<entry num="30">register2228</entry>
+				<entry num="31">register2230</entry>
+				<entry num="32">register2232</entry>
+				<entry num="33">register2234</entry>
+				<entry num="34">register2236</entry>
+				<entry num="35">register2238</entry>
+				<entry num="36">register2240</entry>
+				<entry num="37">register2242</entry>
+				<entry num="38">register2244</entry>
+				<entry num="39">register2246</entry>
+				<entry num="40">register2248</entry>
+				<entry num="41">register2250</entry>
+			</table_ref_id>
+			<value_ref_id valid="register2168"> <!-- POWER_FACTOR_METER_  (rowNumber=0) -->
+				<function>3</function>
+				<start_addr>2167</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2170"> <!-- POWER_FACTOR_METER_  (rowNumber=1) -->
+				<function>3</function>
+				<start_addr>2169</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2172"> <!-- POWER_FACTOR_METER_  (rowNumber=2) -->
+				<function>3</function>
+				<start_addr>2171</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2174"> <!-- POWER_FACTOR_METER_  (rowNumber=3) -->
+				<function>3</function>
+				<start_addr>2173</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2176"> <!-- POWER_FACTOR_METER_  (rowNumber=4) -->
+				<function>3</function>
+				<start_addr>2175</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2178"> <!-- POWER_FACTOR_METER_  (rowNumber=5) -->
+				<function>3</function>
+				<start_addr>2177</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2180"> <!-- POWER_FACTOR_METER_  (rowNumber=6) -->
+				<function>3</function>
+				<start_addr>2179</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2182"> <!-- POWER_FACTOR_METER_  (rowNumber=7) -->
+				<function>3</function>
+				<start_addr>2181</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2184"> <!-- POWER_FACTOR_METER_  (rowNumber=8) -->
+				<function>3</function>
+				<start_addr>2183</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2186"> <!-- POWER_FACTOR_METER_  (rowNumber=9) -->
+				<function>3</function>
+				<start_addr>2185</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2188"> <!-- POWER_FACTOR_METER_  (rowNumber=10) -->
+				<function>3</function>
+				<start_addr>2187</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2190"> <!-- POWER_FACTOR_METER_  (rowNumber=11) -->
+				<function>3</function>
+				<start_addr>2189</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2192"> <!-- POWER_FACTOR_METER_  (rowNumber=12) -->
+				<function>3</function>
+				<start_addr>2191</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2194"> <!-- POWER_FACTOR_METER_  (rowNumber=13) -->
+				<function>3</function>
+				<start_addr>2193</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2196"> <!-- POWER_FACTOR_METER_  (rowNumber=14) -->
+				<function>3</function>
+				<start_addr>2195</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2198"> <!-- POWER_FACTOR_METER_  (rowNumber=15) -->
+				<function>3</function>
+				<start_addr>2197</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2200"> <!-- POWER_FACTOR_METER_  (rowNumber=16) -->
+				<function>3</function>
+				<start_addr>2199</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2202"> <!-- POWER_FACTOR_METER_  (rowNumber=17) -->
+				<function>3</function>
+				<start_addr>2201</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2204"> <!-- POWER_FACTOR_METER_  (rowNumber=18) -->
+				<function>3</function>
+				<start_addr>2203</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2206"> <!-- POWER_FACTOR_METER_  (rowNumber=19) -->
+				<function>3</function>
+				<start_addr>2205</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2208"> <!-- POWER_FACTOR_METER_  (rowNumber=20) -->
+				<function>3</function>
+				<start_addr>2207</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2210"> <!-- POWER_FACTOR_METER_  (rowNumber=21) -->
+				<function>3</function>
+				<start_addr>2209</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2212"> <!-- POWER_FACTOR_METER_  (rowNumber=22) -->
+				<function>3</function>
+				<start_addr>2211</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2214"> <!-- POWER_FACTOR_METER_  (rowNumber=23) -->
+				<function>3</function>
+				<start_addr>2213</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2216"> <!-- POWER_FACTOR_METER_  (rowNumber=24) -->
+				<function>3</function>
+				<start_addr>2215</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2218"> <!-- POWER_FACTOR_METER_  (rowNumber=25) -->
+				<function>3</function>
+				<start_addr>2217</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2220"> <!-- POWER_FACTOR_METER_  (rowNumber=26) -->
+				<function>3</function>
+				<start_addr>2219</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2222"> <!-- POWER_FACTOR_METER_  (rowNumber=27) -->
+				<function>3</function>
+				<start_addr>2221</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2224"> <!-- POWER_FACTOR_METER_  (rowNumber=28) -->
+				<function>3</function>
+				<start_addr>2223</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2226"> <!-- POWER_FACTOR_METER_  (rowNumber=29) -->
+				<function>3</function>
+				<start_addr>2225</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2228"> <!-- POWER_FACTOR_METER_  (rowNumber=30) -->
+				<function>3</function>
+				<start_addr>2227</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2230"> <!-- POWER_FACTOR_METER_  (rowNumber=31) -->
+				<function>3</function>
+				<start_addr>2229</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2232"> <!-- POWER_FACTOR_METER_  (rowNumber=32) -->
+				<function>3</function>
+				<start_addr>2231</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2234"> <!-- POWER_FACTOR_METER_  (rowNumber=33) -->
+				<function>3</function>
+				<start_addr>2233</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2236"> <!-- POWER_FACTOR_METER_  (rowNumber=34) -->
+				<function>3</function>
+				<start_addr>2235</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2238"> <!-- POWER_FACTOR_METER_  (rowNumber=35) -->
+				<function>3</function>
+				<start_addr>2237</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2240"> <!-- POWER_FACTOR_METER_  (rowNumber=36) -->
+				<function>3</function>
+				<start_addr>2239</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2242"> <!-- POWER_FACTOR_METER_  (rowNumber=37) -->
+				<function>3</function>
+				<start_addr>2241</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2244"> <!-- POWER_FACTOR_METER_  (rowNumber=38) -->
+				<function>3</function>
+				<start_addr>2243</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2246"> <!-- POWER_FACTOR_METER_  (rowNumber=39) -->
+				<function>3</function>
+				<start_addr>2245</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2248"> <!-- POWER_FACTOR_METER_  (rowNumber=40) -->
+				<function>3</function>
+				<start_addr>2247</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2250"> <!-- POWER_FACTOR_METER_  (rowNumber=41) -->
+				<function>3</function>
+				<start_addr>2249</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="registers2252-2334"> <!-- CURRENT_METER_? -->
+				<entry num="0">register2252</entry>
+				<entry num="1">register2254</entry>
+				<entry num="2">register2256</entry>
+				<entry num="3">register2258</entry>
+				<entry num="4">register2260</entry>
+				<entry num="5">register2262</entry>
+				<entry num="6">register2264</entry>
+				<entry num="7">register2266</entry>
+				<entry num="8">register2268</entry>
+				<entry num="9">register2270</entry>
+				<entry num="10">register2272</entry>
+				<entry num="11">register2274</entry>
+				<entry num="12">register2276</entry>
+				<entry num="13">register2278</entry>
+				<entry num="14">register2280</entry>
+				<entry num="15">register2282</entry>
+				<entry num="16">register2284</entry>
+				<entry num="17">register2286</entry>
+				<entry num="18">register2288</entry>
+				<entry num="19">register2290</entry>
+				<entry num="20">register2292</entry>
+				<entry num="21">register2294</entry>
+				<entry num="22">register2296</entry>
+				<entry num="23">register2298</entry>
+				<entry num="24">register2300</entry>
+				<entry num="25">register2302</entry>
+				<entry num="26">register2304</entry>
+				<entry num="27">register2306</entry>
+				<entry num="28">register2308</entry>
+				<entry num="29">register2310</entry>
+				<entry num="30">register2312</entry>
+				<entry num="31">register2314</entry>
+				<entry num="32">register2316</entry>
+				<entry num="33">register2318</entry>
+				<entry num="34">register2320</entry>
+				<entry num="35">register2322</entry>
+				<entry num="36">register2324</entry>
+				<entry num="37">register2326</entry>
+				<entry num="38">register2328</entry>
+				<entry num="39">register2330</entry>
+				<entry num="40">register2332</entry>
+				<entry num="41">register2334</entry>
+			</table_ref_id>
+			<value_ref_id valid="register2252"> <!-- CURRENT_METER_  (rowNumber=0) -->
+				<function>3</function>
+				<start_addr>2251</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2254"> <!-- CURRENT_METER_  (rowNumber=1) -->
+				<function>3</function>
+				<start_addr>2253</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2256"> <!-- CURRENT_METER_  (rowNumber=2) -->
+				<function>3</function>
+				<start_addr>2255</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2258"> <!-- CURRENT_METER_  (rowNumber=3) -->
+				<function>3</function>
+				<start_addr>2257</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2260"> <!-- CURRENT_METER_  (rowNumber=4) -->
+				<function>3</function>
+				<start_addr>2259</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2262"> <!-- CURRENT_METER_  (rowNumber=5) -->
+				<function>3</function>
+				<start_addr>2261</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2264"> <!-- CURRENT_METER_  (rowNumber=6) -->
+				<function>3</function>
+				<start_addr>2263</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2266"> <!-- CURRENT_METER_  (rowNumber=7) -->
+				<function>3</function>
+				<start_addr>2265</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2268"> <!-- CURRENT_METER_  (rowNumber=8) -->
+				<function>3</function>
+				<start_addr>2267</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2270"> <!-- CURRENT_METER_  (rowNumber=9) -->
+				<function>3</function>
+				<start_addr>2269</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2272"> <!-- CURRENT_METER_  (rowNumber=10) -->
+				<function>3</function>
+				<start_addr>2271</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2274"> <!-- CURRENT_METER_  (rowNumber=11) -->
+				<function>3</function>
+				<start_addr>2273</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2276"> <!-- CURRENT_METER_  (rowNumber=12) -->
+				<function>3</function>
+				<start_addr>2275</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2278"> <!-- CURRENT_METER_  (rowNumber=13) -->
+				<function>3</function>
+				<start_addr>2277</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2280"> <!-- CURRENT_METER_  (rowNumber=14) -->
+				<function>3</function>
+				<start_addr>2279</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2282"> <!-- CURRENT_METER_  (rowNumber=15) -->
+				<function>3</function>
+				<start_addr>2281</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2284"> <!-- CURRENT_METER_  (rowNumber=16) -->
+				<function>3</function>
+				<start_addr>2283</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2286"> <!-- CURRENT_METER_  (rowNumber=17) -->
+				<function>3</function>
+				<start_addr>2285</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2288"> <!-- CURRENT_METER_  (rowNumber=18) -->
+				<function>3</function>
+				<start_addr>2287</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2290"> <!-- CURRENT_METER_  (rowNumber=19) -->
+				<function>3</function>
+				<start_addr>2289</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2292"> <!-- CURRENT_METER_  (rowNumber=20) -->
+				<function>3</function>
+				<start_addr>2291</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2294"> <!-- CURRENT_METER_  (rowNumber=21) -->
+				<function>3</function>
+				<start_addr>2293</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2296"> <!-- CURRENT_METER_  (rowNumber=22) -->
+				<function>3</function>
+				<start_addr>2295</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2298"> <!-- CURRENT_METER_  (rowNumber=23) -->
+				<function>3</function>
+				<start_addr>2297</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2300"> <!-- CURRENT_METER_  (rowNumber=24) -->
+				<function>3</function>
+				<start_addr>2299</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2302"> <!-- CURRENT_METER_  (rowNumber=25) -->
+				<function>3</function>
+				<start_addr>2301</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2304"> <!-- CURRENT_METER_  (rowNumber=26) -->
+				<function>3</function>
+				<start_addr>2303</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2306"> <!-- CURRENT_METER_  (rowNumber=27) -->
+				<function>3</function>
+				<start_addr>2305</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2308"> <!-- CURRENT_METER_  (rowNumber=28) -->
+				<function>3</function>
+				<start_addr>2307</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2310"> <!-- CURRENT_METER_  (rowNumber=29) -->
+				<function>3</function>
+				<start_addr>2309</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2312"> <!-- CURRENT_METER_  (rowNumber=30) -->
+				<function>3</function>
+				<start_addr>2311</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2314"> <!-- CURRENT_METER_  (rowNumber=31) -->
+				<function>3</function>
+				<start_addr>2313</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2316"> <!-- CURRENT_METER_  (rowNumber=32) -->
+				<function>3</function>
+				<start_addr>2315</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2318"> <!-- CURRENT_METER_  (rowNumber=33) -->
+				<function>3</function>
+				<start_addr>2317</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2320"> <!-- CURRENT_METER_  (rowNumber=34) -->
+				<function>3</function>
+				<start_addr>2319</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2322"> <!-- CURRENT_METER_  (rowNumber=35) -->
+				<function>3</function>
+				<start_addr>2321</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2324"> <!-- CURRENT_METER_  (rowNumber=36) -->
+				<function>3</function>
+				<start_addr>2323</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2326"> <!-- CURRENT_METER_  (rowNumber=37) -->
+				<function>3</function>
+				<start_addr>2325</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2328"> <!-- CURRENT_METER_  (rowNumber=38) -->
+				<function>3</function>
+				<start_addr>2327</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2330"> <!-- CURRENT_METER_  (rowNumber=39) -->
+				<function>3</function>
+				<start_addr>2329</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2332"> <!-- CURRENT_METER_  (rowNumber=40) -->
+				<function>3</function>
+				<start_addr>2331</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2334"> <!-- CURRENT_METER_  (rowNumber=41) -->
+				<function>3</function>
+				<start_addr>2333</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="registers2840-2922"> <!-- APPARENT_POWER_METER_? -->
+				<entry num="0">register2840</entry>
+				<entry num="1">register2842</entry>
+				<entry num="2">register2844</entry>
+				<entry num="3">register2846</entry>
+				<entry num="4">register2848</entry>
+				<entry num="5">register2850</entry>
+				<entry num="6">register2852</entry>
+				<entry num="7">register2854</entry>
+				<entry num="8">register2856</entry>
+				<entry num="9">register2858</entry>
+				<entry num="10">register2860</entry>
+				<entry num="11">register2862</entry>
+				<entry num="12">register2864</entry>
+				<entry num="13">register2866</entry>
+				<entry num="14">register2868</entry>
+				<entry num="15">register2870</entry>
+				<entry num="16">register2872</entry>
+				<entry num="17">register2874</entry>
+				<entry num="18">register2876</entry>
+				<entry num="19">register2878</entry>
+				<entry num="20">register2880</entry>
+				<entry num="21">register2882</entry>
+				<entry num="22">register2884</entry>
+				<entry num="23">register2886</entry>
+				<entry num="24">register2888</entry>
+				<entry num="25">register2890</entry>
+				<entry num="26">register2892</entry>
+				<entry num="27">register2894</entry>
+				<entry num="28">register2896</entry>
+				<entry num="29">register2898</entry>
+				<entry num="30">register2900</entry>
+				<entry num="31">register2902</entry>
+				<entry num="32">register2904</entry>
+				<entry num="33">register2906</entry>
+				<entry num="34">register2908</entry>
+				<entry num="35">register2910</entry>
+				<entry num="36">register2912</entry>
+				<entry num="37">register2914</entry>
+				<entry num="38">register2916</entry>
+				<entry num="39">register2918</entry>
+				<entry num="40">register2920</entry>
+				<entry num="41">register2922</entry>
+			</table_ref_id>
+			<value_ref_id valid="register2840"> <!-- APPARENT_POWER_METER_  (rowNumber=0) -->
+				<function>3</function>
+				<start_addr>2839</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2842"> <!-- APPARENT_POWER_METER_  (rowNumber=1) -->
+				<function>3</function>
+				<start_addr>2841</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2844"> <!-- APPARENT_POWER_METER_  (rowNumber=2) -->
+				<function>3</function>
+				<start_addr>2843</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2846"> <!-- APPARENT_POWER_METER_  (rowNumber=3) -->
+				<function>3</function>
+				<start_addr>2845</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2848"> <!-- APPARENT_POWER_METER_  (rowNumber=4) -->
+				<function>3</function>
+				<start_addr>2847</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2850"> <!-- APPARENT_POWER_METER_  (rowNumber=5) -->
+				<function>3</function>
+				<start_addr>2849</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2852"> <!-- APPARENT_POWER_METER_  (rowNumber=6) -->
+				<function>3</function>
+				<start_addr>2851</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2854"> <!-- APPARENT_POWER_METER_  (rowNumber=7) -->
+				<function>3</function>
+				<start_addr>2853</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2856"> <!-- APPARENT_POWER_METER_  (rowNumber=8) -->
+				<function>3</function>
+				<start_addr>2855</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2858"> <!-- APPARENT_POWER_METER_  (rowNumber=9) -->
+				<function>3</function>
+				<start_addr>2857</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2860"> <!-- APPARENT_POWER_METER_  (rowNumber=10) -->
+				<function>3</function>
+				<start_addr>2859</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2862"> <!-- APPARENT_POWER_METER_  (rowNumber=11) -->
+				<function>3</function>
+				<start_addr>2861</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2864"> <!-- APPARENT_POWER_METER_  (rowNumber=12) -->
+				<function>3</function>
+				<start_addr>2863</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2866"> <!-- APPARENT_POWER_METER_  (rowNumber=13) -->
+				<function>3</function>
+				<start_addr>2865</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2868"> <!-- APPARENT_POWER_METER_  (rowNumber=14) -->
+				<function>3</function>
+				<start_addr>2867</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2870"> <!-- APPARENT_POWER_METER_  (rowNumber=15) -->
+				<function>3</function>
+				<start_addr>2869</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2872"> <!-- APPARENT_POWER_METER_  (rowNumber=16) -->
+				<function>3</function>
+				<start_addr>2871</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2874"> <!-- APPARENT_POWER_METER_  (rowNumber=17) -->
+				<function>3</function>
+				<start_addr>2873</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2876"> <!-- APPARENT_POWER_METER_  (rowNumber=18) -->
+				<function>3</function>
+				<start_addr>2875</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2878"> <!-- APPARENT_POWER_METER_  (rowNumber=19) -->
+				<function>3</function>
+				<start_addr>2877</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2880"> <!-- APPARENT_POWER_METER_  (rowNumber=20) -->
+				<function>3</function>
+				<start_addr>2879</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2882"> <!-- APPARENT_POWER_METER_  (rowNumber=21) -->
+				<function>3</function>
+				<start_addr>2881</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2884"> <!-- APPARENT_POWER_METER_  (rowNumber=22) -->
+				<function>3</function>
+				<start_addr>2883</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2886"> <!-- APPARENT_POWER_METER_  (rowNumber=23) -->
+				<function>3</function>
+				<start_addr>2885</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2888"> <!-- APPARENT_POWER_METER_  (rowNumber=24) -->
+				<function>3</function>
+				<start_addr>2887</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2890"> <!-- APPARENT_POWER_METER_  (rowNumber=25) -->
+				<function>3</function>
+				<start_addr>2889</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2892"> <!-- APPARENT_POWER_METER_  (rowNumber=26) -->
+				<function>3</function>
+				<start_addr>2891</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2894"> <!-- APPARENT_POWER_METER_  (rowNumber=27) -->
+				<function>3</function>
+				<start_addr>2893</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2896"> <!-- APPARENT_POWER_METER_  (rowNumber=28) -->
+				<function>3</function>
+				<start_addr>2895</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2898"> <!-- APPARENT_POWER_METER_  (rowNumber=29) -->
+				<function>3</function>
+				<start_addr>2897</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2900"> <!-- APPARENT_POWER_METER_  (rowNumber=30) -->
+				<function>3</function>
+				<start_addr>2899</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2902"> <!-- APPARENT_POWER_METER_  (rowNumber=31) -->
+				<function>3</function>
+				<start_addr>2901</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2904"> <!-- APPARENT_POWER_METER_  (rowNumber=32) -->
+				<function>3</function>
+				<start_addr>2903</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2906"> <!-- APPARENT_POWER_METER_  (rowNumber=33) -->
+				<function>3</function>
+				<start_addr>2905</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2908"> <!-- APPARENT_POWER_METER_  (rowNumber=34) -->
+				<function>3</function>
+				<start_addr>2907</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2910"> <!-- APPARENT_POWER_METER_  (rowNumber=35) -->
+				<function>3</function>
+				<start_addr>2909</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2912"> <!-- APPARENT_POWER_METER_  (rowNumber=36) -->
+				<function>3</function>
+				<start_addr>2911</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2914"> <!-- APPARENT_POWER_METER_  (rowNumber=37) -->
+				<function>3</function>
+				<start_addr>2913</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2916"> <!-- APPARENT_POWER_METER_  (rowNumber=38) -->
+				<function>3</function>
+				<start_addr>2915</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2918"> <!-- APPARENT_POWER_METER_  (rowNumber=39) -->
+				<function>3</function>
+				<start_addr>2917</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2920"> <!-- APPARENT_POWER_METER_  (rowNumber=40) -->
+				<function>3</function>
+				<start_addr>2919</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+			<value_ref_id valid="register2922"> <!-- APPARENT_POWER_METER_  (rowNumber=41) -->
+				<function>3</function>
+				<start_addr>2921</start_addr>
+				<quantity>2</quantity>
+				<type>float</type>
+			</value_ref_id>
+
+			<packet>
+				<function>3</function>
+				<start_addr>4</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>1999</start_addr>
+				<quantity>84</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>2083</start_addr>
+				<quantity>84</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>2167</start_addr>
+				<quantity>84</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>2251</start_addr>
+				<quantity>84</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>2839</start_addr>
+				<quantity>84</quantity>
+			</packet>
+		</modbus>
+	</protocol>
+</APC_DDF>

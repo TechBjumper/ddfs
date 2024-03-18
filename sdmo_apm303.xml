@@ -1,0 +1,1822 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<APC_DDF
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+	ddfid="sdmo_apm303"
+	ddfname="SDMO APM303"
+	ddfversion="1"
+	canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+	
+	<!--
+	
+		SOURCE
+		/modbus/register_maps/sdmo/APM303 Manuel modbus.pdf
+		SDMO APM303-Modbus | 11 February 2020
+	
+	-->
+
+	<device deviceid="sdmo_apm303">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<setProductData ruleid="vendordata" field="vendor">SDMO</setProductData>
+		<setProductData ruleid="modeldata" field="model">APM303</setProductData>
+		<setProductData ruleid="typedata" field="type">Generator</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+
+        <valueMap ruleid="deleteNull-vm">
+            <valueIn>32767</valueIn><valueOut>[false]</valueOut>
+            <valueIn>65535</valueIn><valueOut>[false]</valueOut>
+            <valueIn>*</valueIn><valueOut>[true]</valueOut>
+        </valueMap>
+		
+        <valueMap ruleid="2state-vm">
+            <valueIn>0</valueIn><valueOut>0</valueOut>
+            <valueIn>*</valueIn><valueOut>1</valueOut>
+        </valueMap>
+		
+		<valueMap ruleid="power_reading_precision-vm">
+            <valueIn>0</valueIn><valueOut>1</valueOut>
+            <valueIn>1</valueIn><valueOut>0.1</valueOut>
+        </valueMap>
+		
+        <enumMap ruleid="running_status-em">
+            <label>Not Running</label>
+            <label>Running</label>
+        </enumMap>
+		
+        <enumMap ruleid="auto_on_off-em">
+            <label>Auto On</label>
+            <label>Auto Off</label>
+        </enumMap>
+
+ 		<enumMap ruleid="island_operation_status-em">
+			<label>Ready to Load</label>
+			<label>Circuit Breaker Closed</label>
+		</enumMap>
+
+		<stateSensor ruleid="running_gen_set_stabilised">
+            <type>state</type>
+            <sensorId>RUNNING_GEN_SET_STABILISED</sensorId>
+            <value>
+                <mapValue mapid="2state-vm">
+                    <getOid>RUNNING_GEN_SET_STABILISED</getOid>
+                </mapValue>
+            </value>
+            <label>Running (Gen Set Stabilised)</label>
+            <enum>running_status-em</enum>
+            <sensorSet>Gen Status</sensorSet>
+        </stateSensor>
+		<stateSensor ruleid="auto_mode_onOff">
+            <type>state</type>
+            <sensorId>AUTO_MODE</sensorId>
+            <value>
+                <mapValue mapid="2state-vm">
+                    <getOid>AUTO_MODE</getOid>
+                </mapValue>
+            </value>
+            <label>Automatic Mode (Auto On/Off)</label>
+            <enum>auto_on_off-em</enum>
+            <sensorSet>Gen Status</sensorSet>
+        </stateSensor>
+		<stateSensor ruleid="island_operation">
+            <type>state</type>
+            <sensorId>ISLAND_OPERATION</sensorId>
+            <value>
+                <mapValue mapid="2state-vm">
+                    <getOid>ISLAND_OPERATION</getOid>
+                </mapValue>
+            </value>
+            <label>Island Operation</label>
+            <enum>island_operation_status-em</enum>
+            <sensorSet>Gen Status</sensorSet>
+        </stateSensor>
+		
+		<alarmFlags ruleid="maintenance_required">
+			<value><getOid>MAINTENANCE_REQUIRED</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Maintenance Required Alarm</activeText>
+					<inactiveText>Maintenance Required Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>A maintenance required condition exists.</activeText>
+					<inactiveText>A maintenance required condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="low_battery">
+			<value><getOid>LOW_BATTERY</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Low Battery Alarm</activeText>
+					<inactiveText>Low Battery Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Battery</category>
+				<description>
+					<activeText>A low battery alarm condition exists.</activeText>
+					<inactiveText>A low battery alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="low_fuel_level">
+			<value><getOid>LOW_FUEL_LEVEL</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Low Fuel Level Alarm</activeText>
+					<inactiveText>Low Fuel Level Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>A low fuel level alarm condition exists.</activeText>
+					<inactiveText>A low fuel level alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="external_warning1">
+			<value><getOid>EXTERNAL_WARNING1</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>External Warning 1 Alarm</activeText>
+					<inactiveText>External Warning 1 Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An external warning 1 alarm condition exists.</activeText>
+					<inactiveText>An external warning 1 alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="external_warning2">
+			<value><getOid>EXTERNAL_WARNING2</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>External Warning 2 Alarm</activeText>
+					<inactiveText>External Warning 2 Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An external warning 2 alarm condition exists.</activeText>
+					<inactiveText>An external warning 2 alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="external_warning3">
+			<value><getOid>EXTERNAL_WARNING3</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>External Warning 3 Alarm</activeText>
+					<inactiveText>External Warning 3 Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An external warning 3 alarm condition exists.</activeText>
+					<inactiveText>An external warning 3 alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="generator_ccw_rotation">
+			<value><getOid>GENERATOR_CCW_ROTATION</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Generator CCW Rotation Alarm</activeText>
+					<inactiveText>Generator CCW Rotation Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>A generator CCW rotation alarm condition exists.</activeText>
+					<inactiveText>A generator CCW rotation alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="battery_flat">
+			<value><getOid>BATTERY_FLAT</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Battery Flat Alarm</activeText>
+					<inactiveText>Battery Flat Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Battery</category>
+				<description>
+					<activeText>A battery flat alarm condition exists.</activeText>
+					<inactiveText>A battery flat alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="emergency_stop_active">
+			<value><getOid>EMERGENCY_STOP_ACTIVE</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Emergency Stop Active Alarm</activeText>
+					<inactiveText>Emergency Stop Active Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An emergency stop active alarm condition exists.</activeText>
+					<inactiveText>An emergency stop active alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="overspeed_alarm">
+			<value><getOid>OVERSPEED_ALARM</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Overspeed Alarm</activeText>
+					<inactiveText>Overspeed Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An overspeed alarm condition exists.</activeText>
+					<inactiveText>An overspeed alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="underspeed_alarm">
+			<value><getOid>UNDERSPEED_ALARM</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Underspeed Alarm</activeText>
+					<inactiveText>Underspeed Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An underspeed alarm condition exists.</activeText>
+					<inactiveText>An underspeed alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="low_oil_pressure">
+			<value><getOid>LOW_OIL_PRESSURE</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Low Oil Pressure Alarm</activeText>
+					<inactiveText>Low Oil Pressure Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>A low oil pressure alarm condition exists.</activeText>
+					<inactiveText>A low oil pressure alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="high_coolant_temperature">
+			<value><getOid>HIGH_COOLANT_TEMPERATURE</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>High Coolant Temperature Alarm</activeText>
+					<inactiveText>High Coolant Temperature Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Temperature</category>
+				<description>
+					<activeText>A high coolant temperature alarm condition exists.</activeText>
+					<inactiveText>A high coolant temperature alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="external_shutdown1">
+			<value><getOid>EXTERNAL_SHUTDOWN1</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>External Shutdown 1 Alarm</activeText>
+					<inactiveText>External Shutdown 1 Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An external shutdown 1 alarm condition exists.</activeText>
+					<inactiveText>An external shutdown 1 alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="external_shutdown2">
+			<value><getOid>EXTERNAL_SHUTDOWN2</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>External Shutdown 2 Alarm</activeText>
+					<inactiveText>External Shutdown 2 Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An external shutdown 2 alarm condition exists.</activeText>
+					<inactiveText>An external shutdown 2 alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="external_shutdown3">
+			<value><getOid>EXTERNAL_SHUTDOWN3</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>External Shutdown 3 Alarm</activeText>
+					<inactiveText>External Shutdown 3 Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An external shutdown 3 alarm condition exists.</activeText>
+					<inactiveText>An external shutdown 3 alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="gcb_fail">
+			<value><getOid>GCB_FAIL</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>GCB Fail (Circuit Breaker Position Inconsistent) Alarm</activeText>
+					<inactiveText>GCB Fail (Circuit Breaker Position Inconsistent) Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>A GCB fail (circuit breaker position inconsistent) alarm condition exists.</activeText>
+					<inactiveText>A GCB fail (circuit breaker position inconsistent) alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="generator_voltage_over_maximum">
+			<value><getOid>GENERATOR_VOLTAGE_OVER_MAXIMUM</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Generator Voltage Over Maximum Alarm</activeText>
+					<inactiveText>Generator Voltage Over Maximum Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Power</category>
+				<description>
+					<activeText>A generator voltage over maximum alarm condition exists.</activeText>
+					<inactiveText>A generator voltage over maximum alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="generator_voltage_under_minimum">
+			<value><getOid>GENERATOR_VOLTAGE_UNDER_MINIMUM</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Generator Voltage Under Minimum Alarm</activeText>
+					<inactiveText>Generator Voltage Under Minimum Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Power</category>
+				<description>
+					<activeText>A generator voltage under minimum alarm condition exists.</activeText>
+					<inactiveText>A generator voltage under minimum alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="generator_frequency_over_maximum">
+			<value><getOid>GENERATOR_FREQUENCY_OVER_MAXIMUM</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Generator Frequency Over Maximum Alarm</activeText>
+					<inactiveText>Generator Frequency Over Maximum Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Power</category>
+				<description>
+					<activeText>A generator frequency over maximum alarm condition exists.</activeText>
+					<inactiveText>A generator frequency over maximum alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="generator_frequency_under_minimum">
+			<value><getOid>GENERATOR_FREQUENCY_UNDER_MINIMUM</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Generator Frequency Under Minimum Alarm</activeText>
+					<inactiveText>Generator Frequency Under Minimum Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Power</category>
+				<description>
+					<activeText>A generator frequency under minimum alarm condition exists.</activeText>
+					<inactiveText>A generator frequency under minimum alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="start_fail">
+			<value><getOid>START_FAIL</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Start Fail Alarm</activeText>
+					<inactiveText>Start Fail Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Fault</category>
+				<description>
+					<activeText>A start fail alarm condition exists.</activeText>
+					<inactiveText>A start fail alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="stop_fail">
+			<value><getOid>STOP_FAIL</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Stop Fail Alarm</activeText>
+					<inactiveText>Stop Fail Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Fault</category>
+				<description>
+					<activeText>A stop fail alarm condition exists.</activeText>
+					<inactiveText>A stop fail alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="generator_current_over_short_circuit">
+			<value><getOid>GENERATOR_CURRENT_OVER_SHORT_CIRCUIT</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Generator Current Over Short Circuit Alarm</activeText>
+					<inactiveText>Generator Current Over Short Circuit Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Power</category>
+				<description>
+					<activeText>A generator current over short circuit alarm condition exists.</activeText>
+					<inactiveText>A generator current over short circuit alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="generator_active_power_over_set_overload">
+			<value><getOid>GENERATOR_ACTIVE_POWER_OVER_SET_OVERLOAD</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Generator Active Power Over Set Overload Alarm</activeText>
+					<inactiveText>Generator Active Power Over Set Overload Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Power</category>
+				<description>
+					<activeText>A generator active power over set overload alarm condition exists.</activeText>
+					<inactiveText>A generator active power over set overload alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="emergency_stop">
+			<value><getOid>EMERGENCY_STOP</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Emergency Stop Alarm</activeText>
+					<inactiveText>Emergency Stop Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An emergency stop alarm condition exists.</activeText>
+					<inactiveText>An emergency stop alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="remote_startStop">
+			<value><getOid>REMOTE_STARTSTOP</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Remote Start/Stop Alarm</activeText>
+					<inactiveText>Remote Start/Stop Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>A remote start/stop alarm condition exists.</activeText>
+					<inactiveText>A remote start/stop alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="access_lock">
+			<value><getOid>ACCESS_LOCK</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Access Lock (APM303 Locked) Alarm</activeText>
+					<inactiveText>Access Lock (APM303 Locked) Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An access lock (APM303 locked) alarm condition exists.</activeText>
+					<inactiveText>An access lock (APM303 locked) alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="gcb_feedback">
+			<value><getOid>GCB_FEEDBACK</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>GCB Feedback Alarm</activeText>
+					<inactiveText>GCB Feedback Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>A GCB feedback) alarm condition exists.</activeText>
+					<inactiveText>A GCB feedback alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="external_warning_1">
+			<value><getOid>EXTERNAL_WARNING_1</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>External Warning 1 Alarm</activeText>
+					<inactiveText>External Warning 1 Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An external warning 1 alarm condition exists.</activeText>
+					<inactiveText>An external warning 1 alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="external_warning_2">
+			<value><getOid>EXTERNAL_WARNING_2</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>External Warning 2 Alarm</activeText>
+					<inactiveText>External Warning 2 Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An external warning 2 alarm condition exists.</activeText>
+					<inactiveText>An external warning 2 alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="external_warning_3">
+			<value><getOid>EXTERNAL_WARNING_3</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>External Warning 3 Alarm</activeText>
+					<inactiveText>External Warning 3 Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An external warning 3 alarm condition exists.</activeText>
+					<inactiveText>An external warning 3 alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="external_shutdown_1">
+			<value><getOid>EXTERNAL_SHUTDOWN_1</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>External Shutdown 1 Alarm</activeText>
+					<inactiveText>External Shutdown 1 Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An external shutdown 1 alarm condition exists.</activeText>
+					<inactiveText>An external shutdown 1 alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="external_shutdown_2">
+			<value><getOid>EXTERNAL_SHUTDOWN_2</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>External Shutdown 2 Alarm</activeText>
+					<inactiveText>External Shutdown 2 Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An external shutdown 2 alarm condition exists.</activeText>
+					<inactiveText>An external shutdown 2 alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="external_shutdown_3">
+			<value><getOid>EXTERNAL_SHUTDOWN_3</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>External Shutdown 3 Alarm</activeText>
+					<inactiveText>External Shutdown 3 Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>An external shutdown 3 alarm condition exists.</activeText>
+					<inactiveText>An external shutdown 3 alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="_low_fuel_level">
+			<value><getOid>_LOW_FUEL_LEVEL</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Low Fuel Level Alarm</activeText>
+					<inactiveText>Low Fuel Level Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>A low fuel level alarm condition exists.</activeText>
+					<inactiveText>A low fuel level alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="_low_oil_pressure">
+			<value><getOid>_LOW_OIL_PRESSURE</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>Low Oil Pressure Alarm</activeText>
+					<inactiveText>Low Oil Pressure Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Device</category>
+				<description>
+					<activeText>A low oil pressure alarm condition exists.</activeText>
+					<inactiveText>A low oil pressure alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		<alarmFlags ruleid="_high_coolant_temperature">
+			<value><getOid>_HIGH_COOLANT_TEMPERATURE</getOid></value>
+			<alarmFlagsTest mask="1" match="1">
+				<name>
+					<activeText>High Coolant Temperature Alarm</activeText>
+					<inactiveText>High Coolant Temperature Alarm Cleared</inactiveText>
+				</name>
+				<severity>warning</severity>
+				<category>Temperature</category>
+				<description>
+					<activeText>A high coolant temperature alarm condition exists.</activeText>
+					<inactiveText>A high coolant temperature alarm condition no longer exists.</inactiveText>
+				</description>
+			</alarmFlagsTest>
+		</alarmFlags>
+		
+		<numSensor ruleid="gen_voltage_l1n">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_VOLTAGE_L1N</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>OUTPUT_VOLTAGE_L2N_1</sensorId>
+			<value>
+				<getOid>GEN_VOLTAGE_L1N</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Generator Voltage L1-N</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_voltage_l2n">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_VOLTAGE_L2N</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>OUTPUT_VOLTAGE_L2N_2</sensorId>
+			<value>
+				<getOid>GEN_VOLTAGE_L2N</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Generator Voltage L2-N</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_voltage_l3n">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_VOLTAGE_L3N</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>OUTPUT_VOLTAGE_L2N_3</sensorId>
+			<value>
+				<getOid>GEN_VOLTAGE_L3N</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Generator Voltage L3-N</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_voltage_l1_l2">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_VOLTAGE_L1_L2</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>OUTPUT_VOLTAGE_L2L_1</sensorId>
+			<value>
+				<getOid>GEN_VOLTAGE_L1_L2</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Generator Voltage L1-L2</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_voltage_l2_l3">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_VOLTAGE_L2_L3</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>OUTPUT_VOLTAGE_L2L_2</sensorId>
+			<value>
+				<getOid>GEN_VOLTAGE_L2_L3</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Generator Voltage L2-L3</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_voltage_l3_l1">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_VOLTAGE_L3_L1</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>OUTPUT_VOLTAGE_L2L_3</sensorId>
+			<value>
+				<getOid>GEN_VOLTAGE_L3_L1</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Generator Voltage L3-L1</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_current_l1">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_CURRENT_L1</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>OUTPUT_CURRENT_1</sensorId>
+			<value>
+				<mult>
+					<op><getOid>GEN_CURRENT_L1</getOid></op>
+					<op>
+						<mapValue mapid="power_reading_precision-vm">
+							<getOid>POWER_READING_PRECISION</getOid>
+						</mapValue>
+					</op>
+				</mult>
+			</value>
+			<valueInc>
+				<mapValue mapid="power_reading_precision-vm">
+					<getOid>POWER_READING_PRECISION</getOid>
+				</mapValue>
+			</valueInc>
+			<label>Generator Current L1</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_current_l2">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_CURRENT_L2</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>OUTPUT_CURRENT_2</sensorId>
+			<value>
+				<mult>
+					<op><getOid>GEN_CURRENT_L2</getOid></op>
+					<op>
+						<mapValue mapid="power_reading_precision-vm">
+							<getOid>POWER_READING_PRECISION</getOid>
+						</mapValue>
+					</op>
+				</mult>
+			</value>
+			<valueInc>
+				<mapValue mapid="power_reading_precision-vm">
+					<getOid>POWER_READING_PRECISION</getOid>
+				</mapValue>
+			</valueInc>
+			<label>Generator Current L2</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_current_l3">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_CURRENT_L3</getOid>
+				</mapValue>
+			</rowTest>
+			<type>amperage</type>
+			<sensorId>OUTPUT_CURRENT_3</sensorId>
+			<value>
+				<mult>
+					<op><getOid>GEN_CURRENT_L3</getOid></op>
+					<op>
+						<mapValue mapid="power_reading_precision-vm">
+							<getOid>POWER_READING_PRECISION</getOid>
+						</mapValue>
+					</op>
+				</mult>
+			</value>
+			<valueInc>
+				<mapValue mapid="power_reading_precision-vm">
+					<getOid>POWER_READING_PRECISION</getOid>
+				</mapValue>
+			</valueInc>
+			<label>Generator Current L3</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_active_power_total">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_ACTIVE_POWER_TOTAL</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerW</type>
+			<sensorId>_OUTPUT_POWER_TOTAL</sensorId>
+			<value>
+				<mult>
+					<op>
+						<mult>
+							<op><getOid>GEN_ACTIVE_POWER_TOTAL</getOid></op>
+							<op>
+								<mapValue mapid="power_reading_precision-vm">
+									<getOid>POWER_READING_PRECISION</getOid>
+								</mapValue>
+							</op>
+						</mult>
+					</op>
+					<!-- convert from kW to Watts -->
+					<op>1000</op>
+				</mult>
+			</value>
+			<valueInc>
+				<mapValue mapid="power_reading_precision-vm">
+					<getOid>POWER_READING_PRECISION</getOid>
+				</mapValue>
+			</valueInc>
+			<label>Generator Active Power Total</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_apparent_power_total">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_APPARENT_POWER_TOTAL</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerVA</type>
+			<sensorId>_OUTPUT_APPARENT_POWER_TOTAL</sensorId>
+			<value>
+				<mult>
+					<op>
+						<mult>
+							<op><getOid>GEN_APPARENT_POWER_TOTAL</getOid></op>
+							<op>
+								<mapValue mapid="power_reading_precision-vm">
+									<getOid>POWER_READING_PRECISION</getOid>
+								</mapValue>
+							</op>
+						</mult>
+					</op>
+					<!-- convert from kVA to VA -->
+					<op>1000</op>
+				</mult>
+			</value>
+			<valueInc>
+				<mapValue mapid="power_reading_precision-vm">
+					<getOid>POWER_READING_PRECISION</getOid>
+				</mapValue>
+			</valueInc>
+			<label>Generator Apparent Power Total</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_power_factor_total">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_POWER_FACTOR_TOTAL</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerfactor</type>
+			<sensorId>_OUTPUT_POWER_FACTOR_TOTAL</sensorId>
+			<value>
+				<mult>
+					<op><getOid>GEN_POWER_FACTOR_TOTAL</getOid></op>
+					<op>0.01</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Generator Power Factor Total</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_active_power_l1">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_ACTIVE_POWER_L1</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerW</type>
+			<sensorId>_OUTPUT_POWER_1</sensorId>
+			<value>
+				<mult>
+					<op>
+						<mult>
+							<op><getOid>GEN_ACTIVE_POWER_L1</getOid></op>
+							<op>
+								<mapValue mapid="power_reading_precision-vm">
+									<getOid>POWER_READING_PRECISION</getOid>
+								</mapValue>
+							</op>
+						</mult>
+					</op>
+					<!-- convert from kW to Watts -->
+					<op>1000</op>
+				</mult>
+			</value>
+			<valueInc>
+				<mapValue mapid="power_reading_precision-vm">
+					<getOid>POWER_READING_PRECISION</getOid>
+				</mapValue>
+			</valueInc>
+			<label>Generator Active Power L1</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_active_power_l2">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_ACTIVE_POWER_L2</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerW</type>
+			<sensorId>_OUTPUT_POWER_2</sensorId>
+			<value>
+				<mult>
+					<op>
+						<mult>
+							<op><getOid>GEN_ACTIVE_POWER_L2</getOid></op>
+							<op>
+								<mapValue mapid="power_reading_precision-vm">
+									<getOid>POWER_READING_PRECISION</getOid>
+								</mapValue>
+							</op>
+						</mult>
+					</op>
+					<!-- convert from kW to Watts -->
+					<op>1000</op>
+				</mult>
+			</value>
+			<valueInc>
+				<mapValue mapid="power_reading_precision-vm">
+					<getOid>POWER_READING_PRECISION</getOid>
+				</mapValue>
+			</valueInc>
+			<label>Generator Active Power L2</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_active_power_l3">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_ACTIVE_POWER_L3</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerW</type>
+			<sensorId>_OUTPUT_POWER_3</sensorId>
+			<value>
+				<mult>
+					<op>
+						<mult>
+							<op><getOid>GEN_ACTIVE_POWER_L3</getOid></op>
+							<op>
+								<mapValue mapid="power_reading_precision-vm">
+									<getOid>POWER_READING_PRECISION</getOid>
+								</mapValue>
+							</op>
+						</mult>
+					</op>
+					<!-- convert from kW to Watts -->
+					<op>1000</op>
+				</mult>
+			</value>
+			<valueInc>
+				<mapValue mapid="power_reading_precision-vm">
+					<getOid>POWER_READING_PRECISION</getOid>
+				</mapValue>
+			</valueInc>
+			<label>Generator Active Power L3</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_apparent_power_l1">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_APPARENT_POWER_L1</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerVA</type>
+			<sensorId>_OUTPUT_APPARENT_POWER_1</sensorId>
+			<value>
+				<mult>
+					<op>
+						<mult>
+							<op><getOid>GEN_APPARENT_POWER_L1</getOid></op>
+							<op>
+								<mapValue mapid="power_reading_precision-vm">
+									<getOid>POWER_READING_PRECISION</getOid>
+								</mapValue>
+							</op>
+						</mult>
+					</op>
+					<!-- convert from kVA to VA -->
+					<op>1000</op>
+				</mult>
+			</value>
+			<valueInc>
+				<mapValue mapid="power_reading_precision-vm">
+					<getOid>POWER_READING_PRECISION</getOid>
+				</mapValue>
+			</valueInc>
+			<label>Generator Apparent Power L1</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_apparent_power_l2">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_APPARENT_POWER_L2</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerVA</type>
+			<sensorId>_OUTPUT_APPARENT_POWER_2</sensorId>
+			<value>
+				<mult>
+					<op>
+						<mult>
+							<op><getOid>GEN_APPARENT_POWER_L2</getOid></op>
+							<op>
+								<mapValue mapid="power_reading_precision-vm">
+									<getOid>POWER_READING_PRECISION</getOid>
+								</mapValue>
+							</op>
+						</mult>
+					</op>
+					<!-- convert from kVA to VA -->
+					<op>1000</op>
+				</mult>
+			</value>
+			<valueInc>
+				<mapValue mapid="power_reading_precision-vm">
+					<getOid>POWER_READING_PRECISION</getOid>
+				</mapValue>
+			</valueInc>
+			<label>Generator Apparent Power L2</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_apparent_power_l3">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_APPARENT_POWER_L3</getOid>
+				</mapValue>
+			</rowTest>
+			<type>powerVA</type>
+			<sensorId>_OUTPUT_APPARENT_POWER_3</sensorId>
+			<value>
+				<mult>
+					<op>
+						<mult>
+							<op><getOid>GEN_APPARENT_POWER_L3</getOid></op>
+							<op>
+								<mapValue mapid="power_reading_precision-vm">
+									<getOid>POWER_READING_PRECISION</getOid>
+								</mapValue>
+							</op>
+						</mult>
+					</op>
+					<!-- convert from kVA to VA -->
+					<op>1000</op>
+				</mult>
+			</value>
+			<valueInc>
+				<mapValue mapid="power_reading_precision-vm">
+					<getOid>POWER_READING_PRECISION</getOid>
+				</mapValue>
+			</valueInc>
+			<label>Generator Apparent Power L3</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_power_factor_l1">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_POWER_FACTOR_L1</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerfactor</type>
+			<sensorId>_OUTPUT_POWER_FACTOR_1</sensorId>
+			<value>
+				<mult>
+					<op><getOid>GEN_POWER_FACTOR_L1</getOid></op>
+					<op>0.01</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Generator Power Factor L1</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_power_factor_l2">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_POWER_FACTOR_L2</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerfactor</type>
+			<sensorId>_OUTPUT_POWER_FACTOR_2</sensorId>
+			<value>
+				<mult>
+					<op><getOid>GEN_POWER_FACTOR_L2</getOid></op>
+					<op>0.01</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Generator Power Factor L2</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="gen_power_factor_l3">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GEN_POWER_FACTOR_L3</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/powerfactor</type>
+			<sensorId>_OUTPUT_POWER_FACTOR_3</sensorId>
+			<value>
+				<mult>
+					<op><getOid>GEN_POWER_FACTOR_L3</getOid></op>
+					<op>0.01</op>
+				</mult>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Generator Power Factor L3</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="engine_speed">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>ENGINE_SPEED</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num</type>
+			<units>rpm</units>
+			<sensorId>ENGINE_SPEED</sensorId>
+			<value>
+				<getOid>ENGINE_SPEED</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Engine Speed</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="generator_frequency">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>GENERATOR_FREQUENCY</getOid>
+				</mapValue>
+			</rowTest>
+			<type>frequency</type>
+			<sensorId>GENERATOR_FREQUENCY</sensorId>
+			<value>
+				<mult>
+					<op><getOid>GENERATOR_FREQUENCY</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Generator Frequency</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="battery_voltage">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>BATTERY_VOLTAGE</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>BATTERY_VOLTAGE</sensorId>
+			<value>
+				<mult>
+					<op><getOid>BATTERY_VOLTAGE</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Battery Voltage</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="oil_pressure">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>OIL_PRESSURE</getOid>
+				</mapValue>
+			</rowTest>
+			<type>pressure</type>
+			<sensorId>OIL_PRESSURE</sensorId>
+			<value>
+				<if><!-- if UNIT_SYSTEM is Metric (0) -->
+					<op><eq><op><getOid>UNIT_SYSTEM</getOid></op><op>0</op></eq></op>
+					<op>
+						<mult>
+							<op>
+								<mult>
+									<op><getOid>OIL_PRESSURE</getOid></op>
+									<op>
+										<mapValue mapid="power_reading_precision-vm">
+											<getOid>POWER_READING_PRECISION</getOid>
+										</mapValue>
+									</op>
+								</mult>
+							</op>
+							<!-- convert Bar to kPa -->
+							<op>100</op>
+						</mult>
+					</op>
+					<op>
+						<mult>
+							<op>
+								<mult>
+									<op><getOid>OIL_PRESSURE</getOid></op>
+									<op>
+										<mapValue mapid="power_reading_precision-vm">
+											<getOid>POWER_READING_PRECISION</getOid>
+										</mapValue>
+									</op>
+								</mult>
+							</op>
+							<!-- convert psi to kPa -->
+							<op>6.895</op>
+						</mult>
+					</op>
+				</if>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Oil Pressure</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="coolant_temperature">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>COOLANT_TEMPERATURE</getOid>
+				</mapValue>
+			</rowTest>
+			<type>temp</type>
+			<sensorId>_EXTTEMP_1</sensorId>
+			<value>
+				<if><!-- if UNIT_SYSTEM is Metric (0) -->
+					<op><eq><op><getOid>UNIT_SYSTEM</getOid></op><op>0</op></eq></op>
+					<op><!-- read temp in Celsius -->
+						<mult>
+							<op><getOid>COOLANT_TEMPERATURE</getOid></op>
+							<op>
+								<mapValue mapid="power_reading_precision-vm">
+									<getOid>POWER_READING_PRECISION</getOid>
+								</mapValue>
+							</op>
+						</mult>
+					</op>
+					<op><!-- else convert temp - Fahrenheit to Celcius -->
+						<mult>
+							<op>
+								<sub>
+									<op>
+										<mult>
+											<op><getOid>COOLANT_TEMPERATURE</getOid></op>
+											<op>
+												<mapValue mapid="power_reading_precision-vm">
+													<getOid>POWER_READING_PRECISION</getOid>
+												</mapValue>
+											</op>
+										</mult>
+									</op>
+									<op>32</op>
+								</sub>
+							</op>
+							<op>
+								<div>
+									<op>5</op>
+									<op>9</op>
+								</div>
+							</op>
+						</mult>
+					</op>
+				</if>
+			</value>
+			<valueInc>0.01</valueInc>
+			<label>Coolant Temperature</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="fuel_level">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>FUEL_LEVEL</getOid>
+				</mapValue>
+			</rowTest>
+			<type>pctofcapacity</type>
+			<sensorId>FUEL_LEVEL</sensorId>
+			<value>
+				<getOid>FUEL_LEVEL</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Fuel Level</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="d_plus_charging_alternator">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>D_PLUS_CHARGING_ALTERNATOR</getOid>
+				</mapValue>
+			</rowTest>
+			<type>voltage</type>
+			<sensorId>CHARGING_VOLTAGE</sensorId>
+			<value>
+				<mult>
+					<op><getOid>D_PLUS_CHARGING_ALTERNATOR</getOid></op>
+					<op>0.1</op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>D Plus (Charging Alternator)</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="active_energy">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>ACTIVE_ENERGY</getOid>
+				</mapValue>
+			</rowTest>
+			<type>num/kwatthr</type>
+			<sensorId>_OUTPUT_ENERGY_TOTAL</sensorId>
+			<value>
+				<getOid>ACTIVE_ENERGY</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Active Energy</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		<numSensor ruleid="maintenance_timer">
+			<rowTest>
+				<mapValue mapid="deleteNull-vm">
+					<getOid>MAINTENANCE_TIMER</getOid>
+				</mapValue>
+			</rowTest>
+			<type>timeinhrs</type>
+			<sensorId>MAINTENANCE_TIMER</sensorId>
+			<value>
+				<getOid>MAINTENANCE_TIMER</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Maintenance Timer</label>
+			<sensorSet>Gen Data</sensorSet>
+		</numSensor>
+		
+	</device>
+	<protocol>
+		<modbus>
+			<value_ref_id valid="RUNNING_GEN_SET_STABILISED">
+				<function>2</function>
+				<start_addr>39</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="AUTO_MODE">
+				<function>2</function>
+				<start_addr>40</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="ISLAND_OPERATION">
+				<function>2</function>
+				<start_addr>41</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="MAINTENANCE_REQUIRED">
+				<function>2</function>
+				<start_addr>43</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="LOW_BATTERY">
+				<function>2</function>
+				<start_addr>44</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="LOW_FUEL_LEVEL">
+				<function>2</function>
+				<start_addr>45</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="EXTERNAL_WARNING1">
+				<function>2</function>
+				<start_addr>46</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="EXTERNAL_WARNING2">
+				<function>2</function>
+				<start_addr>47</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="EXTERNAL_WARNING3">
+				<function>2</function>
+				<start_addr>48</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="GENERATOR_CCW_ROTATION">
+				<function>2</function>
+				<start_addr>49</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="BATTERY_FLAT">
+				<function>2</function>
+				<start_addr>50</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="EMERGENCY_STOP_ACTIVE">
+				<function>2</function>
+				<start_addr>52</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="OVERSPEED_ALARM">
+				<function>2</function>
+				<start_addr>53</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="UNDERSPEED_ALARM">
+				<function>2</function>
+				<start_addr>54</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="LOW_OIL_PRESSURE">
+				<function>2</function>
+				<start_addr>55</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="HIGH_COOLANT_TEMPERATURE">
+				<function>2</function>
+				<start_addr>56</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="EXTERNAL_SHUTDOWN1">
+				<function>2</function>
+				<start_addr>57</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="EXTERNAL_SHUTDOWN2">
+				<function>2</function>
+				<start_addr>58</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="EXTERNAL_SHUTDOWN3">
+				<function>2</function>
+				<start_addr>59</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="GCB_FAIL">
+				<function>2</function>
+				<start_addr>60</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="GENERATOR_VOLTAGE_OVER_MAXIMUM">
+				<function>2</function>
+				<start_addr>61</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="GENERATOR_VOLTAGE_UNDER_MINIMUM">
+				<function>2</function>
+				<start_addr>62</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="GENERATOR_FREQUENCY_OVER_MAXIMUM">
+				<function>2</function>
+				<start_addr>63</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="GENERATOR_FREQUENCY_UNDER_MINIMUM">
+				<function>2</function>
+				<start_addr>64</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="START_FAIL">
+				<function>2</function>
+				<start_addr>65</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="STOP_FAIL">
+				<function>2</function>
+				<start_addr>66</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="GENERATOR_CURRENT_OVER_SHORT_CIRCUIT">
+				<function>2</function>
+				<start_addr>67</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="GENERATOR_ACTIVE_POWER_OVER_SET_OVERLOAD">
+				<function>2</function>
+				<start_addr>68</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="EMERGENCY_STOP">
+				<function>2</function>
+				<start_addr>96</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="REMOTE_STARTSTOP">
+				<function>2</function>
+				<start_addr>97</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="ACCESS_LOCK">
+				<function>2</function>
+				<start_addr>98</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="GCB_FEEDBACK">
+				<function>2</function>
+				<start_addr>99</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="EXTERNAL_WARNING_1">
+				<function>2</function>
+				<start_addr>100</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="EXTERNAL_WARNING_2">
+				<function>2</function>
+				<start_addr>101</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="EXTERNAL_WARNING_3">
+				<function>2</function>
+				<start_addr>102</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="EXTERNAL_SHUTDOWN_1">
+				<function>2</function>
+				<start_addr>103</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="EXTERNAL_SHUTDOWN_2">
+				<function>2</function>
+				<start_addr>104</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="EXTERNAL_SHUTDOWN_3">
+				<function>2</function>
+				<start_addr>105</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="_LOW_FUEL_LEVEL">
+				<function>2</function>
+				<start_addr>106</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="_LOW_OIL_PRESSURE">
+				<function>2</function>
+				<start_addr>107</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+			<value_ref_id valid="_HIGH_COOLANT_TEMPERATURE">
+				<function>2</function>
+				<start_addr>108</start_addr>
+				<quantity>1</quantity>
+				<type>bit</type>
+			</value_ref_id>
+            <value_ref_id valid="GEN_VOLTAGE_L1N">
+                <function>4</function>
+                <start_addr>0</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_VOLTAGE_L2N">
+                <function>4</function>
+                <start_addr>1</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_VOLTAGE_L3N">
+                <function>4</function>
+                <start_addr>2</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_VOLTAGE_L1_L2">
+                <function>4</function>
+                <start_addr>3</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_VOLTAGE_L2_L3">
+                <function>4</function>
+                <start_addr>4</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_VOLTAGE_L3_L1">
+                <function>4</function>
+                <start_addr>5</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_CURRENT_L1">
+                <function>4</function>
+                <start_addr>6</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_CURRENT_L2">
+                <function>4</function>
+                <start_addr>7</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_CURRENT_L3">
+                <function>4</function>
+                <start_addr>8</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_ACTIVE_POWER_TOTAL">
+                <function>4</function>
+                <start_addr>9</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_APPARENT_POWER_TOTAL">
+                <function>4</function>
+                <start_addr>10</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_POWER_FACTOR_TOTAL">
+                <function>4</function>
+                <start_addr>11</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_ACTIVE_POWER_L1">
+                <function>4</function>
+                <start_addr>12</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_ACTIVE_POWER_L2">
+                <function>4</function>
+                <start_addr>13</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_ACTIVE_POWER_L3">
+                <function>4</function>
+                <start_addr>14</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_APPARENT_POWER_L1">
+                <function>4</function>
+                <start_addr>15</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_APPARENT_POWER_L2">
+                <function>4</function>
+                <start_addr>16</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_APPARENT_POWER_L3">
+                <function>4</function>
+                <start_addr>17</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_POWER_FACTOR_L1">
+                <function>4</function>
+                <start_addr>18</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_POWER_FACTOR_L2">
+                <function>4</function>
+                <start_addr>19</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GEN_POWER_FACTOR_L3">
+                <function>4</function>
+                <start_addr>20</start_addr>
+                <quantity>1</quantity>
+                <type>int_16</type>
+            </value_ref_id>
+            <value_ref_id valid="ENGINE_SPEED">
+                <function>4</function>
+                <start_addr>22</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="GENERATOR_FREQUENCY">
+                <function>4</function>
+                <start_addr>23</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+			<value_ref_id valid="UNIT_SYSTEM">
+                <function>4</function>
+                <start_addr>24</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="BATTERY_VOLTAGE">
+                <function>4</function>
+                <start_addr>25</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="OIL_PRESSURE">
+                <function>4</function>
+                <start_addr>28</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="COOLANT_TEMPERATURE">
+                <function>4</function>
+                <start_addr>29</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="FUEL_LEVEL">
+                <function>4</function>
+                <start_addr>30</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+			<value_ref_id valid="POWER_READING_PRECISION">
+                <function>4</function>
+                <start_addr>31</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="D_PLUS_CHARGING_ALTERNATOR">
+                <function>4</function>
+                <start_addr>32</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+            <value_ref_id valid="ACTIVE_ENERGY">
+                <function>4</function>
+                <start_addr>33</start_addr>
+                <quantity>2</quantity>
+                <type>uint_32</type>
+            </value_ref_id>
+            <value_ref_id valid="MAINTENANCE_TIMER">
+                <function>4</function>
+                <start_addr>35</start_addr>
+                <quantity>1</quantity>
+                <type>uint_16</type>
+            </value_ref_id>
+		</modbus>
+	</protocol>
+</APC_DDF>

@@ -1,0 +1,119 @@
+<APC_DDF
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+	ddfid="elsa_3l_ap"
+	ddfname="ELSA 3L-AP"
+	ddfversion="2"
+	canremove="yes">
+		 
+	<schemaVersion>1.6</schemaVersion>
+	<device deviceid="elsa_3l_ap">
+
+		<setProductData ruleid="vendordata" field="vendor">Elsa</setProductData>
+		<setProductData ruleid="modeldata" field="model">3L-AP</setProductData>
+		<setProductData ruleid="typedata" field="type">Generic Device</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+		
+
+		<enumMap ruleid="cable_break_em">
+			<label>Cable OK</label>
+			<label>Cable Broken</label>
+		</enumMap>
+
+		<enumMap ruleid="leak_em">
+			<label>No Leak</label>
+			<label>Leak</label>
+		</enumMap>
+
+		<valueMap ruleid="leak_vm">
+			<valueIn>0</valueIn><valueOut>0</valueOut>
+			<valueIn>1</valueIn><valueOut>1</valueOut>
+			<valueIn>*</valueIn><valueOut>1</valueOut>
+		</valueMap>
+
+		<numSensor ruleid="LENGTH_OF_SENSING_CABLE_SENSOR">
+            <type>num</type>
+			<units>meters</units>
+            <sensorId>length_of_sensing_cable</sensorId>
+            <value>
+                <getOid>lengthofsensingcable</getOid>
+            </value>
+            <label>Length of Sensing Cable (0 = No Cable)</label>
+            <sensorSet>General</sensorSet>
+        </numSensor>
+
+		<numSensor ruleid="LEAK_LOCATION_SENSOR">
+            <type>num</type>
+			<units>meters</units>
+            <sensorId>leak_location</sensorId>
+            <value>
+                <getOid>leaklocation</getOid>
+            </value>
+            <label>Leak Location (0 = No Leak)</label>
+            <sensorSet>General</sensorSet>
+        </numSensor>
+
+		<stateSensor ruleid="CABLE_BREAK_SENSOR">
+            <type>state</type>
+			<sensorId>cable_break</sensorId>
+            <value>
+				<mapValue mapid="leak_vm">
+                	<getOid>cablebreak</getOid>
+				</mapValue>
+            </value>
+            <label>Cable Break</label>
+			<enum>cable_break_em</enum>
+            <sensorSet>General</sensorSet>
+        </stateSensor>
+
+		<stateSensor ruleid="LEAK_SENSOR">
+            <type>state</type>
+			<sensorId>leak</sensorId>
+            <value>
+				<mapValue mapid="leak_vm">
+		            <getOid>leak</getOid>
+				</mapValue>
+            </value>
+            <label>Leak</label>
+			<enum>leak_em</enum>
+            <sensorSet>General</sensorSet>
+        </stateSensor>
+
+
+	</device>
+	<protocol>
+		<modbus>
+			<type_definition type_name="swapped_uint32">
+				<type>uint_32</type>
+				<byte_order>1,0,3,2</byte_order>
+			</type_definition>
+
+			<value_ref_id valid="lengthofsensingcable">
+				<function>3</function>
+				<start_addr>0</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="cablebreak">
+				<function>3</function>
+				<start_addr>2</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="leak">
+				<function>3</function>
+				<start_addr>4</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+			<value_ref_id valid="leaklocation">
+				<function>3</function>
+				<start_addr>8</start_addr>
+				<quantity>2</quantity>
+				<type>swapped_uint32</type>
+			</value_ref_id>
+
+		</modbus>
+	</protocol>
+</APC_DDF>

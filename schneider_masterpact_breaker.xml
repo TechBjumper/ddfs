@@ -1,0 +1,751 @@
+<?xml version="1.0"?>
+<!-- Test Modbus related information -->
+<APC_DDF
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+	ddfid="schneider_masterpact_breaker"
+	ddfname="Masterpact Breaker"
+	ddfversion="1"
+	canremove="yes">
+		 
+	<schemaVersion>1.6</schemaVersion>
+
+	<device deviceid="masterpact_breaker">
+		<oidMustExist ruleid="modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<setProductData ruleid="vendordata" field="vendor">Schneider Electric</setProductData>
+		<setProductData ruleid="modeldata" field="model">Masterpact</setProductData>
+		<!-- setting this circuit breaker as a power meter to be able to define sensors in webservices, for operations -->
+		<setProductData ruleid="typedata" field="type">Power Meter</setProductData>
+		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+		
+		<setProductData ruleid="inputphasecount" field="inputphasecount">3</setProductData>
+		<setProductData ruleid="outputphasecount" field="outputphasecount">3</setProductData>
+
+ 		<valueMap ruleid="zerobased2onebased-vm">
+			<valueIn>0</valueIn><valueOut>1</valueOut>
+			<valueIn>1</valueIn><valueOut>2</valueOut>
+			<valueIn>2</valueIn><valueOut>3</valueOut>
+			<valueIn>3</valueIn><valueOut>4</valueOut>
+			<valueIn>*</valueIn><valueOut>?</valueOut>
+		</valueMap>
+
+ 		<valueMap ruleid="3phase_l2l-vm">
+			<valueIn>0</valueIn><valueOut>1-2</valueOut>
+			<valueIn>1</valueIn><valueOut>2-3</valueOut>
+			<valueIn>2</valueIn><valueOut>3-1</valueOut>
+			<valueIn>*</valueIn><valueOut>?</valueOut>
+		</valueMap>
+		
+ 		<valueMap ruleid="3phase_l2n-vm">
+			<valueIn>0</valueIn><valueOut>1-N</valueOut>
+			<valueIn>1</valueIn><valueOut>2-N</valueOut>
+			<valueIn>2</valueIn><valueOut>3-N</valueOut>
+			<valueIn>*</valueIn><valueOut>?</valueOut>
+		</valueMap>
+		
+ 		<valueMap ruleid="is_not_system_type_31_or_40-vm">
+			<valueIn>31</valueIn><valueOut>[false]</valueOut>
+			<valueIn>40</valueIn><valueOut>[false]</valueOut>
+			<valueIn>*</valueIn><valueOut>[true]</valueOut>
+		</valueMap>
+		
+		<numSensor ruleid="rms_voltage_l2l_phase" index="registers1000-1002">
+			<type>voltage</type>
+			<!-- operations support: ^[a-zA-Z0-9]+_[a-zA-Z0-9]+_VOLTAGE_LL_[123]$ -->
+			<sensorId>VOLTAGE_LL_<formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber></sensorId>
+			<value>
+				<getRowOid>registers1000-1002</getRowOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>RMS Voltage Phase <mapValue mapid="3phase_l2l-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="rms_voltage_l2n_phase" index="registers1003-1005">
+			<type>voltage</type>
+			<!-- operations support: ^[a-zA-Z0-9]+_[a-zA-Z0-9]+_VOLTAGE_LN_[123]$ -->
+			<sensorId>VOLTAGE_LN_<formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber></sensorId>
+			<rowTest>
+				<mapValue mapid="is_not_system_type_31_or_40-vm">
+					<formatNumber><getOid>register3314</getOid></formatNumber>
+				</mapValue>
+			</rowTest>
+			<value>
+				<getRowOid>registers1003-1005</getRowOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>RMS Voltage Phase <mapValue mapid="3phase_l2n-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+ 		<valueMap ruleid="3phase_and_neutral-vm">
+			<valueIn>0</valueIn><valueOut>1</valueOut>
+			<valueIn>1</valueIn><valueOut>2</valueOut>
+			<valueIn>2</valueIn><valueOut>3</valueOut>
+			<valueIn>3</valueIn><valueOut>N</valueOut>
+			<valueIn>*</valueIn><valueOut>?</valueOut>
+		</valueMap>
+		
+		<numSensor ruleid="rms_current_phase" index="registers1016-1018">
+			<type>amperage</type>
+			<!-- operations support: ^[a-zA-Z0-9]+_[a-zA-Z0-9]+_CURRENT_[123]$ -->
+			<sensorId>CURRENT_<formatNumber><add><op>1</op><op><rowNumber/></op></add></formatNumber></sensorId>
+			<value>
+				<getRowOid>registers1016-1018</getRowOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>RMS Current Phase <mapValue mapid="3phase_and_neutral-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="rms_current_nuetral" index="register1019">
+			<type>amperage</type>
+			<!-- operations support: ^[a-zA-Z0-9]+_[a-zA-Z0-9]+_CURRENT_[123]$ -->
+			<sensorId>CURRENT_4</sensorId>
+			<rowTest>
+				<mapValue mapid="is_not_system_type_31_or_40-vm">
+					<formatNumber><getOid>register3314</getOid></formatNumber>
+				</mapValue>
+			</rowTest>
+			<value>
+				<getOid>register1019</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>RMS Current Nuetral</label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+ 		<valueMap ruleid="3phase_and_total-vm">
+			<valueIn>0</valueIn><valueOut>Phase 1</valueOut>
+			<valueIn>1</valueIn><valueOut>Phase 2</valueOut>
+			<valueIn>2</valueIn><valueOut>Phase 3</valueOut>
+			<valueIn>3</valueIn><valueOut>Total</valueOut>
+			<valueIn>*</valueIn><valueOut>?</valueOut>
+		</valueMap>
+		
+ 		<valueMap ruleid="power_scaling-vm">
+			<valueIn>50</valueIn><valueOut>1</valueOut>
+			<valueIn>52</valueIn><valueOut>10</valueOut>
+			<valueIn>53</valueIn><valueOut>10</valueOut>
+			<valueIn>60</valueIn><valueOut>1</valueOut>
+			<valueIn>62</valueIn><valueOut>10</valueOut>
+			<valueIn>63</valueIn><valueOut>10</valueOut>
+			<valueIn>72</valueIn><valueOut>10</valueOut>
+			<valueIn>73</valueIn><valueOut>10</valueOut>
+			<valueIn>*</valueIn><valueOut>1</valueOut>
+		</valueMap>
+		
+		<numSensor ruleid="active_power" index="registers1034-1036">
+			<type>num/powerKW</type>
+			<!-- operations support: ^[a-zA-Z0-9]+_[a-zA-Z0-9]+_POWER_KW_[123]$ -->
+			<sensorId>POWER_KW_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<rowTest>
+				<mapValue mapid="is_not_system_type_31_or_40-vm">
+					<formatNumber><getOid>register3314</getOid></formatNumber>
+				</mapValue>
+			</rowTest>
+			<value>
+				<getRowOid>registers1034-1036</getRowOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Active Power <mapValue mapid="3phase_and_total-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="total_active_power">
+			<type>num/powerKW</type>
+			<!-- operations support: _TOTAL_POWER_KW_1$ -->
+			<sensorId>TOTAL_POWER_KW_1</sensorId>
+			<value>
+				<getOid>register1037</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Active Power Total</label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="reactive_power" index="registers1038-1040">
+			<type>num/powerKVAR</type>
+			<!-- operations support: ^[a-zA-Z0-9]+_[a-zA-Z0-9]+_POWER_KVAR_[123]$ -->
+			<sensorId>POWER_KVAR_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<rowTest>
+				<mapValue mapid="is_not_system_type_31_or_40-vm">
+					<formatNumber><getOid>register3314</getOid></formatNumber>
+				</mapValue>
+			</rowTest>
+			<value>
+				<getRowOid>registers1038-1040</getRowOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Reactive Power <mapValue mapid="3phase_and_total-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="total_reactive_power">
+			<type>num/powerKVAR</type>
+			<!-- operations support: _TOTAL_POWER_KVAR_1$ -->
+			<sensorId>TOTAL_POWER_KVAR_1</sensorId>
+			<value>
+				<getOid>register1041</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Reactive Power Total</label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="apparent_power" index="registers1042-1044">
+			<type>num/powerKVA</type>
+			<!-- operations support: ^[a-zA-Z0-9]+_[a-zA-Z0-9]+_POWER_KVA_[123]$ -->
+			<sensorId>POWER_KVA_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<rowTest>
+				<mapValue mapid="is_not_system_type_31_or_40-vm">
+					<formatNumber><getOid>register3314</getOid></formatNumber>
+				</mapValue>
+			</rowTest>
+			<value>
+				<getRowOid>registers1042-1044</getRowOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Apparent Power <mapValue mapid="3phase_and_total-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+		<numSensor ruleid="total_apparent_power">
+			<type>num/powerKVA</type>
+			<!-- operations support: _TOTAL_POWER_KVA_1$ -->
+			<sensorId>TOTAL_POWER_KVA_1</sensorId>
+			<value>
+				<getOid>register1045</getOid>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Apparent Power Total</label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+
+ 		<valueMap ruleid="is_not_system_type_31-vm">
+			<valueIn>31</valueIn><valueOut>[false]</valueOut>
+			<valueIn>*</valueIn><valueOut>[true]</valueOut>
+		</valueMap>
+
+		<numSensor ruleid="power_factor" index="registers1046-1048">
+			<type>num/powerfactor</type>
+			<!-- operations support: POWER_FACTOR_[123]$ -->
+			<sensorId>POWER_FACTOR_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+			<rowTest>
+				<mapValue mapid="is_not_system_type_31-vm">
+					<formatNumber><getOid>register3314</getOid></formatNumber>
+				</mapValue>
+			</rowTest>
+			<value>
+				<mult>
+					<op>0.001</op>
+					<op><getRowOid>registers1046-1048</getRowOid></op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Power Factor <mapValue mapid="3phase_and_total-vm"><rowNumber/></mapValue></label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="total_power_factor">
+			<type>num/powerfactor</type>
+			<!-- operations support: _TOTAL_POWER_FACTOR_1$ -->
+			<sensorId>TOTAL_POWER_FACTOR_1</sensorId>
+			<rowTest>
+				<mapValue mapid="is_not_system_type_31-vm">
+					<formatNumber><getOid>register3314</getOid></formatNumber>
+				</mapValue>
+			</rowTest>
+			<value>
+				<mult>
+					<op>0.001</op>
+					<op><getOid>register1049</getOid></op>
+				</mult>
+			</value>
+			<valueInc>0.001</valueInc>
+			<label>Power Factor Total</label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="frequency">
+			<type>frequency</type>
+			<!-- operations support: _FREQUENCY_1$ -->
+			<sensorId>FREQUENCY_1</sensorId>
+			<value>
+				<mult>
+					<op>0.1</op>
+					<op><getOid>register1054</getOid></op>
+				</mult>
+			</value>
+			<valueInc>0.1</valueInc>
+			<label>Frequency</label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="total_active_energy">
+			<type>num/kwatthr</type>
+			<!-- operations support: _TOTAL_ENERGY_KWH_1$ -->
+			<sensorId>TOTAL_ENERGY_KWH_1</sensorId>
+			<value>
+				<add>
+					<op>
+						<add>
+							<op>
+								<mult>	
+									<op>1</op>
+									<op><getOid>register2000</getOid></op>
+								</mult>
+							</op>
+							<op>
+								<mult>	
+									<op>10000</op>
+									<op><getOid>register2001</getOid></op>
+								</mult>
+							</op>
+						</add>
+					</op>
+					<op>
+						<add>
+							<op>
+								<mult>	
+									<op>100000000</op>
+									<op><getOid>register2002</getOid></op>
+								</mult>
+							</op>
+							<op>
+								<mult>	
+									<op>1000000000000</op>
+									<op><getOid>register2003</getOid></op>
+								</mult>
+							</op>
+						</add>
+					</op>
+				</add>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Active Energy Total</label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="total_reactive_energy">
+			<type>num/kVARhr</type>
+			<!-- operations support: _TOTAL_ENERGY_KVARH_1$ -->
+			<sensorId>TOTAL_ENERGY_KVARH_1</sensorId>
+			<value>
+				<add>
+					<op>
+						<add>
+							<op>
+								<mult>	
+									<op>1</op>
+									<op><getOid>register2004</getOid></op>
+								</mult>
+							</op>
+							<op>
+								<mult>	
+									<op>10000</op>
+									<op><getOid>register2005</getOid></op>
+								</mult>
+							</op>
+						</add>
+					</op>
+					<op>
+						<add>
+							<op>
+								<mult>	
+									<op>100000000</op>
+									<op><getOid>register2006</getOid></op>
+								</mult>
+							</op>
+							<op>
+								<mult>	
+									<op>1000000000000</op>
+									<op><getOid>register2007</getOid></op>
+								</mult>
+							</op>
+						</add>
+					</op>
+				</add>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Reactive Energy Total</label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+		<numSensor ruleid="total_apparent_energy">
+			<type>num/kVAhr</type>
+			<!-- operations support: ^[a-zA-Z0-9]+_[a-zA-Z0-9]+_TOTAL_ENERGY_KVAH_1$ -->
+			<sensorId>TOTAL_ENERGY_KVAH_1</sensorId>
+			<value>
+			<value>
+				<add>
+					<op>
+						<add>
+							<op>
+								<mult>	
+									<op>1</op>
+									<op><getOid>register2024</getOid></op>
+								</mult>
+							</op>
+							<op>
+								<mult>	
+									<op>10000</op>
+									<op><getOid>register2025</getOid></op>
+								</mult>
+							</op>
+						</add>
+					</op>
+					<op>
+						<add>
+							<op>
+								<mult>	
+									<op>100000000</op>
+									<op><getOid>register2026</getOid></op>
+								</mult>
+							</op>
+							<op>
+								<mult>	
+									<op>1000000000000</op>
+									<op><getOid>register2027</getOid></op>
+								</mult>
+							</op>
+						</add>
+					</op>
+				</add>
+			</value>
+			</value>
+			<valueInc>1</valueInc>
+			<label>Apparent Energy Total</label>
+			<sensorSet>Measurements</sensorSet>
+		</numSensor>
+		
+	</device>
+
+	<protocol>
+		<modbus>
+			<table_ref_id indexid="registers1000-1002"> <!-- RMS_VOLTAGE_L2L_PH_n -->
+				<entry num="0">register1000</entry>
+				<entry num="1">register1001</entry>
+				<entry num="2">register1002</entry>
+			</table_ref_id>
+			<value_ref_id valid="register1000">
+				<function>3</function>
+				<start_addr>999</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1001">
+				<function>3</function>
+				<start_addr>1000</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1002">
+				<function>3</function>
+				<start_addr>1001</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="registers1003-1005"> <!-- RMS_VOLTAGE_L2N_PH_n -->
+				<entry num="0">register1003</entry>
+				<entry num="1">register1004</entry>
+				<entry num="2">register1005</entry>
+			</table_ref_id>
+			<value_ref_id valid="register1003">
+				<function>3</function>
+				<start_addr>1002</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1004">
+				<function>3</function>
+				<start_addr>1003</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1005">
+				<function>3</function>
+				<start_addr>1004</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="registers1016-1018"> <!-- RMS_CURRENT_PH_n -->
+				<entry num="0">register1016</entry>
+				<entry num="1">register1017</entry>
+				<entry num="2">register1018</entry>
+			</table_ref_id>
+			<value_ref_id valid="register1016">
+				<function>3</function>
+				<start_addr>1015</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1017">
+				<function>3</function>
+				<start_addr>1016</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1018">
+				<function>3</function>
+				<start_addr>1017</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			
+			<value_ref_id valid="register1019">
+				<function>3</function>
+				<start_addr>1018</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="registers1034-1036"> <!-- ACTIVE_POWER_PH_n -->
+				<entry num="0">register1034</entry>
+				<entry num="1">register1035</entry>
+				<entry num="2">register1036</entry>
+			</table_ref_id>
+			<value_ref_id valid="register1034">
+				<function>3</function>
+				<start_addr>1033</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1035">
+				<function>3</function>
+				<start_addr>1034</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1036">
+				<function>3</function>
+				<start_addr>1035</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1037">
+				<function>3</function>
+				<start_addr>1036</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="registers1038-1040"> <!-- REACTIVE_POWER_PH_n -->
+				<entry num="0">register1038</entry>
+				<entry num="1">register1039</entry>
+				<entry num="2">register1040</entry>
+			</table_ref_id>
+			<value_ref_id valid="register1038">
+				<function>3</function>
+				<start_addr>1037</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1039">
+				<function>3</function>
+				<start_addr>1038</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1040">
+				<function>3</function>
+				<start_addr>1039</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1041">
+				<function>3</function>
+				<start_addr>1040</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="registers1042-1044"> <!-- APPARENT_POWER_PH_n -->
+				<entry num="0">register1042</entry>
+				<entry num="1">register1043</entry>
+				<entry num="2">register1044</entry>
+			</table_ref_id>
+			<value_ref_id valid="register1042">
+				<function>3</function>
+				<start_addr>1041</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1043">
+				<function>3</function>
+				<start_addr>1042</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1044">
+				<function>3</function>
+				<start_addr>1043</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1045">
+				<function>3</function>
+				<start_addr>1044</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<table_ref_id indexid="registers1046-1048"> <!-- POWER_FACTOR_PH_n -->
+				<entry num="0">register1046</entry>
+				<entry num="1">register1047</entry>
+				<entry num="2">register1048</entry>
+			</table_ref_id>
+			<value_ref_id valid="register1046">
+				<function>3</function>
+				<start_addr>1045</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1047">
+				<function>3</function>
+				<start_addr>1046</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1048">
+				<function>3</function>
+				<start_addr>1047</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register1049">
+				<function>3</function>
+				<start_addr>1048</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+
+			<value_ref_id valid="register1054"> <!-- FREQUENCY -->
+				<function>3</function>
+				<start_addr>1053</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			
+			<value_ref_id valid="register2000"> <!-- TOTAL_ACTIVE_ENERGY -->
+				<function>3</function>
+				<start_addr>1999</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register2001"> <!-- TOTAL_ACTIVE_ENERGY -->
+				<function>3</function>
+				<start_addr>2000</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register2002"> <!-- TOTAL_ACTIVE_ENERGY -->
+				<function>3</function>
+				<start_addr>2001</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register2003"> <!-- TOTAL_ACTIVE_ENERGY -->
+				<function>3</function>
+				<start_addr>2002</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			
+			<value_ref_id valid="register2004"> <!-- TOTAL_REACTIVE_ENERGY -->
+				<function>3</function>
+				<start_addr>2003</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register2005"> <!-- TOTAL_REACTIVE_ENERGY -->
+				<function>3</function>
+				<start_addr>2004</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register2006"> <!-- TOTAL_REACTIVE_ENERGY -->
+				<function>3</function>
+				<start_addr>2005</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register2007"> <!-- TOTAL_REACTIVE_ENERGY -->
+				<function>3</function>
+				<start_addr>2006</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register2024"> <!-- TOTAL_APPARENT_ENERGY -->
+				<function>3</function>
+				<start_addr>2023</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register2025"> <!-- TOTAL_APPARENT_ENERGY -->
+				<function>3</function>
+				<start_addr>2024</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register2026"> <!-- TOTAL_APPARENT_ENERGY -->
+				<function>3</function>
+				<start_addr>2025</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			<value_ref_id valid="register2027"> <!-- TOTAL_APPARENT_ENERGY -->
+				<function>3</function>
+				<start_addr>2026</start_addr>
+				<quantity>1</quantity>
+				<type>int_16</type>
+			</value_ref_id>
+			
+			<value_ref_id valid="register3314"> <!-- configuration type -->
+				<function>3</function>
+				<start_addr>3313</start_addr>
+				<quantity>1</quantity>
+				<type>uint_16</type>
+			</value_ref_id>
+
+			<packet>
+				<function>3</function>
+				<start_addr>999</start_addr>
+				<quantity>6</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>1015</start_addr>
+				<quantity>4</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>1033</start_addr>
+				<quantity>16</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>1053</start_addr>
+				<quantity>1</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>1999</start_addr>
+				<quantity>8</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>2023</start_addr>
+				<quantity>4</quantity>
+			</packet>
+			<packet>
+				<function>3</function>
+				<start_addr>3313</start_addr>
+				<quantity>1</quantity>
+			</packet>
+		</modbus>
+	</protocol>
+</APC_DDF>

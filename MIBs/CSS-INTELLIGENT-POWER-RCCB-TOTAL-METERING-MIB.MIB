@@ -1,0 +1,621 @@
+CSS-INTELLIGENT-POWER-RCCB-TOTAL-METERING-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+   enterprises,
+   MODULE-IDENTITY,
+   OBJECT-TYPE,
+   NOTIFICATION-TYPE,
+   Integer32,
+   IpAddress,
+   Counter32,
+   Gauge32,
+   Unsigned32,
+   TimeTicks,
+   Opaque,
+   Counter64
+      FROM SNMPv2-SMI
+   sysName,
+   sysLocation
+      FROM SNMPv2-MIB;
+
+cssIntelligentPowerRccbTotalMetering MODULE-IDENTITY   
+    LAST-UPDATED    "201311200343Z"
+    ORGANIZATION    "Computer Support Systems Pty. Ltd."
+    CONTACT-INFO    "jdevincentis@csspl.com.au"
+    DESCRIPTION     "This module is used by the CSS Intelligent Power unit equipped with 
+                     total metering, RCCB metering, 2 digital inputs, and a humidity/temperature
+                     sensor."
+    
+    REVISION        "201311200343Z"
+    DESCRIPTION     "Created the initial version."
+    ::= { enterprises 14748 1 27 }
+
+computerSupportSystems  OBJECT IDENTIFIER ::= { enterprises 14748 }
+products                OBJECT IDENTIFIER ::= { computerSupportSystems 1 }
+gets                    OBJECT IDENTIFIER ::= { cssIntelligentPowerRccbTotalMetering 1 }
+sets                    OBJECT IDENTIFIER ::= { cssIntelligentPowerRccbTotalMetering 2 }
+traps                   OBJECT IDENTIFIER ::= { cssIntelligentPowerRccbTotalMetering 3 }
+trapsPrefix             OBJECT IDENTIFIER ::= { traps 0 }
+trapsVars               OBJECT IDENTIFIER ::= { traps 1 }
+
+---------------------------------------------------------------------------
+-- read-only
+---------------------------------------------------------------------------
+ipv4Addr OBJECT-TYPE
+   SYNTAX      IpAddress
+   UNITS       "4 byte octet string"
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The currently assigned IPv4 address where the output is
+                in octet form that is four octets in length.
+                
+                For example if the address was 192.168.0.1 the octets would be
+                in the following order:
+                1. 192
+                2. 168
+                3. 0 
+                4. 1"
+   ::= { gets 1 }
+
+voltage OBJECT-TYPE
+   SYNTAX      Integer32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The current AC RMS voltage.
+               
+                Divide by 100 to retrieve the value. 
+                For example 240.48 volts will be transmitted as
+                24048."
+   ::= { gets 2 }
+   
+frequency OBJECT-TYPE
+   SYNTAX      Integer32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The current frequency in Hertz.
+                
+                Divide by 100 to retrieve the value.
+                For example 50.87 Hertz will be transmitted as 5087."
+   ::= { gets 3 }
+   
+activePower OBJECT-TYPE
+   SYNTAX      Integer32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The Active Power in Watts.
+               
+                Divide by 100 to retrieve the value.
+                For example 2399.65 Watts will be transmitted as 239965."
+   ::= { gets 5 }
+
+energy OBJECT-TYPE
+   SYNTAX      Integer32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The total amount of energy consumed in Watt-Hours."
+   ::= { gets 6 }
+   
+load OBJECT-TYPE
+   SYNTAX      Integer32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "The total present RMS load in Amperes.
+   
+                Divide by 100 to retrieve the value.
+                For example 10.47 amps will be tranmitted as 1047."
+   ::= { gets 7 }
+
+rccb OBJECT-TYPE
+   SYNTAX      Integer32
+   MAX-ACCESS  read-only
+   STATUS      current
+   DESCRIPTION "This is a measurement of the present residual current 
+                in milli-amperes.
+    
+                Residual current is a measurement of current 
+                that is leaking from Active to Earth."
+   ::= { gets 8 } 
+
+digitalInputOneName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "The name assigned to digital input 1."
+    ::= { gets 9 }
+
+digitalInputOneLocation OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "The location assigned to digital input 1."
+    ::= { gets 10 }
+
+digitalInputOneState OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "The current state of digital input 1.
+                 0 - Normal
+                 1 - Alarming"
+    ::= { gets 11 }
+    
+digitalInputOneContactClosure OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "The contact closure setting for digital input 1.
+                 0 - Normally open
+                 1 - Normally closed"
+    ::= { gets 12 }
+
+digitalInputTwoName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "The name assigned to digital input 2."
+    ::= { gets 13 }
+
+digitalInputTwoLocation OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "The location assigned to digital input 2."
+    ::= { gets 14 }
+
+digitalInputTwoState OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "The current state of digital input 2.
+                 0 - Normal
+                 1 - Alarming"
+    ::= { gets 15 }
+    
+digitalInputTwoContactClosure OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "The contact closure setting for digital input 2.
+                 0 - Normally open
+                 1 - Normally closed"
+    ::= { gets 16 }
+
+temperatureCelsius OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "The present detected temperature in degrees Celsius.
+    
+                 You will have to divide the value by 100 to retrieve the
+                 real floating point value. The floating point value is accurate 
+                 to two decimal places.
+                
+                 For example 23.45 degress Celsius would transmit as 2345.
+                 To retrieve the actual value, divide 2345 by 100 to retrieve
+                 23.45"
+    ::= { gets 17 }
+
+temperatureFahrenheit OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "The present detected temperature in degrees Fahrenheit.
+                
+                 You will have to divide the value by 100 to retrieve the
+                 real floating point value. The floating point value is accurate 
+                 to two decimal places.
+                
+                 For example 23.45 degress Fahrenheit would transmit as 2345.
+                 To retrieve the actual value, divide 2345 by 100 to retrieve
+                 23.45"
+    ::= { gets 18 }
+
+humidity OBJECT-TYPE
+    SYNTAX      Integer32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION "The present detected relative humidity as a percentage.
+                 
+                 You will have to divide the value by 100 to retrieve the
+                 real floating point value. The floating point value is accurate
+                 to two decimal places.
+                
+                 For example 45.67% RH would transmit as 4567. To retrieve the actual
+                 value, deivide 4567 by 100 to retrieve 45.67."
+    ::= { gets 19 }
+                 
+---------------------------------------------------------------------------
+-- accessible-for-notify
+---------------------------------------------------------------------------
+notificationMessage OBJECT-TYPE
+   SYNTAX      OCTET STRING
+   MAX-ACCESS  accessible-for-notify
+   STATUS      current
+   DESCRIPTION "This is an arbitrary textual message transmitted along with
+                the notification that describes what happened.
+                
+                For example: Load high alarm on [device name] at [ip address]"
+   ::= { trapsVars 1 }
+   
+---------------------------------------------------------------------------
+-- Notifications
+---------------------------------------------------------------------------
+testNotification NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr, 
+                  sysName, 
+                  sysLocation, 
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent for testing purposes."
+   ::= { trapsPrefix 1 }
+
+alarmHighLoad NOTIFICATION-TYPE
+   OBJECTS     {
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation,
+                  load,          
+                  notificationMessage
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the load (amps)
+                reaches a high alarm state."
+   ::= { trapsPrefix 2 }
+   
+clearedAlarmHighLoad NOTIFICATION-TYPE
+   OBJECTS     {
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation,
+                  load,            
+                  notificationMessage
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the load (amps)
+                drops lower than the alarm high threshold."
+   ::= { trapsPrefix 3 }
+
+alarmLowLoad NOTIFICATION-TYPE
+   OBJECTS     {
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation,
+                  load,         
+                  notificationMessage
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the load (amps)
+                drops to or below the low alarm threshold."
+   ::= { trapsPrefix 4 }
+
+clearedAlarmLowLoad NOTIFICATION-TYPE
+   OBJECTS     {
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation,
+                  load,            
+                  notificationMessage
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the load (amps)
+                increases past the alarm low threshold."
+   ::= { trapsPrefix 5 }
+
+warningHighRccb NOTIFICATION-TYPE   
+   OBJECTS     {
+                  ipv4Addr,
+                  sysName,
+                  sysLocation,
+                  rccb,
+                  notificationMessage
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the RCCB value
+                increases past the configured warning high threshold."
+   ::= { trapsPrefix 6 }
+
+clearedWarningHighRccb NOTIFICATION-TYPE
+   OBJECTS     {
+                  ipv4Addr,
+                  sysName,
+                  sysLocation,
+                  rccb,
+                  notificationMessage
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the RCCB value
+                drops below the configured warning high threshold."
+   ::= { trapsPrefix 7 }
+   
+alarmHighRccb NOTIFICATION-TYPE
+   OBJECTS     {
+                  ipv4Addr,
+                  sysName,
+                  sysLocation,
+                  rccb,
+                  notificationMessage
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the RCCB value
+                increases past the configured alarm high threshold."
+   ::= { trapsPrefix 8 }
+
+clearedAlarmHighRccb NOTIFICATION-TYPE
+   OBJECTS     {
+                  ipv4Addr,
+                  sysName,
+                  sysLocation,
+                  rccb,
+                  notificationMessage
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the RCCB value
+                drops below the configured alarm high threshold."
+   ::= { trapsPrefix 9 }
+
+alarmDigitalInputOne NOTIFICATION-TYPE
+    OBJECTS		{
+					ipv4Addr,
+					sysName, 
+               sysLocation, 
+					notificationMessage
+				}
+	STATUS		current
+	DESCRIPTION	"This notification is sent when digital input 1
+	             enters an alarm state."
+	::= { trapsPrefix 10 }
+
+clearedAlarmDigitalInputOne NOTIFICATION-TYPE
+	OBJECTS		{
+					ipv4Addr,
+					sysName, 
+               sysLocation, 
+					notificationMessage
+				}
+	STATUS		current
+	DESCRIPTION	"This notification is sent when digital input 1
+	             enters a cleared state."
+	::= { trapsPrefix 11 }
+
+alarmDigitalInputTwo NOTIFICATION-TYPE
+    OBJECTS		{
+					ipv4Addr,
+					sysName, 
+               sysLocation, 
+					notificationMessage
+				}
+	STATUS		current
+	DESCRIPTION	"This notification is sent when digital input 2
+	             enters an alarm state."
+	::= { trapsPrefix 12 }
+
+clearedAlarmDigitalInputTwo NOTIFICATION-TYPE
+	OBJECTS		{
+					ipv4Addr,
+					sysName, 
+               sysLocation, 
+					notificationMessage
+				}
+	STATUS		current
+	DESCRIPTION	"This notification is sent when digital input 2
+	             enters a cleared state."
+	::= { trapsPrefix 13 }     
+
+alarmHighTemperature NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation, 
+                  temperatureCelsius, 
+                  temperatureFahrenheit,
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the temperature reaches a
+                high alarm state."
+   ::= { trapsPrefix 14 }
+
+clearedAlarmHighTemperature NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation, 
+                  temperatureCelsius, 
+                  temperatureFahrenheit,
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the temperature drops
+                lower than the high alarm threshold."
+   ::= { trapsPrefix 15 }
+   
+warningHighTemperature NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation, 
+                  temperatureCelsius, 
+                  temperatureFahrenheit,
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the temperature reaches a high
+                warning state."
+   ::= { trapsPrefix 16 }
+   
+clearedWarningHighTemperature NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation, 
+                  temperatureCelsius, 
+                  temperatureFahrenheit,
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the temperature drops
+                lower than the high warning threshold."
+   ::= { trapsPrefix 17 }
+   
+warningLowTemperature NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation, 
+                  temperatureCelsius, 
+                  temperatureFahrenheit,
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the temperature reaches a low
+                warning state."
+   ::= { trapsPrefix 18 }
+
+clearedWarningLowTemperature NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation,  
+                  temperatureCelsius, 
+                  temperatureFahrenheit,
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the temperature increases
+                past the low warning threshold."
+   ::= { trapsPrefix 19 }
+
+alarmLowTemperature NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation, 
+                  temperatureCelsius, 
+                  temperatureFahrenheit,
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the temperature reaches a low
+                warning state."
+   ::= { trapsPrefix 20 }
+
+clearedAlarmLowTemperature NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation, 
+                  temperatureCelsius, 
+                  temperatureFahrenheit,
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the temperature increases
+                past the low alarm threshold."
+   ::= { trapsPrefix 21 }
+
+alarmHighHumidity NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation, 
+                  humidity,
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the humidity reaches a high
+                alarm state."
+   ::= { trapsPrefix 22 }
+   
+clearedAlarmHighHumidity NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation, 
+                  humidity,
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the humidity drops
+                lower than the high alarm threshold."
+   ::= { trapsPrefix 23 }
+   
+warningHighHumidity NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation, 
+                  humidity,
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the humidity reaches a high
+                warning state."
+   ::= { trapsPrefix 24 }
+
+clearedWarningHighHumidity NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation, 
+                  humidity,
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the humidity drops
+                lower than the high warning threshold."
+   ::= { trapsPrefix 25 }
+
+warningLowHumidity NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation, 
+                  humidity, 
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the humidity reaches a low
+                warning state."
+   ::= { trapsPrefix 26 }
+
+clearedWarningLowHumidity NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation, 
+                  humidity, 
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the humidity increases
+                past the low warning threshold."
+   ::= { trapsPrefix 27 }
+
+alarmLowHumidity NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation, 
+                  humidity, 
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the humidity reaches a low
+                alarm state."
+   ::= { trapsPrefix 28 }
+
+clearedAlarmLowHumidity NOTIFICATION-TYPE
+   OBJECTS     { 
+                  ipv4Addr,
+                  sysName, 
+                  sysLocation, 
+                  humidity, 
+                  notificationMessage 
+               }
+   STATUS      current
+   DESCRIPTION "This notification is sent when the humidity increases
+                past the low alarm threshold."
+   ::= { trapsPrefix 29 }   
+END

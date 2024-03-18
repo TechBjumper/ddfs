@@ -1,0 +1,1505 @@
+--
+--  Copyright(C) 2006-2008 Rittal GmbH & Co. KG
+--
+
+    RittalPDU-MIB DEFINITIONS ::= BEGIN
+
+    IMPORTS
+        MODULE-IDENTITY, NOTIFICATION-TYPE,
+        OBJECT-TYPE, enterprises                            FROM SNMPv2-SMI
+        DisplayString                                       FROM SNMPv2-TC;
+
+
+    pdu MODULE-IDENTITY
+        LAST-UPDATED "200805131000Z" -- 13 May 2008
+        ORGANIZATION "Rittal GmbH & Co. KG"
+        CONTACT-INFO
+            "Rittal GmbH & Co. KG
+             Auf dem Stutzelberg
+             D-35745 Herborn
+             Germany"
+        DESCRIPTION
+            "This is the MIB module for the Rittal Power Distribution
+             Unit (PDU) product family.  This includes the Smart PDU
+             and Switched PDU products."
+        REVISION "200805131000Z" -- 13 May 2008
+        DESCRIPTION
+            "Added several new objects: pduSystemTotalPower,
+             pduSystemArea, pduSystemWattsPerAreaUnit, pduSystemAreaUnit,
+             pduSystemPowerFactor, pduTowerProductSN, pduTowerModelNumber,
+             pduTowerCapabilities, pduInfeedCapacity, pduInfeedVoltage,
+             and pduInfeedPower.  Added six new states to the
+             pduOutletControlState object.  Updated ORGANIZATION and
+             CONTACT-INFO."
+        REVISION "200802121740Z" -- 12 Feb 2008
+        DESCRIPTION
+            "Changed 'PDS' to 'PDU' throughout this MIB, including the MIB
+		 name, module-identity, object names, and trap names."
+        REVISION "200709061655Z" -- 6 Sep 2007
+        DESCRIPTION
+            "Added support for products with fan rotation sensing and
+             internal temperature sensing.  Added 'fanFail' and 'overTemp'
+             states to the pduTowerStatus object.  Modified the description
+             of the pduTowerStatusEvent trap to reflect these additions."
+        REVISION "200607211555Z" -- 21 Jul 2006
+        DESCRIPTION
+            "Initial release."
+        ::= { rimatrix5usa 1 }
+
+    rittal OBJECT IDENTIFIER ::= { enterprises 2606 }
+    rimatrix5usa OBJECT IDENTIFIER ::= { rittal 100 }
+
+
+--
+--  System Group
+--
+
+    pduSystemGroup OBJECT IDENTIFIER ::= { pdu 1 }
+
+    pduSystemVersion OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..32))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The firmware version of the system."
+        ::= { pduSystemGroup 1 }
+
+    pduSystemNICSerialNumber OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..8))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The serial number of the network interface card in the
+             system."
+        ::= { pduSystemGroup 2 }
+
+    pduSystemLocation OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..32))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The location of the system."
+        ::= { pduSystemGroup 3 }
+
+    pduSystemTowerCount OBJECT-TYPE
+        SYNTAX      INTEGER(0..4)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of towers in the system."
+        ::= { pduSystemGroup 4 }
+
+    pduSystemEnvMonCount OBJECT-TYPE
+        SYNTAX      INTEGER(0..4)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of environmental monitors in the system."
+        ::= { pduSystemGroup 5 }
+
+    pduSystemTotalPower OBJECT-TYPE
+        SYNTAX      INTEGER(-1..150000)
+        UNITS       "Watts"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The total power consumption of all of the input feeds in the
+             system.  A non-negative value indicates the total power
+             consumption in Watts.  A negative value indicates that the
+             total power consumption was not available."
+        ::= { pduSystemGroup 6 }
+
+    pduSystemArea OBJECT-TYPE
+        SYNTAX      INTEGER(0..1000)
+        UNITS       "tenth area units"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The area that the footprint of the system occupies.  A
+             non-zero non-negative value indicates the area in tenths of
+             area units as selected by the pduSystemAreaUnit object.  A
+             zero or negative value indicates that the area was not
+             available."
+        ::= { pduSystemGroup 7 }
+
+    pduSystemWattsPerAreaUnit OBJECT-TYPE
+        SYNTAX      INTEGER(-1..1500000)
+        UNITS       "Watts per area unit"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The system Watts per area unit.  A non-negative value
+             indicates the power consumption per area unit as selected by
+             the pduSystemAreaUnit object.  A negative value indicates
+             that the power consumption per area unit was not available."
+        ::= { pduSystemGroup 8 }
+
+    pduSystemAreaUnit OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        squareMeter(0),
+                        squareFoot(1)
+                    }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The unit of area for the pduSystemWattsPerAreaUnit and
+             pduSystemArea  objects."
+        ::= { pduSystemGroup 9 }
+
+    pduSystemPowerFactor OBJECT-TYPE
+        SYNTAX      INTEGER(50..100)
+        UNITS       "hundredths"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The power factor used in power calculations performed by the
+             system."
+        ::= { pduSystemGroup 10 }
+
+--
+--  System Tables
+--
+
+    pduSystemTables OBJECT IDENTIFIER ::= { pdu 2 }
+
+    --
+    --  Tower Table
+    --
+
+    pduTowerTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF PduTowerEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table of towers."
+        ::= { pduSystemTables 1 }
+
+    pduTowerEntry OBJECT-TYPE
+        SYNTAX      PduTowerEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Row definition for the tower table."
+        INDEX       { pduTowerIndex }
+        ::= { pduTowerTable 1 }
+
+    PduTowerEntry ::= SEQUENCE {
+        pduTowerIndex        INTEGER,
+        pduTowerID           DisplayString,
+        pduTowerName         DisplayString,
+        pduTowerStatus       INTEGER,
+        pduTowerInfeedCount  INTEGER,
+        pduTowerProductSN    DisplayString,
+        pduTowerModelNumber  DisplayString,
+        pduTowerCapabilities BITS
+    }
+
+    pduTowerIndex OBJECT-TYPE
+        SYNTAX      INTEGER(0..4)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Index for the tower table."
+        ::= { pduTowerEntry 1 }
+
+    pduTowerID OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(1))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The ID of the tower."
+        ::= { pduTowerEntry 2 }
+
+    pduTowerName OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..24))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The name of the tower."
+        ::= { pduTowerEntry 3 }
+
+    pduTowerStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        normal(0),
+                        noComm(1),
+                        fanFail(2),
+                        overTemp(3)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The operational status of the tower."
+        ::= { pduTowerEntry 4 }
+
+    pduTowerInfeedCount OBJECT-TYPE
+        SYNTAX      INTEGER(0..4)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of input feeds on the tower."
+        ::= { pduTowerEntry 5 }
+
+    pduTowerProductSN OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..16))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The product serial number of the tower."
+        ::= { pduTowerEntry 6 }
+
+    pduTowerModelNumber OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..24))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The model number of the tower."
+        ::= { pduTowerEntry 7 }
+
+    pduTowerCapabilities OBJECT-TYPE
+        SYNTAX      BITS {
+                        failSafe(0),
+                        fuseSense(1),
+                        directCurrent(2),
+                        threePhase(3),
+                        fanSense(4),
+                        tempSense(5)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The capabilities of the tower."
+        ::= { pduTowerEntry 8 }
+
+    --
+    --  Input Feed Table
+    --
+
+    pduInfeedTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF PduInfeedEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table of input feeds."
+        ::= { pduSystemTables 2 }
+
+    pduInfeedEntry OBJECT-TYPE
+        SYNTAX      PduInfeedEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Row definition for the input feed table."
+        INDEX       { pduTowerIndex, pduInfeedIndex }
+        ::= { pduInfeedTable 1 }
+
+    PduInfeedEntry ::= SEQUENCE {
+        pduInfeedIndex          INTEGER,
+        pduInfeedID             DisplayString,
+        pduInfeedName           DisplayString,
+        pduInfeedCapabilities   BITS,
+        pduInfeedStatus         INTEGER,
+        pduInfeedLoadStatus     INTEGER,
+        pduInfeedLoadValue      INTEGER,
+        pduInfeedLoadHighThresh INTEGER,
+        pduInfeedOutletCount    INTEGER,
+        pduInfeedCapacity       INTEGER,
+        pduInfeedVoltage        INTEGER,
+        pduInfeedPower          INTEGER
+    }
+
+    pduInfeedIndex OBJECT-TYPE
+        SYNTAX      INTEGER(0..4)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Index for the input feed table."
+        ::= { pduInfeedEntry 1 }
+
+    pduInfeedID OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(2))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The ID of the input feed."
+        ::= { pduInfeedEntry 2 }
+
+    pduInfeedName OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..24))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The name of the input feed."
+        ::= { pduInfeedEntry 3 }
+
+    pduInfeedCapabilities OBJECT-TYPE
+        SYNTAX      BITS {
+                        onSense(0),
+                        loadSense(1),
+                        powerControl(2),
+                        failSafe(3),
+                        defaultOff(4)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The capabilities of the input feed."
+        ::= { pduInfeedEntry 4 }
+
+    pduInfeedStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        off(0),
+                        on(1),
+                        offWait(2),
+                        onWait(3),
+                        offError(4),
+                        onError(5),
+                        noComm(6)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The status of the input feed.  If the pduInfeedCapabilities
+             'onSense' bit is TRUE, then all of the states are supported
+             and indicate the sensed state of the input feed.  If the
+             pduInfeedCapabilities 'onSense' bit is FALSE, then only the
+             'on' and 'noComm' states are supported, and 'on' indicates
+             a derived state, not a sensed state."
+        ::= { pduInfeedEntry 5 }
+
+    pduInfeedLoadStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        normal(0),
+                        notOn(1),
+                        reading(2),
+                        loadLow(3),
+                        loadHigh(4),
+                        overLoad(5),
+                        readError(6),
+                        noComm(7)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The status of the load measured on the input feed.  If the
+             pduInfeedCapabilities 'loadSense' bit is TRUE, then all of
+             the states are supported.  If the pduInfeedCapabilities
+             'loadSense' bit is FALSE, then only the 'normal' and 'noComm'
+             states are supported."
+        ::= { pduInfeedEntry 6 }
+
+    pduInfeedLoadValue OBJECT-TYPE
+        SYNTAX      INTEGER(-1..25500)
+        UNITS       "hundredth Amps"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The load measured on the input feed.  A non-negative value
+             indicates the measured load in hundredths of Amps.  A
+             negative value indicates that a load value was not able to
+             be measured."
+        ::= { pduInfeedEntry 7 }
+
+    pduInfeedLoadHighThresh OBJECT-TYPE
+        SYNTAX      INTEGER(0..255)
+        UNITS       "Amps"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The load high threshold value of the input feed in Amps."
+        ::= { pduInfeedEntry 8 }
+
+    pduInfeedOutletCount OBJECT-TYPE
+        SYNTAX      INTEGER(0..16)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of outlets on the input feed."
+        ::= { pduInfeedEntry 9 }
+
+    pduInfeedCapacity OBJECT-TYPE
+        SYNTAX      INTEGER(-1..255)
+        UNITS       "Amps"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The load capacity of the input feed.  A non-negative
+             value indicates the maximum load in Amps.  A negative
+             value indicates that the capacity was not available."
+        ::= { pduInfeedEntry 10 }
+
+    pduInfeedVoltage OBJECT-TYPE
+        SYNTAX      INTEGER(-1..2600)
+        UNITS       "tenth Volts"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The voltage of the input feed.  A non-negative value
+             indicates the voltage in tenths of Volts.  A negative
+             value indicates that the voltage was not available."
+        ::= { pduInfeedEntry 11 }
+
+    pduInfeedPower OBJECT-TYPE
+        SYNTAX      INTEGER(-1..15000)
+        UNITS       "Watts"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The power consumption of the input feed.  A non-negative
+             value indicates the power consumption in Watts.  A negative
+             value indicates that the power consumption was not
+             available."
+        ::= { pduInfeedEntry 12 }
+
+    --
+    --  Outlet Table
+    --
+
+    pduOutletTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF PduOutletEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table of outlets."
+        ::= { pduSystemTables 3 }
+
+    pduOutletEntry OBJECT-TYPE
+        SYNTAX      PduOutletEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Row definition for the outlet table."
+        INDEX       { pduTowerIndex, pduInfeedIndex, pduOutletIndex }
+        ::= { pduOutletTable 1 }
+
+    PduOutletEntry ::= SEQUENCE {
+        pduOutletIndex          INTEGER,
+        pduOutletID             DisplayString,
+        pduOutletName           DisplayString,
+        pduOutletCapabilities   BITS,
+        pduOutletStatus         INTEGER,
+        pduOutletLoadStatus     INTEGER,
+        pduOutletLoadValue      INTEGER,
+        pduOutletLoadLowThresh  INTEGER,
+        pduOutletLoadHighThresh INTEGER,
+        pduOutletControlState   INTEGER,
+        pduOutletControlAction  INTEGER
+    }
+
+    pduOutletIndex OBJECT-TYPE
+        SYNTAX      INTEGER(0..16)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Index for the outlet table."
+        ::= { pduOutletEntry 1 }
+
+    pduOutletID OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(2..4))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The ID of the outlet."
+        ::= { pduOutletEntry 2 }
+
+    pduOutletName OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..24))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The name of the outlet."
+        ::= { pduOutletEntry 3 }
+
+    pduOutletCapabilities OBJECT-TYPE
+        SYNTAX      BITS {
+                        onSense(0),
+                        loadSense(1),
+                        powerControl(2),
+                        shutdown(3),
+                        defaultOn(4),
+                        ownInfeed(5),
+                        fusedBranch(6)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The capabilities of the outlet."
+        ::= { pduOutletEntry 4 }
+
+    pduOutletStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        off(0),
+                        on(1),
+                        offWait(2),
+                        onWait(3),
+                        offError(4),
+                        onError(5),
+                        noComm(6),
+                        reading(7),
+                        offFuse(8),
+                        onFuse(9)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The status of the outlet.  If the pduOutletCapabilities
+             'onSense' bit is TRUE, then the state indicates the sensed
+             state of the outlet, not a derived state, and 'offError'
+             and 'onError' are supported to indicate a mismatch between
+             the control and sensed state.  If the psdOutletCapabilities
+             'fusedBranch' bit is TRUE, then the outlet is on a fused
+             branch circuit that can detect the fuse state, and 'offFuse'
+             and 'onFuse' are supported to indicate a fuse error."
+        ::= { pduOutletEntry 5 }
+
+    pduOutletLoadStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        normal(0),
+                        notOn(1),
+                        reading(2),
+                        loadLow(3),
+                        loadHigh(4),
+                        overLoad(5),
+                        readError(6),
+                        noComm(7)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The status of the load measured on the outlet.  If the 
+             pduOutletCapabilities 'loadSense' bit is TRUE, then all of
+             the states are supported.  If the pduOutletCapabilities
+             'loadSense' bit is FALSE, then only the 'normal' and 'noComm'
+             states are supported."
+        ::= { pduOutletEntry 6 }
+
+    pduOutletLoadValue OBJECT-TYPE
+        SYNTAX      INTEGER(-1..25500)
+        UNITS       "hundredth Amps"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The load measured on the outlet.  A non-negative value
+             indicates the measured load in hundredths of Amps.  A
+             negative value indicates that a load value was not able to
+             be measured."
+        ::= { pduOutletEntry 7 }
+
+    pduOutletLoadLowThresh OBJECT-TYPE
+        SYNTAX      INTEGER(0..255)
+        UNITS       "Amps"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The load low threshold value of the outlet in Amps."
+        ::= { pduOutletEntry 8 }
+
+    pduOutletLoadHighThresh OBJECT-TYPE
+        SYNTAX      INTEGER(0..255)
+        UNITS       "Amps"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The load high threshold value of the outlet in Amps."
+        ::= { pduOutletEntry 9 }
+
+    pduOutletControlState OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        idleOff(0),
+                        idleOn(1),
+                        wakeOff(2),
+                        wakeOn(3),
+                        off(4),
+                        on(5),
+                        lockedOff(6),
+                        lockedOn(7),
+                        reboot(8),
+                        shutdown(9),
+                        pendOn(10),
+                        pendOff(11),
+                        minimumOff(12),
+                        minimumOn(13),
+                        eventOff(14),
+                        eventOn(15),
+                        eventReboot(16),
+                        eventShutdown(17)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The control state of the outlet.  The supported states are
+             dependent upon the pduOutletCapabilities 'powerControl' and
+             'shutdown' bits, as well as the supported features of the
+             firmware version."
+        ::= { pduOutletEntry 10 }
+
+    pduOutletControlAction OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        none(0),
+                        on(1),
+                        off(2),
+                        reboot(3)
+                    }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "An action to change the control state of the outlet.  If the
+             pduOutletCapabilities 'powerControl' bit is TRUE, then the
+             'on', 'off', and 'reboot' actions can be used to change the
+             control state of the outlet.  If the pduOutletCapabilities
+             'powerControl' bit is FALSE, then the actions have no
+             effect."
+        ::= { pduOutletEntry 11 }
+
+    --
+    --  Environmental Monitor Table
+    --
+
+    pduEnvMonTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF PduEnvMonEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table of environmental monitors."
+        ::= { pduSystemTables 4 }
+
+    pduEnvMonEntry OBJECT-TYPE
+        SYNTAX      PduEnvMonEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Row definition for the environmental monitor table."
+        INDEX       { pduEnvMonIndex }
+        ::= { pduEnvMonTable 1 }
+
+    PduEnvMonEntry ::= SEQUENCE {
+        pduEnvMonIndex                INTEGER,
+        pduEnvMonID                   DisplayString,
+        pduEnvMonName                 DisplayString,
+        pduEnvMonStatus               INTEGER,
+        pduEnvMonWaterSensorName      DisplayString,
+        pduEnvMonWaterSensorStatus    INTEGER,
+        pduEnvMonADCName              DisplayString,
+        pduEnvMonADCStatus            INTEGER,
+        pduEnvMonADCCount             INTEGER,
+        pduEnvMonADCLowThresh         INTEGER,
+        pduEnvMonADCHighThresh        INTEGER,
+        pduEnvMonTempHumidSensorCount INTEGER,
+        pduEnvMonContactClosureCount  INTEGER
+    }
+
+    pduEnvMonIndex OBJECT-TYPE
+        SYNTAX      INTEGER(0..4)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Index for the environmental monitor table."
+        ::= { pduEnvMonEntry 1 }
+
+    pduEnvMonID OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(1))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The ID of the environmental monitor."
+        ::= { pduEnvMonEntry 2 }
+
+    pduEnvMonName OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..24))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The name of the environmental monitor."
+        ::= { pduEnvMonEntry 3 }
+
+    pduEnvMonStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        normal(0),
+                        noComm(1)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The operational status of the environmental monitor."
+        ::= { pduEnvMonEntry 4 }
+
+    pduEnvMonWaterSensorName OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..24))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The name of the water sensor."
+        ::= { pduEnvMonEntry 5 }
+
+    pduEnvMonWaterSensorStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        normal(0),
+                        alarm(1),
+                        noComm(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The status of the water sensor."
+        ::= { pduEnvMonEntry 6 }
+
+    pduEnvMonADCName OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..24))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The name of the analog-to-digital converter."
+        ::= { pduEnvMonEntry 7 }
+
+    pduEnvMonADCStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        normal(0),
+                        reading(1),
+                        countLow(2),
+                        countHigh(3),
+                        readError(4),
+                        noComm(5)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The status of the analog-to-digital converter."
+        ::= { pduEnvMonEntry 8 }
+
+    pduEnvMonADCCount OBJECT-TYPE
+        SYNTAX      INTEGER(-1..255)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The 8-bit count value from the analog-to-digital converter.
+             A non-negative value indicates the digital value retrieved
+             from the ADC.  A negative value indicates that a digital
+             value was not able to be retrieved."
+        ::= { pduEnvMonEntry 9 }
+
+    pduEnvMonADCLowThresh OBJECT-TYPE
+        SYNTAX      INTEGER(0..255)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The 8-bit count low threshold value of the analog-to-digital
+             converter."
+        ::= { pduEnvMonEntry 10 }
+
+    pduEnvMonADCHighThresh OBJECT-TYPE
+        SYNTAX      INTEGER(0..255)
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The 8-bit count high threshold value of the analog-to-digital
+             converter."
+        ::= { pduEnvMonEntry 11 }
+
+    pduEnvMonTempHumidSensorCount OBJECT-TYPE
+        SYNTAX      INTEGER(0..2)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of temperature/humidity sensors on the
+             environmental monitor."
+        ::= { pduEnvMonEntry 12 }
+
+    pduEnvMonContactClosureCount OBJECT-TYPE
+        SYNTAX      INTEGER(0..4)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The number of contact closures on the environmental
+             monitor."
+        ::= { pduEnvMonEntry 13 }
+
+    --
+    --  Temperature/Humidity Sensor Table
+    --
+
+    pduTempHumidSensorTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF PduTempHumidSensorEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table of temperature/humidity sensors."
+        ::= { pduSystemTables 5 }
+
+    pduTempHumidSensorEntry OBJECT-TYPE
+        SYNTAX      PduTempHumidSensorEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Row definition for the temperature/humidity sensor table."
+        INDEX       { pduEnvMonIndex, pduTempHumidSensorIndex }
+        ::= { pduTempHumidSensorTable 1 }
+
+    PduTempHumidSensorEntry ::= SEQUENCE {
+        pduTempHumidSensorIndex           INTEGER,
+        pduTempHumidSensorID              DisplayString,
+        pduTempHumidSensorName            DisplayString,
+        pduTempHumidSensorStatus          INTEGER,
+        pduTempHumidSensorTempStatus      INTEGER,
+        pduTempHumidSensorTempValue       INTEGER,
+        pduTempHumidSensorTempLowThresh   INTEGER,
+        pduTempHumidSensorTempHighThresh  INTEGER,
+        pduTempHumidSensorHumidStatus     INTEGER,
+        pduTempHumidSensorHumidValue      INTEGER,
+        pduTempHumidSensorHumidLowThresh  INTEGER,
+        pduTempHumidSensorHumidHighThresh INTEGER,
+        pduTempHumidSensorTempScale       INTEGER
+    }
+
+    pduTempHumidSensorIndex OBJECT-TYPE
+        SYNTAX      INTEGER(0..2)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Index for the temperature/humidity sensor table."
+        ::= { pduTempHumidSensorEntry 1 }
+
+    pduTempHumidSensorID OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(2))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The ID of the temperature/humidity sensor."
+        ::= { pduTempHumidSensorEntry 2 }
+
+    pduTempHumidSensorName OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..24))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The name of the temperature/humidity sensor."
+        ::= { pduTempHumidSensorEntry 3 }
+
+    pduTempHumidSensorStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        found(0),
+                        notFound(1),
+                        lost(2),
+                        noComm(3)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The operational status of the temperature/humidity sensor."
+        ::= { pduTempHumidSensorEntry 4 }
+
+    pduTempHumidSensorTempStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        normal(0),
+                        notFound(1),
+                        reading(2),
+                        tempLow(3),
+                        tempHigh(4),
+                        readError(5),
+                        lost(6),
+                        noComm(7)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The status of the temperature sensor."
+        ::= { pduTempHumidSensorEntry 5 }
+
+    pduTempHumidSensorTempValue OBJECT-TYPE
+        SYNTAX      INTEGER(-1..2540)
+        UNITS       "tenth degrees"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The temperature measured by the sensor.  A non-negative value
+             indicates the measured temperature in tenths of degrees,
+             using the scale selected by pduTempHumidSensorTempScale.  If
+             the agent does not support the pduTempHumidSensorTempScale
+             object, then the temperature scale used is Celsius.  A
+             negative value indicates that a temperature value was not
+             able to be measured."
+        ::= { pduTempHumidSensorEntry 6 }
+
+    pduTempHumidSensorTempLowThresh OBJECT-TYPE
+        SYNTAX      INTEGER(0..254)
+        UNITS       "degrees"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The temperature low threshold value of the sensor in degrees,
+             using the scale selected by pduTempHumidSensorTempScale.  If
+             the agent does not support the pduTempHumidSensorTempScale
+             object, then the temperature scale used is Celsius."
+        ::= { pduTempHumidSensorEntry 7 }
+
+    pduTempHumidSensorTempHighThresh OBJECT-TYPE
+        SYNTAX      INTEGER(0..254)
+        UNITS       "degrees"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The temperature high threshold value of the sensor in degrees,
+             using the scale selected by pduTempHumidSensorTempScale.  If
+             the agent does not support the pduTempHumidSensorTempScale
+             object, then the temperature scale used is Celsius."
+        ::= { pduTempHumidSensorEntry 8 }
+
+    pduTempHumidSensorHumidStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        normal(0),
+                        notFound(1),
+                        reading(2),
+                        humidLow(3),
+                        humidHigh(4),
+                        readError(5),
+                        lost(6),
+                        noComm(7)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The status of the humidity sensor."
+        ::= { pduTempHumidSensorEntry 9 }
+
+    pduTempHumidSensorHumidValue OBJECT-TYPE
+        SYNTAX      INTEGER(-1..100)
+        UNITS       "percentage relative humidity"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The humidity measured by the sensor.  A non-negative value
+             indicates the measured humidity in percentage relative
+             humidity.  A negative value indicates that a humidity value
+             was not able to be measured."
+        ::= { pduTempHumidSensorEntry 10 }
+
+    pduTempHumidSensorHumidLowThresh OBJECT-TYPE
+        SYNTAX      INTEGER(0..100)
+        UNITS       "percentage relative humidity"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The humidity low threshold value of the sensor in percentage
+             relative humidity."
+        ::= { pduTempHumidSensorEntry 11 }
+
+    pduTempHumidSensorHumidHighThresh OBJECT-TYPE
+        SYNTAX      INTEGER(0..100)
+        UNITS       "percentage relative humidity"
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The humidity low threshold value of the sensor in percentage
+             relative humidity."
+        ::= { pduTempHumidSensorEntry 12 }
+
+    pduTempHumidSensorTempScale OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        celsius(0),
+                        fahrenheit(1)
+                    }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The scale used for temperature values.  This is a global
+             setting for all temperature values in the system.  If the
+             agent does not support this object, then the temperature
+             scale used is Celsius."
+        ::= { pduTempHumidSensorEntry 13 }
+
+    --
+    --  Contact Closure Table
+    --
+
+    pduContactClosureTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF PduContactClosureEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "A table of contact closures."
+        ::= { pduSystemTables 6 }
+
+    pduContactClosureEntry OBJECT-TYPE
+        SYNTAX      PduContactClosureEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Row definition for the contact closure table."
+        INDEX       { pduEnvMonIndex, pduContactClosureIndex }
+        ::= { pduContactClosureTable 1 }
+
+    PduContactClosureEntry ::= SEQUENCE {
+        pduContactClosureIndex     INTEGER,
+        pduContactClosureID        DisplayString,
+        pduContactClosureName      DisplayString,
+        pduContactClosureStatus    INTEGER
+    }
+
+    pduContactClosureIndex OBJECT-TYPE
+        SYNTAX      INTEGER(0..4)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+            "Index for the contact closure table."
+        ::= { pduContactClosureEntry 1 }
+
+    pduContactClosureID OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(2))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The ID of the contact closure."
+        ::= { pduContactClosureEntry 2 }
+
+    pduContactClosureName OBJECT-TYPE
+        SYNTAX      DisplayString(SIZE(0..24))
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+            "The name of the contact closure."
+        ::= { pduContactClosureEntry 3 }
+
+    pduContactClosureStatus OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        normal(0),
+                        alarm(1),
+                        noComm(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+            "The status of the contact closure."
+        ::= { pduContactClosureEntry 4 }
+
+--
+--  Notifications
+--
+
+    pduTraps OBJECT IDENTIFIER ::= { pdu 100 }
+
+    pduEvents OBJECT IDENTIFIER ::= { pduTraps 0 }
+    -- the 0 is for V1 compatibility
+
+    -- Tower Traps
+
+    pduTowerStatusEvent NOTIFICATION-TYPE
+        OBJECTS {
+            pduSystemLocation,
+            pduTowerID,
+            pduTowerName,
+            pduTowerStatus
+        }
+        STATUS      current
+        DESCRIPTION
+            "Tower status event.  If enabled, this trap is sent when the
+             pduTowerStatus indicates an error state ('noComm', 'fanFail',
+             or 'overTemp').  This trap is repeated periodically while
+             the pduTowerStatus remains in an error state.  If the
+             pduTowerStatus returns to a non-error state ('normal'), this
+             trap is sent once more with the non-error pduTowerStatus, and
+             then stops being repeated.
+
+             While the pduTowerStatus indicates a 'noComm' error state,
+             all status and load traps are suppressed for input feeds and
+             outlets on the tower."
+        --#TYPE "Rittal PDU: Tower Status Event."
+        --#SUMMARY "Status of Tower '%s' (%s) is '%d'."
+        --#ARGUMENTS { 2, 1, 3 }
+        --#SEVERITY CRITICAL
+        --#GENERIC 6
+        --#CATEGORY "Error Events"
+        --#SOURCE_ID "A"
+        --#TIMEINDEX 255
+        --#HELP ""
+        --#HELPTAG 0
+        --#STATE UNKNOWN
+        ::= { pduEvents 1 }
+
+    -- Input Feed Traps
+
+    pduInfeedStatusEvent NOTIFICATION-TYPE
+        OBJECTS {
+            pduSystemLocation,
+            pduInfeedID,
+            pduInfeedName,
+            pduInfeedStatus
+        }
+        STATUS      current
+        DESCRIPTION
+            "Input feed status event.  If enabled, this trap is sent when
+             the pduInfeedStatus indicates an error state ('offError',
+             'onError', or 'noComm').  This trap is repeated periodically
+             while the pduInfeedStatus remains in an error state.  If the
+             pduInfeedStatus returns to a non-error state ('off' or 'on'),
+             this trap is sent once more with the non-error
+             pduInfeedStatus, and then stops being repeated.
+
+             While the pduInfeedStatus indicates an error state, load
+             traps are suppressed for the input feed, and, if the
+             pduInfeedCapabilities 'failSafe' bit is FALSE, all status and
+             load traps are suppressed for outlets on the input feed."
+        --#TYPE "Rittal PDU: Input Feed Status Event."
+        --#SUMMARY "Status of Input Feed '%s' (%s) is '%d'."
+        --#ARGUMENTS { 2, 1, 3 }
+        --#SEVERITY CRITICAL
+        --#GENERIC 6
+        --#CATEGORY "Error Events"
+        --#SOURCE_ID "A"
+        --#TIMEINDEX 255
+        --#HELP ""
+        --#HELPTAG 0
+        --#STATE UNKNOWN
+        ::= { pduEvents 2 }
+
+    pduInfeedLoadEvent NOTIFICATION-TYPE
+        OBJECTS {
+            pduSystemLocation,
+            pduInfeedID,
+            pduInfeedName,
+            pduInfeedLoadStatus,
+            pduInfeedLoadValue,
+            pduInfeedLoadHighThresh
+        }
+        STATUS      current
+        DESCRIPTION
+            "Input feed load event.  If enabled, this trap is sent when
+             the pduInfeedLoadStatus indicates an error state ('loadLow',
+             'loadHigh', 'overLoad', 'readError', or 'noComm').  This
+             trap is repeated periodically while the pduInfeedLoadStatus
+             remains in an error state.  If the pduInfeedLoadStatus returns
+             to a non-error state ('normal' or 'notOn'), this trap is sent
+             once more with the non-error pduInfeedLoadStatus, and then
+             stops being repeated."
+        --#TYPE "Rittal PDU: Input Feed Load Event."
+        --#SUMMARY "Load Status of Input Feed '%s' (%s) is '%d'."
+        --#ARGUMENTS { 2, 1, 3 }
+        --#SEVERITY CRITICAL
+        --#GENERIC 6
+        --#CATEGORY "Error Events"
+        --#SOURCE_ID "A"
+        --#TIMEINDEX 255
+        --#HELP ""
+        --#HELPTAG 0
+        --#STATE UNKNOWN
+        ::= { pduEvents 3 }
+
+    -- Outlet Traps
+
+    pduOutletStatusEvent NOTIFICATION-TYPE
+        OBJECTS {
+            pduSystemLocation,
+            pduOutletID,
+            pduOutletName,
+            pduOutletStatus
+        }
+        STATUS      current
+        DESCRIPTION
+            "Outlet status event.  If enabled, this trap is sent when the
+             pduOutletStatus indicates an error state ('offError',
+             'onError', 'noComm', 'offFuse', or 'onFuse').  This trap is
+             repeated periodically while the pduOutletStatus remains in an
+             error state.  If the pduOutletStatus returns to a non-error
+             state ('off' or 'on'), this trap is sent once more with the
+             non-error pduOutletStatus, and then stops being repeated.
+
+             While the pduOutletStatus indicates an error state, load
+             traps are suppressed for the outlet."
+        --#TYPE "Rittal PDU: Outlet Status Event."
+        --#SUMMARY "Status of Outlet '%s' (%s) is '%d'."
+        --#ARGUMENTS { 2, 1, 3 }
+        --#SEVERITY CRITICAL
+        --#GENERIC 6
+        --#CATEGORY "Error Events"
+        --#SOURCE_ID "A"
+        --#TIMEINDEX 255
+        --#HELP ""
+        --#HELPTAG 0
+        --#STATE UNKNOWN
+        ::= { pduEvents 4 }
+
+    pduOutletLoadEvent NOTIFICATION-TYPE
+        OBJECTS {
+            pduSystemLocation,
+            pduOutletID,
+            pduOutletName,
+            pduOutletLoadStatus,
+            pduOutletLoadValue,
+            pduOutletLoadLowThresh,
+            pduOutletLoadHighThresh
+        }
+        STATUS      current
+        DESCRIPTION
+            "Outlet load event.  If enabled, this trap is sent when the
+             pduOutletLoadStatus indicates an error state ('loadLow',
+             'loadHigh', 'overLoad', 'readError', or 'noComm').  This
+             trap is repeated periodically while the pduOutletLoadStatus
+             remains in an error state.  If the pduOutletLoadStatus returns
+             to a non-error state ('normal' or 'notOn'), this trap is
+             sent once more with the non-error pduOutletLoadStatus, and
+             then stops being repeated."
+        --#TYPE "Rittal PDU: Outlet Load Event."
+        --#SUMMARY "Load Status of Outlet '%s' (%s) is '%d'."
+        --#ARGUMENTS { 2, 1, 3 }
+        --#SEVERITY CRITICAL
+        --#GENERIC 6
+        --#CATEGORY "Error Events"
+        --#SOURCE_ID "A"
+        --#TIMEINDEX 255
+        --#HELP ""
+        --#HELPTAG 0
+        --#STATE UNKNOWN
+        ::= { pduEvents 5 }
+
+    pduOutletChangeEvent NOTIFICATION-TYPE
+        OBJECTS {
+            pduSystemLocation,
+            pduOutletID,
+            pduOutletName,
+            pduOutletStatus,
+            pduOutletControlState
+        }
+        STATUS      current
+        DESCRIPTION
+            "Outlet on/off change event.  If enabled, this trap is sent
+             when the pduOutletStatus changes from any 'on' state ('on',
+             'onWait', 'onError', or 'onFuse') to any 'off' state ('off',
+             'offWait', 'offError', or 'offFuse'), and vice-versa."
+        --#TYPE "Rittal PDU: Outlet Change Event."
+        --#SUMMARY "Outlet '%s' (%s) has changed to '%d'."
+        --#ARGUMENTS { 2, 1, 3 }
+        --#SEVERITY INFORMATIONAL
+        --#GENERIC 6
+        --#CATEGORY "Status Events"
+        --#SOURCE_ID "A"
+        --#TIMEINDEX 255
+        --#HELP ""
+        --#HELPTAG 0
+        --#STATE UNKNOWN
+        ::= { pduEvents 6 }
+
+    -- Environmental Monitor Traps
+
+    pduEnvMonStatusEvent NOTIFICATION-TYPE
+        OBJECTS {
+            pduSystemLocation,
+            pduEnvMonID,
+            pduEnvMonName,
+            pduEnvMonStatus
+        }
+        STATUS      current
+        DESCRIPTION
+            "Environmental monitor status event.  If enabled, this trap
+             is sent when the pduEnvMonStatus indicates an error state
+             ('noComm').  This trap is repeated periodically while the
+             pduEnvMonStatus remains in an error state.  If the
+             pduEnvMonStatus returns to a non-error state ('normal'), this
+             trap is sent once more with the non-error pduEnvMonStatus,
+             and then stops being repeated.
+
+             While the pduEnvMonStatus indicates an error state, all status
+             traps are suppressed for the water sensor, ADC, temperature/
+             humudity sensors, and contact closures on the environmental
+             monitor."
+        --#TYPE "Rittal PDU: Environmental Monitor Status Event."
+        --#SUMMARY "Status of Environmental Monitor '%s' (%s) is '%d'."
+        --#ARGUMENTS { 2, 1, 3 }
+        --#SEVERITY CRITICAL
+        --#GENERIC 6
+        --#CATEGORY "Error Events"
+        --#SOURCE_ID "A"
+        --#TIMEINDEX 255
+        --#HELP ""
+        --#HELPTAG 0
+        --#STATE UNKNOWN
+        ::= { pduEvents 7 }
+
+    pduEnvMonWaterSensorEvent NOTIFICATION-TYPE
+        OBJECTS {
+            pduSystemLocation,
+            pduEnvMonID,
+            pduEnvMonWaterSensorName,
+            pduEnvMonWaterSensorStatus
+        }
+        STATUS      current
+        DESCRIPTION
+            "Environmental monitor water sensor event.  If enabled, this
+             trap is sent when the pduEnvMonWaterSensorStatus indicates an
+             error state ('alarm').  This trap is repeated periodically
+             while the pduEnvMonWaterSensorStatus remains in an error
+             state.  If the pduEnvMonWaterSensorStatus returns to a non-
+             error state ('normal'), this trap is sent once more with the
+             non-error pduEnvMonWaterSensorStatus, and then stops being
+             repeated."
+        --#TYPE "Rittal PDU: Water Sensor Event."
+        --#SUMMARY "Status of Water Sensor '%s' (%s) is '%d'."
+        --#ARGUMENTS { 2, 1, 3 }
+        --#SEVERITY CRITICAL
+        --#GENERIC 6
+        --#CATEGORY "Error Events"
+        --#SOURCE_ID "A"
+        --#TIMEINDEX 255
+        --#HELP ""
+        --#HELPTAG 0
+        --#STATE UNKNOWN
+        ::= { pduEvents 8 }
+
+    pduEnvMonADCEvent NOTIFICATION-TYPE
+        OBJECTS {
+            pduSystemLocation,
+            pduEnvMonID,
+            pduEnvMonADCName,
+            pduEnvMonADCStatus,
+            pduEnvMonADCCount,
+            pduEnvMonADCLowThresh,
+            pduEnvMonADCHighThresh
+        }
+        STATUS      current
+        DESCRIPTION
+            "Environmental monitor analog-to-digital converter event.
+             If enabled, this trap is sent when the pduEnvMonADCStatus
+             indicates an error state ('countLow' or 'countHigh').  This
+             trap is repeated periodically while the pduEnvMonADCStatus
+             remains in an error state.  If the pduEnvMonADCStatus returns
+             to a non-error state ('normal'), this trap is sent once more
+             with the non-error pduEnvMonADCStatus, and then stops being
+             repeated."
+        --#TYPE "Rittal PDU: ADC Event."
+        --#SUMMARY "Status of ADC '%s' (%s) is '%d'."
+        --#ARGUMENTS { 2, 1, 3 }
+        --#SEVERITY CRITICAL
+        --#GENERIC 6
+        --#CATEGORY "Error Events"
+        --#SOURCE_ID "A"
+        --#TIMEINDEX 255
+        --#HELP ""
+        --#HELPTAG 0
+        --#STATE UNKNOWN
+        ::= { pduEvents 9 }
+
+    pduTempHumidSensorStatusEvent NOTIFICATION-TYPE
+        OBJECTS {
+            pduSystemLocation,
+            pduTempHumidSensorID,
+            pduTempHumidSensorName,
+            pduTempHumidSensorStatus
+        }
+        STATUS      current
+        DESCRIPTION
+            "Temperature/humidity sensor status event.  If enabled, this
+             trap is sent when the pduTempHumidSensorStatus indicates an
+             error state ('lost').  This trap is repeated periodically
+             while the pduTempHumidSensorStatus remains in an error state.
+             If the pduTempHumidSensorStatus returns to a non-error state
+             ('found'), this trap is sent once more with the non-error
+             pduTempHumidSensorStatus, and then stops being repeated.
+
+             While the pduTempHumidSensorStatus indicates an error state,
+             all temperature and humidity status traps are suppressed for
+             the temperature/humudity sensor."
+        --#TYPE "Rittal PDU: T/H Sensor Status Event."
+        --#SUMMARY "Status of T/H Sensor '%s' (%s) is '%d'."
+        --#ARGUMENTS { 2, 1, 3 }
+        --#SEVERITY CRITICAL
+        --#GENERIC 6
+        --#CATEGORY "Error Events"
+        --#SOURCE_ID "A"
+        --#TIMEINDEX 255
+        --#HELP ""
+        --#HELPTAG 0
+        --#STATE UNKNOWN
+        ::= { pduEvents 10 }
+
+    pduTempHumidSensorTempEvent NOTIFICATION-TYPE
+        OBJECTS {
+            pduSystemLocation,
+            pduTempHumidSensorID,
+            pduTempHumidSensorName,
+            pduTempHumidSensorTempStatus,
+            pduTempHumidSensorTempValue,
+            pduTempHumidSensorTempLowThresh,
+            pduTempHumidSensorTempHighThresh,
+            pduTempHumidSensorTempScale
+        }
+        STATUS      current
+        DESCRIPTION
+            "Temperature/humidity sensor temperature event.  If enabled,
+             this trap is sent when the pduTempHumidSensorTempStatus
+             indicates an error state ('tempLow' or 'tempHigh').
+             This trap is repeated periodically while the
+             pduTempHumidSensorTempStatus remains in an error state.  If
+             the pduTempHumidSensorTempStatus returns to a non-error state
+             ('normal'), this trap is sent once more with the non-error
+             pduTempHumidSensorTempStatus, and then stops being repeated."
+        --#TYPE "Rittal PDU: T/H Sensor Temperature Event."
+        --#SUMMARY "Temperature Status of T/H Sensor '%s' (%s) is '%d'."
+        --#ARGUMENTS { 2, 1, 3 }
+        --#SEVERITY CRITICAL
+        --#GENERIC 6
+        --#CATEGORY "Error Events"
+        --#SOURCE_ID "A"
+        --#TIMEINDEX 255
+        --#HELP ""
+        --#HELPTAG 0
+        --#STATE UNKNOWN
+        ::= { pduEvents 11 }
+
+    pduTempHumidSensorHumidEvent NOTIFICATION-TYPE
+        OBJECTS {
+            pduSystemLocation,
+            pduTempHumidSensorID,
+            pduTempHumidSensorName,
+            pduTempHumidSensorHumidStatus,
+            pduTempHumidSensorHumidValue,
+            pduTempHumidSensorHumidLowThresh,
+            pduTempHumidSensorHumidHighThresh
+        }
+        STATUS      current
+        DESCRIPTION
+            "Temperature/humidity sensor humidity event.  If enabled,
+             this trap is sent when the pduTempHumidSensorHumidStatus
+             indicates an error state ('humidLow' or 'humidHigh').
+             This trap is repeated periodically while the
+             pduTempHumidSensorHumidStatus remains in an error state.  If
+             the pduTempHumidSensorHumidStatus returns to a non-error state
+             ('normal'), this trap is sent once more with the non-error
+             pduTempHumidSensorHumidStatus, and then stops being repeated."
+        --#TYPE "Rittal PDU: T/H Sensor Humidity Event."
+        --#SUMMARY "Humidity Status of T/H Sensor '%s' (%s) is '%d'."
+        --#ARGUMENTS { 2, 1, 3 }
+        --#SEVERITY CRITICAL
+        --#GENERIC 6
+        --#CATEGORY "Error Events"
+        --#SOURCE_ID "A"
+        --#TIMEINDEX 255
+        --#HELP ""
+        --#HELPTAG 0
+        --#STATE UNKNOWN
+        ::= { pduEvents 12 }
+
+    pduContactClosureEvent NOTIFICATION-TYPE
+        OBJECTS {
+            pduSystemLocation,
+            pduContactClosureID,
+            pduContactClosureName,
+            pduContactClosureStatus
+        }
+        STATUS      current
+        DESCRIPTION
+            "Contact closure event.  If enabled, this trap is sent when
+             the pduContactClosureStatus indicates an error state
+             ('alarm').  This trap is repeated periodically while the
+             pduContactClosureStatus remains in an error state.  If the
+             pduContactClosureStatus returns to a non-error state
+             ('normal'), this trap is sent once more with the non-error
+             pduContactClosureStatus, and then stops being repeated."
+        --#TYPE "Rittal PDU: Contact Closure Event."
+        --#SUMMARY "Status of Contact Closure '%s' (%s) is '%d'."
+        --#ARGUMENTS { 2, 1, 3 }
+        --#SEVERITY CRITICAL
+        --#GENERIC 6
+        --#CATEGORY "Error Events"
+        --#SOURCE_ID "A"
+        --#TIMEINDEX 255
+        --#HELP ""
+        --#HELPTAG 0
+        --#STATE UNKNOWN
+        ::= { pduEvents 13 }
+
+END

@@ -1,0 +1,419 @@
+TANLOCKv3-MIB DEFINITIONS ::= BEGIN
+
+	IMPORTS
+	MODULE-IDENTITY, OBJECT-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, enterprises, Integer32
+		FROM SNMPv2-SMI
+	OBJECT-GROUP, NOTIFICATION-GROUP, MODULE-COMPLIANCE
+		FROM SNMPv2-CONF
+	DisplayString, TruthValue
+		FROM SNMPv2-TC;
+
+fathMIB MODULE-IDENTITY
+	LAST-UPDATED "201929041200Z"
+	ORGANIZATION "FATH Mechatronics GmbH"
+	CONTACT-INFO
+                "postal:     Gewerbepark Huegelmuehle 32
+                             91174 Spalt
+                             Germany
+                 EMail:      frank.schuetz@fath-mechatronics.de
+                 phone:      +49 9175 79090
+                "
+       DESCRIPTION
+                "The MIB module for FATH Mechatronics.
+                "
+       REVISION "201929041200Z"
+       DESCRIPTION
+                "Revision 1.11"
+	::= { enterprises 50102 }
+
+fathMIBCompliance MODULE-COMPLIANCE
+	STATUS		current
+	DESCRIPTION
+		"The compliance statement for entities implementing fathMIB."
+	MODULE
+		MANDATORY-GROUPS {
+			tanlockv3Group,
+			tanlockv3NotificationsGroup
+		}
+	::= { fathMIB 2 }
+
+tanlockv3 OBJECT-IDENTITY
+	STATUS		current
+	DESCRIPTION
+		"The authoritative identity of the TANlock locking device, Version 2"
+	::= { fathMIB 1 }
+
+tanlockv3Group OBJECT-GROUP
+	OBJECTS {
+		status,
+		software,
+		hardware,
+		serialno,
+		ownmacaddress,
+		time,
+		user,
+		lock,
+		handle,
+		motor,
+		external11,
+		external12,
+		relais0,
+		relais1,
+		temperature,
+		reboot,
+		open,
+		prepareopen,
+		createUser,
+		deleteUser,
+		tanlockUser,
+		tanlockUsersCount
+	}
+	STATUS		current
+	DESCRIPTION
+		"A collection of objects providing information on the TANlock locking device, Version 2"
+	::= { tanlockv3 4 }
+
+tanlockv3NotificationsGroup NOTIFICATION-GROUP
+	NOTIFICATIONS {
+		stateChanged,
+		booted,
+		startedEnteringTAN,
+		timeoutEnteringTAN,
+		wrongTAN,
+		handleUnlocked,
+		handleLocked,
+		handleOpened,
+		handleClosed
+	}
+	STATUS		current
+	DESCRIPTION
+		"The notifications which an agent for TANlock, Version 2 is required to
+		implement."
+	::= { tanlockv3 5 }
+
+status OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (0..8))
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"Hands back the status of the TANlock. Relevant values are:
+                 - locked: TANlock is closed and locked 
+                 - unlocked: TANlock is unlocked but the handle still is in closed position
+                 - open: TANlock is unlocked and the handle is in open position"
+	::= { tanlockv3 1 }
+
+infos OBJECT-IDENTITY
+	STATUS		current
+	DESCRIPTION
+		"A summary of several information items on the TANlock locking device, Version 2"
+	::= { tanlockv3 2}
+
+generals OBJECT-IDENTITY
+	STATUS		current
+	DESCRIPTION
+		"A summary of general information items on the TANlock locking device, Version 2"
+	::= { infos 1}
+
+software OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (0..32))
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"Hands back the version of the firmware of TANlock"
+	::= { generals 1 }
+
+hardware OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (0..32))
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"Hands back the version of the hardware of TANlock"
+	::= { generals 2 }
+
+serialno OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (0..32))
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"Hands back the serial number of TANlock"
+	::= { generals 3 }
+
+ownmacaddress OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (0..32))
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"Hands back the macadress of TANlock"
+	::= { generals 4 }
+
+time OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (0..32))
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"Hands back the time of TANlock in the moment of request"
+	::= { generals 5 }
+
+user OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (0..32))
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"Hands back the user doing transactions on TANlock at the moment"
+	::= { generals 6 }
+
+reboot OBJECT-TYPE
+	SYNTAX		TruthValue
+	MAX-ACCESS	read-write
+	STATUS	current
+	DESCRIPTION
+		"Allows to reboot the TANlock. Setting to 1 means start reboot"
+	::= { generals 7 }
+
+open OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (0..32))
+	MAX-ACCESS	read-write
+	STATUS		current
+	DESCRIPTION
+		"Allows to open the TANlock. Setting to a valid user opens the lock"
+	::= { generals 8 }
+
+prepareopen OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (0..32))
+	MAX-ACCESS	read-write
+	STATUS		current
+	DESCRIPTION
+		"Allows to set the TANlock into the prepare open mode. Setting to a valid user sets the lock into prepare open mode (green light blinks, pressing 'ok' opens)"
+	::= { generals 9 }
+
+tanlockUsersCount OBJECT-TYPE
+	SYNTAX		Integer32
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"Hands back the number of users in the local user database of TANlock."
+	::= { generals 10 }
+
+tanlockSysContact OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (0..255))
+	MAX-ACCESS	read-write
+	STATUS		current
+	DESCRIPTION
+		"The physical location of this node (e.g.,
+                `telephone closet, 3rd floor')."
+	::= { generals 11 }
+
+tanlockSysName OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (0..255))
+	MAX-ACCESS	read-write
+	STATUS		current
+	DESCRIPTION
+		"An administratively-assigned name for this
+                managed node.  By convention, this is the node's
+                fully-qualified domain name."
+	::= { generals 12 }
+
+tanlockSysLocation OBJECT-TYPE
+	SYNTAX		DisplayString (SIZE (0..255))
+	MAX-ACCESS	read-write
+	STATUS		current
+	DESCRIPTION
+		"The textual identification of the contact person
+                for this managed node, together with information
+                on how to contact this person."
+	::= { generals 13 }
+
+sensors OBJECT-IDENTITY
+	STATUS		current
+	DESCRIPTION
+		"A summary of information items of sensors build into the TANlock locking device, Version 2"
+	::= { infos 2}
+
+lock OBJECT-TYPE
+	SYNTAX		TruthValue
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"Hands back the status of the sensor sensing if the TANlock is locked. 1 means locked, 2 means unlocked"
+	::= { sensors 1 }
+
+handle OBJECT-TYPE
+	SYNTAX		TruthValue
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"Hands back the status of the sensor sensing if the TANlock handle is turned. 1 means turned, 2 means not turned"
+	::= { sensors 2 }
+
+motor OBJECT-TYPE
+	SYNTAX		TruthValue
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"Hands back the status of the sensor sensing if the TANlock motor is in lockable position. 1 means lockable, 2 means not defined"
+	::= { sensors 3 }
+
+temperature OBJECT-TYPE
+	SYNTAX		Integer32
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"Hands back the temperature measured by the sensor connected on Port 10 of TANlock"
+	::= { sensors 4 }
+
+externals OBJECT-IDENTITY
+	STATUS		current
+	DESCRIPTION
+		"A summary of information items of sensors attached to the TANlock locking device, Version 2"
+	::= { infos 3}
+	
+external11 OBJECT-TYPE
+	SYNTAX		TruthValue
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"Hands back the status of the doorsensor 1 plugged in in port 11. 1 means door is locked, 2 means door is open"
+	::= { externals 1 }
+
+external12 OBJECT-TYPE
+	SYNTAX		TruthValue
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"Hands back the status of the doorsensor 2 plugged in in port 12. 1 means door is locked, 2 means door is open"
+	::= { externals 2 }
+
+relais0 OBJECT-TYPE
+	SYNTAX		TruthValue
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"Hands back the status of the internal relais accessible via port 13. 1 means relais is closed, 2 means relais is open"
+	::= { externals 3 }
+
+relais1 OBJECT-TYPE
+	SYNTAX		TruthValue
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"Hands back the status of the internal relais accessible via port 13. 1 means relais is closed, 2 means relais is open"
+	::= { externals 4 }
+	
+users OBJECT-IDENTITY
+	STATUS		current
+	DESCRIPTION
+		"Access local user database of the TANlock"
+	::= { tanlockv3 6}
+
+tanlockUsersTable OBJECT-TYPE
+	SYNTAX		SEQUENCE OF TanlockUsersEntry
+	MAX-ACCESS	not-accessible
+	STATUS		current
+	DESCRIPTION
+		"Table of users in the local database of the TANlock"
+	::= { users 1 }
+
+tanlockUsersEntry OBJECT-TYPE
+	SYNTAX		TanlockUsersEntry
+	MAX-ACCESS	not-accessible
+	STATUS		current
+	DESCRIPTION
+		"An entry of the TANlock users table."
+	INDEX{ tanlockUser }
+	::= { tanlockUsersTable 1 }
+
+TanlockUsersEntry ::= SEQUENCE {
+	tanlockUser	OCTET STRING
+}
+
+tanlockUser OBJECT-TYPE
+	SYNTAX		OCTET STRING (SIZE(0..64))
+	MAX-ACCESS	read-only
+	STATUS		current
+	DESCRIPTION
+		"The user part of the TAN for TANlock."
+	::= { tanlockUsersEntry 1 }
+
+createUser OBJECT-TYPE
+	SYNTAX		OCTET STRING (SIZE (0..64))
+	MAX-ACCESS	read-write
+	STATUS		current
+	DESCRIPTION
+		"Allows to create a user. Hand in <user><pw> (without '<>'). Read will not return a meaningful result."
+	::= { users 2 }
+
+deleteUser OBJECT-TYPE
+	SYNTAX		OCTET STRING (SIZE (0..64))
+	MAX-ACCESS	read-write
+	STATUS		current
+	DESCRIPTION
+		"Allows to delete a user. Hand in <user> (without '<>'). Read will not return a meaningful result."
+	::= { users 3 }
+
+traps OBJECT-IDENTITY
+	STATUS		current
+	DESCRIPTION
+		"Traps provided by the TANlock locking device, Version 2"
+	::= { tanlockv3 3}
+	
+trapsPrefix OBJECT-IDENTITY
+	STATUS		current
+	DESCRIPTION
+		"Is used as the zero based prefix for all traps."
+	::= { traps 0}
+	
+stateChanged NOTIFICATION-TYPE
+	STATUS		current
+	DESCRIPTION
+		"Trap if some statechange in TANlock took place"
+	::= { trapsPrefix 1 }
+
+booted NOTIFICATION-TYPE
+	STATUS		current
+	DESCRIPTION
+		"Trap if device booted"
+	::= { trapsPrefix 2 }
+
+startedEnteringTAN NOTIFICATION-TYPE
+	STATUS		current
+	DESCRIPTION
+		"Trap if somebody started entering TAN"
+	::= { trapsPrefix 3 }
+
+timeoutEnteringTAN NOTIFICATION-TYPE
+	STATUS		current
+	DESCRIPTION
+		"Trap if entering TAN went into defined timeout before finishing with OK"
+	::= { trapsPrefix 4 }
+
+wrongTAN NOTIFICATION-TYPE
+	STATUS		current
+	DESCRIPTION
+		"Trap if entered TAN can not be verified successfully"
+	::= { trapsPrefix 5 }
+
+handleUnlocked NOTIFICATION-TYPE
+	STATUS		current
+	DESCRIPTION
+		"Trap if handle of TAN is unlocked"
+	::= { trapsPrefix 6 }
+
+handleLocked NOTIFICATION-TYPE
+	STATUS		current
+	DESCRIPTION
+		"Trap if handle of TAN is locked"
+	::= { trapsPrefix 7 }
+
+handleOpened NOTIFICATION-TYPE
+	STATUS		current
+	DESCRIPTION
+		"Trap if handle of TAN is turned into opened position"
+	::= { trapsPrefix 8 }
+
+handleClosed NOTIFICATION-TYPE
+	STATUS		current
+	DESCRIPTION
+		"Trap if handle of TAN is turned into closed position"
+	::= { trapsPrefix 9 }
+
+END

@@ -1,0 +1,988 @@
+<?xml version="1.0"?>
+
+<APC_DDF
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://localhost/ddf_schema/apc_ddf_1_6.xsd"
+	ddfid ="Janitza-UMG96RM"
+	ddfname="Janitza UMG96RM Power Meter"
+	ddfversion="2"
+	canremove="yes">
+	<schemaVersion>1.6</schemaVersion>
+
+	<device deviceid="defaultDevice">
+
+		<oidMustExist ruleid="OIDMustExist_modbusdevicetest" oid="MODBUS_OID_MUST_EXIST"/>
+
+		<setProductData ruleid="vendordata" field="vendor">Janitza</setProductData>
+		<setProductData ruleid="modeldata" field="model">UMG96RM</setProductData>
+		<setProductData ruleid="typedata" field="type">Power Meter</setProductData>
+    		<setDefaultLabel ruleid="labeldata"><sysHostname/> - Slave <commSetting field="slaveaddress"/></setDefaultLabel>
+            
+  		<setProductData ruleid="inputphasecount" field="inputphasecount">3</setProductData>
+		<setProductData ruleid="outputphasecount" field="outputphasecount">3</setProductData>
+        
+       
+        <valueMap ruleid="zerobased2onebased-vm">
+            <valueIn>0</valueIn><valueOut>1</valueOut>
+            <valueIn>1</valueIn><valueOut>2</valueOut>
+            <valueIn>2</valueIn><valueOut>3</valueOut>
+            <valueIn>*</valueIn><valueOut>*</valueOut>
+        </valueMap>
+    
+        <valueMap ruleid="phasebynumber-vm">
+            <valueIn>0</valueIn><valueOut>L1</valueOut>
+            <valueIn>1</valueIn><valueOut>L2</valueOut>
+            <valueIn>2</valueIn><valueOut>L3</valueOut>
+            <valueIn>*</valueIn><valueOut>*</valueOut>
+        </valueMap>
+  
+        <valueMap ruleid="phasebynumber_ln-vm">
+            <valueIn>0</valueIn><valueOut>L1-N</valueOut>
+            <valueIn>1</valueIn><valueOut>L2-N</valueOut>
+            <valueIn>2</valueIn><valueOut>L3-N</valueOut>
+            <valueIn>*</valueIn><valueOut>*</valueOut>
+        </valueMap>
+ 
+        <valueMap ruleid="phasebynumber_ll-vm">
+            <valueIn>0</valueIn><valueOut>L1-L2</valueOut>
+            <valueIn>1</valueIn><valueOut>L2-L3</valueOut>
+            <valueIn>2</valueIn><valueOut>L3-L1</valueOut>
+            <valueIn>*</valueIn><valueOut>*</valueOut>
+        </valueMap>
+       
+        <numSensor ruleid="voltage_ln" index="address19000-19004">
+            <type>voltage</type>
+            <sensorId>VOLTAGE_LN_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+            <value>
+                <getRowOid>address19000-19004</getRowOid>
+            </value>
+            <valueInc>0.01</valueInc>
+            <label>Voltage <mapValue mapid="phasebynumber_ln-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Voltage</sensorSet>
+        </numSensor>
+       
+        <numSensor ruleid="voltage_ll" index="address19006-19010">
+            <type>voltage</type>
+            <sensorId>VOLTAGE_LL_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+            <value>
+                <getRowOid>address19006-19010</getRowOid>
+            </value>
+            <valueInc>0.01</valueInc>
+            <label>Voltage <mapValue mapid="phasebynumber_ll-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Voltage</sensorSet>
+        </numSensor>
+      
+        <numSensor ruleid="current_phase" index="address19012-19016">
+            <type>amperage</type>
+            <sensorId>CURRENT_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+            <value>
+                <getRowOid>address19012-19016</getRowOid>
+            </value>
+            <valueInc>0.01</valueInc>
+            <label>Current Phase <mapValue mapid="phasebynumber-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Current</sensorSet>
+        </numSensor>
+        
+        <numSensor ruleid="current_neutral">
+            <type>amperage</type>
+            <sensorId>CURRENT_4</sensorId>
+            <value>
+                <getOid>address19018</getOid>
+            </value>
+            <valueInc>0.01</valueInc>
+            <label>Current - Neutral</label>
+            <sensorSet>Current</sensorSet>
+        </numSensor>
+     
+        <numSensor ruleid="real_power_phase" index="address19020-19024">
+            <type>num/powerKW</type>
+            <sensorId>POWER_KW_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+            <value>
+                <mult>
+                    <op><getRowOid>address19020-19024</getRowOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Real Power - Phase <mapValue mapid="phasebynumber-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Power</sensorSet>
+        </numSensor>
+         
+        <numSensor ruleid="real_power_total">
+            <type>num/powerKW</type>
+            <sensorId>TOTAL_POWER_KW_1</sensorId>
+            <value>
+                <mult>
+                    <op><getOid>address19026</getOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Real Power - Total</label>
+            <sensorSet>Power</sensorSet>
+        </numSensor>
+    
+        <numSensor ruleid="apparent_power_phase" index="address19028-19032">
+            <type>num/powerKVA</type>
+            <sensorId>POWER_KVA_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+            <value>
+                <mult>
+                    <op><getRowOid>address19028-19032</getRowOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Apparent Power - Phase <mapValue mapid="phasebynumber-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Power</sensorSet>
+        </numSensor>
+         
+        <numSensor ruleid="apparent_power_total">
+            <type>num/powerKVA</type>
+            <sensorId>TOTAL_POWER_KVA_1</sensorId>
+            <value>
+                <mult>
+                    <op><getOid>address19034</getOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Apparent Power - Total</label>
+            <sensorSet>Power</sensorSet>
+        </numSensor>
+   
+        <numSensor ruleid="fund_reactive_power_phase" index="address19036-19040">
+            <type>num/powerKVAR</type>
+            <sensorId>POWER_KVAR_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+            <value>
+                <mult>
+                    <op><getRowOid>address19036-19040</getRowOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Fund. Reactive Power (Mains. Freq.) - Phase <mapValue mapid="phasebynumber-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Power</sensorSet>
+        </numSensor>
+         
+        <numSensor ruleid="fund_reactive_power_total">
+            <type>num/powerKVAR</type>
+            <sensorId>TOTAL_POWER_KVAR_1</sensorId>
+            <value>
+                <mult>
+                    <op><getOid>address19042</getOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Fund. Reactive Power (Mains. Freq.) - Total</label>
+            <sensorSet>Power</sensorSet>
+        </numSensor>
+  
+        <numSensor ruleid="fund_powerfactor_phase" index="address19044-19048">
+            <type>num/powerfactor</type>
+            <sensorId>POWER_FACTOR_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+            <value>
+                <getRowOid>address19044-19048</getRowOid>
+            </value>
+            <valueInc>0.01</valueInc>
+            <label>Fund. Power Factor - Phase <mapValue mapid="phasebynumber-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Power</sensorSet>
+        </numSensor>
+   
+        <numSensor ruleid="measured_frequency">
+            <type>frequency</type>
+            <sensorId>FREQUENCY_1</sensorId>
+            <value>
+                <getOid>address19050</getOid>
+            </value>
+            <valueInc>0.01</valueInc>
+            <label>Measured Frequency</label>
+            <sensorSet>Frequency</sensorSet>
+        </numSensor>
+
+        <stateSensor ruleid="rotation_field">
+            <type>state</type>
+            <sensorId>ROTATION_FIELD</sensorId>
+            <value>
+                <mapValue mapid="rotation_stat-vm">
+                    <formatNumber printffmt="%1.0f"><getOid>address19052</getOid></formatNumber>
+                </mapValue>
+            </value>
+            <label>Rotation Field</label>
+            <enum>rotation_stat-em</enum>
+            <sensorSet>Status Sensors</sensorSet>
+        </stateSensor>    
+
+        <valueMap ruleid="rotation_stat-vm">
+            <valueIn>-1</valueIn><valueOut>1</valueOut>
+            <valueIn>0</valueIn><valueOut>2</valueOut>
+            <valueIn>1</valueIn><valueOut>3</valueOut>
+            <valueIn>*</valueIn><valueOut>0</valueOut>
+        </valueMap> 
+        <enumMap ruleid="rotation_stat-em">
+            <label>Unknown</label>
+            <label>Left</label>
+            <label>None</label>
+            <label>Right</label>
+       </enumMap>
+   
+        <numSensor ruleid="real_energy_phase" index="address19054-19058">
+            <type>num/kwatthr</type>
+            <sensorId>PHASE<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue>_TOTAL_ENERGY_KWH_1</sensorId>
+            <value>
+                <mult>
+                    <op><getRowOid>address19054-19058</getRowOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Real Energy - Phase <mapValue mapid="phasebynumber-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+         
+        <numSensor ruleid="real_energy_total">
+            <type>num/kwatthr</type>
+            <sensorId>TOTAL_ENERGY_KWH_1</sensorId>
+            <value>
+                <mult>
+                    <op><getOid>address19060</getOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Real Energy - Total</label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+     
+        <numSensor ruleid="real_energy_rec_phase" index="address19062-19066">
+            <type>num/kwatthr</type>
+            <sensorId>ENERGY_REC_KWH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+            <value>
+                <mult>
+                    <op><getRowOid>address19062-19066</getRowOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Real Energy - Consumed Phase <mapValue mapid="phasebynumber-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+         
+        <numSensor ruleid="real_energy_rec_total">
+            <type>num/kwatthr</type>
+            <sensorId>TOTAL_ENERGY_REC_KWH_1</sensorId>
+            <value>
+                <mult>
+                    <op><getOid>address19068</getOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Real Energy - Consumed Total</label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+        
+        <numSensor ruleid="real_energy_del_phase" index="address19070-19074">
+            <type>num/kwatthr</type>
+            <sensorId>ENERGY_DEL_KWH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+            <value>
+                <mult>
+                    <op><getRowOid>address19070-19074</getRowOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Real Energy - Delivered Phase <mapValue mapid="phasebynumber-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+         
+        <numSensor ruleid="real_energy_del_total">
+            <type>num/kwatthr</type>
+            <sensorId>TOTAL_ENERGY_DEL_KWH_1</sensorId>
+            <value>
+                <mult>
+                    <op><getOid>address19076</getOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Real Energy - Delivered Total</label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+       
+        <numSensor ruleid="apparent_energy_phase" index="address19078-19082">
+            <type>num/kVAhr</type>
+            <sensorId>ENERGY_KVAH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+            <value>
+                <mult>
+                    <op><getRowOid>address19078-19082</getRowOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Apparent Energy - Phase <mapValue mapid="phasebynumber-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+         
+        <numSensor ruleid="apparent_energy_total">
+            <type>num/kVAhr</type>
+            <sensorId>TOTAL_ENERGY_DEL_REC_KVAH_1</sensorId>
+            <value>
+                <mult>
+                    <op><getOid>address19084</getOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Apparent Energy - Total</label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+      
+        <numSensor ruleid="reactive_energy_phase" index="address19086-19090">
+            <type>num/kVARhr</type>
+            <sensorId>PHASE<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue>_TOTAL_ENERGY_KVARH_1</sensorId>
+            <value>
+                <mult>
+                    <op><getRowOid>address19086-19090</getRowOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Reactive Energy - Phase <mapValue mapid="phasebynumber-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+         
+        <numSensor ruleid="reactive_energy_total">
+            <type>num/kVARhr</type>
+            <sensorId>TOTAL_ENERGY_KVARH_1</sensorId>
+            <value>
+                <mult>
+                    <op><getOid>address19092</getOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Reactive Energy - Total</label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+     
+        <numSensor ruleid="reactive_energy_rec_phase" index="address19094-19098">
+            <type>num/kVARhr</type>
+            <sensorId>ENERGY_REC_KVARH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+            <value>
+                <mult>
+                    <op><getRowOid>address19094-19098</getRowOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Reactive Energy - Inductive Phase <mapValue mapid="phasebynumber-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+         
+        <numSensor ruleid="reactive_energy_rec_total">
+            <type>num/kVARhr</type>
+            <sensorId>TOTAL_ENERGY_REC_KVARH_1</sensorId>
+            <value>
+                <mult>
+                    <op><getOid>address19100</getOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Reactive Energy - Inductive Total</label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+    
+        <numSensor ruleid="reactive_energy_del_phase" index="address19102-19106">
+            <type>num/kVARhr</type>
+            <sensorId>ENERGY_DEL_KVARH_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+            <value>
+                <mult>
+                    <op><getRowOid>address19102-19106</getRowOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Reactive Energy - Capacitive Phase <mapValue mapid="phasebynumber-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+         
+        <numSensor ruleid="reactive_energy_del_total">
+            <type>num/kVARhr</type>
+            <sensorId>TOTAL_ENERGY_DEL_KVARH_1</sensorId>
+            <value>
+                <mult>
+                    <op><getOid>address19108</getOid></op>
+                    <op>0.001</op>
+                </mult>
+            </value>
+            <valueInc>0.0001</valueInc>
+            <label>Reactive Energy - Capacitive Total</label>
+            <sensorSet>Energy</sensorSet>
+        </numSensor>
+   
+        <numSensor ruleid="harmonic_thd_voltage_ln_phase" index="address19110-19114">
+            <type>pctofcapacity</type>
+            <sensorId>VOLTAGE_LN_THD_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+            <value>
+                <getRowOid>address19110-19114</getRowOid>
+            </value>
+            <valueInc>0.01</valueInc>
+            <label>Harmonic THD - Voltage Phase <mapValue mapid="phasebynumber_ln-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Voltage</sensorSet>
+        </numSensor>
+   
+        <numSensor ruleid="harmonic_thd_current_phase" index="address19116-19120">
+            <type>pctofcapacity</type>
+            <sensorId>CURRENT_THD_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+            <value>
+                <getRowOid>address19116-19120</getRowOid>
+            </value>
+            <valueInc>0.01</valueInc>
+            <label>Harmonic THD - Current Phase <mapValue mapid="phasebynumber-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Current</sensorSet>
+        </numSensor>
+
+        <numSensor ruleid="powerfactor_phase" index="address828-832">
+            <type>num/powerfactor</type>
+            <sensorId>POWERFACTOR_<mapValue mapid="zerobased2onebased-vm"><rowNumber/></mapValue></sensorId>
+            <value>
+                <getRowOid>address828-832</getRowOid>
+            </value>
+            <valueInc>0.01</valueInc>
+            <label>Power Factor - Phase <mapValue mapid="phasebynumber-vm"><rowNumber/></mapValue></label>
+            <sensorSet>Power</sensorSet>
+        </numSensor>
+
+        <numSensor ruleid="powerfactor_total">
+            <type>num/powerfactor</type>
+            <sensorId>POWERFACTOR_TOTAL</sensorId>
+            <value>
+                <getOid>address834</getOid>
+            </value>
+            <valueInc>0.01</valueInc>
+            <label>Power Factor - Total</label>
+            <sensorSet>Power</sensorSet>
+        </numSensor>
+
+    </device>
+
+	<protocol>
+		<modbus>
+
+            <table_ref_id indexid="address828-832">
+                <entry num="0">address19000</entry>
+                <entry num="1">address19002</entry>
+                <entry num="2">address19004</entry>
+            </table_ref_id>
+            <value_ref_id valid="address828">
+                <function>3</function>
+                <start_addr>828</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address830">
+                <function>3</function>
+                <start_addr>830</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address832">
+                <function>3</function>
+                <start_addr>832</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address834">
+                <function>3</function>
+                <start_addr>834</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <table_ref_id indexid="address19000-19004">
+                <entry num="0">address19000</entry>
+                <entry num="1">address19002</entry>
+                <entry num="2">address19004</entry>
+            </table_ref_id>
+            <value_ref_id valid="address19000">
+                <function>3</function>
+                <start_addr>19000</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19002">
+                <function>3</function>
+                <start_addr>19002</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19004">
+                <function>3</function>
+                <start_addr>19004</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <table_ref_id indexid="address19006-19010">
+                <entry num="0">address19006</entry>
+                <entry num="1">address19008</entry>
+                <entry num="2">address19010</entry>
+            </table_ref_id>
+            <value_ref_id valid="address19006">
+                <function>3</function>
+                <start_addr>19006</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19008">
+                <function>3</function>
+                <start_addr>19008</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19010">
+                <function>3</function>
+                <start_addr>19010</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <table_ref_id indexid="address19012-19016">
+                <entry num="0">address19012</entry>
+                <entry num="1">address19014</entry>
+                <entry num="2">address19016</entry>
+            </table_ref_id>
+            <value_ref_id valid="address19012">
+                <function>3</function>
+                <start_addr>19012</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19014">
+                <function>3</function>
+                <start_addr>19014</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19016">
+                <function>3</function>
+                <start_addr>19016</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <value_ref_id valid="address19018">
+                <function>3</function>
+                <start_addr>19018</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <table_ref_id indexid="address19020-19024">
+                <entry num="0">address19020</entry>
+                <entry num="1">address19022</entry>
+                <entry num="2">address19024</entry>
+            </table_ref_id>
+            <value_ref_id valid="address19020">
+                <function>3</function>
+                <start_addr>19020</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19022">
+                <function>3</function>
+                <start_addr>19022</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19024">
+                <function>3</function>
+                <start_addr>19024</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <value_ref_id valid="address19026">
+                <function>3</function>
+                <start_addr>19026</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <table_ref_id indexid="address19028-19032">
+                <entry num="0">address19028</entry>
+                <entry num="1">address19030</entry>
+                <entry num="2">address19032</entry>
+            </table_ref_id>
+            <value_ref_id valid="address19028">
+                <function>3</function>
+                <start_addr>19028</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19030">
+                <function>3</function>
+                <start_addr>19030</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19032">
+                <function>3</function>
+                <start_addr>19032</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <value_ref_id valid="address19034">
+                <function>3</function>
+                <start_addr>19034</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <table_ref_id indexid="address19036-19040">
+                <entry num="0">address19036</entry>
+                <entry num="1">address19038</entry>
+                <entry num="2">address19040</entry>
+            </table_ref_id>
+            <value_ref_id valid="address19036">
+                <function>3</function>
+                <start_addr>19036</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19038">
+                <function>3</function>
+                <start_addr>19038</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19040">
+                <function>3</function>
+                <start_addr>19040</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <value_ref_id valid="address19042">
+                <function>3</function>
+                <start_addr>19042</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <table_ref_id indexid="address19044-19048">
+                <entry num="0">address19044</entry>
+                <entry num="1">address19046</entry>
+                <entry num="2">address19048</entry>
+            </table_ref_id>
+            <value_ref_id valid="address19044">
+                <function>3</function>
+                <start_addr>19044</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19046">
+                <function>3</function>
+                <start_addr>19046</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19048">
+                <function>3</function>
+                <start_addr>19048</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <value_ref_id valid="address19050">
+                <function>3</function>
+                <start_addr>19050</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <value_ref_id valid="address19052">
+                <function>3</function>
+                <start_addr>19052</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <table_ref_id indexid="address19054-19058">
+                <entry num="0">address19054</entry>
+                <entry num="1">address19056</entry>
+                <entry num="2">address19058</entry>
+            </table_ref_id>
+            <value_ref_id valid="address19054">
+                <function>3</function>
+                <start_addr>19054</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19056">
+                <function>3</function>
+                <start_addr>19056</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19058">
+                <function>3</function>
+                <start_addr>19058</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <value_ref_id valid="address19060">
+                <function>3</function>
+                <start_addr>19060</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <table_ref_id indexid="address19062-19066">
+                <entry num="0">address19062</entry>
+                <entry num="1">address19064</entry>
+                <entry num="2">address19066</entry>
+            </table_ref_id>
+            <value_ref_id valid="address19062">
+                <function>3</function>
+                <start_addr>19062</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19064">
+                <function>3</function>
+                <start_addr>19064</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19066">
+                <function>3</function>
+                <start_addr>19066</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <value_ref_id valid="address19068">
+                <function>3</function>
+                <start_addr>19068</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <table_ref_id indexid="address19070-19074">
+                <entry num="0">address19070</entry>
+                <entry num="1">address19072</entry>
+                <entry num="2">address19074</entry>
+            </table_ref_id>
+            <value_ref_id valid="address19070">
+                <function>3</function>
+                <start_addr>19070</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19072">
+                <function>3</function>
+                <start_addr>19072</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19074">
+                <function>3</function>
+                <start_addr>19074</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <value_ref_id valid="address19076">
+                <function>3</function>
+                <start_addr>19076</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <table_ref_id indexid="address19078-19082">
+                <entry num="0">address19078</entry>
+                <entry num="1">address19080</entry>
+                <entry num="2">address19082</entry>
+            </table_ref_id>
+            <value_ref_id valid="address19078">
+                <function>3</function>
+                <start_addr>19078</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19080">
+                <function>3</function>
+                <start_addr>19080</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19082">
+                <function>3</function>
+                <start_addr>19082</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <value_ref_id valid="address19084">
+                <function>3</function>
+                <start_addr>19084</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <table_ref_id indexid="address19086-19090">
+                <entry num="0">address19086</entry>
+                <entry num="1">address19088</entry>
+                <entry num="2">address19090</entry>
+            </table_ref_id>
+            <value_ref_id valid="address19086">
+                <function>3</function>
+                <start_addr>19086</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19088">
+                <function>3</function>
+                <start_addr>19088</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19090">
+                <function>3</function>
+                <start_addr>19090</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <value_ref_id valid="address19092">
+                <function>3</function>
+                <start_addr>19092</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <table_ref_id indexid="address19094-19098">
+                <entry num="0">address19094</entry>
+                <entry num="1">address19096</entry>
+                <entry num="2">address19098</entry>
+            </table_ref_id>
+            <value_ref_id valid="address19094">
+                <function>3</function>
+                <start_addr>19094</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19096">
+                <function>3</function>
+                <start_addr>19096</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19098">
+                <function>3</function>
+                <start_addr>19098</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <value_ref_id valid="address19100">
+                <function>3</function>
+                <start_addr>19100</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <table_ref_id indexid="address19102-19106">
+                <entry num="0">address19102</entry>
+                <entry num="1">address19104</entry>
+                <entry num="2">address19106</entry>
+            </table_ref_id>
+            <value_ref_id valid="address19102">
+                <function>3</function>
+                <start_addr>19102</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19104">
+                <function>3</function>
+                <start_addr>19104</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19106">
+                <function>3</function>
+                <start_addr>19106</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <value_ref_id valid="address19108">
+                <function>3</function>
+                <start_addr>19108</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <table_ref_id indexid="address19110-19114">
+                <entry num="0">address19110</entry>
+                <entry num="1">address19112</entry>
+                <entry num="2">address19114</entry>
+            </table_ref_id>
+            <value_ref_id valid="address19110">
+                <function>3</function>
+                <start_addr>19110</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19112">
+                <function>3</function>
+                <start_addr>19112</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19114">
+                <function>3</function>
+                <start_addr>19114</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+            <table_ref_id indexid="address19116-19120">
+                <entry num="0">address19116</entry>
+                <entry num="1">address19118</entry>
+                <entry num="2">address19120</entry>
+            </table_ref_id>
+            <value_ref_id valid="address19116">
+                <function>3</function>
+                <start_addr>19116</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19118">
+                <function>3</function>
+                <start_addr>19118</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+            <value_ref_id valid="address19120">
+                <function>3</function>
+                <start_addr>19120</start_addr>
+                <quantity>2</quantity>
+                <type>float</type>
+            </value_ref_id>
+
+
+            <packet>
+                <function>3</function>
+                <start_addr>19000</start_addr>
+                <quantity>122</quantity>
+            </packet>
+            
+		</modbus>
+	</protocol>
+</APC_DDF>
